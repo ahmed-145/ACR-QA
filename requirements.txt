@@ -1,0 +1,32 @@
+# Core dependencies
+psycopg2-binary==2.9.9
+cerebras-cloud-sdk>=1.5.0
+python-dotenv==1.0.0
+PyYAML==6.0.1
+
+# Web Dashboard
+Flask==3.0.0
+Flask-CORS==4.0.0
+
+# GitHub/GitLab Integration
+PyGithub==2.1.1
+python-gitlab==4.4.0
+
+# CLI & UI
+rich==13.7.0
+
+# Static Analysis Tools
+ruff==0.6.0
+semgrep==1.45.0
+vulture==2.10
+radon==6.0.1
+bandit==1.7.5
+
+# Testing
+pytest==7.4.3
+pytest-cov==4.1.0
+pytest-mock==3.12.0
+
+# Utilities
+tenacity==8.2.3
+requests==2.31.0

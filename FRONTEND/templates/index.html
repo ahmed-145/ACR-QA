@@ -1,0 +1,463 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ACR-QA v2.0 Dashboard</title>
+    
+    <!-- Bootstrap 5 -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+    
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.js"></script>
+    
+    <style>
+        body {
+            background-color: #f8f9fa;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        .navbar {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .card {
+            border: none;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.12);
+        }
+        .stat-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        .badge-severity-high { background-color: #dc3545; }
+        .badge-severity-medium { background-color: #ffc107; color: #000; }
+        .badge-severity-low { background-color: #28a745; }
+        .finding-row:hover {
+            background-color: #f1f3f5;
+            cursor: pointer;
+        }
+        .code-snippet {
+            background-color: #2d2d2d;
+            color: #f8f8f2;
+            padding: 15px;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            overflow-x: auto;
+        }
+        .explanation-box {
+            background-color: #e7f3ff;
+            border-left: 4px solid #0d6efd;
+            padding: 15px;
+            border-radius: 4px;
+        }
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255,255,255,.3);
+            border-radius: 50%;
+            border-top-color: #fff;
+            animation: spin 1s ease-in-out infinite;
+        }
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar navbar-dark mb-4">
+        <div class="container-fluid">
+            <a class="navbar-brand fs-4" href="#">
+                <i class="bi bi-shield-check"></i> ACR-QA v2.0 Dashboard
+            </a>
+            <span class="text-white">
+                <i class="bi bi-clock"></i> <span id="current-time"></span>
+            </span>
+        </div>
+    </nav>
+
+    <div class="container-fluid">
+        <!-- Statistics Cards -->
+        <div class="row mb-4">
+            <div class="col-md-3">
+                <div class="card stat-card">
+                    <div class="card-body text-center">
+                        <i class="bi bi-play-circle fs-1"></i>
+                        <h2 class="mt-2" id="total-runs">-</h2>
+                        <p class="mb-0">Total Runs</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card stat-card">
+                    <div class="card-body text-center">
+                        <i class="bi bi-bug fs-1"></i>
+                        <h2 class="mt-2" id="total-findings">-</h2>
+                        <p class="mb-0">Total Findings</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card stat-card">
+                    <div class="card-body text-center">
+                        <i class="bi bi-star fs-1"></i>
+                        <h2 class="mt-2" id="avg-rating">-</h2>
+                        <p class="mb-0">Avg Clarity Rating</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card stat-card">
+                    <div class="card-body text-center">
+                        <i class="bi bi-graph-up fs-1"></i>
+                        <h2 class="mt-2" id="completion-rate">-</h2>
+                        <p class="mb-0">Completion Rate</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <!-- Left Column: Runs List -->
+            <div class="col-md-4">
+                <div class="card">
+                    <div class="card-header bg-primary text-white">
+                        <i class="bi bi-list-ul"></i> Analysis Runs
+                    </div>
+                    <div class="card-body" style="max-height: 600px; overflow-y: auto;">
+                        <div id="runs-list">
+                            <div class="text-center text-muted">
+                                <div class="loading"></div>
+                                <p class="mt-2">Loading runs...</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Column: Run Details -->
+            <div class="col-md-8">
+                <div class="card">
+                    <div class="card-header bg-success text-white d-flex justify-content-between align-items-center">
+                        <span><i class="bi bi-info-circle"></i> Run Details</span>
+                        <button class="btn btn-sm btn-light" id="export-btn" style="display: none;">
+                            <i class="bi bi-download"></i> Export
+                        </button>
+                    </div>
+                    <div class="card-body">
+                        <div id="run-details">
+                            <div class="text-center text-muted py-5">
+                                <i class="bi bi-arrow-left-circle fs-1"></i>
+                                <p class="mt-3">Select a run from the list to view details</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Findings Table -->
+                <div class="card mt-3" id="findings-card" style="display: none;">
+                    <div class="card-header bg-warning">
+                        <i class="bi bi-exclamation-triangle"></i> Findings
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive" style="max-height: 500px; overflow-y: auto;">
+                            <table class="table table-hover" id="findings-table">
+                                <thead class="table-light sticky-top">
+                                    <tr>
+                                        <th>Severity</th>
+                                        <th>Rule</th>
+                                        <th>File:Line</th>
+                                        <th>Message</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="findings-tbody">
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Finding Detail Modal -->
+    <div class="modal fade" id="findingModal" tabindex="-1">
+        <div class="modal-dialog modal-xl">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="findingModalTitle">Finding Details</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body" id="findingModalBody">
+                    <!-- Dynamic content -->
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-danger" onclick="markFalsePositive()">
+                        <i class="bi bi-x-circle"></i> Mark False Positive
+                    </button>
+                    <button type="button" class="btn btn-success" onclick="markHelpful()">
+                        <i class="bi bi-check-circle"></i> Mark Helpful
+                    </button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script>
+        let currentRun = null;
+        let currentFinding = null;
+
+        // Update clock
+        function updateClock() {
+            const now = new Date();
+            document.getElementById('current-time').textContent = now.toLocaleTimeString();
+        }
+        setInterval(updateClock, 1000);
+        updateClock();
+
+        // Load overall stats
+        async function loadStats() {
+            try {
+                const response = await fetch('/api/stats');
+                const data = await response.json();
+                
+                if (data.success) {
+                    const stats = data.stats;
+                    document.getElementById('total-runs').textContent = stats.total_runs;
+                    document.getElementById('total-findings').textContent = stats.total_findings;
+                    
+                    const avgRating = stats.feedback?.avg_clarity || 0;
+                    document.getElementById('avg-rating').textContent = avgRating.toFixed(1);
+                    
+                    const completionRate = stats.total_runs > 0 
+                        ? ((stats.completed_runs / stats.total_runs) * 100).toFixed(0)
+                        : 0;
+                    document.getElementById('completion-rate').textContent = completionRate + '%';
+                }
+            } catch (error) {
+                console.error('Failed to load stats:', error);
+            }
+        }
+
+        // Load runs list
+        async function loadRuns() {
+            try {
+                const response = await fetch('/api/runs');
+                const data = await response.json();
+                
+                if (data.success) {
+                    const runsList = document.getElementById('runs-list');
+                    
+                    if (data.runs.length === 0) {
+                        runsList.innerHTML = '<p class="text-muted text-center">No analysis runs yet</p>';
+                        return;
+                    }
+                    
+                    runsList.innerHTML = data.runs.map(run => {
+                        const statusBadge = {
+                            'completed': 'success',
+                            'running': 'warning',
+                            'failed': 'danger'
+                        }[run.status] || 'secondary';
+                        
+                        return `
+                            <div class="border-bottom pb-2 mb-2 finding-row" onclick="loadRunDetails(${run.id})">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <strong>${run.repo_name}</strong>
+                                    <span class="badge bg-${statusBadge}">${run.status}</span>
+                                </div>
+                                <small class="text-muted">
+                                    <i class="bi bi-clock"></i> ${new Date(run.started_at).toLocaleString()}
+                                </small>
+                                ${run.pr_number ? `<br><small><i class="bi bi-git"></i> PR #${run.pr_number}</small>` : ''}
+                                <div class="mt-1">
+                                    <span class="badge bg-info">${run.total_findings || 0} findings</span>
+                                </div>
+                            </div>
+                        `;
+                    }).join('');
+                }
+            } catch (error) {
+                console.error('Failed to load runs:', error);
+            }
+        }
+
+        // Load run details
+        async function loadRunDetails(runId) {
+            currentRun = runId;
+            
+            try {
+                const response = await fetch(`/api/run/${runId}`);
+                const data = await response.json();
+                
+                if (data.success) {
+                    const run = data.run;
+                    const stats = data.stats;
+                    const findings = data.findings;
+                    
+                    // Show export button
+                    document.getElementById('export-btn').style.display = 'block';
+                    document.getElementById('export-btn').onclick = () => {
+                        window.location.href = `/api/export/${runId}`;
+                    };
+                    
+                    // Run info
+                    const detailsHtml = `
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <h6 class="text-muted">Repository</h6>
+                                <p class="fs-5">${run.repo_name}</p>
+                            </div>
+                            <div class="col-md-6">
+                                <h6 class="text-muted">Status</h6>
+                                <p class="fs-5"><span class="badge bg-success">${run.status}</span></p>
+                            </div>
+                        </div>
+                        
+                        <div class="row mb-3">
+                            <div class="col-md-4">
+                                <h6 class="text-muted">Started</h6>
+                                <p>${new Date(run.started_at).toLocaleString()}</p>
+                            </div>
+                            <div class="col-md-4">
+                                <h6 class="text-muted">Completed</h6>
+                                <p>${run.completed_at ? new Date(run.completed_at).toLocaleString() : 'N/A'}</p>
+                            </div>
+                            <div class="col-md-4">
+                                <h6 class="text-muted">Avg Explanation Time</h6>
+                                <p>${stats.avg_latency}ms</p>
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-12">
+                                <canvas id="severityChart" height="80"></canvas>
+                            </div>
+                        </div>
+                    `;
+                    
+                    document.getElementById('run-details').innerHTML = detailsHtml;
+                    
+                    // Chart
+                    const ctx = document.getElementById('severityChart').getContext('2d');
+                    new Chart(ctx, {
+                        type: 'bar',
+                        data: {
+                            labels: Object.keys(stats.by_severity),
+                            datasets: [{
+                                label: 'Findings by Severity',
+                                data: Object.values(stats.by_severity),
+                                backgroundColor: ['#dc3545', '#ffc107', '#28a745']
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            plugins: {
+                                legend: { display: false }
+                            }
+                        }
+                    });
+                    
+                    // Findings table
+                    if (findings.length > 0) {
+                        document.getElementById('findings-card').style.display = 'block';
+                        const tbody = document.getElementById('findings-tbody');
+                        
+                        tbody.innerHTML = findings.map(f => {
+                            const severityClass = {
+                                'error': 'danger',
+                                'warning': 'warning',
+                                'info': 'success'
+                            }[f.severity] || 'secondary';
+                            
+                            return `
+                                <tr class="finding-row" onclick='showFindingDetail(${JSON.stringify(f)})'>
+                                    <td><span class="badge badge-severity-${severityClass}">${f.severity}</span></td>
+                                    <td><code>${f.rule_id}</code></td>
+                                    <td><small>${f.file_path}:${f.line_number}</small></td>
+                                    <td>${f.message.substring(0, 80)}${f.message.length > 80 ? '...' : ''}</td>
+                                </tr>
+                            `;
+                        }).join('');
+                    }
+                }
+            } catch (error) {
+                console.error('Failed to load run details:', error);
+            }
+        }
+
+        // Show finding detail in modal
+        function showFindingDetail(finding) {
+            currentFinding = finding;
+            
+            const modalBody = document.getElementById('findingModalBody');
+            modalBody.innerHTML = `
+                <h6 class="text-muted">Rule: ${finding.rule_id}</h6>
+                <p><strong>Category:</strong> ${finding.category} | <strong>Tool:</strong> ${finding.tool}</p>
+                <p><strong>Location:</strong> ${finding.file_path}:${finding.line_number}</p>
+                
+                <h6 class="mt-3">Message</h6>
+                <div class="alert alert-warning">${finding.message}</div>
+                
+                ${finding.explanation_text ? `
+                    <h6 class="mt-3">AI Explanation</h6>
+                    <div class="explanation-box">
+                        ${finding.explanation_text}
+                    </div>
+                    <small class="text-muted">
+                        Generated by ${finding.model_name} in ${finding.latency_ms}ms
+                    </small>
+                ` : '<p class="text-muted">No explanation available</p>'}
+            `;
+            
+            const modal = new bootstrap.Modal(document.getElementById('findingModal'));
+            modal.show();
+        }
+
+        // Feedback functions
+        async function markFalsePositive() {
+            await submitFeedback({ is_false_positive: true });
+        }
+
+        async function markHelpful() {
+            await submitFeedback({ is_helpful: true, clarity_rating: 5 });
+        }
+
+        async function submitFeedback(feedback) {
+            if (!currentFinding) return;
+            
+            try {
+                const response = await fetch(`/api/finding/${currentFinding.id}/feedback`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ ...feedback, user_id: 'web_user' })
+                });
+                
+                if (response.ok) {
+                    alert('Feedback submitted!');
+                    bootstrap.Modal.getInstance(document.getElementById('findingModal')).hide();
+                }
+            } catch (error) {
+                console.error('Failed to submit feedback:', error);
+            }
+        }
+
+        // Initialize
+        loadStats();
+        loadRuns();
+        setInterval(loadStats, 30000); // Refresh every 30s
+    </script>
+</body>
+</html>

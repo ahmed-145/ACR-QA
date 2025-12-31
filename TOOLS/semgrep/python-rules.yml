@@ -1,0 +1,288 @@
+# Custom Semgrep Rules for py best practices
+#
+# docs: https://semgrep.dev/docs/writing-rules/rule-syntax/
+
+rules:
+  # ==========================================================================
+  # SECURITY ISSUES
+  # ==========================================================================
+  
+  - id: sql-injection-string-concat
+    pattern-either:
+      - pattern: |
+          $CURSOR.execute("..." + $VAR + "...")
+      - pattern: |
+          $CURSOR.execute(f"...{$VAR}...")
+      - pattern: |
+          $CURSOR.execute("...".format(...))
+    message: |
+      Possible SQL injection vulnerability. Never use string concatenation 
+      or f-strings with SQL queries. Use parameterized queries instead.
+      Bad:  cursor.execute("SELECT * FROM users WHERE id = " + user_id)
+      Good: cursor.execute("SELECT * FROM users WHERE id = ?", (user_id,))
+    severity: ERROR
+    languages: [python]
+    metadata:
+      category: security
+      cwe: "CWE-89: SQL Injection"
+  
+  - id: dangerous-eval-usage
+    pattern-either:
+      - pattern: eval($X)
+      - pattern: exec($X)
+    message: |
+      Dangerous use of eval() or exec(). These functions execute arbitrary 
+      Python code and should NEVER be used with user input. They can lead 
+      to remote code execution vulnerabilities.
+    severity: ERROR
+    languages: [python]
+    metadata:
+      category: security
+      cwe: "CWE-95: Code Injection"
+  
+  - id: hardcoded-password
+    patterns:
+      - pattern: $VAR = "..."
+      - metavariable-regex:
+          metavariable: $VAR
+          regex: .*(password|passwd|pwd|secret|api_key|apikey|access_key|secret_key).*
+      - pattern: $DICT["..."] = "..."
+        metavariable-regex:
+          metavariable: $DICT
+          regex: .*(password|secret|key).*
+    message: |
+      Hardcoded secret detected. Never store passwords, API keys, or secrets 
+      in source code. Use environment variables or secure vaults instead.
+      Good: password = os.environ.get('DB_PASSWORD')
+    severity: ERROR
+    languages: [python]
+    metadata:
+      category: security
+      cwe: "CWE-798: Hard-coded Credentials"
+  
+  - id: insecure-random-for-security
+    pattern-either:
+      - pattern: random.random()
+      - pattern: random.randint(...)
+      - pattern: random.choice(...)
+    message: |
+      Using 'random' module for security-sensitive operations. The random 
+      module is NOT cryptographically secure and can be predicted by attackers.
+      For security tokens, passwords, or keys, use the 'secrets' module instead.
+      Bad:  token = random.randint(1000, 9999)
+      Good: token = secrets.token_hex(16)
+    severity: WARNING
+    languages: [python]
+    metadata:
+      category: security
+      cwe: "CWE-338: Weak PRNG"
+  
+  - id: shell-injection
+    pattern-either:
+      - pattern: os.system($X + ...)
+      - pattern: subprocess.call($X + ..., shell=True)
+      - pattern: subprocess.Popen($X + ..., shell=True)
+    message: |
+      Possible command injection vulnerability. Never concatenate user input 
+      with shell commands when shell=True is used.
+      Bad:  os.system("ping " + hostname)
+      Good: subprocess.run(["ping", hostname], shell=False)
+    severity: ERROR
+    languages: [python]
+    metadata:
+      category: security
+      cwe: "CWE-78: Command Injection"
+  
+  # ==========================================================================
+  # PYTHON BEST PRACTICES
+  # ==========================================================================
+  
+  - id: bare-except
+    pattern: |
+      try:
+        ...
+      except:
+        ...
+    message: |
+      Bare 'except:' catches ALL exceptions including SystemExit and KeyboardInterrupt.
+      This makes debugging impossible and can hide serious errors.
+      Bad:  except:
+      Good: except Exception as e:
+      Better: except ValueError as e:  (catch specific exceptions)
+    severity: WARNING
+    languages: [python]
+    metadata:
+      category: best-practice
+  
+  - id: mutable-default-argument
+    patterns:
+      - pattern-either:
+          - pattern: |
+              def $FUNC(..., $ARG=[], ...):
+                ...
+          - pattern: |
+              def $FUNC(..., $ARG={}, ...):
+                ...
+          - pattern: |
+              def $FUNC(..., $ARG=set(), ...):
+                ...
+    message: |
+      Mutable default argument detected! This is a classic Python bug.
+      Default values are created ONCE when the function is defined, not each time 
+      it's called. All calls share the same list/dict/set.
+      Bad:  def add(item, items=[]):
+      Good: def add(item, items=None):
+              if items is None:
+                items = []
+    severity: ERROR
+    languages: [python]
+    metadata:
+      category: best-practice
+  
+  - id: comparison-with-true-false
+    pattern-either:
+      - pattern: $X == True
+      - pattern: $X == False
+      - pattern: $X != True
+      - pattern: $X != False
+    message: |
+      Comparing with True/False is redundant and non-Pythonic.
+      Bad:  if x == True:
+      Good: if x:
+      Bad:  if x == False:
+      Good: if not x:
+    severity: INFO
+    languages: [python]
+    metadata:
+      category: style
+  
+  - id: comparison-with-none
+    pattern-either:
+      - pattern: $X == None
+      - pattern: $X != None
+    message: |
+      Use 'is' or 'is not' when comparing with None.
+      Bad:  if x == None:
+      Good: if x is None:
+      Bad:  if x != None:
+      Good: if x is not None:
+    severity: INFO
+    languages: [python]
+    metadata:
+      category: style
+  
+  - id: type-check-instead-of-isinstance
+    pattern: type($X) == $Y
+    message: |
+      Use isinstance() instead of type() for type checking.
+      type() doesn't work correctly with inheritance.
+      Bad:  if type(x) == list:
+      Good: if isinstance(x, list):
+    severity: WARNING
+    languages: [python]
+    metadata:
+      category: best-practice
+  
+  - id: assert-for-validation
+    pattern: |
+      assert $CONDITION, ...
+    message: |
+      Don't use assert for input validation. Asserts are removed when Python 
+      runs in optimized mode (python -O), so your validation disappears!
+      Bad:  assert amount > 0, "Amount must be positive"
+      Good: if amount <= 0:
+              raise ValueError("Amount must be positive")
+    severity: WARNING
+    languages: [python]
+    metadata:
+      category: best-practice
+  
+  # ==========================================================================
+  # CODE QUALITY
+  # ==========================================================================
+  
+  - id: catch-and-ignore-exception
+    pattern: |
+      try:
+        ...
+      except $E:
+        pass
+    message: |
+      Catching exceptions and ignoring them with 'pass' hides errors and makes 
+      debugging impossible. At minimum, log the exception.
+      Bad:  except Exception: pass
+      Good: except Exception as e:
+              logger.error(f"Error: {e}")
+    severity: WARNING
+    languages: [python]
+    metadata:
+      category: best-practice
+  
+  - id: modifying-list-while-iterating
+    patterns:
+      - pattern: |
+          for $X in $LIST:
+            ...
+            $LIST.remove(...)
+            ...
+      - pattern: |
+          for $X in $LIST:
+            ...
+            $LIST.append(...)
+            ...
+    message: |
+      Modifying a list while iterating over it causes bugs (skipped elements).
+      Bad:  for x in items: items.remove(x)
+      Good: items = [x for x in items if condition(x)]
+      Or:   for x in items[:]:  # iterate over a copy
+    severity: WARNING
+    languages: [python]
+    metadata:
+      category: best-practice
+  
+  - id: string-concat-in-loop
+    patterns:
+      - pattern: |
+          for $X in $Y:
+            ...
+            $STR = $STR + ...
+            ...
+      - pattern: |
+          for $X in $Y:
+            ...
+            $STR += ...
+            ...
+    message: |
+      String concatenation in a loop is inefficient. Strings are immutable, 
+      so each concatenation creates a new string object.
+      Bad:  for word in words: result = result + word
+      Good: result = "".join(words)
+    severity: INFO
+    languages: [python]
+    metadata:
+      category: performance
+  
+  # ==========================================================================
+  # FILE HANDLING
+  # ==========================================================================
+  
+  - id: file-not-closed
+    patterns:
+      - pattern: |
+          $F = open(...)
+          ...
+      - pattern-not: |
+          with open(...) as $F:
+            ...
+    message: |
+      File opened without using 'with' statement. If an exception occurs, 
+      the file won't be closed properly, causing resource leaks.
+      Bad:  f = open('file.txt')
+            data = f.read()
+            f.close()
+      Good: with open('file.txt') as f:
+              data = f.read()
+    severity: WARNING
+    languages: [python]
+    metadata:
+      category: best-practice

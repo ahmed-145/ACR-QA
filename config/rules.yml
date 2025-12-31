@@ -1,0 +1,206 @@
+# ACR-QA Universal Rule Catalog
+# Evidence-grounded definitions for RAG-enhanced explanations
+
+SOLID-001:
+  name: "Too Many Parameters"
+  category: "design"
+  severity: "medium"
+  description: "Functions with more than 5 parameters violate Single Responsibility Principle"
+  rationale: |
+    Functions with many parameters are hard to test, understand, and maintain.
+    Each parameter represents a dependency or responsibility. When a function
+    needs many inputs, it's likely doing too much and should be split.
+  remediation: "Extract related parameters into a dataclass or configuration object"
+  example_good: |
+    from dataclasses import dataclass
+    
+    @dataclass
+    class UserConfig:
+        username: str
+        password: str
+        email: str
+    
+    def create_user(config: UserConfig):
+        print(f"Creating {config.username}")
+  example_bad: |
+    def create_user(username, password, email, phone, address, city, country):
+        print(f"Creating {username}")  # Too many parameters!
+
+IMPORT-001:
+  name: "Unused Import"
+  category: "style"
+  severity: "low"
+  description: "Import statement is never used in the file"
+  rationale: |
+    Unused imports clutter the namespace, slow down module loading,
+    and confuse developers about what dependencies are actually needed.
+  remediation: "Remove the import statement or use the imported module"
+  example_good: |
+    import os
+    print(os.getcwd())  # os is used
+  example_bad: |
+    import os
+    import sys  # Never used!
+    print(os.getcwd())
+
+VAR-001:
+  name: "Unused Variable"
+  category: "dead-code"
+  severity: "low"
+  description: "Variable is assigned but never referenced"
+  rationale: |
+    Unused variables indicate dead code, confuse readers about intent,
+    and may hide bugs where the variable was meant to be used.
+  remediation: "Remove the variable or use it in your code"
+  example_good: |
+    result = calculate_total()
+    print(result)  # Variable is used
+  example_bad: |
+    result = calculate_total()
+    unused_var = 42  # Never used!
+    print(result)
+
+SECURITY-001:
+  name: "Dangerous eval() Usage"
+  category: "security"
+  severity: "high"
+  description: "eval() executes arbitrary Python code and should never be used with user input"
+  rationale: |
+    eval() is a code execution vulnerability. An attacker can inject malicious
+    code that will run with your application's privileges, leading to data theft,
+    system compromise, or remote code execution.
+  remediation: "Use ast.literal_eval() for safe evaluation of literals, or redesign to avoid dynamic evaluation"
+  example_good: |
+    import ast
+    # Safe for literals only (strings, numbers, lists, dicts)
+    data = ast.literal_eval(user_input)
+  example_bad: |
+    # DANGEROUS! User can execute arbitrary code
+    result = eval(user_input)
+
+PATTERN-001:
+  name: "Mutable Default Argument"
+  category: "best-practice"
+  severity: "medium"
+  description: "Using mutable objects (list, dict, set) as default function arguments"
+  rationale: |
+    Default arguments are created ONCE when the function is defined, not each
+    time it's called. All calls share the same list/dict/set, causing unexpected
+    behavior where changes persist across function calls.
+  remediation: "Use None as default, then initialize the mutable object inside the function"
+  example_good: |
+    def add_item(item, items=None):
+        if items is None:
+            items = []
+        items.append(item)
+        return items
+  example_bad: |
+    def add_item(item, items=[]):  # BUG! All calls share same list
+        items.append(item)
+        return items
+
+DUP-001:
+  name: "Code Duplication"
+  category: "duplication"
+  severity: "medium"
+  description: "Identical or nearly identical code blocks found in multiple locations"
+  rationale: |
+    Duplicated code violates the DRY (Don't Repeat Yourself) principle.
+    When you need to fix a bug or add a feature, you must change it in
+    multiple places, increasing the risk of inconsistencies and bugs.
+  remediation: "Extract common logic into a shared function, class, or module"
+  example_good: |
+    def validate_email(email):
+        return "@" in email and "." in email
+    
+    # Reuse in multiple places
+    valid1 = validate_email(user1.email)
+    valid2 = validate_email(user2.email)
+  example_bad: |
+    # File 1
+    if "@" in user1.email and "." in user1.email:
+        print("Valid")
+    
+    # File 2 - DUPLICATE!
+    if "@" in user2.email and "." in user2.email:
+        print("Valid")
+
+DEAD-001:
+  name: "Unused Code"
+  category: "dead-code"
+  severity: "low"
+  description: "Function, class, or variable defined but never used"
+  rationale: |
+    Dead code increases maintenance burden, confuses developers,
+    and may contain bugs that go unnoticed because the code never runs.
+  remediation: "Remove unused code or document why it exists (if kept for future use)"
+  example_good: |
+    def calculate_total(items):
+        return sum(items)
+    
+    # Function is actually called
+    result = calculate_total([1, 2, 3])
+  example_bad: |
+    def calculate_total(items):
+        return sum(items)
+    
+    def unused_function():  # Never called anywhere!
+        pass
+
+STYLE-001:
+  name: "Line Too Long"
+  category: "style"
+  severity: "low"
+  description: "Line exceeds maximum length (typically 88 or 120 characters)"
+  rationale: |
+    Long lines are hard to read, especially on smaller screens or in
+    side-by-side diffs. Breaking lines improves readability.
+  remediation: "Break line into multiple lines using parentheses or backslash"
+  example_good: |
+    result = some_function(
+        argument1,
+        argument2,
+        argument3
+    )
+  example_bad: |
+    result = some_function(argument1, argument2, argument3, argument4, argument5, argument6)
+
+STYLE-002:
+  name: "Missing Docstring"
+  category: "style"
+  severity: "low"
+  description: "Public function or class lacks documentation"
+  rationale: |
+    Docstrings help others (and future you) understand what the code does,
+    what parameters it expects, and what it returns.
+  remediation: "Add a docstring explaining the function's purpose, parameters, and return value"
+  example_good: |
+    def calculate_total(items):
+        """Calculate sum of all items.
+        
+        Args:
+            items: List of numbers
+            
+        Returns:
+            Sum of all items
+        """
+        return sum(items)
+  example_bad: |
+    def calculate_total(items):  # No docstring!
+        return sum(items)
+
+NAMING-001:
+  name: "Bad Variable Name"
+  category: "style"
+  severity: "low"
+  description: "Variable name is too short, unclear, or doesn't follow conventions"
+  rationale: |
+    Clear names make code self-documenting. Single-letter names (except
+    in loops) or abbreviations force readers to guess the meaning.
+  remediation: "Use descriptive names that explain what the variable represents"
+  example_good: |
+    customer_count = len(customers)
+    total_price = calculate_total(items)
+  example_bad: |
+    c = len(customers)  # What is 'c'?
+    tp = calculate_total(items)  # What is 'tp'?

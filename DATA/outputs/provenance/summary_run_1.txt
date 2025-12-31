@@ -1,0 +1,25 @@
+ACR-QA v2.0 - Provenance Summary
+==================================================
+
+Run ID: 1
+Repository: local
+PR Number: N/A
+Started: 2025-11-21 19:47:14.114904
+Completed: 2025-11-21 19:47:18.018512
+Status: completed
+
+Findings Summary
+--------------------------------------------------
+Total findings: 5
+  Errors: 0
+  Warnings: 0
+  Info: 5
+
+LLM Explanations
+--------------------------------------------------
+Total generated: 5
+Failed: 0
+Average latency: 535ms
+Total tokens: 2,271
+Total cost: $0.0014
+
