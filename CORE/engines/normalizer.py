@@ -41,6 +41,8 @@ RULE_MAPPING = {
     'unused-class': 'DEAD-001',
     
     # jscpd → Universal IDs
+    # Radon → Universal IDs
+    'high-complexity': 'COMPLEXITY-001',
     'code-duplication': 'DUP-001'
 }
 
@@ -71,24 +73,23 @@ class CanonicalFinding:
     """Universal finding format following ACR-QA canonical schema"""
     
     def __init__(self,
-                 rule_id: str,
-                 file: str,
-                 line: int,
-                 severity: str,
-                 category: str,
-                 message: str,
-                 tool_name: str,
-                 tool_output: Dict[str, Any],
-                 column: int = 0):
-        
+             rule_id: str,
+             file: str,
+             line: int,
+             severity: str,
+             category: str,
+             message: str,
+             tool_name: str,
+             tool_output: Dict[str, Any],
+             column: int = 0):
+    
         self.finding_id = str(uuid.uuid4())
         
         # Map to canonical rule ID
         self.canonical_rule_id = RULE_MAPPING.get(rule_id, f"CUSTOM-{rule_id}")
         self.original_rule_id = rule_id
         
-        # Map to canonical severity
-        self.severity = SEVERITY_MAPPING.get(severity, 'low')
+        # Store original severity from tool
         self.original_severity = severity
         
         # Map to canonical category
@@ -114,6 +115,23 @@ class CanonicalFinding:
             'original_severity': severity,
             'original_output': tool_output
         }
+        
+        # ✅ NEW: Intelligent severity scoring
+        # This must happen AFTER all fields are set (scorer needs full context)
+        from CORE.engines.severity_scorer import SeverityScorer
+        
+        scorer = SeverityScorer()
+        
+        # Build a dict representation for scoring (scorer needs context)
+        finding_dict = {
+            'canonical_rule_id': self.canonical_rule_id,
+            'message': self.message,
+            'category': self.category,
+            'tool_raw': self.tool_raw
+        }
+        
+        # Score severity intelligently based on rule + context
+        self.severity = scorer.score(self.canonical_rule_id, finding_dict)
     
     def _detect_language(self, file_path: str) -> str:
         """Detect language from file extension"""
@@ -325,6 +343,50 @@ def normalize_jscpd(jscpd_json: Dict) -> List[CanonicalFinding]:
     
     return findings
 
+def normalize_radon(radon_json: Dict) -> List[CanonicalFinding]:
+    """Convert Radon complexity findings to canonical format"""
+    findings = []
+    
+    # Radon output format: {filename: [function_data]}
+    for filepath, functions in radon_json.items():
+        if not isinstance(functions, list):
+            continue
+            
+        for func in functions:
+            # Only flag high complexity (> 10)
+            complexity = func.get('complexity', 0)
+            
+            if complexity > 10:
+                # Determine severity based on complexity
+                if complexity > 20:
+                    severity = 'high'
+                elif complexity > 15:
+                    severity = 'medium'
+                else:
+                    severity = 'low'
+                
+                message = (
+                    f"Function '{func.get('name', 'unknown')}' has cyclomatic complexity of {complexity}. "
+                    f"High complexity makes code hard to test and maintain. "
+                    f"Consider refactoring into smaller functions."
+                )
+                
+                finding = CanonicalFinding(
+                    rule_id='high-complexity',
+                    file=filepath,
+                    line=func.get('lineno', 0),
+                    column=func.get('col_offset', 0),
+                    severity=severity,
+                    category='design',
+                    message=message,
+                    tool_name='radon',
+                    tool_output=func
+                )
+                finding.extract_evidence()
+                findings.append(finding)
+    
+    return findings
+
 
 def normalize_all(outputs_dir: str = 'outputs') -> List[CanonicalFinding]:
     """
@@ -389,6 +451,18 @@ def normalize_all(outputs_dir: str = 'outputs') -> List[CanonicalFinding]:
                 print(f"  Normalized {len(jscpd_findings)} jscpd findings")
         except Exception as e:
             print(f"  Error processing jscpd: {e}")
+    
+    # Load and normalize Radon
+    radon_file = outputs_path / 'radon.json'
+    if radon_file.exists():
+        try:
+            with open(radon_file) as f:
+                radon_data = json.load(f)
+                radon_findings = normalize_radon(radon_data)
+                all_findings.extend(radon_findings)
+                print(f"  Normalized {len(radon_findings)} Radon findings")
+        except Exception as e:
+            print(f"  Error processing Radon: {e}")
     
     print(f"\n  Total canonical findings: {len(all_findings)}")
     return all_findings

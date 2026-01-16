@@ -1,0 +1,184 @@
+name: ACR-QA Code Review
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+  issue_comment:
+    types: [created]
+
+permissions:
+  contents: read
+  pull-requests: write
+  issues: write
+
+jobs:
+  # Job 1: Auto-trigger on PR events
+  analyze-pr:
+    name: Analyze Pull Request
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request'
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # Full history for diff analysis
+      
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      
+      - name: Install dependencies
+        run: |
+          pip install -r requirements.txt
+          # Install analysis tools
+          pip install ruff semgrep vulture radon bandit
+          npm install -g jscpd
+      
+      - name: Set up PostgreSQL
+        run: |
+          sudo systemctl start postgresql
+          sudo -u postgres psql -c "CREATE DATABASE acrqa_test;"
+          sudo -u postgres psql -c "CREATE USER acrqa_user WITH PASSWORD 'test123';"
+          sudo -u postgres psql -c "GRANT ALL PRIVILEGES ON DATABASE acrqa_test TO acrqa_user;"
+      
+      - name: Initialize database
+        env:
+          DB_HOST: localhost
+          DB_PORT: 5432
+          DB_NAME: acrqa_test
+          DB_USER: acrqa_user
+          DB_PASSWORD: test123
+        run: |
+          psql -h localhost -U acrqa_user -d acrqa_test -f DATABASE/schema.sql
+      
+      - name: Get changed files
+        id: changed-files
+        uses: tj-actions/changed-files@v41
+        with:
+          files: |
+            **/*.py
+            **/*.js
+            **/*.ts
+            **/*.java
+      
+      - name: Run ACR-QA Analysis
+        if: steps.changed-files.outputs.any_changed == 'true'
+        env:
+          CEREBRAS_API_KEY: ${{ secrets.CEREBRAS_API_KEY }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          DB_HOST: localhost
+          DB_PORT: 5432
+          DB_NAME: acrqa_test
+          DB_USER: acrqa_user
+          DB_PASSWORD: test123
+        run: |
+          # Create temp directory for changed files
+          mkdir -p /tmp/pr-files
+          
+          # Copy only changed files
+          echo "${{ steps.changed-files.outputs.all_changed_files }}" | tr ' ' '\n' > /tmp/changed_files.txt
+          while IFS= read -r file; do
+            if [ -f "$file" ]; then
+              mkdir -p "/tmp/pr-files/$(dirname "$file")"
+              cp "$file" "/tmp/pr-files/$file"
+            fi
+          done < /tmp/changed_files.txt
+          
+          # Run analysis on changed files only
+          python3 CORE/main.py \
+            --target-dir /tmp/pr-files \
+            --repo-name "${{ github.repository }}" \
+            --pr-number ${{ github.event.pull_request.number }} \
+            --limit 100
+      
+      - name: Post PR Comments
+        if: steps.changed-files.outputs.any_changed == 'true'
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          python3 scripts/post_pr_comments.py \
+            --repo "${{ github.repository }}" \
+            --pr-number ${{ github.event.pull_request.number }} \
+            --run-id-file /tmp/acr_run_id.txt
+  
+  # Job 2: Manual trigger via comment
+  manual-trigger:
+    name: Manual Trigger
+    runs-on: ubuntu-latest
+    if: |
+      github.event_name == 'issue_comment' &&
+      github.event.issue.pull_request &&
+      contains(github.event.comment.body, 'acr-qa review')
+    
+    steps:
+      - name: React to comment
+        uses: peter-evans/create-or-update-comment@v3
+        with:
+          comment-id: ${{ github.event.comment.id }}
+          reactions: 'eyes'
+      
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          ref: refs/pull/${{ github.event.issue.number }}/head
+      
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      
+      - name: Install dependencies
+        run: |
+          pip install -r requirements.txt
+          pip install ruff semgrep vulture radon bandit
+          npm install -g jscpd
+      
+      - name: Set up PostgreSQL
+        run: |
+          sudo systemctl start postgresql
+          sudo -u postgres psql -c "CREATE DATABASE acrqa_test;"
+          sudo -u postgres psql -c "CREATE USER acrqa_user WITH PASSWORD 'test123';"
+          sudo -u postgres psql -c "GRANT ALL PRIVILEGES ON DATABASE acrqa_test TO acrqa_user;"
+      
+      - name: Initialize database
+        env:
+          DB_HOST: localhost
+          DB_PORT: 5432
+          DB_NAME: acrqa_test
+          DB_USER: acrqa_user
+          DB_PASSWORD: test123
+        run: |
+          psql -h localhost -U acrqa_user -d acrqa_test -f DATABASE/schema.sql
+      
+      - name: Run ACR-QA Analysis (Full Scan)
+        env:
+          CEREBRAS_API_KEY: ${{ secrets.CEREBRAS_API_KEY }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          DB_HOST: localhost
+          DB_PORT: 5432
+          DB_NAME: acrqa_test
+          DB_USER: acrqa_user
+          DB_PASSWORD: test123
+        run: |
+          python3 CORE/main.py \
+            --target-dir . \
+            --repo-name "${{ github.repository }}" \
+            --pr-number ${{ github.event.issue.number }} \
+            --limit 100
+      
+      - name: Post PR Comments
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          python3 scripts/post_pr_comments.py \
+            --repo "${{ github.repository }}" \
+            --pr-number ${{ github.event.issue.number }} \
+            --run-id-file /tmp/acr_run_id.txt
+      
+      - name: React to completion
+        uses: peter-evans/create-or-update-comment@v3
+        with:
+          comment-id: ${{ github.event.comment.id }}
+          reactions: 'rocket'

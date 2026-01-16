@@ -1,0 +1,892 @@
+{
+  "metadata": {
+    "run_id": 28,
+    "export_timestamp": "2026-01-02T10:13:38.264354",
+    "acr_qa_version": "2.0",
+    "purpose": "Complete audit trail for academic evaluation"
+  },
+  "analysis_run": {
+    "id": 28,
+    "repo_name": "local",
+    "commit_sha": null,
+    "branch": null,
+    "pr_number": 1,
+    "status": "completed",
+    "started_at": "2026-01-01 13:17:38.120399",
+    "completed_at": "2026-01-01 13:17:38.120399",
+    "total_findings": 72
+  },
+  "findings": [
+    {
+      "id": 231,
+      "rule_id": "unused-import",
+      "file_path": "TESTS/samples/comprehensive-issues/auth_service.py",
+      "line_number": 7,
+      "severity": "low",
+      "category": "dead-code",
+      "message": "unused import 'Tuple' (90% confidence)",
+      "tool": "vulture",
+      "explanation": {
+        "model_name": "llama3.1-8b",
+        "response_text": "This code violates IMPORT-001 because it imports 'typing' but does not use any of its modules (Dict, Any, Optional, List, Tuple). \n\nThis issue matters because unused imports clutter the namespace, slow down module loading, and confuse developers about what dependencies are actually needed, as stated in the IMPORT-001 rule rationale. \n\nTo fix this issue, remove the import statement or use the imported module, as suggested by the IMPORT-001 rule remediation.",
+        "latency_ms": 658
+      }
+    },
+    {
+      "id": 232,
+      "rule_id": "unused-function",
+      "file_path": "TESTS/samples/comprehensive-issues/auth_service.py",
+      "line_number": 10,
+      "severity": "low",
+      "category": "dead-code",
+      "message": "unused function 'authenticate_user' (60% confidence)",
+      "tool": "vulture",
+      "explanation": {
+        "model_name": "llama3.1-8b",
+        "response_text": "This code violates DEAD-001 \"Unused Code\" because a function named `get_user_data` is defined but never called anywhere in the code. \n\nThis issue matters because dead code increases maintenance burden, confuses developers, and may contain bugs that go unnoticed because the code never runs (DEAD-001 rule rationale).\n\nTo fix this issue, remove the unused code or document why it exists (if kept for future use) (DEAD-001 rule remediation).",
+        "latency_ms": 443
+      }
+    },
+    {
+      "id": 233,
+      "rule_id": "unused-variable",
+      "file_path": "TESTS/samples/comprehensive-issues/auth_service.py",
+      "line_number": 10,
+      "severity": "low",
+      "category": "dead-code",
+      "message": "unused variable 'phone' (100% confidence)",
+      "tool": "vulture",
+      "explanation": {
+        "model_name": "llama3.1-8b",
+        "response_text": "This code violates VAR-001 \"Unused Variable\" because the function parameter `two_factor_code` is not used within the function.\n\nThe issue matters because unused variables indicate dead code, confuse readers about intent, and may hide bugs where the variable was meant to be used, as stated in the rule rationale.\n\nTo fix this issue, the variable `two_factor_code` should be removed or used in the code, as suggested by the rule remediation.",
+        "latency_ms": 501
+      }
+    },
+    {
+      "id": 234,
+      "rule_id": "unused-variable",
+      "file_path": "TESTS/samples/comprehensive-issues/auth_service.py",
+      "line_number": 11,
+      "severity": "low",
+      "category": "dead-code",
+      "message": "unused variable 'ip_address' (100% confidence)",
+      "tool": "vulture",
+      "explanation": {
+        "model_name": "llama3.1-8b",
+        "response_text": "This code violates VAR-001 \"Unused Variable\" because the parameter `two_factor_code` is declared with an optional default value of `None`, but it is not used anywhere in the function.\n\nThis issue matters because unused variables indicate dead code, confuse readers about intent, and may hide bugs where the variable was meant to be used, as stated in the rule rationale.\n\nTo fix this issue, remove the unused variable or use it in the code, as recommended by the rule.",
+        "latency_ms": 480
+      }
+    },
+    {
+      "id": 235,
+      "rule_id": "unused-variable",
+      "file_path": "TESTS/samples/comprehensive-issues/auth_service.py",
+      "line_number": 11,
+      "severity": "low",
+      "category": "dead-code",
+      "message": "unused variable 'user_agent' (100% confidence)",
+      "tool": "vulture",
+      "explanation": {
+        "model_name": "llama3.1-8b",
+        "response_text": "This code violates VAR-001: Unused Variable. \nThe unused variable in question is not explicitly shown in the provided snippet, but it is likely one of the parameters in the authenticate_user function, such as 'email', 'phone', 'session_id', 'ip_address', or 'user_agent', which are not used within the function. \nThis issue matters because unused variables indicate dead code, confuse readers about intent, and may hide bugs where the variable was meant to be used, as stated in the rule rationale. \nTo fix this issue, remove the unused variable or use it in the code, as specified in the rule remediation.",
+        "latency_ms": 641
+      }
+    },
+    {
+      "id": 236,
+      "rule_id": "unused-variable",
+      "file_path": "TESTS/samples/comprehensive-issues/auth_service.py",
+      "line_number": 12,
+      "severity": "low",
+      "category": "dead-code",
+      "message": "unused variable 'remember_me' (100% confidence)",
+      "tool": "vulture",
+      "explanation": {
+        "model_name": "llama3.1-8b",
+        "response_text": "This code violates VAR-001 because the variable `two_factor_code` is declared but not used in the function `authenticate_user`.\n\nThe issue matters because unused variables indicate dead code, confuse readers about intent, and may hide bugs where the variable was meant to be used, as stated in the VAR-001 rule rationale.\n\nTo fix the issue, the variable `two_factor_code` should be removed or used in the code, as suggested in the VAR-001 rule remediation.",
+        "latency_ms": 582
+      }
+    },
+    {
+      "id": 237,
+      "rule_id": "unused-variable",
+      "file_path": "TESTS/samples/comprehensive-issues/auth_service.py",
+      "line_number": 12,
+      "severity": "low",
+      "category": "dead-code",
+      "message": "unused variable 'two_factor_code' (100% confidence)",
+      "tool": "vulture",
+      "explanation": {
+        "model_name": "llama3.1-8b",
+        "response_text": "This code violates VAR-001: Unused Variable. \nThe issue is that the parameter `two_factor_code` is declared with a default value of `None`, but it is not used anywhere in the function. \nThis matters because unused variables indicate dead code, confuse readers about intent, and may hide bugs where the variable was meant to be used (VAR-001). \nTo fix it, remove the variable or use it in the code (VAR-001 remediation).",
+        "latency_ms": 542
+      }
+    },
+    {
+      "id": 238,
+      "rule_id": "unused-function",
+      "file_path": "TESTS/samples/comprehensive-issues/auth_service.py",
+      "line_number": 29,
+      "severity": "low",
+      "category": "dead-code",
+      "message": "unused function 'validate_and_process_user_input' (60% confidence)",
+      "tool": "vulture",
+      "explanation": {
+        "model_name": "llama3.1-8b",
+        "response_text": "This code violates DEAD-001: Unused Code. \nThe function `validate_and_process_user_input` is defined but never called anywhere in the code, which increases maintenance burden, confuses developers, and may contain bugs that go unnoticed because the code never runs (as per the rule rationale). \nTo fix it, remove the unused function or document why it exists (if kept for future use), as per the rule remediation.",
+        "latency_ms": 407
+      }
+    },
+    {
+      "id": 239,
+      "rule_id": "unused-function",
+      "file_path": "TESTS/samples/comprehensive-issues/auth_service.py",
+      "line_number": 100,
+      "severity": "low",
+      "category": "dead-code",
+      "message": "unused function 'store_user_sessions' (60% confidence)",
+      "tool": "vulture",
+      "explanation": {
+        "model_name": "llama3.1-8b",
+        "response_text": "This code violates DEAD-001 \"Unused Code\" because the function `store_user_sessions` is defined but never called anywhere in the codebase.\n\nThis issue matters because dead code increases maintenance burden, confuses developers, and may contain bugs that go unnoticed because the code never runs (as per the rule rationale). \n\nTo fix this issue, remove the unused function or document why it exists (if kept for future use), as per the rule recommendation.",
+        "latency_ms": 817
+      }
+    },
+    {
+      "id": 229,
+      "rule_id": "mutable-default-argument",
+      "file_path": "TESTS/samples/comprehensive-issues/auth_service.py",
+      "line_number": 100,
+      "severity": "medium",
+      "category": "best-practice",
+      "message": "Mutable default argument detected! This is a classic Python bug.\nDefault values are created ONCE when the function is defined.\n",
+      "tool": "semgrep",
+      "explanation": {
+        "model_name": "llama3.1-8b",
+        "response_text": "This code violates PATTERN-001: Mutable Default Argument. \nThe issue is that the function `store_user_sessions` has a mutable default argument (`Dict = {}`), which is created only once when the function is defined, causing all calls to share the same dictionary. \nThis matters (Severity: medium) because, according to the rule, default arguments are created ONCE when the function is defined, not each time it's called, leading to unexpected behavior where changes persist across function calls. \nTo fix it, use `None` as the default argument and initialize the mutable object inside the function, as shown in the good example.",
+        "latency_ms": 586
+      }
+    },
+    {
+      "id": 240,
+      "rule_id": "unused-import",
+      "file_path": "TESTS/samples/comprehensive-issues/auth_service.py",
+      "line_number": 110,
+      "severity": "low",
+      "category": "dead-code",
+      "message": "unused import 'os' (90% confidence)",
+      "tool": "vulture",
+      "explanation": {
+        "model_name": "llama3.1-8b",
+        "response_text": "This code violates IMPORT-001: Unused Import. \nThe issue is that the import statement for 'os' is not being used anywhere in the code. \nThis matters because unused imports clutter the namespace, slow down module loading, and confuse developers about what dependencies are actually needed (as per the IMPORT-001 rule rationale). \nTo fix this issue, remove the import statement or use the imported module (as per the IMPORT-001 rule remediation).",
+        "latency_ms": 818
+      }
+    },
+    {
+      "id": 241,
+      "rule_id": "unused-function",
+      "file_path": "TESTS/samples/comprehensive-issues/auth_service.py",
+      "line_number": 112,
+      "severity": "low",
+      "category": "dead-code",
+      "message": "unused function 'bad_function' (60% confidence)",
+      "tool": "vulture",
+      "explanation": {
+        "model_name": "llama3.1-8b",
+        "response_text": "This code violates DEAD-001 \"Unused Code\" because the variable \"unused\" is declared but never used in the function.\n\nWhy it matters: Dead code increases maintenance burden, confuses developers, and may contain bugs that go unnoticed because the code never runs (rule rationale).\n\nHow to fix it: Remove the unused variable or document why it exists (if kept for future use) as per the rule's remediation.",
+        "latency_ms": 510
+      }
+    },
+    {
+      "id": 242,
+      "rule_id": "unused-variable",
+      "file_path": "TESTS/samples/comprehensive-issues/auth_service.py",
+      "line_number": 113,
+      "severity": "low",
+      "category": "dead-code",
+      "message": "unused variable 'very_long_line' (60% confidence)",
+      "tool": "vulture",
+      "explanation": {
+        "model_name": "llama3.1-8b",
+        "response_text": "This code violates VAR-001: Unused Variable. \nThe issue is that the variable \"unused\" is declared but never used in the code. \nThis matters because unused variables indicate dead code, confuse readers about intent, and may hide bugs where the variable was meant to be used (VAR-001). \nTo fix it, remove the variable or use it in your code (VAR-001).",
+        "latency_ms": 510
+      }
+    },
+    {
+      "id": 243,
+      "rule_id": "unused-variable",
+      "file_path": "TESTS/samples/comprehensive-issues/auth_service.py",
+      "line_number": 114,
+      "severity": "low",
+      "category": "dead-code",
+      "message": "unused variable 'unused' (60% confidence)",
+      "tool": "vulture",
+      "explanation": {
+        "model_name": "llama3.1-8b",
+        "response_text": "This code violates VAR-001 (Unused Variable) because it defines a variable 'unused' on line 114, which is never used in the function.\n\nThe issue matters because unused variables indicate dead code, confuse readers about intent, and may hide bugs where the variable was meant to be used (Rule Rationale: \"Unused variables indicate dead code, confuse readers about intent, and may hide bugs where the variable was meant to be used\").\n\nTo fix this issue, remove the unused variable or use it in the code (Remediation: \"Remove the variable or use it in your code\").",
+        "latency_ms": 613
+      }
+    },
+    {
+      "id": 244,
+      "rule_id": "unused-class",
+      "file_path": "TESTS/samples/comprehensive-issues/auth_service.py",
+      "line_number": 117,
+      "severity": "medium",
+      "category": "dead-code",
+      "message": "unused class 'badName' (60% confidence)",
+      "tool": "vulture",
+      "explanation": {
+        "model_name": "llama3.1-8b",
+        "response_text": "This code violates DEAD-001 \"Unused Code\" because the class `badName` is never referenced or used anywhere in the code. \n\nThis issue matters because dead code increases maintenance burden, confuses developers, and may contain bugs that go unnoticed because the code never runs (as per the rule rationale).\n\nTo fix this issue, remove the unused class `badName` or document why it exists (if kept for future use) as per the rule's remediation.",
+        "latency_ms": 511
+      }
+    },
+    {
+      "id": 245,
+      "rule_id": "unused-class",
+      "file_path": "TESTS/samples/comprehensive-issues/auth_service.py",
+      "line_number": 120,
+      "severity": "medium",
+      "category": "dead-code",
+      "message": "unused class 'AuthManager' (60% confidence)",
+      "tool": "vulture",
+      "explanation": {
+        "model_name": "llama3.1-8b",
+        "response_text": "This code violates DEAD-001 \"Unused Code\" because the class `badName` is defined but never used anywhere in the code. \n\nThis issue matters because dead code increases maintenance burden, confuses developers, and may contain bugs that go unnoticed because the code never runs (as stated in the rule rationale).\n\nTo fix this issue, remove the unused class `badName` or document why it exists (if kept for future use) as per the rule's remediation.",
+        "latency_ms": 488
+      }
+    },
+    {
+      "id": 246,
+      "rule_id": "unused-code",
+      "file_path": "TESTS/samples/comprehensive-issues/auth_service.py",
+      "line_number": 123,
+      "severity": "low",
+      "category": "dead-code",
+      "message": "unused method 'validate_token' (60% confidence)",
+      "tool": "vulture",
+      "explanation": {
+        "model_name": "llama3.1-8b",
+        "response_text": "This code violates DEAD-001 \"Unused Code\" because the `validate_token` function contains a line of code (`result = eval(token)`) that is never executed due to the comment above it (\"NEVER DO THIS! Allows arbitrary code execution\").\n\nThis issue matters because dead code increases maintenance burden, confuses developers, and may contain bugs that go unnoticed because the code never runs (citing the rule rationale). \n\nTo fix this issue, remove the unused code or document why it exists (if kept for future use), as per the rule's remediation.",
+        "latency_ms": 431
+      }
+    },
+    {
+      "id": 230,
+      "rule_id": "dangerous-eval-usage",
+      "file_path": "TESTS/samples/comprehensive-issues/auth_service.py",
+      "line_number": 126,
+      "severity": "high",
+      "category": "security",
+      "message": "Dangerous use of eval() or exec(). These functions execute arbitrary \nPython code and should NEVER be used with user input.\n",
+      "tool": "semgrep",
+      "explanation": {
+        "model_name": "llama3.1-8b",
+        "response_text": "This code violates SECURITY-001 because it uses the `eval()` function to execute user-provided input, which allows arbitrary code execution.\n\nThis issue matters because `eval()` is a code execution vulnerability, as stated in the rule rationale, allowing an attacker to inject malicious code that will run with the application's privileges, leading to data theft, system compromise, or remote code execution.\n\nTo fix this issue, the code should use `ast.literal_eval()` for safe evaluation of literals or redesign to avoid dynamic evaluation, as recommended in the rule remediation.",
+        "latency_ms": 1033
+      }
+    },
+    {
+      "id": 247,
+      "rule_id": "unused-code",
+      "file_path": "TESTS/samples/comprehensive-issues/auth_service.py",
+      "line_number": 129,
+      "severity": "low",
+      "category": "dead-code",
+      "message": "unused method 'hash_password' (60% confidence)",
+      "tool": "vulture",
+      "explanation": {
+        "model_name": "llama3.1-8b",
+        "response_text": "This code violates DEAD-001 \"Unused Code\" because the `hash_password` function is not being used anywhere in the codebase.\n\nThis unused code matters because it increases maintenance burden, confuses developers, and may contain bugs that go unnoticed because the code never runs, as stated in the rule rationale.\n\nTo fix this issue, the unused `hash_password` function should be removed or documented why it exists (if kept for future use), as per the rule's remediation.",
+        "latency_ms": 1124
+      }
+    },
+    {
+      "id": 261,
+      "rule_id": "unused-function",
+      "file_path": "TESTS/samples/comprehensive-issues/database_queries.py",
+      "line_number": 8,
+      "severity": "low",
+      "category": "dead-code",
+      "message": "unused function 'search_users_by_name' (60% confidence)",
+      "tool": "vulture",
+      "explanation": {
+        "model_name": "llama3.1-8b",
+        "response_text": "This code violates DEAD-001 \"Unused Code\" because the `connect_to_database` function is not being used anywhere in the code.\n\nThe issue matters because dead code increases maintenance burden, confuses developers, and may contain bugs that go unnoticed because the code never runs (as stated in the rule rationale).\n\nTo fix this issue, remove the unused code or document why it exists (if kept for future use) as per the rule's remediation.",
+        "latency_ms": 570
+      }
+    },
+    {
+      "id": 262,
+      "rule_id": "unused-function",
+      "file_path": "TESTS/samples/comprehensive-issues/database_queries.py",
+      "line_number": 23,
+      "severity": "low",
+      "category": "dead-code",
+      "message": "unused function 'delete_user_account' (60% confidence)",
+      "tool": "vulture",
+      "explanation": {
+        "model_name": "llama3.1-8b",
+        "response_text": "This code violates DEAD-001 \"Unused Code\" because the function `delete_user_account(user_id: str)` is defined but never called anywhere in the code. This unused code increases maintenance burden and may contain bugs that go unnoticed because the code never runs, as stated in the rule rationale. To fix it, remove the unused function or document why it exists (if kept for future use), as per the rule's remediation.",
+        "latency_ms": 443
+      }
+    },
+    {
+      "id": 263,
+      "rule_id": "unused-function",
+      "file_path": "TESTS/samples/comprehensive-issues/database_queries.py",
+      "line_number": 33,
+      "severity": "low",
+      "category": "dead-code",
+      "message": "unused function 'update_user_email' (60% confidence)",
+      "tool": "vulture",
+      "explanation": {
+        "model_name": "llama3.1-8b",
+        "response_text": "This code violates DEAD-001 \"Unused Code\" because the function `update_user_email` is defined but never called anywhere in the codebase. \n\nThis issue matters because dead code increases maintenance burden, confuses developers, and may contain bugs that go unnoticed because the code never runs (as per the rule rationale). \n\nTo fix this issue, remove the unused function or document why it exists (if kept for future use) as per the rule's remediation.",
+        "latency_ms": 510
+      }
+    },
+    {
+      "id": 264,
+      "rule_id": "unused-function",
+      "file_path": "TESTS/samples/comprehensive-issues/database_queries.py",
+      "line_number": 43,
+      "severity": "low",
+      "category": "dead-code",
+      "message": "unused function 'execute_custom_query' (60% confidence)",
+      "tool": "vulture",
+      "explanation": {
+        "model_name": "llama3.1-8b",
+        "response_text": "This code violates DEAD-001: Unused Code. \nThe unused function `execute_custom_query` is defined but never called anywhere in the code, which increases maintenance burden and may contain bugs that go unnoticed because the code never runs. \nAccording to the rule, to fix this issue, remove the unused code or document why it exists (if kept for future use).",
+        "latency_ms": 384
+      }
+    },
+    {
+      "id": 248,
+      "rule_id": "unused-import",
+      "file_path": "TESTS/samples/comprehensive-issues/data_export.py",
+      "line_number": 5,
+      "severity": "low",
+      "category": "dead-code",
+      "message": "unused import 'os' (90% confidence)",
+      "tool": "vulture",
+      "explanation": {
+        "model_name": "llama3.1-8b",
+        "response_text": "This code violates IMPORT-001 because it contains unused import statements for 'os' and 'sys' modules. \nThis matters because unused imports clutter the namespace, slow down module loading, and confuse developers about what dependencies are actually needed, as stated in the rule rationale. \nTo fix it, you should remove the unused import statements or use the imported modules, as suggested in the rule remediation.",
+        "latency_ms": 483
+      }
+    },
+    {
+      "id": 249,
+      "rule_id": "unused-import",
+      "file_path": "TESTS/samples/comprehensive-issues/data_export.py",
+      "line_number": 8,
+      "severity": "low",
+      "category": "dead-code",
+      "message": "unused import 'datetime' (90% confidence)",
+      "tool": "vulture",
+      "explanation": {
+        "model_name": "llama3.1-8b",
+        "response_text": "This code violates IMPORT-001 because the import statements for `sys` are never used in the code. \nWhy it matters: Unused imports clutter the namespace, slow down module loading, and confuse developers about what dependencies are actually needed, as stated in the rule rationale. \nHOW to fix it: Remove the import statement for `sys` or use the imported module, as suggested in the rule remediation.",
+        "latency_ms": 538
+      }
+    },
+    {
+      "id": 250,
+      "rule_id": "unused-function",
+      "file_path": "TESTS/samples/comprehensive-issues/data_export.py",
+      "line_number": 12,
+      "severity": "low",
+      "category": "dead-code",
+      "message": "unused function 'export_users_to_csv' (60% confidence)",
+      "tool": "vulture",
+      "explanation": {
+        "model_name": "llama3.1-8b",
+        "response_text": "This code violates DEAD-001 \"Unused Code\" because the function `get_user_data` is not called anywhere in the code, making it unused.\n\nThe issue matters because dead code increases maintenance burden, confuses developers, and may contain bugs that go unnoticed because the code never runs, as stated in the rule rationale.\n\nTo fix it, the unused code should be removed or documented why it exists (if kept for future use), as suggested in the rule remediation.",
+        "latency_ms": 408
+      }
+    },
+    {
+      "id": 251,
+      "rule_id": "unused-function",
+      "file_path": "TESTS/samples/comprehensive-issues/data_export.py",
+      "line_number": 20,
+      "severity": "low",
+      "category": "dead-code",
+      "message": "unused function 'unused_export_function' (60% confidence)",
+      "tool": "vulture",
+      "explanation": {
+        "model_name": "llama3.1-8b",
+        "response_text": "This code violates DEAD-001: Unused Code. The issue is that the function `unused_export_function` is defined but never called anywhere in the code. This matters because dead code increases maintenance burden, confuses developers, and may contain bugs that go unnoticed because the code never runs (as stated in the rule rationale). To fix this, the unused code should be removed or documented why it exists (if kept for future use), as suggested by the rule remediation.",
+        "latency_ms": 510
+      }
+    },
+    {
+      "id": 252,
+      "rule_id": "unused-function",
+      "file_path": "TESTS/samples/comprehensive-issues/data_export.py",
+      "line_number": 27,
+      "severity": "low",
+      "category": "dead-code",
+      "message": "unused function 'format_user_data' (60% confidence)",
+      "tool": "vulture",
+      "explanation": {
+        "model_name": "llama3.1-8b",
+        "response_text": "This code violates DEAD-001 \"Unused Code\" because the `username` variable is declared but not used within the `format_user_data` function.\n\nThe issue matters because dead code increases maintenance burden, confuses developers, and may contain bugs that go unnoticed because the code never runs (as per the rule definition). \n\nTo fix this issue, remove the unused `username` variable or document why it exists (if kept for future use) as per the rule's remediation.",
+        "latency_ms": 378
+      }
+    },
+    {
+      "id": 253,
+      "rule_id": "unused-variable",
+      "file_path": "TESTS/samples/comprehensive-issues/data_export.py",
+      "line_number": 32,
+      "severity": "low",
+      "category": "dead-code",
+      "message": "unused variable 'created_at' (60% confidence)",
+      "tool": "vulture",
+      "explanation": {
+        "model_name": "llama3.1-8b",
+        "response_text": "This code violates VAR-001: Unused Variable. \nThe issue is that the variables `created_at`, `last_login`, and `email_verified` are assigned values but never used in the code. \nThis matters because unused variables indicate dead code, confuse readers about intent, and may hide bugs where the variable was meant to be used (VAR-001). \nTo fix it, remove the unused variables or use them in the code.",
+        "latency_ms": 615
+      }
+    },
+    {
+      "id": 254,
+      "rule_id": "unused-variable",
+      "file_path": "TESTS/samples/comprehensive-issues/data_export.py",
+      "line_number": 33,
+      "severity": "low",
+      "category": "dead-code",
+      "message": "unused variable 'last_login' (60% confidence)",
+      "tool": "vulture",
+      "explanation": {
+        "model_name": "llama3.1-8b",
+        "response_text": "This code violates VAR-001: Unused Variable. \nThe issue is that the variables `created_at`, `last_login`, and `email_verified` are never used in the code. \nThis matters because unused variables indicate dead code, confuse readers about intent, and may hide bugs where the variable was meant to be used (as per VAR-001's rationale). \nTo fix it, remove the unused variables or use them in the code (as per VAR-001's remediation).",
+        "latency_ms": 538
+      }
+    },
+    {
+      "id": 255,
+      "rule_id": "unused-variable",
+      "file_path": "TESTS/samples/comprehensive-issues/data_export.py",
+      "line_number": 34,
+      "severity": "low",
+      "category": "dead-code",
+      "message": "unused variable 'email_verified' (60% confidence)",
+      "tool": "vulture",
+      "explanation": {
+        "model_name": "llama3.1-8b",
+        "response_text": "This code violates VAR-001: Unused Variable. \nThe issue is that the variables `created_at`, `last_login` are never used in the code. \nThis matters because unused variables indicate dead code, confuse readers about intent, and may hide bugs where the variable was meant to be used (as per VAR-001 rule rationale). \nTo fix it, remove the unused variables or use them in the code (as per VAR-001 rule remediation).",
+        "latency_ms": 413
+      }
+    },
+    {
+      "id": 256,
+      "rule_id": "unused-class",
+      "file_path": "TESTS/samples/comprehensive-issues/data_export.py",
+      "line_number": 39,
+      "severity": "medium",
+      "category": "dead-code",
+      "message": "unused class 'UnusedExporter' (60% confidence)",
+      "tool": "vulture",
+      "explanation": {
+        "model_name": "llama3.1-8b",
+        "response_text": "This code violates DEAD-001 \"Unused Code\" because the `UnusedExporter` class is defined but never instantiated or used anywhere in the code. This matters because dead code increases maintenance burden, confuses developers, and may contain bugs that go unnoticed because the code never runs (as stated in the rule rationale). To fix this, remove the unused code or document why it exists (if kept for future use), as recommended by the rule.",
+        "latency_ms": 1120
+      }
+    },
+    {
+      "id": 257,
+      "rule_id": "unused-code",
+      "file_path": "TESTS/samples/comprehensive-issues/data_export.py",
+      "line_number": 44,
+      "severity": "low",
+      "category": "dead-code",
+      "message": "unused attribute 'format' (60% confidence)",
+      "tool": "vulture",
+      "explanation": {
+        "model_name": "llama3.1-8b",
+        "response_text": "This code violates DEAD-001: Unused Code. \nThe issue is that a class is defined but never instantiated, making its methods and attributes unused. \nThis matters because dead code increases maintenance burden, confuses developers, and may contain bugs that go unnoticed because the code never runs (as per the rule rationale). \nTo fix it, remove the unused class or document why it exists (if kept for future use), as per the rule's remediation.",
+        "latency_ms": 510
+      }
+    },
+    {
+      "id": 258,
+      "rule_id": "unused-code",
+      "file_path": "TESTS/samples/comprehensive-issues/data_export.py",
+      "line_number": 46,
+      "severity": "low",
+      "category": "dead-code",
+      "message": "unused method 'export' (60% confidence)",
+      "tool": "vulture",
+      "explanation": {
+        "model_name": "llama3.1-8b",
+        "response_text": "This code violates DEAD-001 \"Unused Code\" because the `export` method in the `__init__` method of a class is never called anywhere in the code. This unused code increases maintenance burden, confuses developers, and may contain bugs that go unnoticed because the code never runs (as per DEAD-001 rule rationale). To fix it, remove the unused `export` method or document why it exists (if kept for future use) as per the rule's remediation.",
+        "latency_ms": 614
+      }
+    },
+    {
+      "id": 259,
+      "rule_id": "unused-function",
+      "file_path": "TESTS/samples/comprehensive-issues/data_export.py",
+      "line_number": 50,
+      "severity": "low",
+      "category": "dead-code",
+      "message": "unused function 'another_dead_function' (60% confidence)",
+      "tool": "vulture",
+      "explanation": {
+        "model_name": "llama3.1-8b",
+        "response_text": "This code violates DEAD-001 \"Unused Code\" because it contains a function `another_dead_function` that is never called anywhere in the codebase.\n\nThis issue matters because dead code increases maintenance burden, confuses developers, and may contain bugs that go unnoticed because the code never runs (as per the rule rationale).\n\nTo fix this issue, remove the unused function or document why it exists (if kept for future use), as per the rule's remediation.",
+        "latency_ms": 502
+      }
+    },
+    {
+      "id": 260,
+      "rule_id": "unused-variable",
+      "file_path": "TESTS/samples/comprehensive-issues/data_export.py",
+      "line_number": 54,
+      "severity": "low",
+      "category": "dead-code",
+      "message": "unused variable 'temp' (60% confidence)",
+      "tool": "vulture",
+      "explanation": {
+        "model_name": "llama3.1-8b",
+        "response_text": "This code violates VAR-001: Unused Variable. \nThe issue is that the variable 'temp' is declared but never used in the code, which indicates dead code and may hide bugs where the variable was meant to be used. \nAccording to the rule, this is a problem because unused variables confuse readers about intent and may hide bugs (VAR-001: Why This Matters). \nTo fix this issue, the variable 'temp' should be removed or used in the code (VAR-001: How to Fix).",
+        "latency_ms": 423
+      }
+    },
+    {
+      "id": 265,
+      "rule_id": "unused-import",
+      "file_path": "TESTS/samples/comprehensive-issues/email_templates.py",
+      "line_number": 5,
+      "severity": "low",
+      "category": "dead-code",
+      "message": "unused import 'os' (90% confidence)",
+      "tool": "vulture",
+      "explanation": {
+        "model_name": "llama3.1-8b",
+        "response_text": "This code violates IMPORT-001 because it contains unused import statements. The unused imports clutter the namespace, slow down module loading, and confuse developers about what dependencies are actually needed, which is in line with the rule's rationale that unused imports \"clutter the namespace, slow down module loading, and confuse developers about what dependencies are actually needed.\" To fix it, remove the unused import statement or use the imported module.",
+        "latency_ms": 1018
+      }
+    },
+    {
+      "id": 266,
+      "rule_id": "unused-function",
+      "file_path": "TESTS/samples/comprehensive-issues/email_templates.py",
+      "line_number": 11,
+      "severity": "low",
+      "category": "dead-code",
+      "message": "unused function 'generate_welcome_email_with_user_info_and_personalization_and_marketing_links_and_tracking' (60% confidence)",
+      "tool": "vulture",
+      "explanation": {
+        "model_name": "llama3.1-8b",
+        "response_text": "This code violates DEAD-001: Unused Code. \nThe issue is that the function `generate_welcome_email_with_user_info_and_personalization_and_marketing_links_and_tracking` is not called anywhere in the code, making it unused.\n\nThis unused code matters because it increases maintenance burden, confuses developers, and may contain bugs that go unnoticed because the code never runs (as per the rule rationale).\n\nTo fix this, remove the unused function or document why it exists (if kept for future use) as per the rule's remediation.",
+        "latency_ms": 437
+      }
+    },
+    {
+      "id": 267,
+      "rule_id": "unused-function",
+      "file_path": "TESTS/samples/comprehensive-issues/email_templates.py",
+      "line_number": 20,
+      "severity": "low",
+      "category": "dead-code",
+      "message": "unused function 'send_notification' (60% confidence)",
+      "tool": "vulture",
+      "explanation": {
+        "model_name": "llama3.1-8b",
+        "response_text": "This code violates DEAD-001 \"Unused Code\" because the `send_notification` function is defined but never called anywhere in the provided code snippet. \n\nThis issue matters because dead code increases maintenance burden, confuses developers, and may contain bugs that go unnoticed because the code never runs (as per the rule rationale). \n\nTo fix this issue, remove the unused code or document why it exists (if kept for future use), as per the rule remediation.",
+        "latency_ms": 510
+      }
+    },
+    {
+      "id": 268,
+      "rule_id": "unused-variable",
+      "file_path": "TESTS/samples/comprehensive-issues/email_templates.py",
+      "line_number": 24,
+      "severity": "low",
+      "category": "dead-code",
+      "message": "unused variable 'unused_var' (60% confidence)",
+      "tool": "vulture",
+      "explanation": {
+        "model_name": "llama3.1-8b",
+        "response_text": "This code violates VAR-001 \"Unused Variable\" because it declares a variable named `unused_var` but never uses it. \nThis issue matters because unused variables indicate dead code, confuse readers about intent, and may hide bugs where the variable was meant to be used, as stated in the rule rationale. \nTo fix this issue, remove the variable or use it in the code, as recommended by the rule.",
+        "latency_ms": 612
+      }
+    },
+    {
+      "id": 269,
+      "rule_id": "unused-variable",
+      "file_path": "TESTS/samples/comprehensive-issues/email_templates.py",
+      "line_number": 29,
+      "severity": "low",
+      "category": "dead-code",
+      "message": "unused variable 'very_long_variable_name_that_describes_something_but_is_way_too_long_and_violates_line_length' (60% confidence)",
+      "tool": "vulture",
+      "explanation": {
+        "model_name": "llama3.1-8b",
+        "response_text": "This code violates VAR-001: Unused Variable. \nThe issue is that the variable \"very_long_variable_name_that_describes_something_but_is_way_too_long_and_violates_line_length\" is declared but never used in the code. \nThis matters because unused variables indicate dead code, confuse readers about intent, and may hide bugs where the variable was meant to be used (VAR-001). \nTo fix this issue, remove the variable or use it in the code (VAR-001 How to Fix).",
+        "latency_ms": 511
+      }
+    },
+    {
+      "id": 270,
+      "rule_id": "unused-class",
+      "file_path": "TESTS/samples/comprehensive-issues/email_templates.py",
+      "line_number": 37,
+      "severity": "medium",
+      "category": "dead-code",
+      "message": "unused class 'badClassName' (60% confidence)",
+      "tool": "vulture",
+      "explanation": {
+        "model_name": "llama3.1-8b",
+        "response_text": "This code violates DEAD-001 \"Unused Code\" because it contains a class definition (`class badClassName`) that is never used anywhere in the codebase. This unused code increases maintenance burden, confuses developers, and may contain bugs that go unnoticed because the code never runs (as per the rule rationale). To fix it, remove the unused class or document why it exists (if kept for future use).",
+        "latency_ms": 510
+      }
+    },
+    {
+      "id": 271,
+      "rule_id": "unused-function",
+      "file_path": "TESTS/samples/comprehensive-issues/email_templates.py",
+      "line_number": 43,
+      "severity": "low",
+      "category": "dead-code",
+      "message": "unused function 'another_function_with_many_params' (60% confidence)",
+      "tool": "vulture",
+      "explanation": {
+        "model_name": "llama3.1-8b",
+        "response_text": "This code violates DEAD-001 \"Unused Code\" because the function `another_function_with_many_params` is defined but never called anywhere in the codebase. This increases maintenance burden, confuses developers, and may contain bugs that go unnoticed because the code never runs (as per the rule rationale). To fix it, remove the unused function or document why it exists (if kept for future use).",
+        "latency_ms": 61307
+      }
+    },
+    {
+      "id": 272,
+      "rule_id": "unused-variable",
+      "file_path": "TESTS/samples/comprehensive-issues/email_templates.py",
+      "line_number": 44,
+      "severity": "low",
+      "category": "dead-code",
+      "message": "unused variable 'param1' (100% confidence)",
+      "tool": "vulture",
+      "explanation": {
+        "model_name": "llama3.1-8b",
+        "response_text": "This code violates VAR-001: Unused Variable. \nThe issue is that the function `another_function_with_many_params` has an unused parameter `param7`. \nThis matters because unused variables indicate dead code, confuse readers about intent, and may hide bugs where the variable was meant to be used (as per VAR-001's rationale). \nTo fix it, remove the unused parameter or use it in the function code (as per VAR-001's remediation).",
+        "latency_ms": 1296
+      }
+    },
+    {
+      "id": 273,
+      "rule_id": "unused-variable",
+      "file_path": "TESTS/samples/comprehensive-issues/email_templates.py",
+      "line_number": 44,
+      "severity": "low",
+      "category": "dead-code",
+      "message": "unused variable 'param2' (100% confidence)",
+      "tool": "vulture",
+      "explanation": {
+        "model_name": "llama3.1-8b",
+        "response_text": "This code violates VAR-001 Unused Variable. \nThe issue is that the variable `param1`, `param2`, `param3`, `param4`, `param5`, `param6`, and `param7` are declared but never used within the function `another_function_with_many_params`. \nThis matters because unused variables indicate dead code, confuse readers about intent, and may hide bugs where the variable was meant to be used (VAR-001). \nTo fix it, remove the unused variables or use them in the code (VAR-001).",
+        "latency_ms": 574
+      }
+    },
+    {
+      "id": 274,
+      "rule_id": "unused-variable",
+      "file_path": "TESTS/samples/comprehensive-issues/email_templates.py",
+      "line_number": 44,
+      "severity": "low",
+      "category": "dead-code",
+      "message": "unused variable 'param3' (100% confidence)",
+      "tool": "vulture",
+      "explanation": {
+        "model_name": "llama3.1-8b",
+        "response_text": "This code violates VAR-001 \"Unused Variable\" because the variable `param7` is declared but never used within the function `another_function_with_many_params`.\n\nThis issue matters because unused variables indicate dead code, confuse readers about intent, and may hide bugs where the variable was meant to be used (VAR-001 Rationale).\n\nTo fix this issue, remove the unused variable or use it in the code (VAR-001 Remediation).",
+        "latency_ms": 671
+      }
+    },
+    {
+      "id": 275,
+      "rule_id": "unused-variable",
+      "file_path": "TESTS/samples/comprehensive-issues/email_templates.py",
+      "line_number": 44,
+      "severity": "low",
+      "category": "dead-code",
+      "message": "unused variable 'param4' (100% confidence)",
+      "tool": "vulture",
+      "explanation": {
+        "model_name": "llama3.1-8b",
+        "response_text": "This code violates VAR-001 \"Unused Variable\" because the variable `param7` is declared but never used within the function `another_function_with_many_params`. This issue matters because unused variables indicate dead code, confuse readers about intent, and may hide bugs where the variable was meant to be used (VAR-001). To fix this, remove the variable or use it in your code (VAR-001).",
+        "latency_ms": 342
+      }
+    },
+    {
+      "id": 276,
+      "rule_id": "unused-variable",
+      "file_path": "TESTS/samples/comprehensive-issues/email_templates.py",
+      "line_number": 44,
+      "severity": "low",
+      "category": "dead-code",
+      "message": "unused variable 'param5' (100% confidence)",
+      "tool": "vulture",
+      "explanation": {
+        "model_name": "llama3.1-8b",
+        "response_text": "This code violates VAR-001: Unused Variable. \nThe issue is that the function `another_function_with_many_params` has a parameter named `param7` which is not used within the function. \nThis matters because unused variables indicate dead code, confuse readers about intent, and may hide bugs where the variable was meant to be used (VAR-001). \nTo fix this issue, remove the unused parameter or use it in the function code (VAR-001 remediation).",
+        "latency_ms": 520
+      }
+    },
+    {
+      "id": 277,
+      "rule_id": "unused-variable",
+      "file_path": "TESTS/samples/comprehensive-issues/email_templates.py",
+      "line_number": 44,
+      "severity": "low",
+      "category": "dead-code",
+      "message": "unused variable 'param6' (100% confidence)",
+      "tool": "vulture",
+      "explanation": {
+        "model_name": "llama3.1-8b",
+        "response_text": "This code violates VAR-001: Unused Variable. \n\n1. WHAT is the issue: The code defines a variable `param7` but does not use it anywhere within the function `another_function_with_many_params`.\n2. WHY it matters: This unused variable indicates dead code, which can confuse readers about the function's intent and may hide bugs where the variable was meant to be used (citing the rule rationale).\n3. HOW to fix it: Remove the unused variable `param7` or use it in the code (citing the rule remediation).",
+        "latency_ms": 405
+      }
+    },
+    {
+      "id": 278,
+      "rule_id": "unused-variable",
+      "file_path": "TESTS/samples/comprehensive-issues/email_templates.py",
+      "line_number": 44,
+      "severity": "low",
+      "category": "dead-code",
+      "message": "unused variable 'param7' (100% confidence)",
+      "tool": "vulture",
+      "explanation": {
+        "model_name": "llama3.1-8b",
+        "response_text": "This code violates VAR-001 \"Unused Variable\" because the function `another_function_with_many_params` has a parameter `param7` that is not used within the function.\n\nThis issue matters because unused variables indicate dead code, confuse readers about intent, and may hide bugs where the variable was meant to be used (VAR-001). \n\nTo fix this issue, remove the unused parameter or use it in the code (VAR-001).",
+        "latency_ms": 378
+      }
+    },
+    {
+      "id": 279,
+      "rule_id": "unused-function",
+      "file_path": "TESTS/samples/comprehensive-issues/payment_processor.py",
+      "line_number": 7,
+      "severity": "low",
+      "category": "dead-code",
+      "message": "unused function 'calculate_discount_premium' (60% confidence)",
+      "tool": "vulture",
+      "explanation": {
+        "model_name": "llama3.1-8b",
+        "response_text": "This code violates DEAD-001 \"Unused Code\" because the function `calculate_discount_premium` is not called anywhere in the codebase, making it unused.\n\nThis issue matters because dead code increases maintenance burden, confuses developers, and may contain bugs that go unnoticed because the code never runs (Rule: DEAD-001).\n\nTo fix this issue, remove the unused function or document why it exists (if kept for future use) to avoid unnecessary complexity and potential bugs.",
+        "latency_ms": 513
+      }
+    },
+    {
+      "id": 280,
+      "rule_id": "unused-function",
+      "file_path": "TESTS/samples/comprehensive-issues/payment_processor.py",
+      "line_number": 27,
+      "severity": "low",
+      "category": "dead-code",
+      "message": "unused function 'validate_payment_card' (60% confidence)",
+      "tool": "vulture",
+      "explanation": {
+        "model_name": "llama3.1-8b",
+        "response_text": "This code violates DEAD-001: Unused Code. The function `validate_payment_card` is defined but not used anywhere in the code, which increases maintenance burden, confuses developers, and may contain bugs that go unnoticed because the code never runs (citing the rule rationale). To fix it, remove the unused function or document why it exists (if kept for future use).",
+        "latency_ms": 610
+      }
+    },
+    {
+      "id": 281,
+      "rule_id": "unused-variable",
+      "file_path": "TESTS/samples/comprehensive-issues/payment_processor.py",
+      "line_number": 27,
+      "severity": "low",
+      "category": "dead-code",
+      "message": "unused variable 'expiry' (100% confidence)",
+      "tool": "vulture",
+      "explanation": {
+        "model_name": "llama3.1-8b",
+        "response_text": "This code violates VAR-001 Unused Variable, indicating that the variable 'billing_zip' is not used within the function 'validate_payment_card'.\n\nThe issue matters because unused variables confuse readers about intent and may hide bugs where the variable was meant to be used, as stated in the rule rationale.\n\nTo fix the issue, remove the unused variable or use it in the code, as per the remediation provided by the rule.",
+        "latency_ms": 1025
+      }
+    },
+    {
+      "id": 282,
+      "rule_id": "unused-variable",
+      "file_path": "TESTS/samples/comprehensive-issues/payment_processor.py",
+      "line_number": 28,
+      "severity": "low",
+      "category": "dead-code",
+      "message": "unused variable 'billing_country' (100% confidence)",
+      "tool": "vulture",
+      "explanation": {
+        "model_name": "llama3.1-8b",
+        "response_text": "This code violates VAR-001 \"Unused Variable\" by introducing an unused variable `billing_country` in the `validate_payment_card` function.\n\nThe issue matters because unused variables indicate dead code, confuse readers about intent, and may hide bugs where the variable was meant to be used, as stated in the rule rationale.\n\nTo fix this issue, remove the unused variable or use it in the code, as recommended in the rule remediation.",
+        "latency_ms": 539
+      }
+    },
+    {
+      "id": 283,
+      "rule_id": "unused-variable",
+      "file_path": "TESTS/samples/comprehensive-issues/payment_processor.py",
+      "line_number": 28,
+      "severity": "low",
+      "category": "dead-code",
+      "message": "unused variable 'billing_zip' (100% confidence)",
+      "tool": "vulture",
+      "explanation": {
+        "model_name": "llama3.1-8b",
+        "response_text": "This code violates VAR-001: Unused Variable. \nThe unused variable 'billing_zip' is not used within the function, which indicates dead code, confuses readers about intent, and may hide bugs where the variable was meant to be used (as per VAR-001). \nTo fix it, remove the variable or use it in the code (as per VAR-001 remediation).",
+        "latency_ms": 717
+      }
+    },
+    {
+      "id": 284,
+      "rule_id": "unused-variable",
+      "file_path": "TESTS/samples/comprehensive-issues/payment_processor.py",
+      "line_number": 28,
+      "severity": "low",
+      "category": "dead-code",
+      "message": "unused variable 'cardholder' (100% confidence)",
+      "tool": "vulture",
+      "explanation": {
+        "model_name": "llama3.1-8b",
+        "response_text": "This code violates VAR-001: Unused Variable. \nThe variable `billing_country` is declared but never used within the function `validate_payment_card`. \nThis issue matters because unused variables indicate dead code, confuse readers about intent, and may hide bugs where the variable was meant to be used (as per the rule rationale). \nTo fix this issue, remove the variable or use it in the code (as per the rule remediation).",
+        "latency_ms": 479
+      }
+    }
+  ],
+  "statistics": {
+    "total_findings": 56,
+    "by_severity": {
+      "low": 50,
+      "medium": 5,
+      "high": 1
+    },
+    "by_category": {
+      "dead-code": 54,
+      "best-practice": 1,
+      "security": 1
+    },
+    "by_tool": {
+      "vulture": 54,
+      "semgrep": 2
+    },
+    "with_explanations": 56,
+    "explanation_latency": {
+      "min_ms": 342,
+      "max_ms": 61307,
+      "avg_ms": 1671,
+      "total_ms": 93628
+    },
+    "total_cost_usd": 0
+  },
+  "feedback_summary": {
+    "total_feedback": 0,
+    "false_positives": null,
+    "avg_clarity_rating": null,
+    "helpful_count": null
+  }
+}

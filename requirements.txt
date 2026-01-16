@@ -1,4 +1,4 @@
-# Core dependencies
+# Core Dependencies
 psycopg2-binary==2.9.9
 cerebras-cloud-sdk>=1.5.0
 python-dotenv==1.0.0

@@ -7,8 +7,12 @@ import psycopg2
 from psycopg2.extras import RealDictCursor, Json
 from datetime import datetime
 from dotenv import load_dotenv
+from pathlib import Path
 
-load_dotenv()
+# Load .env from project root
+project_root = Path(__file__).parent.parent
+env_path = project_root / '.env'
+load_dotenv(dotenv_path=env_path)
 
 
 class Database:
@@ -208,7 +212,7 @@ class Database:
                 f.canonical_rule_id,
                 f.file_path,
                 f.line_number,
-                f.severity,
+                f.canonical_severity,
                 f.category,
                 f.message,
                 f.tool,

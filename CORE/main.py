@@ -17,26 +17,13 @@ from CORE.engines.explainer import ExplanationEngine
 from CORE.utils.code_extractor import extract_code_snippet
 
 class AnalysisPipeline:
-    def __init__(self, target_dir="samples/seeded-repo", files=None):
+    def __init__(self, target_dir="samples/realistic-issues", files=None):
         self.target_dir = target_dir
         self.db = Database()
         self.explainer = ExplanationEngine()
         self.files = files  # NEW: specific files to analyze
         
     def run(self, repo_name="local", pr_number=None, limit=None, files=None):
-    # Step 2: Run detection tools
-        if files:
-            # Only analyze specific files
-            print(f"      - Analyzing {len(files)} changed files")
-            for file in files:
-                if file.endswith('.py'):
-                    subprocess.run(['ruff', 'check', '--output-format=json', file])
-                    # ... run other tools on specific file
-        else:
-            # Analyze entire directory
-            subprocess.run(['bash', 'scripts/run_checks.sh'])
-            
-        
         """Run full analysis pipeline"""
         print("🚀 ACR-QA v2.0 Analysis Pipeline")
         print("="*50)
@@ -56,7 +43,16 @@ class AnalysisPipeline:
         print("      - Vulture (unused code)")
         print("      - jscpd (duplication)")
         
-        subprocess.run(['bash', 'TOOLS/run_checks.sh'], check=True)
+        # Check if analyzing specific files or entire directory
+        if files:
+            # Only analyze specific files (for PR diffs)
+            print(f"      - Analyzing {len(files)} changed files")
+            # TODO: Implement per-file analysis in future
+            subprocess.run(['bash', 'TOOLS/run_checks.sh', self.target_dir], check=True)
+        else:
+            # Analyze entire directory
+            subprocess.run(['bash', 'TOOLS/run_checks.sh', self.target_dir], check=True)
+        
         print("      ✓ Detection complete")
         
         # Step 3: Load findings
@@ -99,6 +95,13 @@ class AnalysisPipeline:
         # Mark run as complete
         self.db.complete_analysis_run(run_id, total_findings)
         
+        # Save run ID to file for GitHub Actions
+        try:
+            with open('/tmp/acr_run_id.txt', 'w') as f:
+                f.write(str(run_id))
+        except:
+            pass  # Don't fail if can't write file
+        
         print("\n" + "="*50)
         print(f"✅ Analysis Complete!")
         print(f"   Run ID: {run_id}")
@@ -112,12 +115,12 @@ class AnalysisPipeline:
         return run_id
     
     def _load_findings(self):
-        # Import normalizer
-        from engines.normalizer import normalize_all
-    
+    # Import normalizer
+        from CORE.engines.normalizer import normalize_all
+
         # Run normalization
         print("      - Normalizing tool outputs...")
-        findings = normalize_all('outputs')
+        findings = normalize_all('DATA/outputs')  # ✅ CORRECT PATH!
         
         # Save to JSON for caching
         with open('DATA/outputs/findings.json', 'w') as f:
@@ -127,7 +130,7 @@ class AnalysisPipeline:
 
 def main():
     parser = argparse.ArgumentParser(description='ACR-QA v2.0 Analysis Pipeline')
-    parser.add_argument('--target-dir', default='samples/seeded-repo', 
+    parser.add_argument('--target-dir', default='samples/realistic-issues', 
                         help='Directory to analyze')
     parser.add_argument('--repo-name', default='local', 
                         help='Repository name')

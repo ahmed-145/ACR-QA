@@ -3,6 +3,7 @@
 Markdown Report Generator for ACR-QA v2.0
 Creates human-readable reports from analysis runs
 """
+from pdb import run
 import sys
 from pathlib import Path
 from datetime import datetime
@@ -72,16 +73,25 @@ def generate_report(run_id=None, output_file=None):
     report_lines.append("")
     report_lines.append(f"- **Run ID:** {run['id']}")
     report_lines.append(f"- **Repository:** {run['repo_name']}")
-    if run['pr_number']:
-        report_lines.append(f"- **Pull Request:** #{run['pr_number']}")
-    if run['commit_sha']:
-        report_lines.append(f"- **Commit:** `{run['commit_sha']}`")
-    if run['branch']:
-        report_lines.append(f"- **Branch:** `{run['branch']}`")
-    report_lines.append(f"- **Status:** {run['status']}")
-    report_lines.append(f"- **Started:** {run['started_at']}")
-    if run['completed_at']:
-        report_lines.append(f"- **Completed:** {run['completed_at']}")
+    # Use .get() for optional fields
+    pr_number = run.get('pr_number')
+    if pr_number:
+        report_lines.append(f"- **Pull Request:** #{pr_number}")
+
+    commit_sha = run.get('commit_sha')
+    if commit_sha:
+        report_lines.append(f"- **Commit:** `{commit_sha}`")
+
+    branch = run.get('branch')
+    if branch:
+        report_lines.append(f"- **Branch:** `{branch}`")
+
+    report_lines.append(f"- **Status:** {run.get('status', 'unknown')}")
+    report_lines.append(f"- **Started:** {run.get('started_at', 'N/A')}")
+
+    completed_at = run.get('completed_at')
+    if completed_at:
+        report_lines.append(f"- **Completed:** {completed_at}")
     report_lines.append("")
     
     # Executive summary
@@ -211,7 +221,7 @@ def generate_report(run_id=None, output_file=None):
     
     # Write report
     if not output_file:
-        output_file = f"outputs/report_run_{run_id}.md"
+        output_file = f"DATA/outputs/report_run_{run_id}.md"
     
     output_path = Path(output_file)
     output_path.parent.mkdir(parents=True, exist_ok=True)

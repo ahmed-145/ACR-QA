@@ -5,4 +5,4 @@ export DB_NAME=acrqa
 export DB_USER=postgres
 export DB_PASSWORD=postgres
 
-python3 CORE/main.py --limit 3
+python3 CORE/main.py --limit 5

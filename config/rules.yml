@@ -204,3 +204,28 @@ NAMING-001:
   example_bad: |
     c = len(customers)  # What is 'c'?
     tp = calculate_total(items)  # What is 'tp'?
+COMPLEXITY-001:
+  name: "High Cyclomatic Complexity"
+  category: "design"
+  severity: "medium"
+  description: "Function has high cyclomatic complexity making it hard to test and maintain"
+  rationale: |
+    Cyclomatic complexity measures the number of independent paths through code.
+    High complexity (>10) indicates too many branches (if/else/loops), making
+    the function hard to understand, test, and maintain. Each additional path
+    requires a new test case.
+  remediation: "Refactor into smaller functions with single responsibilities"
+  example_good: |
+    def process_user(user):
+        if not validate_user(user):
+            return False
+        if not check_permissions(user):
+            return False
+        return save_user(user)
+  example_bad: |
+    def process_user(user):
+        if user.age < 18:
+            if user.has_parent:
+                if user.parent.verified:
+                    # ... many more nested conditions
+                    pass

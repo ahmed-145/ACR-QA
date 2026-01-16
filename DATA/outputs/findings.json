@@ -1,40 +1,2742 @@
 [
   {
-    "finding_id": "16b2acb4-95ff-4ae6-b223-bed9de871d11",
-    "canonical_rule_id": "CUSTOM-E902",
-    "original_rule_id": "E902",
+    "finding_id": "7d543a25-149b-4b46-9ff8-d4a5bb211e33",
+    "canonical_rule_id": "PATTERN-001",
+    "original_rule_id": "mutable-default-argument",
     "severity": "medium",
-    "category": "style",
-    "file": "/app/samples/seeded-repo",
-    "line": 1,
+    "category": "best-practice",
+    "file": "TESTS/samples/comprehensive-issues/auth_service.py",
+    "line": 100,
     "column": 1,
-    "language": "unknown",
-    "message": "No such file or directory (os error 2)",
+    "language": "python",
+    "message": "Mutable default argument detected! This is a classic Python bug.\nDefault values are created ONCE when the function is defined.\n",
     "evidence": {
-      "snippet": "",
-      "context_before": [],
-      "context_after": []
+      "snippet": "def store_user_sessions(session_id: str, sessions: Dict = {}):",
+      "context_before": [
+        "     return {'success': True}",
+        "",
+        ""
+      ],
+      "context_after": [
+        "     \"\"\"",
+        "     PATTERN-001: Mutable default argument",
+        "     All calls share the same dictionary!"
+      ]
     },
     "tool_raw": {
-      "tool_name": "ruff",
-      "original_rule_id": "E902",
-      "original_severity": "warning",
+      "tool_name": "semgrep",
+      "original_rule_id": "mutable-default-argument",
+      "original_severity": "ERROR",
       "original_output": {
-        "cell": null,
-        "code": "E902",
-        "end_location": {
-          "column": 1,
-          "row": 1
+        "check_id": "TOOLS.semgrep.mutable-default-argument",
+        "end": {
+          "col": 20,
+          "line": 106,
+          "offset": 3433
         },
-        "filename": "/app/samples/seeded-repo",
-        "fix": null,
-        "location": {
-          "column": 1,
-          "row": 1
+        "extra": {
+          "engine_kind": "OSS",
+          "fingerprint": "0b715b65dc2f08798666a216030275051c9ce9ceb9ba40f341c1e149d7c2a7b2b4830ae5cd9075d63390028933b02268be25ccd7e4930d6a8049300f8ca46906_0",
+          "is_ignored": false,
+          "lines": "def store_user_sessions(session_id: str, sessions: Dict = {}):\n    \"\"\"\n    PATTERN-001: Mutable default argument\n    All calls share the same dictionary!\n    \"\"\"\n    sessions[session_id] = True\n    return sessions",
+          "message": "Mutable default argument detected! This is a classic Python bug.\nDefault values are created ONCE when the function is defined.\n",
+          "metadata": {
+            "category": "best-practice"
+          },
+          "metavars": {
+            "$ARG": {
+              "abstract_content": "sessions",
+              "end": {
+                "col": 50,
+                "line": 100,
+                "offset": 3269
+              },
+              "start": {
+                "col": 42,
+                "line": 100,
+                "offset": 3261
+              }
+            },
+            "$FUNC": {
+              "abstract_content": "store_user_sessions",
+              "end": {
+                "col": 24,
+                "line": 100,
+                "offset": 3243
+              },
+              "start": {
+                "col": 5,
+                "line": 100,
+                "offset": 3224
+              }
+            }
+          },
+          "severity": "ERROR",
+          "validation_state": "NO_VALIDATOR"
         },
-        "message": "No such file or directory (os error 2)",
-        "noqa_row": 1,
-        "url": "https://docs.astral.sh/ruff/rules/io-error"
+        "path": "TESTS/samples/comprehensive-issues/auth_service.py",
+        "start": {
+          "col": 1,
+          "line": 100,
+          "offset": 3220
+        }
+      }
+    }
+  },
+  {
+    "finding_id": "311dd1c5-2d1c-4533-b3a1-0a70c0ab1c45",
+    "canonical_rule_id": "SECURITY-001",
+    "original_rule_id": "dangerous-eval-usage",
+    "severity": "high",
+    "category": "security",
+    "file": "TESTS/samples/comprehensive-issues/auth_service.py",
+    "line": 126,
+    "column": 18,
+    "language": "python",
+    "message": "Dangerous use of eval() or exec(). These functions execute arbitrary \nPython code and should NEVER be used with user input.\n",
+    "evidence": {
+      "snippet": "result = eval(token)",
+      "context_before": [
+        "     def validate_token(self, token: str):",
+        "         \"\"\"SECURITY-001: Dangerous eval() usage\"\"\"",
+        "         # NEVER DO THIS! Allows arbitrary code execution"
+      ],
+      "context_after": [
+        "         return result",
+        "",
+        "     def hash_password(self, password: str, salt: str = \"default_salt\"):"
+      ]
+    },
+    "tool_raw": {
+      "tool_name": "semgrep",
+      "original_rule_id": "dangerous-eval-usage",
+      "original_severity": "ERROR",
+      "original_output": {
+        "check_id": "TOOLS.semgrep.dangerous-eval-usage",
+        "end": {
+          "col": 29,
+          "line": 126,
+          "offset": 4085
+        },
+        "extra": {
+          "engine_kind": "OSS",
+          "fingerprint": "a5660e24b6bec98d66d27b94a97195043ba9c2f26b26d1e75deb76d34cc6243033b128d0b1bb82382ce962c39501c6a4e1bb88c1f476d501616a43ebfcb2f660_0",
+          "is_ignored": false,
+          "lines": "        result = eval(token)",
+          "message": "Dangerous use of eval() or exec(). These functions execute arbitrary \nPython code and should NEVER be used with user input.\n",
+          "metadata": {
+            "category": "security"
+          },
+          "metavars": {
+            "$X": {
+              "abstract_content": "token",
+              "end": {
+                "col": 28,
+                "line": 126,
+                "offset": 4084
+              },
+              "start": {
+                "col": 23,
+                "line": 126,
+                "offset": 4079
+              }
+            }
+          },
+          "severity": "ERROR",
+          "validation_state": "NO_VALIDATOR"
+        },
+        "path": "TESTS/samples/comprehensive-issues/auth_service.py",
+        "start": {
+          "col": 18,
+          "line": 126,
+          "offset": 4074
+        }
+      }
+    }
+  },
+  {
+    "finding_id": "68af86d2-1e5d-437f-8ffd-ea16dfc766dc",
+    "canonical_rule_id": "IMPORT-001",
+    "original_rule_id": "unused-import",
+    "severity": "low",
+    "category": "dead-code",
+    "file": "TESTS/samples/comprehensive-issues/auth_service.py",
+    "line": 7,
+    "column": 0,
+    "language": "python",
+    "message": "unused import 'Tuple' (90% confidence)",
+    "evidence": {
+      "snippet": "from typing import Dict, Any, Optional, List, Tuple",
+      "context_before": [
+        " \"\"\"",
+        " import hashlib",
+        " import sqlite3"
+      ],
+      "context_after": [
+        "",
+        "",
+        " def authenticate_user(username: str, password: str, email: str, phone: str,"
+      ]
+    },
+    "tool_raw": {
+      "tool_name": "vulture",
+      "original_rule_id": "unused-import",
+      "original_severity": "info",
+      "original_output": {
+        "raw_line": "TESTS/samples/comprehensive-issues/auth_service.py:7: unused import 'Tuple' (90% confidence)"
+      }
+    }
+  },
+  {
+    "finding_id": "b9a64548-f1b5-4df2-8c23-a3aa76b9a4d9",
+    "canonical_rule_id": "DEAD-001",
+    "original_rule_id": "unused-function",
+    "severity": "low",
+    "category": "dead-code",
+    "file": "TESTS/samples/comprehensive-issues/auth_service.py",
+    "line": 10,
+    "column": 0,
+    "language": "python",
+    "message": "unused function 'authenticate_user' (60% confidence)",
+    "evidence": {
+      "snippet": "def authenticate_user(username: str, password: str, email: str, phone: str,",
+      "context_before": [
+        " from typing import Dict, Any, Optional, List, Tuple",
+        "",
+        ""
+      ],
+      "context_after": [
+        "                      session_id: str, ip_address: str, user_agent: str,",
+        "                      remember_me: bool, two_factor_code: Optional[str] = None):",
+        "     \"\"\""
+      ]
+    },
+    "tool_raw": {
+      "tool_name": "vulture",
+      "original_rule_id": "unused-function",
+      "original_severity": "info",
+      "original_output": {
+        "raw_line": "TESTS/samples/comprehensive-issues/auth_service.py:10: unused function 'authenticate_user' (60% confidence)"
+      }
+    }
+  },
+  {
+    "finding_id": "ba855981-2035-4bc2-b8f6-62b89ae88d80",
+    "canonical_rule_id": "VAR-001",
+    "original_rule_id": "unused-variable",
+    "severity": "low",
+    "category": "dead-code",
+    "file": "TESTS/samples/comprehensive-issues/auth_service.py",
+    "line": 10,
+    "column": 0,
+    "language": "python",
+    "message": "unused variable 'phone' (100% confidence)",
+    "evidence": {
+      "snippet": "def authenticate_user(username: str, password: str, email: str, phone: str,",
+      "context_before": [
+        " from typing import Dict, Any, Optional, List, Tuple",
+        "",
+        ""
+      ],
+      "context_after": [
+        "                      session_id: str, ip_address: str, user_agent: str,",
+        "                      remember_me: bool, two_factor_code: Optional[str] = None):",
+        "     \"\"\""
+      ]
+    },
+    "tool_raw": {
+      "tool_name": "vulture",
+      "original_rule_id": "unused-variable",
+      "original_severity": "info",
+      "original_output": {
+        "raw_line": "TESTS/samples/comprehensive-issues/auth_service.py:10: unused variable 'phone' (100% confidence)"
+      }
+    }
+  },
+  {
+    "finding_id": "ac2712b3-e484-4062-809e-aaa82ce6f3da",
+    "canonical_rule_id": "VAR-001",
+    "original_rule_id": "unused-variable",
+    "severity": "low",
+    "category": "dead-code",
+    "file": "TESTS/samples/comprehensive-issues/auth_service.py",
+    "line": 11,
+    "column": 0,
+    "language": "python",
+    "message": "unused variable 'ip_address' (100% confidence)",
+    "evidence": {
+      "snippet": "session_id: str, ip_address: str, user_agent: str,",
+      "context_before": [
+        "",
+        "",
+        " def authenticate_user(username: str, password: str, email: str, phone: str,"
+      ],
+      "context_after": [
+        "                      remember_me: bool, two_factor_code: Optional[str] = None):",
+        "     \"\"\"",
+        "     SOLID-001: Too many parameters (9 parameters)"
+      ]
+    },
+    "tool_raw": {
+      "tool_name": "vulture",
+      "original_rule_id": "unused-variable",
+      "original_severity": "info",
+      "original_output": {
+        "raw_line": "TESTS/samples/comprehensive-issues/auth_service.py:11: unused variable 'ip_address' (100% confidence)"
+      }
+    }
+  },
+  {
+    "finding_id": "c2ad5588-81cc-42a1-b7db-8b1f49bdb6d8",
+    "canonical_rule_id": "VAR-001",
+    "original_rule_id": "unused-variable",
+    "severity": "low",
+    "category": "dead-code",
+    "file": "TESTS/samples/comprehensive-issues/auth_service.py",
+    "line": 11,
+    "column": 0,
+    "language": "python",
+    "message": "unused variable 'user_agent' (100% confidence)",
+    "evidence": {
+      "snippet": "session_id: str, ip_address: str, user_agent: str,",
+      "context_before": [
+        "",
+        "",
+        " def authenticate_user(username: str, password: str, email: str, phone: str,"
+      ],
+      "context_after": [
+        "                      remember_me: bool, two_factor_code: Optional[str] = None):",
+        "     \"\"\"",
+        "     SOLID-001: Too many parameters (9 parameters)"
+      ]
+    },
+    "tool_raw": {
+      "tool_name": "vulture",
+      "original_rule_id": "unused-variable",
+      "original_severity": "info",
+      "original_output": {
+        "raw_line": "TESTS/samples/comprehensive-issues/auth_service.py:11: unused variable 'user_agent' (100% confidence)"
+      }
+    }
+  },
+  {
+    "finding_id": "67fc6ffe-59f3-489a-88f6-73f7871beaf8",
+    "canonical_rule_id": "VAR-001",
+    "original_rule_id": "unused-variable",
+    "severity": "low",
+    "category": "dead-code",
+    "file": "TESTS/samples/comprehensive-issues/auth_service.py",
+    "line": 12,
+    "column": 0,
+    "language": "python",
+    "message": "unused variable 'remember_me' (100% confidence)",
+    "evidence": {
+      "snippet": "remember_me: bool, two_factor_code: Optional[str] = None):",
+      "context_before": [
+        "",
+        " def authenticate_user(username: str, password: str, email: str, phone: str,",
+        "                      session_id: str, ip_address: str, user_agent: str,"
+      ],
+      "context_after": [
+        "     \"\"\"",
+        "     SOLID-001: Too many parameters (9 parameters)",
+        "     Should use a config object or dataclass"
+      ]
+    },
+    "tool_raw": {
+      "tool_name": "vulture",
+      "original_rule_id": "unused-variable",
+      "original_severity": "info",
+      "original_output": {
+        "raw_line": "TESTS/samples/comprehensive-issues/auth_service.py:12: unused variable 'remember_me' (100% confidence)"
+      }
+    }
+  },
+  {
+    "finding_id": "7abdc940-d835-4501-9820-1c700f8d8483",
+    "canonical_rule_id": "VAR-001",
+    "original_rule_id": "unused-variable",
+    "severity": "low",
+    "category": "dead-code",
+    "file": "TESTS/samples/comprehensive-issues/auth_service.py",
+    "line": 12,
+    "column": 0,
+    "language": "python",
+    "message": "unused variable 'two_factor_code' (100% confidence)",
+    "evidence": {
+      "snippet": "remember_me: bool, two_factor_code: Optional[str] = None):",
+      "context_before": [
+        "",
+        " def authenticate_user(username: str, password: str, email: str, phone: str,",
+        "                      session_id: str, ip_address: str, user_agent: str,"
+      ],
+      "context_after": [
+        "     \"\"\"",
+        "     SOLID-001: Too many parameters (9 parameters)",
+        "     Should use a config object or dataclass"
+      ]
+    },
+    "tool_raw": {
+      "tool_name": "vulture",
+      "original_rule_id": "unused-variable",
+      "original_severity": "info",
+      "original_output": {
+        "raw_line": "TESTS/samples/comprehensive-issues/auth_service.py:12: unused variable 'two_factor_code' (100% confidence)"
+      }
+    }
+  },
+  {
+    "finding_id": "d7532255-7727-43d2-8251-95ab2ce3181a",
+    "canonical_rule_id": "DEAD-001",
+    "original_rule_id": "unused-function",
+    "severity": "low",
+    "category": "dead-code",
+    "file": "TESTS/samples/comprehensive-issues/auth_service.py",
+    "line": 29,
+    "column": 0,
+    "language": "python",
+    "message": "unused function 'validate_and_process_user_input' (60% confidence)",
+    "evidence": {
+      "snippet": "def validate_and_process_user_input(data: Dict[str, Any]):",
+      "context_before": [
+        "     return cursor.fetchone()",
+        "",
+        ""
+      ],
+      "context_after": [
+        "     \"\"\"",
+        "     COMPLEXITY-001: Cyclomatic complexity > 20",
+        "     Too many nested conditions"
+      ]
+    },
+    "tool_raw": {
+      "tool_name": "vulture",
+      "original_rule_id": "unused-function",
+      "original_severity": "info",
+      "original_output": {
+        "raw_line": "TESTS/samples/comprehensive-issues/auth_service.py:29: unused function 'validate_and_process_user_input' (60% confidence)"
+      }
+    }
+  },
+  {
+    "finding_id": "4adeda7f-0642-4a69-bc78-a56f29d54aa7",
+    "canonical_rule_id": "DEAD-001",
+    "original_rule_id": "unused-function",
+    "severity": "low",
+    "category": "dead-code",
+    "file": "TESTS/samples/comprehensive-issues/auth_service.py",
+    "line": 100,
+    "column": 0,
+    "language": "python",
+    "message": "unused function 'store_user_sessions' (60% confidence)",
+    "evidence": {
+      "snippet": "def store_user_sessions(session_id: str, sessions: Dict = {}):",
+      "context_before": [
+        "     return {'success': True}",
+        "",
+        ""
+      ],
+      "context_after": [
+        "     \"\"\"",
+        "     PATTERN-001: Mutable default argument",
+        "     All calls share the same dictionary!"
+      ]
+    },
+    "tool_raw": {
+      "tool_name": "vulture",
+      "original_rule_id": "unused-function",
+      "original_severity": "info",
+      "original_output": {
+        "raw_line": "TESTS/samples/comprehensive-issues/auth_service.py:100: unused function 'store_user_sessions' (60% confidence)"
+      }
+    }
+  },
+  {
+    "finding_id": "0431a41f-d76c-4029-8f5e-a664c9cd06e7",
+    "canonical_rule_id": "IMPORT-001",
+    "original_rule_id": "unused-import",
+    "severity": "low",
+    "category": "dead-code",
+    "file": "TESTS/samples/comprehensive-issues/auth_service.py",
+    "line": 110,
+    "column": 0,
+    "language": "python",
+    "message": "unused import 'os' (90% confidence)",
+    "evidence": {
+      "snippet": "import os  # F401: Unused import",
+      "context_before": [
+        "",
+        " # Add to any test file to trigger Ruff rules",
+        ""
+      ],
+      "context_after": [
+        "",
+        " def bad_function(x,y,z):  # Missing spaces, missing docstring",
+        "     very_long_line = \"this is a very long line that exceeds 88 characters and should trigger E501 rule from Ruff linter\""
+      ]
+    },
+    "tool_raw": {
+      "tool_name": "vulture",
+      "original_rule_id": "unused-import",
+      "original_severity": "info",
+      "original_output": {
+        "raw_line": "TESTS/samples/comprehensive-issues/auth_service.py:110: unused import 'os' (90% confidence)"
+      }
+    }
+  },
+  {
+    "finding_id": "d40e2394-d89f-4f32-9a3d-7a09e720a388",
+    "canonical_rule_id": "DEAD-001",
+    "original_rule_id": "unused-function",
+    "severity": "low",
+    "category": "dead-code",
+    "file": "TESTS/samples/comprehensive-issues/auth_service.py",
+    "line": 112,
+    "column": 0,
+    "language": "python",
+    "message": "unused function 'bad_function' (60% confidence)",
+    "evidence": {
+      "snippet": "def bad_function(x,y,z):  # Missing spaces, missing docstring",
+      "context_before": [
+        "",
+        " import os  # F401: Unused import",
+        ""
+      ],
+      "context_after": [
+        "     very_long_line = \"this is a very long line that exceeds 88 characters and should trigger E501 rule from Ruff linter\"",
+        "     unused = 42  # F841: Unused variable",
+        "     return x+y+z"
+      ]
+    },
+    "tool_raw": {
+      "tool_name": "vulture",
+      "original_rule_id": "unused-function",
+      "original_severity": "info",
+      "original_output": {
+        "raw_line": "TESTS/samples/comprehensive-issues/auth_service.py:112: unused function 'bad_function' (60% confidence)"
+      }
+    }
+  },
+  {
+    "finding_id": "34d0cefc-4818-4436-8e38-c56bf4e2c4bd",
+    "canonical_rule_id": "VAR-001",
+    "original_rule_id": "unused-variable",
+    "severity": "low",
+    "category": "dead-code",
+    "file": "TESTS/samples/comprehensive-issues/auth_service.py",
+    "line": 113,
+    "column": 0,
+    "language": "python",
+    "message": "unused variable 'very_long_line' (60% confidence)",
+    "evidence": {
+      "snippet": "very_long_line = \"this is a very long line that exceeds 88 characters and should trigger E501 rule from Ruff linter\"",
+      "context_before": [
+        " import os  # F401: Unused import",
+        "",
+        " def bad_function(x,y,z):  # Missing spaces, missing docstring"
+      ],
+      "context_after": [
+        "     unused = 42  # F841: Unused variable",
+        "     return x+y+z",
+        ""
+      ]
+    },
+    "tool_raw": {
+      "tool_name": "vulture",
+      "original_rule_id": "unused-variable",
+      "original_severity": "info",
+      "original_output": {
+        "raw_line": "TESTS/samples/comprehensive-issues/auth_service.py:113: unused variable 'very_long_line' (60% confidence)"
+      }
+    }
+  },
+  {
+    "finding_id": "9377d5fe-8309-4681-add0-0c4fae118dbd",
+    "canonical_rule_id": "VAR-001",
+    "original_rule_id": "unused-variable",
+    "severity": "low",
+    "category": "dead-code",
+    "file": "TESTS/samples/comprehensive-issues/auth_service.py",
+    "line": 114,
+    "column": 0,
+    "language": "python",
+    "message": "unused variable 'unused' (60% confidence)",
+    "evidence": {
+      "snippet": "unused = 42  # F841: Unused variable",
+      "context_before": [
+        "",
+        " def bad_function(x,y,z):  # Missing spaces, missing docstring",
+        "     very_long_line = \"this is a very long line that exceeds 88 characters and should trigger E501 rule from Ruff linter\""
+      ],
+      "context_after": [
+        "     return x+y+z",
+        "",
+        " class badName:  # N801: Bad class name (should be PascalCase)"
+      ]
+    },
+    "tool_raw": {
+      "tool_name": "vulture",
+      "original_rule_id": "unused-variable",
+      "original_severity": "info",
+      "original_output": {
+        "raw_line": "TESTS/samples/comprehensive-issues/auth_service.py:114: unused variable 'unused' (60% confidence)"
+      }
+    }
+  },
+  {
+    "finding_id": "65aacc97-41a7-4e72-865a-ab2426a1b0ea",
+    "canonical_rule_id": "DEAD-001",
+    "original_rule_id": "unused-class",
+    "severity": "medium",
+    "category": "dead-code",
+    "file": "TESTS/samples/comprehensive-issues/auth_service.py",
+    "line": 117,
+    "column": 0,
+    "language": "python",
+    "message": "unused class 'badName' (60% confidence)",
+    "evidence": {
+      "snippet": "class badName:  # N801: Bad class name (should be PascalCase)",
+      "context_before": [
+        "     unused = 42  # F841: Unused variable",
+        "     return x+y+z",
+        ""
+      ],
+      "context_after": [
+        "     pass",
+        "",
+        " class AuthManager:"
+      ]
+    },
+    "tool_raw": {
+      "tool_name": "vulture",
+      "original_rule_id": "unused-class",
+      "original_severity": "info",
+      "original_output": {
+        "raw_line": "TESTS/samples/comprehensive-issues/auth_service.py:117: unused class 'badName' (60% confidence)"
+      }
+    }
+  },
+  {
+    "finding_id": "e4e0abce-cda7-4f49-b2a5-340138df5dd3",
+    "canonical_rule_id": "DEAD-001",
+    "original_rule_id": "unused-class",
+    "severity": "medium",
+    "category": "dead-code",
+    "file": "TESTS/samples/comprehensive-issues/auth_service.py",
+    "line": 120,
+    "column": 0,
+    "language": "python",
+    "message": "unused class 'AuthManager' (60% confidence)",
+    "evidence": {
+      "snippet": "class AuthManager:",
+      "context_before": [
+        " class badName:  # N801: Bad class name (should be PascalCase)",
+        "     pass",
+        ""
+      ],
+      "context_after": [
+        "     \"\"\"Authentication manager with security issues\"\"\"",
+        "",
+        "     def validate_token(self, token: str):"
+      ]
+    },
+    "tool_raw": {
+      "tool_name": "vulture",
+      "original_rule_id": "unused-class",
+      "original_severity": "info",
+      "original_output": {
+        "raw_line": "TESTS/samples/comprehensive-issues/auth_service.py:120: unused class 'AuthManager' (60% confidence)"
+      }
+    }
+  },
+  {
+    "finding_id": "ae496ff0-5887-448b-af9c-bdc6ec1c17cf",
+    "canonical_rule_id": "DEAD-001",
+    "original_rule_id": "unused-code",
+    "severity": "low",
+    "category": "dead-code",
+    "file": "TESTS/samples/comprehensive-issues/auth_service.py",
+    "line": 123,
+    "column": 0,
+    "language": "python",
+    "message": "unused method 'validate_token' (60% confidence)",
+    "evidence": {
+      "snippet": "def validate_token(self, token: str):",
+      "context_before": [
+        " class AuthManager:",
+        "     \"\"\"Authentication manager with security issues\"\"\"",
+        ""
+      ],
+      "context_after": [
+        "         \"\"\"SECURITY-001: Dangerous eval() usage\"\"\"",
+        "         # NEVER DO THIS! Allows arbitrary code execution",
+        "         result = eval(token)"
+      ]
+    },
+    "tool_raw": {
+      "tool_name": "vulture",
+      "original_rule_id": "unused-code",
+      "original_severity": "info",
+      "original_output": {
+        "raw_line": "TESTS/samples/comprehensive-issues/auth_service.py:123: unused method 'validate_token' (60% confidence)"
+      }
+    }
+  },
+  {
+    "finding_id": "16d0b0a7-e38f-41e6-b088-b8d5c59d12b3",
+    "canonical_rule_id": "DEAD-001",
+    "original_rule_id": "unused-code",
+    "severity": "low",
+    "category": "dead-code",
+    "file": "TESTS/samples/comprehensive-issues/auth_service.py",
+    "line": 129,
+    "column": 0,
+    "language": "python",
+    "message": "unused method 'hash_password' (60% confidence)",
+    "evidence": {
+      "snippet": "def hash_password(self, password: str, salt: str = \"default_salt\"):",
+      "context_before": [
+        "         result = eval(token)",
+        "         return result",
+        ""
+      ],
+      "context_after": [
+        "         \"\"\"Weak: hardcoded salt\"\"\"",
+        "         return hashlib.md5(f\"{password}{salt}\".encode()).hexdigest()"
+      ]
+    },
+    "tool_raw": {
+      "tool_name": "vulture",
+      "original_rule_id": "unused-code",
+      "original_severity": "info",
+      "original_output": {
+        "raw_line": "TESTS/samples/comprehensive-issues/auth_service.py:129: unused method 'hash_password' (60% confidence)"
+      }
+    }
+  },
+  {
+    "finding_id": "0efb7f3c-8739-4343-a6a3-26fcae88ac4d",
+    "canonical_rule_id": "IMPORT-001",
+    "original_rule_id": "unused-import",
+    "severity": "low",
+    "category": "dead-code",
+    "file": "TESTS/samples/comprehensive-issues/data_export.py",
+    "line": 5,
+    "column": 0,
+    "language": "python",
+    "message": "unused import 'os' (90% confidence)",
+    "evidence": {
+      "snippet": "import os  # IMPORT-001: Never used",
+      "context_before": [
+        " Data Export Module with Dead Code",
+        " Triggers: DEAD-001, VAR-001, IMPORT-001",
+        " \"\"\""
+      ],
+      "context_after": [
+        " import sys  # IMPORT-001: Never used",
+        " import json",
+        " from datetime import datetime"
+      ]
+    },
+    "tool_raw": {
+      "tool_name": "vulture",
+      "original_rule_id": "unused-import",
+      "original_severity": "info",
+      "original_output": {
+        "raw_line": "TESTS/samples/comprehensive-issues/data_export.py:5: unused import 'os' (90% confidence)"
+      }
+    }
+  },
+  {
+    "finding_id": "4ab55539-f77c-4b75-8dbf-fd79b016c66e",
+    "canonical_rule_id": "IMPORT-001",
+    "original_rule_id": "unused-import",
+    "severity": "low",
+    "category": "dead-code",
+    "file": "TESTS/samples/comprehensive-issues/data_export.py",
+    "line": 8,
+    "column": 0,
+    "language": "python",
+    "message": "unused import 'datetime' (90% confidence)",
+    "evidence": {
+      "snippet": "from datetime import datetime",
+      "context_before": [
+        " import os  # IMPORT-001: Never used",
+        " import sys  # IMPORT-001: Never used",
+        " import json"
+      ],
+      "context_after": [
+        " from typing import List, Dict",
+        "",
+        ""
+      ]
+    },
+    "tool_raw": {
+      "tool_name": "vulture",
+      "original_rule_id": "unused-import",
+      "original_severity": "info",
+      "original_output": {
+        "raw_line": "TESTS/samples/comprehensive-issues/data_export.py:8: unused import 'datetime' (90% confidence)"
+      }
+    }
+  },
+  {
+    "finding_id": "e96b256d-99ed-4232-b6ba-3a0c94d50cb5",
+    "canonical_rule_id": "DEAD-001",
+    "original_rule_id": "unused-function",
+    "severity": "low",
+    "category": "dead-code",
+    "file": "TESTS/samples/comprehensive-issues/data_export.py",
+    "line": 12,
+    "column": 0,
+    "language": "python",
+    "message": "unused function 'export_users_to_csv' (60% confidence)",
+    "evidence": {
+      "snippet": "def export_users_to_csv(users: List[Dict]):",
+      "context_before": [
+        " from typing import List, Dict",
+        "",
+        ""
+      ],
+      "context_after": [
+        "     \"\"\"Active function\"\"\"",
+        "     output = []",
+        "     for user in users:"
+      ]
+    },
+    "tool_raw": {
+      "tool_name": "vulture",
+      "original_rule_id": "unused-function",
+      "original_severity": "info",
+      "original_output": {
+        "raw_line": "TESTS/samples/comprehensive-issues/data_export.py:12: unused function 'export_users_to_csv' (60% confidence)"
+      }
+    }
+  },
+  {
+    "finding_id": "68744695-90c5-4ebb-a1ff-bf8a6e0b51ec",
+    "canonical_rule_id": "DEAD-001",
+    "original_rule_id": "unused-function",
+    "severity": "low",
+    "category": "dead-code",
+    "file": "TESTS/samples/comprehensive-issues/data_export.py",
+    "line": 20,
+    "column": 0,
+    "language": "python",
+    "message": "unused function 'unused_export_function' (60% confidence)",
+    "evidence": {
+      "snippet": "def unused_export_function(data):",
+      "context_before": [
+        "     return \"\\n\".join(output)",
+        "",
+        ""
+      ],
+      "context_after": [
+        "     \"\"\"",
+        "     DEAD-001: This function is never called anywhere",
+        "     \"\"\""
+      ]
+    },
+    "tool_raw": {
+      "tool_name": "vulture",
+      "original_rule_id": "unused-function",
+      "original_severity": "info",
+      "original_output": {
+        "raw_line": "TESTS/samples/comprehensive-issues/data_export.py:20: unused function 'unused_export_function' (60% confidence)"
+      }
+    }
+  },
+  {
+    "finding_id": "222f0a72-2331-4dca-b02c-9163d76a49bf",
+    "canonical_rule_id": "DEAD-001",
+    "original_rule_id": "unused-function",
+    "severity": "low",
+    "category": "dead-code",
+    "file": "TESTS/samples/comprehensive-issues/data_export.py",
+    "line": 27,
+    "column": 0,
+    "language": "python",
+    "message": "unused function 'format_user_data' (60% confidence)",
+    "evidence": {
+      "snippet": "def format_user_data(user: Dict):",
+      "context_before": [
+        "     return json.dumps(data)",
+        "",
+        ""
+      ],
+      "context_after": [
+        "     \"\"\"Function with unused variables\"\"\"",
+        "     user_id = user['id']  # Used",
+        "     username = user['name']  # Used"
+      ]
+    },
+    "tool_raw": {
+      "tool_name": "vulture",
+      "original_rule_id": "unused-function",
+      "original_severity": "info",
+      "original_output": {
+        "raw_line": "TESTS/samples/comprehensive-issues/data_export.py:27: unused function 'format_user_data' (60% confidence)"
+      }
+    }
+  },
+  {
+    "finding_id": "e99a4cfe-9cf4-41f2-a6d2-e57c6f59c04a",
+    "canonical_rule_id": "VAR-001",
+    "original_rule_id": "unused-variable",
+    "severity": "low",
+    "category": "dead-code",
+    "file": "TESTS/samples/comprehensive-issues/data_export.py",
+    "line": 32,
+    "column": 0,
+    "language": "python",
+    "message": "unused variable 'created_at' (60% confidence)",
+    "evidence": {
+      "snippet": "created_at = user.get('created_at')  # VAR-001: Never used",
+      "context_before": [
+        "     user_id = user['id']  # Used",
+        "     username = user['name']  # Used",
+        ""
+      ],
+      "context_after": [
+        "     last_login = user.get('last_login')  # VAR-001: Never used",
+        "     email_verified = user.get('email_verified', False)  # VAR-001: Never used",
+        ""
+      ]
+    },
+    "tool_raw": {
+      "tool_name": "vulture",
+      "original_rule_id": "unused-variable",
+      "original_severity": "info",
+      "original_output": {
+        "raw_line": "TESTS/samples/comprehensive-issues/data_export.py:32: unused variable 'created_at' (60% confidence)"
+      }
+    }
+  },
+  {
+    "finding_id": "07a621e7-9c73-445e-8890-b3ed84722e8f",
+    "canonical_rule_id": "VAR-001",
+    "original_rule_id": "unused-variable",
+    "severity": "low",
+    "category": "dead-code",
+    "file": "TESTS/samples/comprehensive-issues/data_export.py",
+    "line": 33,
+    "column": 0,
+    "language": "python",
+    "message": "unused variable 'last_login' (60% confidence)",
+    "evidence": {
+      "snippet": "last_login = user.get('last_login')  # VAR-001: Never used",
+      "context_before": [
+        "     username = user['name']  # Used",
+        "",
+        "     created_at = user.get('created_at')  # VAR-001: Never used"
+      ],
+      "context_after": [
+        "     email_verified = user.get('email_verified', False)  # VAR-001: Never used",
+        "",
+        "     return f\"{user_id}: {username}\""
+      ]
+    },
+    "tool_raw": {
+      "tool_name": "vulture",
+      "original_rule_id": "unused-variable",
+      "original_severity": "info",
+      "original_output": {
+        "raw_line": "TESTS/samples/comprehensive-issues/data_export.py:33: unused variable 'last_login' (60% confidence)"
+      }
+    }
+  },
+  {
+    "finding_id": "1ab905dc-6925-42d8-aad1-c9592e3a0caa",
+    "canonical_rule_id": "VAR-001",
+    "original_rule_id": "unused-variable",
+    "severity": "low",
+    "category": "dead-code",
+    "file": "TESTS/samples/comprehensive-issues/data_export.py",
+    "line": 34,
+    "column": 0,
+    "language": "python",
+    "message": "unused variable 'email_verified' (60% confidence)",
+    "evidence": {
+      "snippet": "email_verified = user.get('email_verified', False)  # VAR-001: Never used",
+      "context_before": [
+        "",
+        "     created_at = user.get('created_at')  # VAR-001: Never used",
+        "     last_login = user.get('last_login')  # VAR-001: Never used"
+      ],
+      "context_after": [
+        "",
+        "     return f\"{user_id}: {username}\"",
+        ""
+      ]
+    },
+    "tool_raw": {
+      "tool_name": "vulture",
+      "original_rule_id": "unused-variable",
+      "original_severity": "info",
+      "original_output": {
+        "raw_line": "TESTS/samples/comprehensive-issues/data_export.py:34: unused variable 'email_verified' (60% confidence)"
+      }
+    }
+  },
+  {
+    "finding_id": "45a764ab-16ab-4e1b-bdb8-03f8f32c8de1",
+    "canonical_rule_id": "DEAD-001",
+    "original_rule_id": "unused-class",
+    "severity": "medium",
+    "category": "dead-code",
+    "file": "TESTS/samples/comprehensive-issues/data_export.py",
+    "line": 39,
+    "column": 0,
+    "language": "python",
+    "message": "unused class 'UnusedExporter' (60% confidence)",
+    "evidence": {
+      "snippet": "class UnusedExporter:",
+      "context_before": [
+        "     return f\"{user_id}: {username}\"",
+        "",
+        ""
+      ],
+      "context_after": [
+        "     \"\"\"",
+        "     DEAD-001: This class is never instantiated",
+        "     \"\"\""
+      ]
+    },
+    "tool_raw": {
+      "tool_name": "vulture",
+      "original_rule_id": "unused-class",
+      "original_severity": "info",
+      "original_output": {
+        "raw_line": "TESTS/samples/comprehensive-issues/data_export.py:39: unused class 'UnusedExporter' (60% confidence)"
+      }
+    }
+  },
+  {
+    "finding_id": "b42ede40-e4aa-44aa-961c-4265e19eaf90",
+    "canonical_rule_id": "DEAD-001",
+    "original_rule_id": "unused-code",
+    "severity": "low",
+    "category": "dead-code",
+    "file": "TESTS/samples/comprehensive-issues/data_export.py",
+    "line": 44,
+    "column": 0,
+    "language": "python",
+    "message": "unused attribute 'format' (60% confidence)",
+    "evidence": {
+      "snippet": "self.format = 'json'",
+      "context_before": [
+        "     DEAD-001: This class is never instantiated",
+        "     \"\"\"",
+        "     def __init__(self):"
+      ],
+      "context_after": [
+        "",
+        "     def export(self, data):",
+        "         return json.dumps(data)"
+      ]
+    },
+    "tool_raw": {
+      "tool_name": "vulture",
+      "original_rule_id": "unused-code",
+      "original_severity": "info",
+      "original_output": {
+        "raw_line": "TESTS/samples/comprehensive-issues/data_export.py:44: unused attribute 'format' (60% confidence)"
+      }
+    }
+  },
+  {
+    "finding_id": "01f9b154-f4c9-45f2-8e42-0395672a5fe5",
+    "canonical_rule_id": "DEAD-001",
+    "original_rule_id": "unused-code",
+    "severity": "low",
+    "category": "dead-code",
+    "file": "TESTS/samples/comprehensive-issues/data_export.py",
+    "line": 46,
+    "column": 0,
+    "language": "python",
+    "message": "unused method 'export' (60% confidence)",
+    "evidence": {
+      "snippet": "def export(self, data):",
+      "context_before": [
+        "     def __init__(self):",
+        "         self.format = 'json'",
+        ""
+      ],
+      "context_after": [
+        "         return json.dumps(data)",
+        "",
+        ""
+      ]
+    },
+    "tool_raw": {
+      "tool_name": "vulture",
+      "original_rule_id": "unused-code",
+      "original_severity": "info",
+      "original_output": {
+        "raw_line": "TESTS/samples/comprehensive-issues/data_export.py:46: unused method 'export' (60% confidence)"
+      }
+    }
+  },
+  {
+    "finding_id": "efb01637-9cdd-4f96-8f98-fc584125f21d",
+    "canonical_rule_id": "DEAD-001",
+    "original_rule_id": "unused-function",
+    "severity": "low",
+    "category": "dead-code",
+    "file": "TESTS/samples/comprehensive-issues/data_export.py",
+    "line": 50,
+    "column": 0,
+    "language": "python",
+    "message": "unused function 'another_dead_function' (60% confidence)",
+    "evidence": {
+      "snippet": "def another_dead_function(x: int, y: int) -> int:",
+      "context_before": [
+        "         return json.dumps(data)",
+        "",
+        ""
+      ],
+      "context_after": [
+        "     \"\"\"",
+        "     DEAD-001: Another unused function",
+        "     \"\"\""
+      ]
+    },
+    "tool_raw": {
+      "tool_name": "vulture",
+      "original_rule_id": "unused-function",
+      "original_severity": "info",
+      "original_output": {
+        "raw_line": "TESTS/samples/comprehensive-issues/data_export.py:50: unused function 'another_dead_function' (60% confidence)"
+      }
+    }
+  },
+  {
+    "finding_id": "c3505279-4447-44f0-9cce-c7e6b7f0063a",
+    "canonical_rule_id": "VAR-001",
+    "original_rule_id": "unused-variable",
+    "severity": "low",
+    "category": "dead-code",
+    "file": "TESTS/samples/comprehensive-issues/data_export.py",
+    "line": 54,
+    "column": 0,
+    "language": "python",
+    "message": "unused variable 'temp' (60% confidence)",
+    "evidence": {
+      "snippet": "temp = x + y  # VAR-001: Unused variable",
+      "context_before": [
+        "     \"\"\"",
+        "     DEAD-001: Another unused function",
+        "     \"\"\""
+      ],
+      "context_after": [
+        "     result = x * y",
+        "     return result"
+      ]
+    },
+    "tool_raw": {
+      "tool_name": "vulture",
+      "original_rule_id": "unused-variable",
+      "original_severity": "info",
+      "original_output": {
+        "raw_line": "TESTS/samples/comprehensive-issues/data_export.py:54: unused variable 'temp' (60% confidence)"
+      }
+    }
+  },
+  {
+    "finding_id": "815879ec-27f0-4507-9671-c2372b9072d2",
+    "canonical_rule_id": "DEAD-001",
+    "original_rule_id": "unused-function",
+    "severity": "low",
+    "category": "dead-code",
+    "file": "TESTS/samples/comprehensive-issues/database_queries.py",
+    "line": 8,
+    "column": 0,
+    "language": "python",
+    "message": "unused function 'search_users_by_name' (60% confidence)",
+    "evidence": {
+      "snippet": "def search_users_by_name(search_term: str):",
+      "context_before": [
+        " import sqlite3",
+        "",
+        ""
+      ],
+      "context_after": [
+        "     \"\"\"",
+        "     SECURITY-001: SQL injection vulnerability",
+        "     User input directly in query"
+      ]
+    },
+    "tool_raw": {
+      "tool_name": "vulture",
+      "original_rule_id": "unused-function",
+      "original_severity": "info",
+      "original_output": {
+        "raw_line": "TESTS/samples/comprehensive-issues/database_queries.py:8: unused function 'search_users_by_name' (60% confidence)"
+      }
+    }
+  },
+  {
+    "finding_id": "8a6be6f7-3396-4672-8126-ee52c7620ed7",
+    "canonical_rule_id": "DEAD-001",
+    "original_rule_id": "unused-function",
+    "severity": "low",
+    "category": "dead-code",
+    "file": "TESTS/samples/comprehensive-issues/database_queries.py",
+    "line": 23,
+    "column": 0,
+    "language": "python",
+    "message": "unused function 'delete_user_account' (60% confidence)",
+    "evidence": {
+      "snippet": "def delete_user_account(user_id: str):",
+      "context_before": [
+        "     return cursor.fetchall()",
+        "",
+        ""
+      ],
+      "context_after": [
+        "     \"\"\"",
+        "     SECURITY-001: Another SQL injection",
+        "     \"\"\""
+      ]
+    },
+    "tool_raw": {
+      "tool_name": "vulture",
+      "original_rule_id": "unused-function",
+      "original_severity": "info",
+      "original_output": {
+        "raw_line": "TESTS/samples/comprehensive-issues/database_queries.py:23: unused function 'delete_user_account' (60% confidence)"
+      }
+    }
+  },
+  {
+    "finding_id": "89d5c1de-ad8e-4372-b109-a3d7b2f11128",
+    "canonical_rule_id": "DEAD-001",
+    "original_rule_id": "unused-function",
+    "severity": "low",
+    "category": "dead-code",
+    "file": "TESTS/samples/comprehensive-issues/database_queries.py",
+    "line": 33,
+    "column": 0,
+    "language": "python",
+    "message": "unused function 'update_user_email' (60% confidence)",
+    "evidence": {
+      "snippet": "def update_user_email(user_id: int, new_email: str):",
+      "context_before": [
+        "     conn.commit()",
+        "",
+        ""
+      ],
+      "context_after": [
+        "     \"\"\"",
+        "     SECURITY-001: SQL injection in UPDATE statement",
+        "     \"\"\""
+      ]
+    },
+    "tool_raw": {
+      "tool_name": "vulture",
+      "original_rule_id": "unused-function",
+      "original_severity": "info",
+      "original_output": {
+        "raw_line": "TESTS/samples/comprehensive-issues/database_queries.py:33: unused function 'update_user_email' (60% confidence)"
+      }
+    }
+  },
+  {
+    "finding_id": "86f907d2-7da4-4c4c-adc6-f9c3c99b552a",
+    "canonical_rule_id": "DEAD-001",
+    "original_rule_id": "unused-function",
+    "severity": "low",
+    "category": "dead-code",
+    "file": "TESTS/samples/comprehensive-issues/database_queries.py",
+    "line": 43,
+    "column": 0,
+    "language": "python",
+    "message": "unused function 'execute_custom_query' (60% confidence)",
+    "evidence": {
+      "snippet": "def execute_custom_query(table_name: str, conditions: str):",
+      "context_before": [
+        "     conn.commit()",
+        "",
+        ""
+      ],
+      "context_after": [
+        "     \"\"\"",
+        "     SECURITY-001: Allows arbitrary SQL execution",
+        "     \"\"\""
+      ]
+    },
+    "tool_raw": {
+      "tool_name": "vulture",
+      "original_rule_id": "unused-function",
+      "original_severity": "info",
+      "original_output": {
+        "raw_line": "TESTS/samples/comprehensive-issues/database_queries.py:43: unused function 'execute_custom_query' (60% confidence)"
+      }
+    }
+  },
+  {
+    "finding_id": "6af3cbe6-4a9c-4370-9139-a0d65c5e8200",
+    "canonical_rule_id": "IMPORT-001",
+    "original_rule_id": "unused-import",
+    "severity": "low",
+    "category": "dead-code",
+    "file": "TESTS/samples/comprehensive-issues/email_templates.py",
+    "line": 5,
+    "column": 0,
+    "language": "python",
+    "message": "unused import 'os' (90% confidence)",
+    "evidence": {
+      "snippet": "import os  # F401: Unused import",
+      "context_before": [
+        " Email Template Generator with Style Issues",
+        " Triggers: STYLE-001, STYLE-002, NAMING-001, F401, PLR0913",
+        " \"\"\""
+      ],
+      "context_after": [
+        " import sys  # F401: Unused import",
+        " from typing import Dict",
+        ""
+      ]
+    },
+    "tool_raw": {
+      "tool_name": "vulture",
+      "original_rule_id": "unused-import",
+      "original_severity": "info",
+      "original_output": {
+        "raw_line": "TESTS/samples/comprehensive-issues/email_templates.py:5: unused import 'os' (90% confidence)"
+      }
+    }
+  },
+  {
+    "finding_id": "22222554-5581-4afe-b8a3-f5cfa82645a2",
+    "canonical_rule_id": "DEAD-001",
+    "original_rule_id": "unused-function",
+    "severity": "low",
+    "category": "dead-code",
+    "file": "TESTS/samples/comprehensive-issues/email_templates.py",
+    "line": 11,
+    "column": 0,
+    "language": "python",
+    "message": "unused function 'generate_welcome_email_with_user_info_and_personalization_and_marketing_links_and_tracking' (60% confidence)",
+    "evidence": {
+      "snippet": "def generate_welcome_email_with_user_info_and_personalization_and_marketing_links_and_tracking(username, email, plan):",
+      "context_before": [
+        "",
+        "",
+        " # STYLE-001: Line too long (>88 chars)"
+      ],
+      "context_after": [
+        "     \"\"\"",
+        "     NAMING-001: Bad parameter names",
+        "     PLR0913: Too many parameters (if we add more)"
+      ]
+    },
+    "tool_raw": {
+      "tool_name": "vulture",
+      "original_rule_id": "unused-function",
+      "original_severity": "info",
+      "original_output": {
+        "raw_line": "TESTS/samples/comprehensive-issues/email_templates.py:11: unused function 'generate_welcome_email_with_user_info_and_personalization_and_marketing_links_and_tracking' (60% confidence)"
+      }
+    }
+  },
+  {
+    "finding_id": "c7546ae3-35ea-440e-b958-9f4ec2b43faf",
+    "canonical_rule_id": "DEAD-001",
+    "original_rule_id": "unused-function",
+    "severity": "low",
+    "category": "dead-code",
+    "file": "TESTS/samples/comprehensive-issues/email_templates.py",
+    "line": 20,
+    "column": 0,
+    "language": "python",
+    "message": "unused function 'send_notification' (60% confidence)",
+    "evidence": {
+      "snippet": "def send_notification(user):",
+      "context_before": [
+        "     return f\"Welcome {username}! Your email is {email} and your plan is {plan}. Click here to verify: https://example.com/verify?token=abc123&user={username}&email={email}&plan={plan}&referral=marketing&campaign=welcome&source=web&medium=email\"",
+        "",
+        ""
+      ],
+      "context_after": [
+        "     # STYLE-002: Missing docstring for public function",
+        "     subject = \"Notification\"",
+        "     body = f\"Hello {user['name']}\""
+      ]
+    },
+    "tool_raw": {
+      "tool_name": "vulture",
+      "original_rule_id": "unused-function",
+      "original_severity": "info",
+      "original_output": {
+        "raw_line": "TESTS/samples/comprehensive-issues/email_templates.py:20: unused function 'send_notification' (60% confidence)"
+      }
+    }
+  },
+  {
+    "finding_id": "f6891c44-3cbe-4878-bd87-9e4808055d18",
+    "canonical_rule_id": "VAR-001",
+    "original_rule_id": "unused-variable",
+    "severity": "low",
+    "category": "dead-code",
+    "file": "TESTS/samples/comprehensive-issues/email_templates.py",
+    "line": 24,
+    "column": 0,
+    "language": "python",
+    "message": "unused variable 'unused_var' (60% confidence)",
+    "evidence": {
+      "snippet": "unused_var = \"never used\"  # F841: Unused variable",
+      "context_before": [
+        "     # STYLE-002: Missing docstring for public function",
+        "     subject = \"Notification\"",
+        "     body = f\"Hello {user['name']}\""
+      ],
+      "context_after": [
+        "     return {'subject': subject, 'body': body}",
+        "",
+        ""
+      ]
+    },
+    "tool_raw": {
+      "tool_name": "vulture",
+      "original_rule_id": "unused-variable",
+      "original_severity": "info",
+      "original_output": {
+        "raw_line": "TESTS/samples/comprehensive-issues/email_templates.py:24: unused variable 'unused_var' (60% confidence)"
+      }
+    }
+  },
+  {
+    "finding_id": "d88fe2ef-eb01-427a-8bda-245adf6b19fe",
+    "canonical_rule_id": "VAR-001",
+    "original_rule_id": "unused-variable",
+    "severity": "low",
+    "category": "dead-code",
+    "file": "TESTS/samples/comprehensive-issues/email_templates.py",
+    "line": 29,
+    "column": 0,
+    "language": "python",
+    "message": "unused variable 'very_long_variable_name_that_describes_something_but_is_way_too_long_and_violates_line_length' (60% confidence)",
+    "evidence": {
+      "snippet": "very_long_variable_name_that_describes_something_but_is_way_too_long_and_violates_line_length = \"This is a very long string that demonstrates a line length violation in Python code and should trigger Ruff's E501 rule\"",
+      "context_before": [
+        "",
+        "",
+        " # STYLE-001: Line exceeds 88 characters"
+      ],
+      "context_after": [
+        "",
+        "",
+        " def x(a, b, c):  # STYLE-002: Missing docstring, NAMING-001: Bad names"
+      ]
+    },
+    "tool_raw": {
+      "tool_name": "vulture",
+      "original_rule_id": "unused-variable",
+      "original_severity": "info",
+      "original_output": {
+        "raw_line": "TESTS/samples/comprehensive-issues/email_templates.py:29: unused variable 'very_long_variable_name_that_describes_something_but_is_way_too_long_and_violates_line_length' (60% confidence)"
+      }
+    }
+  },
+  {
+    "finding_id": "cf129d38-6527-4274-976a-1fa0d70e2f52",
+    "canonical_rule_id": "DEAD-001",
+    "original_rule_id": "unused-class",
+    "severity": "medium",
+    "category": "dead-code",
+    "file": "TESTS/samples/comprehensive-issues/email_templates.py",
+    "line": 37,
+    "column": 0,
+    "language": "python",
+    "message": "unused class 'badClassName' (60% confidence)",
+    "evidence": {
+      "snippet": "class badClassName:  # NAMING-001: Class name should be PascalCase",
+      "context_before": [
+        "     return a + b + c",
+        "",
+        ""
+      ],
+      "context_after": [
+        "     \"\"\"STYLE-002: Missing class docstring\"\"\"",
+        "     def __init__(self):",
+        "         pass"
+      ]
+    },
+    "tool_raw": {
+      "tool_name": "vulture",
+      "original_rule_id": "unused-class",
+      "original_severity": "info",
+      "original_output": {
+        "raw_line": "TESTS/samples/comprehensive-issues/email_templates.py:37: unused class 'badClassName' (60% confidence)"
+      }
+    }
+  },
+  {
+    "finding_id": "b1b83387-a3c1-45d2-8036-e5167210f0d5",
+    "canonical_rule_id": "DEAD-001",
+    "original_rule_id": "unused-function",
+    "severity": "low",
+    "category": "dead-code",
+    "file": "TESTS/samples/comprehensive-issues/email_templates.py",
+    "line": 43,
+    "column": 0,
+    "language": "python",
+    "message": "unused function 'another_function_with_many_params' (60% confidence)",
+    "evidence": {
+      "snippet": "def another_function_with_many_params(",
+      "context_before": [
+        "         pass",
+        "",
+        ""
+      ],
+      "context_after": [
+        "     param1, param2, param3, param4, param5, param6, param7",
+        " ):  # PLR0913: Too many parameters (>5)",
+        "     \"\"\"Function with too many parameters\"\"\""
+      ]
+    },
+    "tool_raw": {
+      "tool_name": "vulture",
+      "original_rule_id": "unused-function",
+      "original_severity": "info",
+      "original_output": {
+        "raw_line": "TESTS/samples/comprehensive-issues/email_templates.py:43: unused function 'another_function_with_many_params' (60% confidence)"
+      }
+    }
+  },
+  {
+    "finding_id": "fb348644-94d3-42b4-92e4-96ef28636663",
+    "canonical_rule_id": "VAR-001",
+    "original_rule_id": "unused-variable",
+    "severity": "low",
+    "category": "dead-code",
+    "file": "TESTS/samples/comprehensive-issues/email_templates.py",
+    "line": 44,
+    "column": 0,
+    "language": "python",
+    "message": "unused variable 'param1' (100% confidence)",
+    "evidence": {
+      "snippet": "param1, param2, param3, param4, param5, param6, param7",
+      "context_before": [
+        "",
+        "",
+        " def another_function_with_many_params("
+      ],
+      "context_after": [
+        " ):  # PLR0913: Too many parameters (>5)",
+        "     \"\"\"Function with too many parameters\"\"\"",
+        "     pass"
+      ]
+    },
+    "tool_raw": {
+      "tool_name": "vulture",
+      "original_rule_id": "unused-variable",
+      "original_severity": "info",
+      "original_output": {
+        "raw_line": "TESTS/samples/comprehensive-issues/email_templates.py:44: unused variable 'param1' (100% confidence)"
+      }
+    }
+  },
+  {
+    "finding_id": "c6b736d1-de3e-4195-b7e9-06359fec2e0d",
+    "canonical_rule_id": "VAR-001",
+    "original_rule_id": "unused-variable",
+    "severity": "low",
+    "category": "dead-code",
+    "file": "TESTS/samples/comprehensive-issues/email_templates.py",
+    "line": 44,
+    "column": 0,
+    "language": "python",
+    "message": "unused variable 'param2' (100% confidence)",
+    "evidence": {
+      "snippet": "param1, param2, param3, param4, param5, param6, param7",
+      "context_before": [
+        "",
+        "",
+        " def another_function_with_many_params("
+      ],
+      "context_after": [
+        " ):  # PLR0913: Too many parameters (>5)",
+        "     \"\"\"Function with too many parameters\"\"\"",
+        "     pass"
+      ]
+    },
+    "tool_raw": {
+      "tool_name": "vulture",
+      "original_rule_id": "unused-variable",
+      "original_severity": "info",
+      "original_output": {
+        "raw_line": "TESTS/samples/comprehensive-issues/email_templates.py:44: unused variable 'param2' (100% confidence)"
+      }
+    }
+  },
+  {
+    "finding_id": "75f825ef-2db3-4727-8c44-3c16917bd800",
+    "canonical_rule_id": "VAR-001",
+    "original_rule_id": "unused-variable",
+    "severity": "low",
+    "category": "dead-code",
+    "file": "TESTS/samples/comprehensive-issues/email_templates.py",
+    "line": 44,
+    "column": 0,
+    "language": "python",
+    "message": "unused variable 'param3' (100% confidence)",
+    "evidence": {
+      "snippet": "param1, param2, param3, param4, param5, param6, param7",
+      "context_before": [
+        "",
+        "",
+        " def another_function_with_many_params("
+      ],
+      "context_after": [
+        " ):  # PLR0913: Too many parameters (>5)",
+        "     \"\"\"Function with too many parameters\"\"\"",
+        "     pass"
+      ]
+    },
+    "tool_raw": {
+      "tool_name": "vulture",
+      "original_rule_id": "unused-variable",
+      "original_severity": "info",
+      "original_output": {
+        "raw_line": "TESTS/samples/comprehensive-issues/email_templates.py:44: unused variable 'param3' (100% confidence)"
+      }
+    }
+  },
+  {
+    "finding_id": "6f27adff-3300-4db4-884f-c249fc691179",
+    "canonical_rule_id": "VAR-001",
+    "original_rule_id": "unused-variable",
+    "severity": "low",
+    "category": "dead-code",
+    "file": "TESTS/samples/comprehensive-issues/email_templates.py",
+    "line": 44,
+    "column": 0,
+    "language": "python",
+    "message": "unused variable 'param4' (100% confidence)",
+    "evidence": {
+      "snippet": "param1, param2, param3, param4, param5, param6, param7",
+      "context_before": [
+        "",
+        "",
+        " def another_function_with_many_params("
+      ],
+      "context_after": [
+        " ):  # PLR0913: Too many parameters (>5)",
+        "     \"\"\"Function with too many parameters\"\"\"",
+        "     pass"
+      ]
+    },
+    "tool_raw": {
+      "tool_name": "vulture",
+      "original_rule_id": "unused-variable",
+      "original_severity": "info",
+      "original_output": {
+        "raw_line": "TESTS/samples/comprehensive-issues/email_templates.py:44: unused variable 'param4' (100% confidence)"
+      }
+    }
+  },
+  {
+    "finding_id": "c481531e-59e6-4d43-8394-ec33a6f88f17",
+    "canonical_rule_id": "VAR-001",
+    "original_rule_id": "unused-variable",
+    "severity": "low",
+    "category": "dead-code",
+    "file": "TESTS/samples/comprehensive-issues/email_templates.py",
+    "line": 44,
+    "column": 0,
+    "language": "python",
+    "message": "unused variable 'param5' (100% confidence)",
+    "evidence": {
+      "snippet": "param1, param2, param3, param4, param5, param6, param7",
+      "context_before": [
+        "",
+        "",
+        " def another_function_with_many_params("
+      ],
+      "context_after": [
+        " ):  # PLR0913: Too many parameters (>5)",
+        "     \"\"\"Function with too many parameters\"\"\"",
+        "     pass"
+      ]
+    },
+    "tool_raw": {
+      "tool_name": "vulture",
+      "original_rule_id": "unused-variable",
+      "original_severity": "info",
+      "original_output": {
+        "raw_line": "TESTS/samples/comprehensive-issues/email_templates.py:44: unused variable 'param5' (100% confidence)"
+      }
+    }
+  },
+  {
+    "finding_id": "95530fc5-36f3-467d-90ac-ea182f8f778b",
+    "canonical_rule_id": "VAR-001",
+    "original_rule_id": "unused-variable",
+    "severity": "low",
+    "category": "dead-code",
+    "file": "TESTS/samples/comprehensive-issues/email_templates.py",
+    "line": 44,
+    "column": 0,
+    "language": "python",
+    "message": "unused variable 'param6' (100% confidence)",
+    "evidence": {
+      "snippet": "param1, param2, param3, param4, param5, param6, param7",
+      "context_before": [
+        "",
+        "",
+        " def another_function_with_many_params("
+      ],
+      "context_after": [
+        " ):  # PLR0913: Too many parameters (>5)",
+        "     \"\"\"Function with too many parameters\"\"\"",
+        "     pass"
+      ]
+    },
+    "tool_raw": {
+      "tool_name": "vulture",
+      "original_rule_id": "unused-variable",
+      "original_severity": "info",
+      "original_output": {
+        "raw_line": "TESTS/samples/comprehensive-issues/email_templates.py:44: unused variable 'param6' (100% confidence)"
+      }
+    }
+  },
+  {
+    "finding_id": "9d30866a-0133-449f-8385-966a50c563bb",
+    "canonical_rule_id": "VAR-001",
+    "original_rule_id": "unused-variable",
+    "severity": "low",
+    "category": "dead-code",
+    "file": "TESTS/samples/comprehensive-issues/email_templates.py",
+    "line": 44,
+    "column": 0,
+    "language": "python",
+    "message": "unused variable 'param7' (100% confidence)",
+    "evidence": {
+      "snippet": "param1, param2, param3, param4, param5, param6, param7",
+      "context_before": [
+        "",
+        "",
+        " def another_function_with_many_params("
+      ],
+      "context_after": [
+        " ):  # PLR0913: Too many parameters (>5)",
+        "     \"\"\"Function with too many parameters\"\"\"",
+        "     pass"
+      ]
+    },
+    "tool_raw": {
+      "tool_name": "vulture",
+      "original_rule_id": "unused-variable",
+      "original_severity": "info",
+      "original_output": {
+        "raw_line": "TESTS/samples/comprehensive-issues/email_templates.py:44: unused variable 'param7' (100% confidence)"
+      }
+    }
+  },
+  {
+    "finding_id": "54578184-cb71-44d0-a997-5217589071de",
+    "canonical_rule_id": "DEAD-001",
+    "original_rule_id": "unused-function",
+    "severity": "low",
+    "category": "dead-code",
+    "file": "TESTS/samples/comprehensive-issues/payment_processor.py",
+    "line": 7,
+    "column": 0,
+    "language": "python",
+    "message": "unused function 'calculate_discount_premium' (60% confidence)",
+    "evidence": {
+      "snippet": "def calculate_discount_premium(price: float, user_type: str):",
+      "context_before": [
+        " \"\"\"",
+        "",
+        ""
+      ],
+      "context_after": [
+        "     \"\"\"Discount calculation - will be duplicated in file 3\"\"\"",
+        "     if user_type == 'premium':",
+        "         discount = price * 0.25"
+      ]
+    },
+    "tool_raw": {
+      "tool_name": "vulture",
+      "original_rule_id": "unused-function",
+      "original_severity": "info",
+      "original_output": {
+        "raw_line": "TESTS/samples/comprehensive-issues/payment_processor.py:7: unused function 'calculate_discount_premium' (60% confidence)"
+      }
+    }
+  },
+  {
+    "finding_id": "85d798c7-8c3c-4afe-9d40-6c33dcf442fb",
+    "canonical_rule_id": "DEAD-001",
+    "original_rule_id": "unused-function",
+    "severity": "low",
+    "category": "dead-code",
+    "file": "TESTS/samples/comprehensive-issues/payment_processor.py",
+    "line": 27,
+    "column": 0,
+    "language": "python",
+    "message": "unused function 'validate_payment_card' (60% confidence)",
+    "evidence": {
+      "snippet": "def validate_payment_card(card_number: str, cvv: str, expiry: str,",
+      "context_before": [
+        "     return total",
+        "",
+        ""
+      ],
+      "context_after": [
+        "                          cardholder: str, billing_zip: str, billing_country: str):",
+        "     \"\"\"",
+        "     SOLID-001: Too many parameters (6 parameters)"
+      ]
+    },
+    "tool_raw": {
+      "tool_name": "vulture",
+      "original_rule_id": "unused-function",
+      "original_severity": "info",
+      "original_output": {
+        "raw_line": "TESTS/samples/comprehensive-issues/payment_processor.py:27: unused function 'validate_payment_card' (60% confidence)"
+      }
+    }
+  },
+  {
+    "finding_id": "ca6a1595-e7f8-4d66-bd4d-efe750eabbfd",
+    "canonical_rule_id": "VAR-001",
+    "original_rule_id": "unused-variable",
+    "severity": "low",
+    "category": "dead-code",
+    "file": "TESTS/samples/comprehensive-issues/payment_processor.py",
+    "line": 27,
+    "column": 0,
+    "language": "python",
+    "message": "unused variable 'expiry' (100% confidence)",
+    "evidence": {
+      "snippet": "def validate_payment_card(card_number: str, cvv: str, expiry: str,",
+      "context_before": [
+        "     return total",
+        "",
+        ""
+      ],
+      "context_after": [
+        "                          cardholder: str, billing_zip: str, billing_country: str):",
+        "     \"\"\"",
+        "     SOLID-001: Too many parameters (6 parameters)"
+      ]
+    },
+    "tool_raw": {
+      "tool_name": "vulture",
+      "original_rule_id": "unused-variable",
+      "original_severity": "info",
+      "original_output": {
+        "raw_line": "TESTS/samples/comprehensive-issues/payment_processor.py:27: unused variable 'expiry' (100% confidence)"
+      }
+    }
+  },
+  {
+    "finding_id": "75c210c7-e3dc-4952-a8ed-cbed9ddbc9e9",
+    "canonical_rule_id": "VAR-001",
+    "original_rule_id": "unused-variable",
+    "severity": "low",
+    "category": "dead-code",
+    "file": "TESTS/samples/comprehensive-issues/payment_processor.py",
+    "line": 28,
+    "column": 0,
+    "language": "python",
+    "message": "unused variable 'billing_country' (100% confidence)",
+    "evidence": {
+      "snippet": "cardholder: str, billing_zip: str, billing_country: str):",
+      "context_before": [
+        "",
+        "",
+        " def validate_payment_card(card_number: str, cvv: str, expiry: str,"
+      ],
+      "context_after": [
+        "     \"\"\"",
+        "     SOLID-001: Too many parameters (6 parameters)",
+        "     \"\"\""
+      ]
+    },
+    "tool_raw": {
+      "tool_name": "vulture",
+      "original_rule_id": "unused-variable",
+      "original_severity": "info",
+      "original_output": {
+        "raw_line": "TESTS/samples/comprehensive-issues/payment_processor.py:28: unused variable 'billing_country' (100% confidence)"
+      }
+    }
+  },
+  {
+    "finding_id": "3d9ef948-1688-4b48-a8c7-1fcb56e3ae6d",
+    "canonical_rule_id": "VAR-001",
+    "original_rule_id": "unused-variable",
+    "severity": "low",
+    "category": "dead-code",
+    "file": "TESTS/samples/comprehensive-issues/payment_processor.py",
+    "line": 28,
+    "column": 0,
+    "language": "python",
+    "message": "unused variable 'billing_zip' (100% confidence)",
+    "evidence": {
+      "snippet": "cardholder: str, billing_zip: str, billing_country: str):",
+      "context_before": [
+        "",
+        "",
+        " def validate_payment_card(card_number: str, cvv: str, expiry: str,"
+      ],
+      "context_after": [
+        "     \"\"\"",
+        "     SOLID-001: Too many parameters (6 parameters)",
+        "     \"\"\""
+      ]
+    },
+    "tool_raw": {
+      "tool_name": "vulture",
+      "original_rule_id": "unused-variable",
+      "original_severity": "info",
+      "original_output": {
+        "raw_line": "TESTS/samples/comprehensive-issues/payment_processor.py:28: unused variable 'billing_zip' (100% confidence)"
+      }
+    }
+  },
+  {
+    "finding_id": "6ca982a8-b534-4822-8134-05091e03579d",
+    "canonical_rule_id": "VAR-001",
+    "original_rule_id": "unused-variable",
+    "severity": "low",
+    "category": "dead-code",
+    "file": "TESTS/samples/comprehensive-issues/payment_processor.py",
+    "line": 28,
+    "column": 0,
+    "language": "python",
+    "message": "unused variable 'cardholder' (100% confidence)",
+    "evidence": {
+      "snippet": "cardholder: str, billing_zip: str, billing_country: str):",
+      "context_before": [
+        "",
+        "",
+        " def validate_payment_card(card_number: str, cvv: str, expiry: str,"
+      ],
+      "context_after": [
+        "     \"\"\"",
+        "     SOLID-001: Too many parameters (6 parameters)",
+        "     \"\"\""
+      ]
+    },
+    "tool_raw": {
+      "tool_name": "vulture",
+      "original_rule_id": "unused-variable",
+      "original_severity": "info",
+      "original_output": {
+        "raw_line": "TESTS/samples/comprehensive-issues/payment_processor.py:28: unused variable 'cardholder' (100% confidence)"
+      }
+    }
+  },
+  {
+    "finding_id": "3851a826-fcab-4f47-9606-bbcf03ea82af",
+    "canonical_rule_id": "DEAD-001",
+    "original_rule_id": "unused-function",
+    "severity": "low",
+    "category": "dead-code",
+    "file": "TESTS/samples/comprehensive-issues/payment_processor.py",
+    "line": 41,
+    "column": 0,
+    "language": "python",
+    "message": "unused function 'process_complex_payment' (60% confidence)",
+    "evidence": {
+      "snippet": "def process_complex_payment(order, user, payment, inventory, shipping, tax_info):",
+      "context_before": [
+        "     return True",
+        "",
+        ""
+      ],
+      "context_after": [
+        "     \"\"\"",
+        "     COMPLEXITY-001: High complexity with nested conditions",
+        "     \"\"\""
+      ]
+    },
+    "tool_raw": {
+      "tool_name": "vulture",
+      "original_rule_id": "unused-function",
+      "original_severity": "info",
+      "original_output": {
+        "raw_line": "TESTS/samples/comprehensive-issues/payment_processor.py:41: unused function 'process_complex_payment' (60% confidence)"
+      }
+    }
+  },
+  {
+    "finding_id": "20429029-5e94-4f2e-9da3-6e8caf09da2c",
+    "canonical_rule_id": "IMPORT-001",
+    "original_rule_id": "unused-import",
+    "severity": "low",
+    "category": "dead-code",
+    "file": "TESTS/samples/comprehensive-issues/style_violations.py",
+    "line": 5,
+    "column": 0,
+    "language": "python",
+    "message": "unused import 'os' (90% confidence)",
+    "evidence": {
+      "snippet": "import os",
+      "context_before": [
+        " Style Violations Test File",
+        " Triggers: Ruff style rules (E501, D100, N802, etc.)",
+        " \"\"\""
+      ],
+      "context_after": [
+        " import sys",
+        " import json  # F401: Unused import",
+        ""
+      ]
+    },
+    "tool_raw": {
+      "tool_name": "vulture",
+      "original_rule_id": "unused-import",
+      "original_severity": "info",
+      "original_output": {
+        "raw_line": "TESTS/samples/comprehensive-issues/style_violations.py:5: unused import 'os' (90% confidence)"
+      }
+    }
+  },
+  {
+    "finding_id": "31aab907-d162-4e8c-80f6-a5f0b9e602ea",
+    "canonical_rule_id": "DEAD-001",
+    "original_rule_id": "unused-function",
+    "severity": "low",
+    "category": "dead-code",
+    "file": "TESTS/samples/comprehensive-issues/style_violations.py",
+    "line": 11,
+    "column": 0,
+    "language": "python",
+    "message": "unused function 'thisIsABadFunctionName' (60% confidence)",
+    "evidence": {
+      "snippet": "def thisIsABadFunctionName(x, y):  # N802: Function name should be lowercase",
+      "context_before": [
+        "",
+        " # Missing module docstring would be D100, but we have one above",
+        ""
+      ],
+      "context_after": [
+        "     \"\"\"This function has a very long line that exceeds the 88 character limit and should trigger the E501 rule from Ruff linter.\"\"\"",
+        "     unused_variable = 42  # F841: Unused variable",
+        "     very_long_variable_name_that_goes_on_and_on = \"This is a very long line that definitely exceeds 88 characters and should be caught by Ruff\""
+      ]
+    },
+    "tool_raw": {
+      "tool_name": "vulture",
+      "original_rule_id": "unused-function",
+      "original_severity": "info",
+      "original_output": {
+        "raw_line": "TESTS/samples/comprehensive-issues/style_violations.py:11: unused function 'thisIsABadFunctionName' (60% confidence)"
+      }
+    }
+  },
+  {
+    "finding_id": "e2181756-0b0f-4a48-aa5d-9babcb3c5149",
+    "canonical_rule_id": "VAR-001",
+    "original_rule_id": "unused-variable",
+    "severity": "low",
+    "category": "dead-code",
+    "file": "TESTS/samples/comprehensive-issues/style_violations.py",
+    "line": 13,
+    "column": 0,
+    "language": "python",
+    "message": "unused variable 'unused_variable' (60% confidence)",
+    "evidence": {
+      "snippet": "unused_variable = 42  # F841: Unused variable",
+      "context_before": [
+        "",
+        " def thisIsABadFunctionName(x, y):  # N802: Function name should be lowercase",
+        "     \"\"\"This function has a very long line that exceeds the 88 character limit and should trigger the E501 rule from Ruff linter.\"\"\""
+      ],
+      "context_after": [
+        "     very_long_variable_name_that_goes_on_and_on = \"This is a very long line that definitely exceeds 88 characters and should be caught by Ruff\"",
+        "     return x + y",
+        ""
+      ]
+    },
+    "tool_raw": {
+      "tool_name": "vulture",
+      "original_rule_id": "unused-variable",
+      "original_severity": "info",
+      "original_output": {
+        "raw_line": "TESTS/samples/comprehensive-issues/style_violations.py:13: unused variable 'unused_variable' (60% confidence)"
+      }
+    }
+  },
+  {
+    "finding_id": "4f8ba82d-2706-45d6-9c80-318fe0cd4458",
+    "canonical_rule_id": "VAR-001",
+    "original_rule_id": "unused-variable",
+    "severity": "low",
+    "category": "dead-code",
+    "file": "TESTS/samples/comprehensive-issues/style_violations.py",
+    "line": 14,
+    "column": 0,
+    "language": "python",
+    "message": "unused variable 'very_long_variable_name_that_goes_on_and_on' (60% confidence)",
+    "evidence": {
+      "snippet": "very_long_variable_name_that_goes_on_and_on = \"This is a very long line that definitely exceeds 88 characters and should be caught by Ruff\"",
+      "context_before": [
+        " def thisIsABadFunctionName(x, y):  # N802: Function name should be lowercase",
+        "     \"\"\"This function has a very long line that exceeds the 88 character limit and should trigger the E501 rule from Ruff linter.\"\"\"",
+        "     unused_variable = 42  # F841: Unused variable"
+      ],
+      "context_after": [
+        "     return x + y",
+        "",
+        ""
+      ]
+    },
+    "tool_raw": {
+      "tool_name": "vulture",
+      "original_rule_id": "unused-variable",
+      "original_severity": "info",
+      "original_output": {
+        "raw_line": "TESTS/samples/comprehensive-issues/style_violations.py:14: unused variable 'very_long_variable_name_that_goes_on_and_on' (60% confidence)"
+      }
+    }
+  },
+  {
+    "finding_id": "544dcb13-d813-4e37-9041-bfbf089d804f",
+    "canonical_rule_id": "DEAD-001",
+    "original_rule_id": "unused-class",
+    "severity": "medium",
+    "category": "dead-code",
+    "file": "TESTS/samples/comprehensive-issues/style_violations.py",
+    "line": 18,
+    "column": 0,
+    "language": "python",
+    "message": "unused class 'badClassName' (60% confidence)",
+    "evidence": {
+      "snippet": "class badClassName:  # N801: Class name should be PascalCase",
+      "context_before": [
+        "     return x + y",
+        "",
+        ""
+      ],
+      "context_after": [
+        "     def __init__(self):",
+        "         pass",
+        ""
+      ]
+    },
+    "tool_raw": {
+      "tool_name": "vulture",
+      "original_rule_id": "unused-class",
+      "original_severity": "info",
+      "original_output": {
+        "raw_line": "TESTS/samples/comprehensive-issues/style_violations.py:18: unused class 'badClassName' (60% confidence)"
+      }
+    }
+  },
+  {
+    "finding_id": "f6de7a92-80fd-4dc1-815c-03651edab456",
+    "canonical_rule_id": "DEAD-001",
+    "original_rule_id": "unused-function",
+    "severity": "low",
+    "category": "dead-code",
+    "file": "TESTS/samples/comprehensive-issues/style_violations.py",
+    "line": 23,
+    "column": 0,
+    "language": "python",
+    "message": "unused function 'function_without_docstring' (60% confidence)",
+    "evidence": {
+      "snippet": "def function_without_docstring(a, b, c):  # D103: Missing function docstring",
+      "context_before": [
+        "         pass",
+        "",
+        ""
+      ],
+      "context_after": [
+        "     return a + b + c",
+        "",
+        ""
+      ]
+    },
+    "tool_raw": {
+      "tool_name": "vulture",
+      "original_rule_id": "unused-function",
+      "original_severity": "info",
+      "original_output": {
+        "raw_line": "TESTS/samples/comprehensive-issues/style_violations.py:23: unused function 'function_without_docstring' (60% confidence)"
+      }
+    }
+  },
+  {
+    "finding_id": "9734adad-2f5c-4c69-b4af-b5d9815e5ef3",
+    "canonical_rule_id": "DEAD-001",
+    "original_rule_id": "unused-function",
+    "severity": "low",
+    "category": "dead-code",
+    "file": "TESTS/samples/comprehensive-issues/style_violations.py",
+    "line": 27,
+    "column": 0,
+    "language": "python",
+    "message": "unused function 'another_function_with_extremely_long_line_that_should_trigger_style_warning' (60% confidence)",
+    "evidence": {
+      "snippet": "def another_function_with_extremely_long_line_that_should_trigger_style_warning():",
+      "context_before": [
+        "     return a + b + c",
+        "",
+        ""
+      ],
+      "context_after": [
+        "     \"\"\"Another function.\"\"\"",
+        "     result = \"This is an extremely long string literal that goes way beyond the 88 character line limit and should definitely be caught by Ruff's E501 rule\"",
+        "     return result"
+      ]
+    },
+    "tool_raw": {
+      "tool_name": "vulture",
+      "original_rule_id": "unused-function",
+      "original_severity": "info",
+      "original_output": {
+        "raw_line": "TESTS/samples/comprehensive-issues/style_violations.py:27: unused function 'another_function_with_extremely_long_line_that_should_trigger_style_warning' (60% confidence)"
+      }
+    }
+  },
+  {
+    "finding_id": "4ebe00eb-4e2b-4b92-9cce-e805fbad4cb0",
+    "canonical_rule_id": "DEAD-001",
+    "original_rule_id": "unused-function",
+    "severity": "low",
+    "category": "dead-code",
+    "file": "TESTS/samples/comprehensive-issues/style_violations.py",
+    "line": 36,
+    "column": 0,
+    "language": "python",
+    "message": "unused function 'MixedCaseFunction' (60% confidence)",
+    "evidence": {
+      "snippet": "def MixedCaseFunction():  # N802: Should be lowercase",
+      "context_before": [
+        " # Trailing whitespace on next line",
+        " x = 1",
+        ""
+      ],
+      "context_after": [
+        "     \"\"\"Bad naming convention.\"\"\"",
+        "     MyVariable = 10  # N806: Variable should be lowercase",
+        "     return MyVariable"
+      ]
+    },
+    "tool_raw": {
+      "tool_name": "vulture",
+      "original_rule_id": "unused-function",
+      "original_severity": "info",
+      "original_output": {
+        "raw_line": "TESTS/samples/comprehensive-issues/style_violations.py:36: unused function 'MixedCaseFunction' (60% confidence)"
+      }
+    }
+  },
+  {
+    "finding_id": "6b7b817d-c9cd-47ff-9a44-722223192657",
+    "canonical_rule_id": "DEAD-001",
+    "original_rule_id": "unused-function",
+    "severity": "low",
+    "category": "dead-code",
+    "file": "TESTS/samples/comprehensive-issues/subscription_manager.py",
+    "line": 7,
+    "column": 0,
+    "language": "python",
+    "message": "unused function 'calculate_subscription_price' (60% confidence)",
+    "evidence": {
+      "snippet": "def calculate_subscription_price(base_price: float, tier: str):",
+      "context_before": [
+        " \"\"\"",
+        "",
+        ""
+      ],
+      "context_after": [
+        "     \"\"\"",
+        "     DUP-001: DUPLICATE of calculate_discount_premium from payment_processor.py",
+        "     \"\"\""
+      ]
+    },
+    "tool_raw": {
+      "tool_name": "vulture",
+      "original_rule_id": "unused-function",
+      "original_severity": "info",
+      "original_output": {
+        "raw_line": "TESTS/samples/comprehensive-issues/subscription_manager.py:7: unused function 'calculate_subscription_price' (60% confidence)"
+      }
+    }
+  },
+  {
+    "finding_id": "e44fb570-8ef5-455d-8619-84df00a922a5",
+    "canonical_rule_id": "DEAD-001",
+    "original_rule_id": "unused-function",
+    "severity": "low",
+    "category": "dead-code",
+    "file": "TESTS/samples/comprehensive-issues/subscription_manager.py",
+    "line": 29,
+    "column": 0,
+    "language": "python",
+    "message": "unused function 'validate_credit_card_details' (60% confidence)",
+    "evidence": {
+      "snippet": "def validate_credit_card_details(card_num: str, security_code: str, exp_date: str,",
+      "context_before": [
+        "     return total",
+        "",
+        ""
+      ],
+      "context_after": [
+        "                                 name_on_card: str, zip_code: str, country_code: str):",
+        "     \"\"\"",
+        "     DUP-001: Near-duplicate of validate_payment_card from payment_processor.py"
+      ]
+    },
+    "tool_raw": {
+      "tool_name": "vulture",
+      "original_rule_id": "unused-function",
+      "original_severity": "info",
+      "original_output": {
+        "raw_line": "TESTS/samples/comprehensive-issues/subscription_manager.py:29: unused function 'validate_credit_card_details' (60% confidence)"
+      }
+    }
+  },
+  {
+    "finding_id": "aff87f8e-80a9-4b42-b9e2-0e4f2becf832",
+    "canonical_rule_id": "VAR-001",
+    "original_rule_id": "unused-variable",
+    "severity": "low",
+    "category": "dead-code",
+    "file": "TESTS/samples/comprehensive-issues/subscription_manager.py",
+    "line": 29,
+    "column": 0,
+    "language": "python",
+    "message": "unused variable 'exp_date' (100% confidence)",
+    "evidence": {
+      "snippet": "def validate_credit_card_details(card_num: str, security_code: str, exp_date: str,",
+      "context_before": [
+        "     return total",
+        "",
+        ""
+      ],
+      "context_after": [
+        "                                 name_on_card: str, zip_code: str, country_code: str):",
+        "     \"\"\"",
+        "     DUP-001: Near-duplicate of validate_payment_card from payment_processor.py"
+      ]
+    },
+    "tool_raw": {
+      "tool_name": "vulture",
+      "original_rule_id": "unused-variable",
+      "original_severity": "info",
+      "original_output": {
+        "raw_line": "TESTS/samples/comprehensive-issues/subscription_manager.py:29: unused variable 'exp_date' (100% confidence)"
+      }
+    }
+  },
+  {
+    "finding_id": "fd029f86-671d-4d73-8c67-ec0504737a19",
+    "canonical_rule_id": "VAR-001",
+    "original_rule_id": "unused-variable",
+    "severity": "low",
+    "category": "dead-code",
+    "file": "TESTS/samples/comprehensive-issues/subscription_manager.py",
+    "line": 30,
+    "column": 0,
+    "language": "python",
+    "message": "unused variable 'country_code' (100% confidence)",
+    "evidence": {
+      "snippet": "name_on_card: str, zip_code: str, country_code: str):",
+      "context_before": [
+        "",
+        "",
+        " def validate_credit_card_details(card_num: str, security_code: str, exp_date: str,"
+      ],
+      "context_after": [
+        "     \"\"\"",
+        "     DUP-001: Near-duplicate of validate_payment_card from payment_processor.py",
+        "     \"\"\""
+      ]
+    },
+    "tool_raw": {
+      "tool_name": "vulture",
+      "original_rule_id": "unused-variable",
+      "original_severity": "info",
+      "original_output": {
+        "raw_line": "TESTS/samples/comprehensive-issues/subscription_manager.py:30: unused variable 'country_code' (100% confidence)"
+      }
+    }
+  },
+  {
+    "finding_id": "cbdf0227-fd93-45f1-b28b-6f586a4ec194",
+    "canonical_rule_id": "VAR-001",
+    "original_rule_id": "unused-variable",
+    "severity": "low",
+    "category": "dead-code",
+    "file": "TESTS/samples/comprehensive-issues/subscription_manager.py",
+    "line": 30,
+    "column": 0,
+    "language": "python",
+    "message": "unused variable 'name_on_card' (100% confidence)",
+    "evidence": {
+      "snippet": "name_on_card: str, zip_code: str, country_code: str):",
+      "context_before": [
+        "",
+        "",
+        " def validate_credit_card_details(card_num: str, security_code: str, exp_date: str,"
+      ],
+      "context_after": [
+        "     \"\"\"",
+        "     DUP-001: Near-duplicate of validate_payment_card from payment_processor.py",
+        "     \"\"\""
+      ]
+    },
+    "tool_raw": {
+      "tool_name": "vulture",
+      "original_rule_id": "unused-variable",
+      "original_severity": "info",
+      "original_output": {
+        "raw_line": "TESTS/samples/comprehensive-issues/subscription_manager.py:30: unused variable 'name_on_card' (100% confidence)"
+      }
+    }
+  },
+  {
+    "finding_id": "f10dd097-b5ff-4771-bace-9f406651ee3b",
+    "canonical_rule_id": "VAR-001",
+    "original_rule_id": "unused-variable",
+    "severity": "low",
+    "category": "dead-code",
+    "file": "TESTS/samples/comprehensive-issues/subscription_manager.py",
+    "line": 30,
+    "column": 0,
+    "language": "python",
+    "message": "unused variable 'zip_code' (100% confidence)",
+    "evidence": {
+      "snippet": "name_on_card: str, zip_code: str, country_code: str):",
+      "context_before": [
+        "",
+        "",
+        " def validate_credit_card_details(card_num: str, security_code: str, exp_date: str,"
+      ],
+      "context_after": [
+        "     \"\"\"",
+        "     DUP-001: Near-duplicate of validate_payment_card from payment_processor.py",
+        "     \"\"\""
+      ]
+    },
+    "tool_raw": {
+      "tool_name": "vulture",
+      "original_rule_id": "unused-variable",
+      "original_severity": "info",
+      "original_output": {
+        "raw_line": "TESTS/samples/comprehensive-issues/subscription_manager.py:30: unused variable 'zip_code' (100% confidence)"
+      }
+    }
+  },
+  {
+    "finding_id": "f9f49e5f-cb4b-48ef-86f5-9b5836f06ecc",
+    "canonical_rule_id": "DEAD-001",
+    "original_rule_id": "unused-function",
+    "severity": "low",
+    "category": "dead-code",
+    "file": "TESTS/samples/comprehensive-issues/subscription_manager.py",
+    "line": 43,
+    "column": 0,
+    "language": "python",
+    "message": "unused function 'create_subscription' (60% confidence)",
+    "evidence": {
+      "snippet": "def create_subscription(user_id: int, plan_id: int, payment_method: str,",
+      "context_before": [
+        "     return True",
+        "",
+        ""
+      ],
+      "context_after": [
+        "                        billing_cycle: str, auto_renew: bool, start_date: str,",
+        "                        promo_code: str = None):",
+        "     \"\"\""
+      ]
+    },
+    "tool_raw": {
+      "tool_name": "vulture",
+      "original_rule_id": "unused-function",
+      "original_severity": "info",
+      "original_output": {
+        "raw_line": "TESTS/samples/comprehensive-issues/subscription_manager.py:43: unused function 'create_subscription' (60% confidence)"
+      }
+    }
+  },
+  {
+    "finding_id": "c3bf665a-3654-4a77-b4d1-87d689a61726",
+    "canonical_rule_id": "VAR-001",
+    "original_rule_id": "unused-variable",
+    "severity": "low",
+    "category": "dead-code",
+    "file": "TESTS/samples/comprehensive-issues/subscription_manager.py",
+    "line": 43,
+    "column": 0,
+    "language": "python",
+    "message": "unused variable 'payment_method' (100% confidence)",
+    "evidence": {
+      "snippet": "def create_subscription(user_id: int, plan_id: int, payment_method: str,",
+      "context_before": [
+        "     return True",
+        "",
+        ""
+      ],
+      "context_after": [
+        "                        billing_cycle: str, auto_renew: bool, start_date: str,",
+        "                        promo_code: str = None):",
+        "     \"\"\""
+      ]
+    },
+    "tool_raw": {
+      "tool_name": "vulture",
+      "original_rule_id": "unused-variable",
+      "original_severity": "info",
+      "original_output": {
+        "raw_line": "TESTS/samples/comprehensive-issues/subscription_manager.py:43: unused variable 'payment_method' (100% confidence)"
+      }
+    }
+  },
+  {
+    "finding_id": "7f8aa29a-b27c-4806-aff8-586df4683caa",
+    "canonical_rule_id": "VAR-001",
+    "original_rule_id": "unused-variable",
+    "severity": "low",
+    "category": "dead-code",
+    "file": "TESTS/samples/comprehensive-issues/subscription_manager.py",
+    "line": 43,
+    "column": 0,
+    "language": "python",
+    "message": "unused variable 'plan_id' (100% confidence)",
+    "evidence": {
+      "snippet": "def create_subscription(user_id: int, plan_id: int, payment_method: str,",
+      "context_before": [
+        "     return True",
+        "",
+        ""
+      ],
+      "context_after": [
+        "                        billing_cycle: str, auto_renew: bool, start_date: str,",
+        "                        promo_code: str = None):",
+        "     \"\"\""
+      ]
+    },
+    "tool_raw": {
+      "tool_name": "vulture",
+      "original_rule_id": "unused-variable",
+      "original_severity": "info",
+      "original_output": {
+        "raw_line": "TESTS/samples/comprehensive-issues/subscription_manager.py:43: unused variable 'plan_id' (100% confidence)"
+      }
+    }
+  },
+  {
+    "finding_id": "61d8383b-de24-4ea1-808c-c9e19048316f",
+    "canonical_rule_id": "VAR-001",
+    "original_rule_id": "unused-variable",
+    "severity": "low",
+    "category": "dead-code",
+    "file": "TESTS/samples/comprehensive-issues/subscription_manager.py",
+    "line": 44,
+    "column": 0,
+    "language": "python",
+    "message": "unused variable 'auto_renew' (100% confidence)",
+    "evidence": {
+      "snippet": "billing_cycle: str, auto_renew: bool, start_date: str,",
+      "context_before": [
+        "",
+        "",
+        " def create_subscription(user_id: int, plan_id: int, payment_method: str,"
+      ],
+      "context_after": [
+        "                        promo_code: str = None):",
+        "     \"\"\"",
+        "     SOLID-001: Too many parameters (7 parameters)"
+      ]
+    },
+    "tool_raw": {
+      "tool_name": "vulture",
+      "original_rule_id": "unused-variable",
+      "original_severity": "info",
+      "original_output": {
+        "raw_line": "TESTS/samples/comprehensive-issues/subscription_manager.py:44: unused variable 'auto_renew' (100% confidence)"
+      }
+    }
+  },
+  {
+    "finding_id": "6818811c-158f-406f-b463-ad14804ac1e9",
+    "canonical_rule_id": "VAR-001",
+    "original_rule_id": "unused-variable",
+    "severity": "low",
+    "category": "dead-code",
+    "file": "TESTS/samples/comprehensive-issues/subscription_manager.py",
+    "line": 44,
+    "column": 0,
+    "language": "python",
+    "message": "unused variable 'billing_cycle' (100% confidence)",
+    "evidence": {
+      "snippet": "billing_cycle: str, auto_renew: bool, start_date: str,",
+      "context_before": [
+        "",
+        "",
+        " def create_subscription(user_id: int, plan_id: int, payment_method: str,"
+      ],
+      "context_after": [
+        "                        promo_code: str = None):",
+        "     \"\"\"",
+        "     SOLID-001: Too many parameters (7 parameters)"
+      ]
+    },
+    "tool_raw": {
+      "tool_name": "vulture",
+      "original_rule_id": "unused-variable",
+      "original_severity": "info",
+      "original_output": {
+        "raw_line": "TESTS/samples/comprehensive-issues/subscription_manager.py:44: unused variable 'billing_cycle' (100% confidence)"
+      }
+    }
+  },
+  {
+    "finding_id": "5b89c209-db96-4699-80dc-898de43702c6",
+    "canonical_rule_id": "VAR-001",
+    "original_rule_id": "unused-variable",
+    "severity": "low",
+    "category": "dead-code",
+    "file": "TESTS/samples/comprehensive-issues/subscription_manager.py",
+    "line": 44,
+    "column": 0,
+    "language": "python",
+    "message": "unused variable 'start_date' (100% confidence)",
+    "evidence": {
+      "snippet": "billing_cycle: str, auto_renew: bool, start_date: str,",
+      "context_before": [
+        "",
+        "",
+        " def create_subscription(user_id: int, plan_id: int, payment_method: str,"
+      ],
+      "context_after": [
+        "                        promo_code: str = None):",
+        "     \"\"\"",
+        "     SOLID-001: Too many parameters (7 parameters)"
+      ]
+    },
+    "tool_raw": {
+      "tool_name": "vulture",
+      "original_rule_id": "unused-variable",
+      "original_severity": "info",
+      "original_output": {
+        "raw_line": "TESTS/samples/comprehensive-issues/subscription_manager.py:44: unused variable 'start_date' (100% confidence)"
+      }
+    }
+  },
+  {
+    "finding_id": "fff24daa-fb32-4fd7-aa8c-1e1e94b95f26",
+    "canonical_rule_id": "VAR-001",
+    "original_rule_id": "unused-variable",
+    "severity": "low",
+    "category": "dead-code",
+    "file": "TESTS/samples/comprehensive-issues/subscription_manager.py",
+    "line": 45,
+    "column": 0,
+    "language": "python",
+    "message": "unused variable 'promo_code' (100% confidence)",
+    "evidence": {
+      "snippet": "promo_code: str = None):",
+      "context_before": [
+        "",
+        " def create_subscription(user_id: int, plan_id: int, payment_method: str,",
+        "                        billing_cycle: str, auto_renew: bool, start_date: str,"
+      ],
+      "context_after": [
+        "     \"\"\"",
+        "     SOLID-001: Too many parameters (7 parameters)",
+        "     \"\"\""
+      ]
+    },
+    "tool_raw": {
+      "tool_name": "vulture",
+      "original_rule_id": "unused-variable",
+      "original_severity": "info",
+      "original_output": {
+        "raw_line": "TESTS/samples/comprehensive-issues/subscription_manager.py:45: unused variable 'promo_code' (100% confidence)"
+      }
+    }
+  },
+  {
+    "finding_id": "66c706dc-9a30-4893-8104-9f5438e96311",
+    "canonical_rule_id": "COMPLEXITY-001",
+    "original_rule_id": "high-complexity",
+    "severity": "high",
+    "category": "design",
+    "file": "TESTS/samples/comprehensive-issues/auth_service.py",
+    "line": 29,
+    "column": 0,
+    "language": "python",
+    "message": "Function 'validate_and_process_user_input' has cyclomatic complexity of 25. High complexity makes code hard to test and maintain. Consider refactoring into smaller functions.",
+    "evidence": {
+      "snippet": "def validate_and_process_user_input(data: Dict[str, Any]):",
+      "context_before": [
+        "     return cursor.fetchone()",
+        "",
+        ""
+      ],
+      "context_after": [
+        "     \"\"\"",
+        "     COMPLEXITY-001: Cyclomatic complexity > 20",
+        "     Too many nested conditions"
+      ]
+    },
+    "tool_raw": {
+      "tool_name": "radon",
+      "original_rule_id": "high-complexity",
+      "original_severity": "high",
+      "original_output": {
+        "type": "function",
+        "rank": "D",
+        "lineno": 29,
+        "col_offset": 0,
+        "name": "validate_and_process_user_input",
+        "complexity": 25,
+        "endline": 97,
+        "closures": []
+      }
+    }
+  },
+  {
+    "finding_id": "71e55da7-fcc7-4b3c-b7d9-86e0703de2d8",
+    "canonical_rule_id": "COMPLEXITY-001",
+    "original_rule_id": "high-complexity",
+    "severity": "medium",
+    "category": "design",
+    "file": "TESTS/samples/comprehensive-issues/payment_processor.py",
+    "line": 41,
+    "column": 0,
+    "language": "python",
+    "message": "Function 'process_complex_payment' has cyclomatic complexity of 19. High complexity makes code hard to test and maintain. Consider refactoring into smaller functions.",
+    "evidence": {
+      "snippet": "def process_complex_payment(order, user, payment, inventory, shipping, tax_info):",
+      "context_before": [
+        "     return True",
+        "",
+        ""
+      ],
+      "context_after": [
+        "     \"\"\"",
+        "     COMPLEXITY-001: High complexity with nested conditions",
+        "     \"\"\""
+      ]
+    },
+    "tool_raw": {
+      "tool_name": "radon",
+      "original_rule_id": "high-complexity",
+      "original_severity": "medium",
+      "original_output": {
+        "type": "function",
+        "rank": "C",
+        "lineno": 41,
+        "col_offset": 0,
+        "name": "process_complex_payment",
+        "complexity": 19,
+        "endline": 95,
+        "closures": []
       }
     }
   }

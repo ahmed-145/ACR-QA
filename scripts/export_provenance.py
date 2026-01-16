@@ -15,7 +15,7 @@ from DATABASE.database import Database
 import argparse
 
 
-def export_provenance(run_id=None, output_dir='outputs/provenance'):
+def export_provenance(run_id=None, output_dir='DATA/outputs/provenance'):
     """
     Export complete provenance data for an analysis run
     
@@ -107,7 +107,7 @@ def export_provenance(run_id=None, output_dir='outputs/provenance'):
             'rule_id': f['rule_id'],
             'file_path': f['file_path'],
             'line_number': f['line_number'],
-            'severity': f['severity'],
+            'severity': f.get('canonical_severity', f.get('severity', 'low')),  # ✅ NEW
             'category': f['category'],
             'message': f['message'],
             'tool': f['tool']
@@ -129,7 +129,7 @@ def export_provenance(run_id=None, output_dir='outputs/provenance'):
         provenance['findings'].append(finding_data)
         
         # Update statistics
-        sev = f['severity']
+        sev = f.get('canonical_severity', f.get('severity', 'low'))  # ✅ NEW
         provenance['statistics']['by_severity'][sev] = provenance['statistics']['by_severity'].get(sev, 0) + 1
         
         cat = f['category']
@@ -251,7 +251,7 @@ def main():
     parser = argparse.ArgumentParser(description='Export ACR-QA Provenance Data')
     parser.add_argument('run_id', type=int, nargs='?', help='Analysis run ID (optional)')
     parser.add_argument('--all', action='store_true', help='Export all runs')
-    parser.add_argument('-o', '--output', default='outputs/provenance', help='Output directory')
+    parser.add_argument('-o', '--output', default='DATA/outputs/provenance', help='Output directory')
     
     args = parser.parse_args()
     
