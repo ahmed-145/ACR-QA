@@ -18,6 +18,31 @@ jobs:
     runs-on: ubuntu-latest
     if: github.event_name == 'pull_request'
     
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_DB: acrqa_test
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+      
+      redis:
+        image: redis:7
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -36,22 +61,11 @@ jobs:
           pip install ruff semgrep vulture radon bandit
           npm install -g jscpd
       
-      - name: Set up PostgreSQL
-        run: |
-          sudo systemctl start postgresql
-          sudo -u postgres psql -c "CREATE DATABASE acrqa_test;"
-          sudo -u postgres psql -c "CREATE USER acrqa_user WITH PASSWORD 'test123';"
-          sudo -u postgres psql -c "GRANT ALL PRIVILEGES ON DATABASE acrqa_test TO acrqa_user;"
-      
       - name: Initialize database
         env:
-          DB_HOST: localhost
-          DB_PORT: 5432
-          DB_NAME: acrqa_test
-          DB_USER: acrqa_user
-          DB_PASSWORD: test123
+          PGPASSWORD: postgres
         run: |
-          psql -h localhost -U acrqa_user -d acrqa_test -f DATABASE/schema.sql
+          psql -h localhost -U postgres -d acrqa_test -f DATABASE/schema.sql
       
       - name: Get changed files
         id: changed-files
@@ -71,8 +85,8 @@ jobs:
           DB_HOST: localhost
           DB_PORT: 5432
           DB_NAME: acrqa_test
-          DB_USER: acrqa_user
-          DB_PASSWORD: test123
+          DB_USER: postgres
+          DB_PASSWORD: postgres
         run: |
           # Create temp directory for changed files
           mkdir -p /tmp/pr-files
