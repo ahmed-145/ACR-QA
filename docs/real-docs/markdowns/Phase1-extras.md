@@ -952,3 +952,122 @@ Intentionally triggers ALL rule categories:
 **Detection Status:** All tools working correctly, 434 findings detected across all categories.
 
 **System Status:** Production Ready ✅
+
+---
+
+## Quick Refresh API (Added Later in Session 2)
+
+**Date:** January 28, 2026 (22:15)  
+**Purpose:** Solve database/findings sync issue
+
+### The Problem
+
+During development, there was confusion about findings counts:
+- Tool outputs in `DATA/outputs/` would be updated
+- But the dashboard (which reads from PostgreSQL) would show old data
+- Had to run full `main.py` pipeline (slow, ~400ms per finding for AI explanations)
+
+### The Solution: Quick Refresh API
+
+**Endpoint:** `POST /api/refresh-findings`
+
+Re-runs detection tools and updates database WITHOUT generating AI explanations.
+
+### Usage
+
+**Full refresh (runs detection + normalizes + stores):**
+```bash
+curl -X POST http://localhost:5000/api/refresh-findings \
+  -H "Content-Type: application/json"
+```
+
+**Quick refresh (uses existing tool outputs):**
+```bash
+curl -X POST http://localhost:5000/api/refresh-findings \
+  -H "Content-Type: application/json" \
+  -d '{"skip_detection": true}'
+```
+
+### Response
+
+```json
+{
+    "success": true,
+    "run_id": 50,
+    "total_findings": 434,
+    "categories": {
+        "style": 284,
+        "dead-code": 117,
+        "security": 22,
+        "design": 7,
+        "best-practice": 4
+    },
+    "message": "Quick refresh complete! 434 findings stored in database.",
+    "note": "No AI explanations generated (use main.py for full analysis)"
+}
+```
+
+### Parameters
+
+| Parameter | Type | Default | Description |
+|-----------|------|---------|-------------|
+| `skip_detection` | bool | false | Skip running detection tools, use existing outputs |
+| `target_dir` | string | `TESTS/samples/comprehensive-issues` | Directory to analyze |
+| `repo_name` | string | `quick-refresh` | Name for the analysis run |
+
+### Architecture Clarification
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│                    DATA FLOW                                 │
+├─────────────────────────────────────────────────────────────┤
+│                                                              │
+│  Detection Tools ──► DATA/outputs/*.json                    │
+│         │                    │                               │
+│         │            ┌───────▼────────┐                     │
+│         │            │   Normalizer   │                      │
+│         │            └───────┬────────┘                     │
+│         │                    │                               │
+│         │            ┌───────▼────────┐                     │
+│         ▼            │   findings.json │◄── Quick Refresh   │
+│                      └───────┬────────┘     (no AI)         │
+│                              │                               │
+│                      ┌───────▼────────┐                     │
+│  main.py ──────────► │   PostgreSQL   │◄── Quick Refresh   │
+│  (with AI)           │   Database     │     (no AI)         │
+│                      └───────┬────────┘                     │
+│                              │                               │
+│                      ┌───────▼────────┐                     │
+│                      │   Dashboard    │                      │
+│                      │   (Web UI)     │                      │
+│                      └────────────────┘                     │
+└─────────────────────────────────────────────────────────────┘
+```
+
+### Files Modified
+
+- `FRONTEND/app.py` - Added `/api/refresh-findings` endpoint
+
+### Commit
+
+`51062ba` - Add Quick Refresh API (/api/refresh-findings)
+
+---
+
+## Final API Endpoints Summary (8 Total)
+
+| Endpoint | Method | Description |
+|----------|--------|-------------|
+| `/api/health` | GET | Health check |
+| `/api/runs` | GET | Recent analysis runs |
+| `/api/runs/<id>/findings` | GET | Findings for a run |
+| `/api/runs/<id>/summary` | GET | PR-style summary |
+| `/api/categories` | GET | Available categories |
+| `/api/analyze` | POST | Single file analysis |
+| `/api/quick-stats` | GET | Dashboard statistics |
+| `/api/fix-confidence/<rule>` | GET | Auto-fix confidence score |
+| `/api/refresh-findings` | POST | **NEW** Quick refresh |
+
+---
+
+**Total Documentation Complete ✅**
