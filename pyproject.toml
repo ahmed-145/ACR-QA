@@ -29,3 +29,17 @@ max-args = 5
 [tool.ruff.lint.per-file-ignores]
 "__init__.py" = ["F401"]
 "tests/*" = ["D"]
+
+# Phase 2: Test coverage tracking
+[tool.pytest.ini_options]
+testpaths = ["TESTS"]
+addopts = [
+    "--cov=CORE",
+    "--cov=DATABASE",
+    "--cov=scripts",
+    "--cov-report=html",
+    "--cov-report=term-missing",
+    "--cov-fail-under=70",
+    "-v"
+]
+

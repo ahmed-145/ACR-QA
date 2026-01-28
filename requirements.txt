@@ -3,6 +3,8 @@ psycopg2-binary==2.9.9
 cerebras-cloud-sdk>=1.5.0
 python-dotenv==1.0.0
 PyYAML==6.0.1
+pydantic>=2.0.0
+redis>=5.0.0
 
 # Web Dashboard
 Flask==3.0.0

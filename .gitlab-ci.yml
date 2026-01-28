@@ -1,0 +1,90 @@
+stages:
+  - test
+  - analyze
+
+variables:
+  POSTGRES_DB: acrqa_test
+  POSTGRES_USER: acrqa_user
+  POSTGRES_PASSWORD: test123
+  POSTGRES_HOST_AUTH_METHOD: trust
+
+# GitLab CI/CD Pipeline for ACR-QA
+# Runs on merge requests and commits
+
+before_script:
+  - python --version
+  - pip install -r requirements.txt
+  - pip install ruff semgrep vulture radon bandit
+  - npm install -g jscpd
+
+# Run tests
+test:
+  stage: test
+  image: python:3.11
+  services:
+    - postgres:15
+    - redis:latest
+  variables:
+    DB_HOST: postgres
+    DB_PORT: 5432
+    DB_NAME: $POSTGRES_DB
+    DB_USER: $POSTGRES_USER
+    DB_PASSWORD: $POSTGRES_PASSWORD
+    REDIS_HOST: redis
+    REDIS_PORT: 6379
+  script:
+    - echo "Running tests..."
+    - psql -h postgres -U $POSTGRES_USER -d $POSTGRES_DB -f DATABASE/schema.sql
+    - pytest --cov --cov-report=html --cov-report=term
+  coverage: '/TOTAL.*\s+(\d+%)$/'
+  artifacts:
+    reports:
+      coverage_report:
+        coverage_format: cobertura
+        path: coverage.xml
+    paths:
+      - htmlcov/
+    expire_in: 30 days
+
+# Run ACR-QA analysis on MR
+analyze-mr:
+  stage: analyze
+  image: python:3.11
+  services:
+    - postgres:15
+    - redis:latest
+  variables:
+    DB_HOST: postgres
+    DB_PORT: 5432
+    DB_NAME: $POSTGRES_DB
+    DB_USER: $POSTGRES_USER
+    DB_PASSWORD: $POSTGRES_PASSWORD
+    REDIS_HOST: redis
+    REDIS_PORT: 6379
+  only:
+    - merge_requests
+  script:
+    - echo "Analyzing merge request..."
+    - psql -h postgres -U $POSTGRES_USER -d $POSTGRES_DB -f DATABASE/schema.sql
+    - |
+      # Get changed files
+      git diff --name-only $CI_MERGE_REQUEST_DIFF_BASE_SHA...$CI_COMMIT_SHA > changed_files.txt
+      
+      # Run analysis
+      python3 CORE/main.py \
+        --target-dir . \
+        --repo-name $CI_PROJECT_PATH \
+        --pr-number $CI_MERGE_REQUEST_IID \
+        --limit 10
+      
+      # Post comments to MR
+      if [ -n "$GITLAB_TOKEN" ]; then
+        python3 scripts/post_gitlab_comments.py \
+          --project-id $CI_PROJECT_ID \
+          --mr-iid $CI_MERGE_REQUEST_IID \
+          --token $GITLAB_TOKEN
+      fi
+  artifacts:
+    paths:
+      - DATA/outputs/
+    expire_in: 7 days

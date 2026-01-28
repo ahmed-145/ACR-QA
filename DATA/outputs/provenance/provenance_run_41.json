@@ -1,0 +1,97 @@
+{
+  "metadata": {
+    "run_id": 41,
+    "export_timestamp": "2026-01-28T03:33:29.333628",
+    "acr_qa_version": "2.0",
+    "purpose": "Complete audit trail for academic evaluation"
+  },
+  "analysis_run": {
+    "id": 41,
+    "repo_name": "final-test",
+    "commit_sha": null,
+    "branch": null,
+    "pr_number": null,
+    "status": "completed",
+    "started_at": "2026-01-28 03:33:08.998251",
+    "completed_at": "2026-01-28 03:33:08.998251",
+    "total_findings": 80
+  },
+  "findings": [
+    {
+      "id": 630,
+      "rule_id": "unused-import",
+      "file_path": "TESTS/samples/comprehensive-issues/auth_service.py",
+      "line_number": 7,
+      "severity": "low",
+      "category": "dead-code",
+      "message": "unused import 'Tuple' (90% confidence)",
+      "tool": "vulture",
+      "explanation": {
+        "model_name": "llama3.1-8b",
+        "response_text": "This code violates IMPORT-001 because it contains an unused import statement. \nThe issue matters because unused imports clutter the namespace, slow down module loading, and confuse developers about what dependencies are actually needed (as stated in the rule). \nTo fix it, remove the unused import statement or use the imported module (as recommended in the rule).",
+        "latency_ms": 410
+      }
+    },
+    {
+      "id": 628,
+      "rule_id": "mutable-default-argument",
+      "file_path": "TESTS/samples/comprehensive-issues/auth_service.py",
+      "line_number": 100,
+      "severity": "medium",
+      "category": "best-practice",
+      "message": "Mutable default argument detected! This is a classic Python bug.\nDefault values are created ONCE when the function is defined.\n",
+      "tool": "semgrep",
+      "explanation": {
+        "model_name": "llama3.1-8b",
+        "response_text": "This code violates PATTERN-001 because it uses a mutable default argument (`Dict = {}`) in the `store_user_sessions` function, which is created only once when the function is defined, not each time it's called. This matters because, as stated in the rule, all calls share the same dictionary, causing unexpected behavior where changes persist across function calls (Rule Rationale: \"Default arguments are created ONCE when the function is defined, not each time it's called. All calls share the same list/dict/set, causing unexpected behavior where changes persist across function calls.\"). To fix it, use `None` as the default, then initialize the mutable object (`Dict`) inside the function (Remediation: \"Use None as default",
+        "latency_ms": 1418
+      }
+    },
+    {
+      "id": 629,
+      "rule_id": "dangerous-eval-usage",
+      "file_path": "TESTS/samples/comprehensive-issues/auth_service.py",
+      "line_number": 126,
+      "severity": "high",
+      "category": "security",
+      "message": "Dangerous use of eval() or exec(). These functions execute arbitrary \nPython code and should NEVER be used with user input.\n",
+      "tool": "semgrep",
+      "explanation": {
+        "model_name": "llama3.1-8b",
+        "response_text": "This code violates SECURITY-001: Dangerous eval() Usage. \nThe issue is that the `eval()` function is used to execute user-provided input (`token`), allowing arbitrary code execution. \nThis matters because, as stated in the rule rationale, `eval()` is a code execution vulnerability that can lead to data theft, system compromise, or remote code execution. \nTo fix it, use `ast.literal_eval()` for safe evaluation of literals, or redesign to avoid dynamic evaluation, as recommended in the rule remediation.",
+        "latency_ms": 820
+      }
+    }
+  ],
+  "statistics": {
+    "total_findings": 3,
+    "by_severity": {
+      "low": 1,
+      "medium": 1,
+      "high": 1
+    },
+    "by_category": {
+      "dead-code": 1,
+      "best-practice": 1,
+      "security": 1
+    },
+    "by_tool": {
+      "vulture": 1,
+      "semgrep": 2
+    },
+    "with_explanations": 3,
+    "explanation_latency": {
+      "min_ms": 410,
+      "max_ms": 1418,
+      "avg_ms": 882,
+      "total_ms": 2648
+    },
+    "total_cost_usd": 0
+  },
+  "feedback_summary": {
+    "total_feedback": 0,
+    "false_positives": null,
+    "avg_clarity_rating": null,
+    "helpful_count": null
+  }
+}

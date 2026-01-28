@@ -56,9 +56,15 @@ fi
 echo "      ✓ jscpd complete"
 
 # 5. RADON
-echo "[5/5] Running Radon (complexity metrics)..."
+echo "[5/6] Running Radon (complexity metrics)..."
 find "$TARGET_DIR" -name "*.py" -type f | xargs radon cc -a -j > "$OUTPUT_DIR/radon.json" 2>/dev/null || echo '{}' > "$OUTPUT_DIR/radon.json"
 echo "      ✓ Radon complete"
+
+# 6. BANDIT - Security scanner
+echo "[6/6] Running Bandit (security vulnerabilities)..."
+find "$TARGET_DIR" -name "*.py" -type f | xargs bandit -f json -q \
+    > "$OUTPUT_DIR/bandit.json" 2>/dev/null || echo '{"results":[]}' > "$OUTPUT_DIR/bandit.json"
+echo "      ✓ Bandit complete"
 
 echo ""
 echo "✅ All tools complete! Outputs in $OUTPUT_DIR/"

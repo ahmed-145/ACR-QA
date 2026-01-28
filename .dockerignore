@@ -19,27 +19,32 @@ docker-compose.yml
 
 # Documentation
 docs/
-README.md
 *.md
+!README.md
 
-# Outputs (generated at runtime)
-outputs/*.json
-outputs/*.txt
-outputs/provenance/
+# Test outputs
+DATA/outputs/*
+!DATA/outputs/.gitkeep
+DATA/provenance/*
+DATA/reports/*
+
+# Environment
+.env
+.env.local
 
 # IDE
 .vscode/
 .idea/
 *.swp
+*.swo
 
 # OS
 .DS_Store
 Thumbs.db
 
-# Testing
-.coverage
-htmlcov/
-.pytest_cache/
+# Temporary files
+*.log
+*.tmp
 
 # Sensitive
 .env

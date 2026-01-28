@@ -2,6 +2,7 @@
 PostgreSQL Database Interface for ACR-QA v2.0
 Handles provenance storage and retrieval
 """
+
 import os
 import psycopg2
 from psycopg2.extras import RealDictCursor, Json
@@ -11,7 +12,7 @@ from pathlib import Path
 
 # Load .env from project root
 project_root = Path(__file__).parent.parent
-env_path = project_root / '.env'
+env_path = project_root / ".env"
 load_dotenv(dotenv_path=env_path)
 
 
@@ -19,15 +20,15 @@ class Database:
     def __init__(self):
         """Initialize database connection"""
         self.conn_params = {
-            'host': os.getenv('DB_HOST', 'localhost'),
-            'port': os.getenv('DB_PORT', '5432'),
-            'database': os.getenv('DB_NAME', 'acrqa'),
-            'user': os.getenv('DB_USER', 'postgres'),
-            'password': os.getenv('DB_PASSWORD', 'postgres')
+            "host": os.getenv("DB_HOST", "localhost"),
+            "port": os.getenv("DB_PORT", "5432"),
+            "database": os.getenv("DB_NAME", "acrqa"),
+            "user": os.getenv("DB_USER", "postgres"),
+            "password": os.getenv("DB_PASSWORD", "postgres"),
         }
         self.conn = None
         self._connect()
-    
+
     def _connect(self):
         """Establish database connection"""
         try:
@@ -36,57 +37,61 @@ class Database:
         except psycopg2.Error as e:
             print(f"❌ Database connection failed: {e}")
             raise
-    
+
     def _ensure_connection(self):
         """Reconnect if connection is closed"""
         if self.conn is None or self.conn.closed:
             self._connect()
-    
+
     def execute(self, query, params=None, fetch=False):
         """
         Execute a query with error handling
-        
+
         Args:
             query: SQL query string
             params: Query parameters (tuple or dict)
             fetch: If True, return results
-            
+
         Returns:
             Query results if fetch=True, else None
         """
         self._ensure_connection()
-        
+
         try:
             with self.conn.cursor(cursor_factory=RealDictCursor) as cur:
                 cur.execute(query, params)
-                
+
                 if fetch:
                     return cur.fetchall()
-                
+
                 self.conn.commit()
-                
+
                 # Return last inserted ID if applicable
-                if 'INSERT' in query.upper() and 'RETURNING' in query.upper():
+                if "INSERT" in query.upper() and "RETURNING" in query.upper():
                     return cur.fetchone()
-                    
+
         except psycopg2.Error as e:
             self.conn.rollback()
             print(f"❌ Query failed: {e}")
             print(f"   Query: {query}")
             raise
-    
+
     # ===== ANALYSIS RUNS =====
-    
-    def create_analysis_run(self, repo_name, pr_number=None, commit_sha=None, branch=None):
+
+    def create_analysis_run(
+        self, repo_name, pr_number=None, commit_sha=None, branch=None
+    ):
         """Create a new analysis run"""
         query = """
             INSERT INTO analysis_runs (repo_name, pr_number, commit_sha, branch, status)
             VALUES (%s, %s, %s, %s, 'running')
             RETURNING id
         """
-        result = self.execute(query, (repo_name, pr_number, commit_sha, branch), fetch=True)
-        return result[0]['id'] if result else None
-    
+        result = self.execute(
+            query, (repo_name, pr_number, commit_sha, branch), fetch=True
+        )
+        return result[0]["id"] if result else None
+
     def complete_analysis_run(self, run_id, total_findings):
         """Mark analysis run as completed"""
         query = """
@@ -97,9 +102,14 @@ class Database:
             WHERE id = %s
         """
         self.execute(query, (total_findings, run_id))
-    
-    def fail_analysis_run(self, run_id, error_message):
-        """Mark analysis run as failed"""
+
+    def fail_analysis_run(self, run_id, _error_message=None):
+        """Mark analysis run as failed
+
+        Args:
+            run_id: Run ID to mark as failed
+            _error_message: Optional error message (reserved for future logging)
+        """
         query = """
             UPDATE analysis_runs
             SET status = 'failed',
@@ -107,13 +117,13 @@ class Database:
             WHERE id = %s
         """
         self.execute(query, (run_id,))
-    
+
     def get_analysis_run(self, run_id):
         """Get analysis run details"""
         query = "SELECT * FROM analysis_runs WHERE id = %s"
         results = self.execute(query, (run_id,), fetch=True)
         return results[0] if results else None
-    
+
     def list_analysis_runs(self, limit=50):
         """List recent analysis runs"""
         query = """
@@ -124,19 +134,19 @@ class Database:
             LIMIT %s
         """
         return self.execute(query, (limit,), fetch=True)
-    
+
     # ===== ALIASES FOR COMPATIBILITY =====
-    
+
     def get_run_info(self, run_id):
         """Get run metadata (alias for get_analysis_run)"""
         return self.get_analysis_run(run_id)
-    
+
     def get_recent_runs(self, limit=10):
         """Get recent analysis runs (alias for list_analysis_runs)"""
         return self.list_analysis_runs(limit)
-    
+
     # ===== FINDINGS =====
-    
+
     def insert_finding(self, run_id, finding_dict):
         """Insert a normalized finding"""
         query = """
@@ -148,45 +158,45 @@ class Database:
                 %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s
             ) RETURNING id
         """
-        
+
         params = (
             run_id,
-            finding_dict.get('tool_raw', {}).get('tool_name', 'unknown'),
-            finding_dict.get('original_rule_id', finding_dict.get('rule_id')),
-            finding_dict.get('canonical_rule_id', finding_dict.get('rule_id')),
-            finding_dict.get('severity', 'low'),
-            finding_dict.get('file', 'unknown'),
-            finding_dict.get('line', 0),
-            finding_dict.get('column', 0),
-            finding_dict.get('severity', 'low'),
-            finding_dict.get('category', 'unknown'),
-            finding_dict.get('message', ''),
-            Json(finding_dict.get('evidence', {})),
-            Json(finding_dict.get('tool_raw', {}))
+            finding_dict.get("tool_raw", {}).get("tool_name", "unknown"),
+            finding_dict.get("original_rule_id", finding_dict.get("rule_id")),
+            finding_dict.get("canonical_rule_id", finding_dict.get("rule_id")),
+            finding_dict.get("severity", "low"),
+            finding_dict.get("file", "unknown"),
+            finding_dict.get("line", 0),
+            finding_dict.get("column", 0),
+            finding_dict.get("severity", "low"),
+            finding_dict.get("category", "unknown"),
+            finding_dict.get("message", ""),
+            Json(finding_dict.get("evidence", {})),
+            Json(finding_dict.get("tool_raw", {})),
         )
-        
+
         result = self.execute(query, params, fetch=True)
-        return result[0]['id'] if result else None
-    
+        return result[0]["id"] if result else None
+
     def get_findings(self, run_id=None, severity=None, category=None, limit=100):
         """Query findings with filters"""
         conditions = []
         params = []
-        
+
         if run_id:
             conditions.append("run_id = %s")
             params.append(run_id)
-        
+
         if severity:
             conditions.append("canonical_severity = %s")
             params.append(severity)
-        
+
         if category:
             conditions.append("category = %s")
             params.append(category)
-        
+
         where_clause = "WHERE " + " AND ".join(conditions) if conditions else ""
-        
+
         query = f"""
             SELECT * FROM findings
             {where_clause}
@@ -199,10 +209,10 @@ class Database:
                 file_path, line_number
             LIMIT %s
         """
-        
+
         params.append(limit)
         return self.execute(query, tuple(params), fetch=True)
-    
+
     def get_findings_with_explanations(self, run_id):
         """Get all findings with their explanations for a run"""
         query = """
@@ -233,21 +243,21 @@ class Database:
                 f.line_number
         """
         return self.execute(query, (run_id,), fetch=True)
-    
+
     def update_finding_ground_truth(self, finding_id, ground_truth):
         """Update ground truth label for evaluation"""
-        if ground_truth not in ['TP', 'FP', 'TN', 'FN']:
+        if ground_truth not in ["TP", "FP", "TN", "FN"]:
             raise ValueError(f"Invalid ground_truth: {ground_truth}")
-        
+
         query = """
             UPDATE findings
             SET ground_truth = %s
             WHERE id = %s
         """
         self.execute(query, (ground_truth, finding_id))
-    
+
     # ===== LLM EXPLANATIONS =====
-    
+
     def insert_explanation(self, finding_id, explanation_dict):
         """Store LLM explanation with full provenance"""
         query = """
@@ -259,23 +269,23 @@ class Database:
                 %s, %s, %s, %s, %s, %s, %s, %s, %s, %s
             ) RETURNING id
         """
-        
+
         params = (
             finding_id,
-            explanation_dict.get('model_name', 'unknown'),
-            explanation_dict.get('prompt_filled', ''),
-            explanation_dict.get('response_text', ''),
-            explanation_dict.get('temperature', 0.3),
-            explanation_dict.get('max_tokens', 150),
-            explanation_dict.get('tokens_used'),
-            explanation_dict.get('latency_ms', 0),
-            explanation_dict.get('cost_usd', 0),
-            explanation_dict.get('status', 'success')
+            explanation_dict.get("model_name", "unknown"),
+            explanation_dict.get("prompt_filled", ""),
+            explanation_dict.get("response_text", ""),
+            explanation_dict.get("temperature", 0.3),
+            explanation_dict.get("max_tokens", 150),
+            explanation_dict.get("tokens_used"),
+            explanation_dict.get("latency_ms", 0),
+            explanation_dict.get("cost_usd", 0),
+            explanation_dict.get("status", "success"),
         )
-        
+
         result = self.execute(query, params, fetch=True)
-        return result[0]['id'] if result else None
-    
+        return result[0]["id"] if result else None
+
     def get_explanations(self, finding_id=None, run_id=None):
         """Get explanations with optional filters"""
         if finding_id:
@@ -285,7 +295,7 @@ class Database:
                 ORDER BY created_at DESC
             """
             return self.execute(query, (finding_id,), fetch=True)
-        
+
         elif run_id:
             query = """
                 SELECT e.* FROM llm_explanations e
@@ -294,7 +304,7 @@ class Database:
                 ORDER BY e.created_at DESC
             """
             return self.execute(query, (run_id,), fetch=True)
-        
+
         else:
             query = """
                 SELECT * FROM llm_explanations
@@ -302,11 +312,18 @@ class Database:
                 LIMIT 100
             """
             return self.execute(query, fetch=True)
-    
+
     # ===== FEEDBACK =====
-    
-    def insert_feedback(self, finding_id, user_id, is_false_positive=None, 
-                       is_helpful=None, clarity_rating=None, comment=None):
+
+    def insert_feedback(
+        self,
+        finding_id,
+        user_id,
+        is_false_positive=None,
+        is_helpful=None,
+        clarity_rating=None,
+        comment=None,
+    ):
         """Store user feedback"""
         query = """
             INSERT INTO feedback (
@@ -315,11 +332,17 @@ class Database:
             ) VALUES (%s, %s, %s, %s, %s, %s)
             RETURNING id
         """
-        params = (finding_id, user_id, is_false_positive, 
-                 is_helpful, clarity_rating, comment)
+        params = (
+            finding_id,
+            user_id,
+            is_false_positive,
+            is_helpful,
+            clarity_rating,
+            comment,
+        )
         result = self.execute(query, params, fetch=True)
-        return result[0]['id'] if result else None
-    
+        return result[0]["id"] if result else None
+
     def get_feedback_stats(self, run_id=None):
         """Get aggregated feedback statistics"""
         if run_id:
@@ -344,11 +367,11 @@ class Database:
                 FROM feedback
             """
             results = self.execute(query, fetch=True)
-        
+
         return results[0] if results else {}
-    
+
     # ===== ANALYTICS =====
-    
+
     def get_run_summary(self, run_id):
         """Get comprehensive summary for a run"""
         query = """
@@ -369,7 +392,7 @@ class Database:
         """
         results = self.execute(query, (run_id,), fetch=True)
         return results[0] if results else None
-    
+
     def close(self):
         """Close database connection"""
         if self.conn:
@@ -378,7 +401,7 @@ class Database:
 
 
 # Test connection
-if __name__ == '__main__':
+if __name__ == "__main__":
     print("Testing database connection...")
     try:
         db = Database()

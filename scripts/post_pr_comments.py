@@ -3,6 +3,7 @@
 Post ACR-QA findings as GitHub PR comments
 Sorted by severity: HIGH → MEDIUM → LOW
 """
+
 import os
 import sys
 import argparse
@@ -16,42 +17,38 @@ from github import Github
 
 def format_severity_emoji(severity):
     """Get emoji for severity level"""
-    return {
-        'high': '🔴',
-        'medium': '🟡',
-        'low': '🟢'
-    }.get(severity, '⚪')
+    return {"high": "🔴", "medium": "🟡", "low": "🟢"}.get(severity, "⚪")
 
 
 def format_pr_comment(findings):
     """
     Format findings as a single PR comment with severity sections
-    
+
     Args:
         findings: List of finding dicts from database
-        
+
     Returns:
         Formatted markdown comment
     """
     # Group by severity
-    by_severity = {'high': [], 'medium': [], 'low': []}
+    by_severity = {"high": [], "medium": [], "low": []}
     for f in findings:
-        sev = f.get('canonical_severity', 'low')
+        sev = f.get("canonical_severity", "low")
         by_severity[sev].append(f)
-    
+
     # Count totals
     total = len(findings)
-    high_count = len(by_severity['high'])
-    medium_count = len(by_severity['medium'])
-    low_count = len(by_severity['low'])
-    
+    high_count = len(by_severity["high"])
+    medium_count = len(by_severity["medium"])
+    low_count = len(by_severity["low"])
+
     # Build comment
     lines = []
     lines.append("## 🤖 ACR-QA Code Review")
     lines.append("")
     lines.append(f"**Analysis Complete:** Found **{total} issues**")
     lines.append("")
-    
+
     # Summary table
     lines.append("| Severity | Count |")
     lines.append("|----------|-------|")
@@ -59,82 +56,94 @@ def format_pr_comment(findings):
     lines.append(f"| 🟡 Medium | {medium_count} |")
     lines.append(f"| 🟢 Low | {low_count} |")
     lines.append("")
-    
+
     # HIGH severity findings (show all)
-    if by_severity['high']:
+    if by_severity["high"]:
         lines.append("---")
         lines.append("")
         lines.append("### 🔴 High Priority Issues")
         lines.append("**⚠️ These issues should be addressed immediately**")
         lines.append("")
-        
-        for i, finding in enumerate(by_severity['high'], 1):
-            lines.append(f"#### {i}. {finding['canonical_rule_id']} - {finding['category']}")
+
+        for i, finding in enumerate(by_severity["high"], 1):
+            lines.append(
+                f"#### {i}. {finding['canonical_rule_id']} - {finding['category']}"
+            )
             lines.append("")
-            lines.append(f"**📍 Location:** `{finding['file_path']}:{finding['line_number']}`")
+            lines.append(
+                f"**📍 Location:** `{finding['file_path']}:{finding['line_number']}`"
+            )
             lines.append("")
             lines.append(f"**📝 Issue:**")
             lines.append(f"> {finding['message']}")
             lines.append("")
-            
+
             # Get explanation from database
-            explanation = finding.get('explanation_text')
+            explanation = finding.get("explanation_text")
             if explanation:
                 lines.append(f"**💡 AI Explanation:**")
                 lines.append("")
                 lines.append(explanation)
                 lines.append("")
-            
+
             lines.append("---")
             lines.append("")
-    
+
     # MEDIUM severity findings (show first 5)
-    if by_severity['medium']:
+    if by_severity["medium"]:
         lines.append("### 🟡 Medium Priority Issues")
         lines.append("")
-        
-        to_show = by_severity['medium'][:5]
+
+        to_show = by_severity["medium"][:5]
         for i, finding in enumerate(to_show, 1):
             lines.append(f"#### {i}. {finding['canonical_rule_id']}")
-            lines.append(f"**Location:** `{finding['file_path']}:{finding['line_number']}`")
+            lines.append(
+                f"**Location:** `{finding['file_path']}:{finding['line_number']}`"
+            )
             lines.append(f"**Message:** {finding['message']}")
-            
-            explanation = finding.get('explanation_text')
+
+            explanation = finding.get("explanation_text")
             if explanation:
                 # Truncate long explanations
-                truncated = explanation[:200] + "..." if len(explanation) > 200 else explanation
+                truncated = (
+                    explanation[:200] + "..." if len(explanation) > 200 else explanation
+                )
                 lines.append(f"**Explanation:** {truncated}")
-            
+
             lines.append("")
-        
-        if len(by_severity['medium']) > 5:
-            remaining = len(by_severity['medium']) - 5
+
+        if len(by_severity["medium"]) > 5:
+            remaining = len(by_severity["medium"]) - 5
             lines.append(f"*... and {remaining} more medium-priority issues*")
             lines.append("")
-    
+
     # LOW severity summary
-    if by_severity['low']:
+    if by_severity["low"]:
         lines.append("### 🟢 Low Priority Issues")
         lines.append("")
         lines.append(f"**Total:** {low_count} issues found")
         lines.append("")
-        lines.append("*Low priority issues include style violations and minor improvements. ")
+        lines.append(
+            "*Low priority issues include style violations and minor improvements. "
+        )
         lines.append("View the full report for details.*")
         lines.append("")
-    
+
     # Footer
     lines.append("---")
     lines.append("")
-    lines.append("*Generated by [ACR-QA v2.0](https://github.com/yourusername/acr-qa) - ")
+    lines.append(
+        "*Generated by [ACR-QA v2.0](https://github.com/yourusername/acr-qa) - "
+    )
     lines.append("Automated Code Review & Quality Assurance*")
-    
+
     return "\n".join(lines)
 
 
 def post_to_github(repo_name, pr_number, comment_body, github_token):
     """
     Post comment to GitHub PR
-    
+
     Args:
         repo_name: Repository name (e.g., "user/repo")
         pr_number: Pull request number
@@ -145,27 +154,29 @@ def post_to_github(repo_name, pr_number, comment_body, github_token):
         g = Github(github_token)
         repo = g.get_repo(repo_name)
         pr = repo.get_pull(pr_number)
-        
+
         # Post comment
         pr.create_issue_comment(comment_body)
-        
+
         print(f"✅ Posted comment to PR #{pr_number}")
         return True
-        
+
     except Exception as e:
         print(f"❌ Failed to post comment: {e}")
         return False
 
 
 def main():
-    parser = argparse.ArgumentParser(description='Post ACR-QA findings to GitHub PR')
-    parser.add_argument('--repo', required=True, help='Repository name (user/repo)')
-    parser.add_argument('--pr-number', type=int, required=True, help='Pull request number')
-    parser.add_argument('--run-id', type=int, help='Analysis run ID')
-    parser.add_argument('--run-id-file', help='File containing run ID')
-    
+    parser = argparse.ArgumentParser(description="Post ACR-QA findings to GitHub PR")
+    parser.add_argument("--repo", required=True, help="Repository name (user/repo)")
+    parser.add_argument(
+        "--pr-number", type=int, required=True, help="Pull request number"
+    )
+    parser.add_argument("--run-id", type=int, help="Analysis run ID")
+    parser.add_argument("--run-id-file", help="File containing run ID")
+
     args = parser.parse_args()
-    
+
     # Get run ID
     run_id = args.run_id
     if not run_id and args.run_id_file:
@@ -174,43 +185,43 @@ def main():
                 run_id = int(f.read().strip())
         except:
             pass
-    
+
     if not run_id:
         # Get latest run
         db = Database()
         runs = db.get_recent_runs(limit=1)
         if runs:
-            run_id = runs[0]['id']
+            run_id = runs[0]["id"]
         else:
             print("❌ No run ID found")
             sys.exit(1)
-    
+
     # Get findings with explanations
     db = Database()
     findings = db.get_findings_with_explanations(run_id)
-    
+
     if not findings:
         print("ℹ️  No findings to post")
         return
-    
+
     print(f"📊 Found {len(findings)} issues")
-    
+
     # Format comment
     comment = format_pr_comment(findings)
-    
+
     # Post to GitHub
-    github_token = os.getenv('GITHUB_TOKEN')
+    github_token = os.getenv("GITHUB_TOKEN")
     if not github_token:
         print("❌ GITHUB_TOKEN not set")
         sys.exit(1)
-    
+
     success = post_to_github(args.repo, args.pr_number, comment, github_token)
-    
+
     if success:
         print("✅ PR comment posted successfully")
     else:
         sys.exit(1)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

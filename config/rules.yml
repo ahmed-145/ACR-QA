@@ -229,3 +229,378 @@ COMPLEXITY-001:
                 if user.parent.verified:
                     # ... many more nested conditions
                     pass
+
+# ===== NEW RULES (MEDIUM Priority - Expand Knowledge Base) =====
+
+EXCEPT-001:
+  name: "Bare Except Clause"
+  category: "best-practice"
+  severity: "medium"
+  description: "Using bare 'except:' catches all exceptions including SystemExit and KeyboardInterrupt"
+  rationale: |
+    Bare except clauses catch ALL exceptions, including ones you probably don't want
+    to catch like KeyboardInterrupt (Ctrl+C) and SystemExit. This can make debugging
+    difficult and hide real errors.
+  remediation: "Catch specific exceptions, or at minimum use 'except Exception:'"
+  example_good: |
+    try:
+        result = risky_operation()
+    except ValueError as e:
+        logger.error(f"Invalid value: {e}")
+    except Exception as e:
+        logger.error(f"Unexpected error: {e}")
+  example_bad: |
+    try:
+        result = risky_operation()
+    except:  # BAD! Catches everything including Ctrl+C
+        pass
+
+HARDCODE-001:
+  name: "Hardcoded Secret"
+  category: "security"
+  severity: "high"
+  description: "Hardcoded password, API key, or secret in source code"
+  rationale: |
+    Hardcoded secrets in source code can be exposed through version control,
+    code sharing, or decompilation. Once a secret is in git history, it's
+    extremely difficult to fully remove. Attackers actively scan for such leaks.
+  remediation: "Use environment variables or a secrets manager (e.g., AWS Secrets Manager, HashiCorp Vault)"
+  example_good: |
+    import os
+    api_key = os.getenv('API_KEY')
+    password = os.getenv('DB_PASSWORD')
+  example_bad: |
+    api_key = "sk-1234567890abcdef"  # EXPOSED!
+    password = "admin123"  # EXPOSED!
+
+ASYNC-001:
+  name: "Async/Await Issue"
+  category: "best-practice"
+  severity: "medium"
+  description: "Incorrect use of async/await patterns"
+  rationale: |
+    Async functions that don't await properly can lead to race conditions,
+    unhandled promises, or blocking behavior. Missing await means the coroutine
+    won't execute as expected.
+  remediation: "Ensure all async calls are properly awaited or gathered"
+  example_good: |
+    async def fetch_data():
+        result = await api_client.get('/data')
+        return result
+  example_bad: |
+    async def fetch_data():
+        result = api_client.get('/data')  # Missing await!
+        return result
+
+TYPE-001:
+  name: "Type Annotation Issue"
+  category: "style"
+  severity: "low"
+  description: "Missing or incorrect type annotations"
+  rationale: |
+    Type annotations improve code readability, enable better IDE support,
+    and allow static type checkers like mypy to catch bugs before runtime.
+  remediation: "Add type hints to function parameters and return values"
+  example_good: |
+    def greet(name: str) -> str:
+        return f"Hello, {name}!"
+  example_bad: |
+    def greet(name):  # No type hints
+        return f"Hello, {name}!"
+
+# Security rules for Bandit integration
+SECURITY-002:
+  name: "Assert Used in Production"
+  category: "security"
+  severity: "low"
+  description: "Assert statements are removed when Python runs with -O flag"
+  rationale: |
+    Assert statements are stripped out when Python runs in optimized mode (-O).
+    Never use assert for security checks or input validation.
+  remediation: "Use proper if/raise statements for validation"
+  example_good: |
+    if not user.is_authenticated:
+        raise PermissionError("User not authenticated")
+  example_bad: |
+    assert user.is_authenticated  # Removed in production with -O!
+
+SECURITY-005:
+  name: "Hardcoded Password"
+  category: "security"
+  severity: "high"
+  description: "Password or secret hardcoded in source code"
+  rationale: |
+    Hardcoded passwords can be extracted from source code or binaries.
+    Use environment variables or secure secret management.
+  remediation: "Use os.getenv() or a secrets manager"
+  example_good: |
+    password = os.getenv('DB_PASSWORD')
+  example_bad: |
+    password = "SuperSecret123"  # EXPOSED!
+
+SECURITY-008:
+  name: "Unsafe Pickle Usage"
+  category: "security"
+  severity: "high"
+  description: "Pickle can execute arbitrary code during deserialization"
+  rationale: |
+    Pickle is not secure against maliciously crafted data. An attacker can
+    craft a pickle that executes arbitrary code when unpickled.
+  remediation: "Use JSON or other safe serialization formats for untrusted data"
+  example_good: |
+    import json
+    data = json.loads(user_input)
+  example_bad: |
+    import pickle
+    data = pickle.loads(user_input)  # DANGEROUS!
+
+SECURITY-021:
+  name: "Shell Injection Risk"
+  category: "security"
+  severity: "high"
+  description: "Using shell=True in subprocess with user input"
+  rationale: |
+    shell=True passes the command through the shell, enabling command injection
+    if any part of the command comes from user input.
+  remediation: "Use shell=False and pass arguments as a list"
+  example_good: |
+    import subprocess
+    subprocess.run(['ls', '-la', user_dir], shell=False)
+  example_bad: |
+    import subprocess
+    subprocess.run(f"ls -la {user_dir}", shell=True)  # INJECTION RISK!
+
+SECURITY-027:
+  name: "SQL Injection Risk"
+  category: "security"
+  severity: "high"
+  description: "Hardcoded SQL with string formatting vulnerable to injection"
+  rationale: |
+    String formatting in SQL queries allows attackers to inject malicious SQL.
+    This can lead to data theft, modification, or complete database compromise.
+  remediation: "Use parameterized queries with placeholders"
+  example_good: |
+    cursor.execute("SELECT * FROM users WHERE id = %s", (user_id,))
+  example_bad: |
+    cursor.execute(f"SELECT * FROM users WHERE id = {user_id}")  # INJECTION!
+
+# ===== PERFORMANCE RULES =====
+
+PERF-001:
+  name: "Inefficient Loop"
+  category: "performance"
+  severity: "medium"
+  description: "Loop performs unnecessary operations or repeated calculations"
+  rationale: |
+    Loops that recalculate invariant values or perform unnecessary operations
+    waste CPU cycles. Moving invariant calculations outside loops improves performance.
+  remediation: "Move invariant calculations outside the loop"
+  example_good: |
+    upper_limit = len(items)
+    for i in range(upper_limit):
+        process(items[i])
+  example_bad: |
+    for i in range(len(items)):  # len() called every iteration
+        process(items[i])
+
+PERF-002:
+  name: "String Concatenation in Loop"
+  category: "performance"
+  severity: "medium"
+  description: "Using + for string concatenation in loops is O(n²)"
+  rationale: |
+    Strings are immutable in Python. Using + in a loop creates a new string
+    object each iteration, leading to O(n²) complexity. Use join() instead.
+  remediation: "Use ''.join() or list comprehension"
+  example_good: |
+    result = ''.join(str(x) for x in items)
+  example_bad: |
+    result = ""
+    for x in items:
+        result += str(x)  # Creates new string each time!
+
+# ===== DOCUMENTATION RULES =====
+
+DOC-001:
+  name: "Missing Docstring"
+  category: "documentation"
+  severity: "low"
+  description: "Public function/class lacks docstring"
+  rationale: |
+    Docstrings are the primary way to document Python code. They enable
+    auto-generated documentation and help other developers understand your code.
+  remediation: "Add docstring with description, args, and returns"
+  example_good: |
+    def calculate_total(items: list) -> float:
+        """Calculate total price of items.
+        
+        Args:
+            items: List of item dictionaries with 'price' key
+            
+        Returns:
+            Total price as float
+        """
+        return sum(item['price'] for item in items)
+  example_bad: |
+    def calculate_total(items):
+        return sum(item['price'] for item in items)
+
+DOC-002:
+  name: "Outdated Comment"
+  category: "documentation"
+  severity: "low"
+  description: "Comment contradicts the code"
+  rationale: |
+    Outdated comments are worse than no comments - they mislead developers
+    and can cause bugs when code is modified based on incorrect documentation.
+  remediation: "Update or remove outdated comments"
+  example_good: |
+    # Calculate average (mean)
+    avg = sum(values) / len(values)
+  example_bad: |
+    # Calculate median
+    avg = sum(values) / len(values)  # Actually calculates mean!
+
+# ===== ERROR HANDLING RULES =====
+
+ERROR-001:
+  name: "Silent Exception"
+  category: "best-practice"
+  severity: "medium"
+  description: "Exception caught but not logged or handled"
+  rationale: |
+    Silent exceptions hide errors, making debugging impossible. Always log
+    exceptions or re-raise them after cleanup.
+  remediation: "Log the exception or re-raise after cleanup"
+  example_good: |
+    try:
+        risky_operation()
+    except Exception as e:
+        logger.error(f"Operation failed: {e}")
+        cleanup()
+        raise
+  example_bad: |
+    try:
+        risky_operation()
+    except Exception:
+        pass  # Silent failure!
+
+ERROR-002:
+  name: "Catching Too Broad"
+  category: "best-practice"
+  severity: "low"
+  description: "Catching Exception instead of specific exceptions"
+  rationale: |
+    Catching broad exceptions can hide unexpected errors. Catch specific
+    exceptions you know how to handle.
+  remediation: "Catch specific exception types"
+  example_good: |
+    try:
+        value = int(user_input)
+    except ValueError:
+        print("Invalid number")
+  example_bad: |
+    try:
+        value = int(user_input)
+    except Exception:  # Too broad!
+        print("Invalid number")
+
+# ===== CONCURRENCY RULES =====
+
+THREAD-001:
+  name: "Race Condition"
+  category: "concurrency"
+  severity: "high"
+  description: "Shared state accessed without synchronization"
+  rationale: |
+    Multiple threads accessing shared state without locks can cause race
+    conditions, leading to data corruption and unpredictable behavior.
+  remediation: "Use locks, queues, or thread-safe data structures"
+  example_good: |
+    from threading import Lock
+    lock = Lock()
+    
+    def increment():
+        with lock:
+            global counter
+            counter += 1
+  example_bad: |
+    def increment():
+        global counter
+        counter += 1  # Race condition!
+
+# ===== LOGGING RULES =====
+
+LOG-001:
+  name: "Logging Sensitive Data"
+  category: "security"
+  severity: "high"
+  description: "Logging passwords, tokens, or PII"
+  rationale: |
+    Logs are often stored insecurely and may be accessible to unauthorized
+    parties. Never log sensitive data like passwords or API keys.
+  remediation: "Redact sensitive data before logging"
+  example_good: |
+    logger.info(f"User {user_id} logged in")
+  example_bad: |
+    logger.info(f"User {username} logged in with password {password}")
+
+# ===== RESOURCE MANAGEMENT =====
+
+RESOURCE-001:
+  name: "File Not Closed"
+  category: "best-practice"
+  severity: "medium"
+  description: "File opened without using context manager"
+  rationale: |
+    Files not closed properly can lead to resource leaks, especially in
+    long-running applications. Use 'with' statement for automatic cleanup.
+  remediation: "Use 'with' statement for file operations"
+  example_good: |
+    with open('file.txt') as f:
+        data = f.read()
+  example_bad: |
+    f = open('file.txt')
+    data = f.read()
+    # File might not be closed if exception occurs!
+
+# ===== API DESIGN RULES =====
+
+API-001:
+  name: "Mutable Default Argument"
+  category: "best-practice"
+  severity: "medium"
+  description: "Using mutable object as default argument"
+  rationale: |
+    Mutable default arguments are shared across all function calls, leading
+    to unexpected behavior. Use None and create new object inside function.
+  remediation: "Use None as default, create mutable inside function"
+  example_good: |
+    def add_item(item, items=None):
+        if items is None:
+            items = []
+        items.append(item)
+        return items
+  example_bad: |
+    def add_item(item, items=[]):  # Shared across calls!
+        items.append(item)
+        return items
+
+INPUT-001:
+  name: "Missing Input Validation"
+  category: "security"
+  severity: "high"
+  description: "User input used without validation"
+  rationale: |
+    Unvalidated input can lead to injection attacks, crashes, or unexpected
+    behavior. Always validate and sanitize user input.
+  remediation: "Validate input type, range, and format"
+  example_good: |
+    def set_age(age):
+        if not isinstance(age, int) or age < 0 or age > 150:
+            raise ValueError("Invalid age")
+        self.age = age
+  example_bad: |
+    def set_age(age):
+        self.age = age  # No validation!
+

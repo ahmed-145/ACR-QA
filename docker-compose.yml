@@ -1,4 +1,4 @@
-# version: '3.8'
+# Docker Compose for ACR-QA v2.0
 
 services:
   # PostgreSQL Database
@@ -6,18 +6,34 @@ services:
     image: postgres:15-alpine
     container_name: acr-qa-postgres
     environment:
-      POSTGRES_DB: acr_qa_db
-      POSTGRES_USER: acr_user
-      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB: acrqa
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-postgres}
     ports:
-    - "5433:5432"
+      - "5433:5432"
     volumes:
       # Persist database data
       - postgres_data:/var/lib/postgresql/data
       # Auto-initialize schema
       - ./DATABASE/schema.sql:/docker-entrypoint-initdb.d/schema.sql:ro
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U acr_user -d acr_qa_db"]
+      test: [ "CMD-SHELL", "pg_isready -U postgres -d acrqa" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - acr-network
+
+  # Redis for Rate Limiting
+  redis:
+    image: redis:7-alpine
+    container_name: acr-qa-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: [ "CMD", "redis-cli", "ping" ]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -32,27 +48,40 @@ services:
     container_name: acr-qa-app
     environment:
       # Database connection (connects to postgres service)
-      DB_NAME: acr_qa_db
-      DB_USER: acr_user
-      DB_PASSWORD: ${DB_PASSWORD}
-      DB_HOST: postgres  # Service name in docker-compose
+      DB_NAME: acrqa
+      DB_USER: postgres
+      DB_PASSWORD: ${DB_PASSWORD:-postgres}
+      DB_HOST: postgres # Service name in docker-compose
       DB_PORT: 5432
-      
+
       # Cerebras API
       CEREBRAS_API_KEY: ${CEREBRAS_API_KEY}
-      
+
+      # Redis (Rate Limiting)
+      REDIS_HOST: redis # Service name in docker-compose
+      REDIS_PORT: 6379
+
       # GitHub/GitLab (optional)
       GITHUB_TOKEN: ${GITHUB_TOKEN:-}
       GITLAB_TOKEN: ${GITLAB_TOKEN:-}
     ports:
-      - "5000:5000"  # Flask API
+      - "5000:5000" # Flask API
     volumes:
-      # Mount your code for live development
-      - ./:/app
-      # Persist outputs
-      - ./outputs:/app/outputs
+      # Mount specific directories (exclude .venv and cache)
+      - ./CORE:/app/CORE
+      - ./DATABASE:/app/DATABASE
+      - ./FRONTEND:/app/FRONTEND
+      - ./TOOLS:/app/TOOLS
+      - ./scripts:/app/scripts
+      - ./config:/app/config
+      - ./TESTS:/app/TESTS
+      - ./DATA/outputs:/app/DATA/outputs
+      - ./DATA/provenance:/app/DATA/provenance
+      - ./DATA/reports:/app/DATA/reports
     depends_on:
       postgres:
+        condition: service_healthy
+      redis:
         condition: service_healthy
     networks:
       - acr-network
@@ -62,6 +91,8 @@ services:
 
 volumes:
   postgres_data:
+    driver: local
+  redis_data:
     driver: local
 
 networks:

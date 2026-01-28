@@ -1,0 +1,52 @@
+============================================================
+ACR-QA v2.0 Provenance Summary
+============================================================
+
+Run ID: 41
+Repository: final-test
+Status: completed
+Started: 2026-01-28 03:33:08.998251
+Completed: 2026-01-28 03:33:08.998251
+
+------------------------------------------------------------
+FINDINGS SUMMARY
+------------------------------------------------------------
+
+Total Findings: 3
+
+By Severity:
+  high      :   1
+  low       :   1
+  medium    :   1
+
+By Category:
+  best-practice       :   1
+  dead-code           :   1
+  security            :   1
+
+By Tool:
+  semgrep   :   2
+  vulture   :   1
+
+------------------------------------------------------------
+AI EXPLANATION METRICS
+------------------------------------------------------------
+
+Explanations Generated: 3
+Min Latency: 410ms
+Max Latency: 1418ms
+Avg Latency: 882ms
+Total Time: 2648ms (2.65s)
+
+------------------------------------------------------------
+FEEDBACK (if available)
+------------------------------------------------------------
+
+Total Feedback: 0
+False Positive Rate: 0.0%
+Helpful Rate: 0.0%
+Avg Clarity Rating: 0.00/5.0
+
+============================================================
+Export completed: 2026-01-28 03:33:29
+============================================================

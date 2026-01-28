@@ -27,16 +27,19 @@ COPY requirements.txt .
 # Install Python dependencies
 RUN pip install --no-cache-dir -r requirements.txt
 
+# Install Python analysis tools
+RUN pip install --no-cache-dir ruff semgrep vulture radon bandit
+
 # Copy application code
 COPY . .
 
 # Make scripts executable
-RUN chmod +x scripts/*.sh scripts/*.py
+RUN chmod +x TOOLS/*.sh scripts/*.py 2>/dev/null || true
 
-# Create outputs directory
-RUN mkdir -p outputs outputs/provenance
+# Create output directories with correct structure
+RUN mkdir -p DATA/outputs DATA/provenance DATA/reports
 
-# Expose port for Flask API (optional)
+# Expose port for Flask API
 EXPOSE 5000
 
 # Default command (can be overridden in docker-compose)

@@ -13,28 +13,80 @@
 ACR-QA is a language-agnostic code review platform that automatically detects issues, assigns intelligent severity levels, and provides AI-generated explanations grounded in rule definitions.
 
 **Key Features:**
-- 🔍 Multi-tool static analysis (Ruff, Semgrep, Vulture, Radon, jscpd)
+- 🔍 Multi-tool static analysis (Ruff, Semgrep, Vulture, Radon, jscpd, Bandit)
 - 🧠 RAG-enhanced AI explanations (Cerebras Llama 3.1)
 - 📊 Context-aware severity scoring (HIGH/MEDIUM/LOW)
-- 🚀 GitHub Action integration with PR comments
+- 🚀 GitHub + GitLab CI/CD integration
 - 💾 Complete provenance tracking
 - 📈 Beautiful web dashboard
+- 🔒 OWASP/SANS compliance reporting
 - 💰 Zero recurring costs (free tier APIs)
 
 ---
 
-## 📊 Demo Results
+## 🎓 Thesis Evaluation Criteria
 
-**Sample Analysis (Run 28):**
-```
-Total Findings: 56
-├─ 🔴 HIGH:   1 (SECURITY-001: eval() usage)
-├─ 🟡 MEDIUM: 5 (PATTERN-001, DEAD-001, COMPLEXITY-001)
-└─ 🟢 LOW:    50 (VAR-001, IMPORT-001, DEAD-001)
+This section maps ACR-QA's design to academic research questions and evaluation metrics.
 
-AI Explanations: 56/56 generated
-Performance: ~90 seconds
-Cost: $0.025 per analysis
+### Research Questions Addressed
+
+| Research Question | ACR-QA Implementation | Evaluation Method |
+|-------------------|----------------------|-------------------|
+| **RQ1: Can RAG reduce LLM hallucination?** | Rules.yml knowledge base + evidence-grounded prompts | `cites_rule` field tracks citation accuracy |
+| **RQ2: How to ensure provenance?** | PostgreSQL audit trail with full metadata | `llm_explanations` table stores all context |
+| **RQ3: What confidence scoring works?** | 0.6-0.9 based on rule citation presence | Compare with ground truth labels |
+| **RQ4: Does it match industry tools?** | 6 tools vs CodeRabbit/SonarQube | Feature parity comparison |
+
+### Academic Metrics Implemented
+
+#### 1. Hallucination Grounding
+- **Metric**: `cites_rule` boolean (does explanation cite the canonical rule?)
+- **Implementation**: String matching in `explainer.py`
+- **Baseline**: 90% citation rate (high confidence = 0.9)
+
+#### 2. Provenance Tracking
+- **Metric**: Complete audit trail from detection → explanation → user feedback
+- **Implementation**: `llm_explanations` table with:
+  - `prompt_filled`: Full RAG prompt sent to LLM
+  - `response_text`: Raw LLM output
+  - `model_name`, `temperature`, `tokens_used`: Reproducibility metadata
+  - `latency_ms`, `cost_usd`: Performance tracking
+- **Evaluation**: `export_provenance.py` generates full trace
+
+#### 3. Confidence Scoring
+- **Metric**: 0.0-1.0 confidence based on grounding quality
+- **Implementation**:
+  - High (0.9): Explanation cites canonical rule ID
+  - Medium (0.6): Explanation generated but no citation
+- **Evaluation**: Compare with `ground_truth` labels in Phase 2
+
+#### 4. Industry Feature Parity
+
+| Feature | CodeRabbit | SonarQube | ACR-QA | Status |
+|---------|------------|-----------|--------|--------|
+| Multi-tool Analysis | 3-4 | 35+ langs | 6 tools | ✅ |
+| AI Explanations | ✅ | AI CodeFix | RAG | ✅ |
+| Source Citations | ✅ | ✅ | `[RULE-ID](rules.yml)` | ✅ |
+| Autofix Suggestions | ✅ | ✅ | Code examples | ✅ |
+| Response Caching | ✅ | ✅ | Redis 7-day | ✅ |
+| GitHub CI/CD | ✅ | ✅ | ✅ | ✅ |
+| GitLab CI/CD | ✅ | ✅ | ✅ | ✅ |
+| Compliance (OWASP) | ⚠️ | ✅ | ✅ | ✅ |
+
+### Evaluation Commands
+
+```bash
+# 1. Run analysis with provenance tracking
+python3 CORE/main.py --target-dir myproject --limit 10
+
+# 2. Export full provenance data
+python3 scripts/export_provenance.py <RUN_ID>
+
+# 3. Compute accuracy metrics (requires ground truth labels)
+python3 scripts/compute_metrics.py --run-id <RUN_ID>
+
+# 4. Generate compliance report
+python3 scripts/compliance_report.py --run-id <RUN_ID>
 ```
 
 ---
