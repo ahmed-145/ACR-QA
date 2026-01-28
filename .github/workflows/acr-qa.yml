@@ -111,11 +111,16 @@ jobs:
         if: steps.changed-files.outputs.any_changed == 'true'
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          DB_HOST: localhost
+          DB_PORT: 5432
+          DB_NAME: acrqa_test
+          DB_USER: postgres
+          DB_PASSWORD: postgres
         run: |
           python3 scripts/post_pr_comments.py \
             --repo "${{ github.repository }}" \
             --pr-number ${{ github.event.pull_request.number }} \
-            --run-id-file /tmp/acr_run_id.txt
+            --token "${{ secrets.GITHUB_TOKEN }}"run_id.txt
   
   # Job 2: Manual trigger via comment
   manual-trigger:
