@@ -105,7 +105,10 @@ jobs:
             --target-dir /tmp/pr-files \
             --repo-name "${{ github.repository }}" \
             --pr-number ${{ github.event.pull_request.number }} \
-            --limit 100
+            --limit 100 | tee /tmp/analysis_output.txt
+          
+          # Extract run ID from output
+          grep "Run ID:" /tmp/analysis_output.txt | awk '{print $NF}' > /tmp/acr_run_id.txt
       
       - name: Post PR Comments
         if: steps.changed-files.outputs.any_changed == 'true'
