@@ -198,10 +198,80 @@ def get_categories():
 
 
 
+@app.route("/api/refresh-findings", methods=["POST"])
+def refresh_findings():
+    """
+    Quick Refresh: Re-run detection tools and update database
+    WITHOUT generating AI explanations (fast refresh for development)
+    
+    This solves the synchronization issue where tool outputs are updated
+    but the database still has old data.
+    """
+    import subprocess
+    import json as json_module
+    from pathlib import Path as PathLib
+    
+    try:
+        # Get parameters
+        data = request.get_json() or {}
+        target_dir = data.get("target_dir", "TESTS/samples/comprehensive-issues")
+        repo_name = data.get("repo_name", "quick-refresh")
+        skip_detection = data.get("skip_detection", False)  # Re-use existing tool outputs
+        
+        project_root = PathLib(__file__).parent.parent
+        
+        # Step 1: Run detection tools (unless skipped)
+        if not skip_detection:
+            subprocess.run(
+                ["bash", "TOOLS/run_checks.sh", target_dir],
+                cwd=str(project_root),
+                check=True,
+                capture_output=True
+            )
+        
+        # Step 2: Normalize findings
+        from CORE.engines.normalizer import normalize_all
+        findings = normalize_all(project_root / "DATA" / "outputs")
+        
+        # Step 3: Create a new run in database
+        run_id = db.create_analysis_run(repo_name=repo_name)
+        
+        # Step 4: Insert findings into database (without explanations)
+        for finding in findings:
+            finding_dict = finding.to_dict()
+            db.insert_finding(run_id, finding_dict)
+        
+        # Step 5: Mark run as complete
+        db.complete_analysis_run(run_id, len(findings))
+        
+        # Save findings.json for reference
+        with open(project_root / "DATA" / "outputs" / "findings.json", "w") as f:
+            json_module.dump([f.to_dict() for f in findings], f, indent=2)
+        
+        # Category breakdown
+        from collections import Counter
+        cats = Counter(f.category for f in findings)
+        
+        return jsonify({
+            "success": True,
+            "run_id": run_id,
+            "total_findings": len(findings),
+            "categories": dict(cats),
+            "message": f"Quick refresh complete! {len(findings)} findings stored in database.",
+            "note": "No AI explanations generated (use main.py for full analysis)"
+        })
+        
+    except Exception as e:
+        import traceback
+        traceback.print_exc()
+        return jsonify({"success": False, "error": str(e)}), 500
+
+
 @app.route("/api/health")
 def health_check():
     """Health check endpoint for cloud deployment"""
     return jsonify({"status": "healthy", "version": "2.0"})
+
 
 
 @app.route("/api/analyze", methods=["POST"])
