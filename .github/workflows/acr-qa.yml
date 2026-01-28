@@ -120,7 +120,7 @@ jobs:
           python3 scripts/post_pr_comments.py \
             --repo "${{ github.repository }}" \
             --pr-number ${{ github.event.pull_request.number }} \
-            --token "${{ secrets.GITHUB_TOKEN }}"run_id.txt
+            --token "${{ secrets.GITHUB_TOKEN }}"
   
   # Job 2: Manual trigger via comment
   manual-trigger:
