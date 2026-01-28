@@ -595,3 +595,89 @@ AttributeError: 'RateLimiter' object has no attribute 'redis'
 
 **Session Status: Complete ✅**  
 **Thesis Status: Ready for Defense 🎓**
+
+---
+
+## GitHub Actions CI/CD Integration
+
+**Added:** January 28, 2026 (Later in session)  
+**Status:** ✅ Complete and Working
+
+### Overview
+
+GitHub Actions workflow automatically runs ACR-QA analysis on pull requests and posts findings as PR comments.
+
+**Location:** `.github/workflows/acr-qa.yml`
+
+**Triggers:**
+- Pull Request events: `opened`, `synchronize`, `reopened`
+- Manual trigger: Comment `acr-qa review` on PR
+
+### Service Containers
+
+**PostgreSQL 15:**
+```yaml
+postgres:
+  image: postgres:15
+  env:
+    POSTGRES_DB: acrqa_test
+    POSTGRES_USER: postgres
+    POSTGRES_PASSWORD: postgres
+```
+
+**Redis 7:**
+```yaml
+redis:
+  image: redis:7
+  ports:
+    - 6379:6379
+```
+
+### Workflow Steps
+
+1. **Setup** - Checkout code, Python 3.11, install dependencies
+2. **Database Init** - Initialize PostgreSQL with schema
+3. **Get Changed Files** - Detect modified Python files
+4. **Run Analysis** - Execute ACR-QA on changed files
+5. **Post Comments** - Post findings as PR comments
+
+### Issues Fixed
+
+#### Issue 1: PostgreSQL Authentication
+**Error:** `fe_sendauth: no password supplied`
+
+**Solution:** Added `PGPASSWORD` environment variable
+
+**Commit:** `a2bf750`
+
+#### Issue 2: Missing DB Environment Variables
+**Error:** `database "acrqa" does not exist`
+
+**Solution:** Added DB env vars to Post PR Comments step
+
+**Commit:** `99f2546`
+
+#### Issue 3: Run ID Not Passed
+**Error:** `Process completed with exit code 2`
+
+**Solution:** Capture run ID from output and pass via `--run-id-file`
+
+**Commits:** `ba9cbb3`, `433134c`
+
+### Testing Results
+
+- **Runs #1-5:** Failed (various issues)
+- **Run #6:** ✅ **SUCCESS!**
+
+**Duration:** ~56 seconds  
+**All steps passed**
+
+### Files Modified
+
+1. `.github/workflows/acr-qa.yml` - Main workflow
+2. `scripts/post_pr_comments.py` - PR comment script
+3. `DATABASE/schema.sql` - Database schema
+
+---
+
+**GitHub Actions Status: Production Ready** ✅
