@@ -604,3 +604,139 @@ INPUT-001:
     def set_age(age):
         self.age = age  # No validation!
 
+
+# ===== ADDITIONAL RULES (Phase 1 Complete) =====
+
+COMPARE-001:
+  name: "Improper None Comparison"
+  category: "best-practice"
+  severity: "low"
+  description: "Using == instead of 'is' to compare with None"
+  rationale: |
+    In Python, None is a singleton. Using == compares values and may invoke
+    __eq__, while 'is' compares identity directly. Always use 'is' for None.
+  remediation: "Use 'if x is None' instead of 'if x == None'"
+  example_good: |
+    if x is None:
+        handle_none()
+  example_bad: |
+    if x == None:  # Should use 'is'
+        handle_none()
+
+GLOBAL-001:
+  name: "Global Variable Modification"
+  category: "design"
+  severity: "medium"
+  description: "Modifying global variables inside functions"
+  rationale: |
+    Global variables create hidden dependencies and make testing difficult.
+    Functions that modify globals have side effects that are hard to track.
+  remediation: "Pass as parameter or use class attributes"
+  example_good: |
+    def increment(counter):
+        return counter + 1
+    count = increment(count)
+  example_bad: |
+    count = 0
+    def increment():
+        global count
+        count += 1  # Hidden side effect!
+
+MAGIC-001:
+  name: "Magic Number"
+  category: "style"
+  severity: "low"
+  description: "Hardcoded numeric literals without named constants"
+  rationale: |
+    Magic numbers make code hard to understand. Named constants explain
+    the purpose and allow easy updates across the codebase.
+  remediation: "Define constants with descriptive names"
+  example_good: |
+    MAX_RETRIES = 3
+    TIMEOUT_SECONDS = 30
+    for i in range(MAX_RETRIES):
+        try_connection(timeout=TIMEOUT_SECONDS)
+  example_bad: |
+    for i in range(3):  # What is 3?
+        try_connection(timeout=30)  # What is 30?
+
+PATH-001:
+  name: "Path Traversal Vulnerability"
+  category: "security"
+  severity: "high"
+  description: "User input used directly in file paths without sanitization"
+  rationale: |
+    Attackers can use '../' sequences to access files outside the intended
+    directory, potentially reading sensitive files or overwriting system files.
+  remediation: "Use os.path.basename() or validate against allowed paths"
+  example_good: |
+    import os
+    safe_name = os.path.basename(user_input)
+    path = os.path.join('/uploads', safe_name)
+  example_bad: |
+    path = '/uploads/' + user_input  # User can input '../../../etc/passwd'
+
+REGEX-001:
+  name: "ReDoS Vulnerability"
+  category: "security"
+  severity: "medium"
+  description: "Regular expression vulnerable to catastrophic backtracking"
+  rationale: |
+    Certain regex patterns can cause exponential time complexity with crafted
+    input, allowing denial of service attacks. Avoid nested quantifiers.
+  remediation: "Use atomic groups, possessive quantifiers, or rewrite pattern"
+  example_good: |
+    import re
+    pattern = r'^[a-z]+$'  # Simple, linear time
+  example_bad: |
+    pattern = r'^(a+)+$'  # Nested quantifiers - exponential time!
+
+RETURN-001:
+  name: "Inconsistent Return Types"
+  category: "best-practice"
+  severity: "medium"
+  description: "Function returns different types in different branches"
+  rationale: |
+    Inconsistent return types make code unpredictable and can cause runtime
+    errors. Functions should return the same type consistently.
+  remediation: "Return consistent types or use Optional[Type]"
+  example_good: |
+    def get_user(id: int) -> Optional[User]:
+        if id in users:
+            return users[id]
+        return None  # Consistent with Optional
+  example_bad: |
+    def get_user(id):
+        if id in users:
+            return users[id]  # Returns User
+        return "Not found"  # Returns string!
+
+ASSERT-001:
+  name: "Assert for Input Validation"
+  category: "security"
+  severity: "medium"
+  description: "Using assert for input validation instead of proper checks"
+  rationale: |
+    Assert statements are removed with -O flag. Never use assert for
+    input validation or security checks in production code.
+  remediation: "Use if/raise for validation"
+  example_good: |
+    if not user.is_admin:
+        raise PermissionError("Admin required")
+  example_bad: |
+    assert user.is_admin, "Admin required"  # Removed with -O!
+
+PRINT-001:
+  name: "Debug Print Statement"
+  category: "style"
+  severity: "low"
+  description: "Print statements left in production code"
+  rationale: |
+    Print statements in production code clutter output and may expose
+    sensitive information. Use proper logging instead.
+  remediation: "Replace with logging.debug() or remove"
+  example_good: |
+    import logging
+    logging.debug(f"Processing user {user_id}")
+  example_bad: |
+    print(f"DEBUG: user = {user}")  # Should use logging

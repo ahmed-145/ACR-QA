@@ -1,4 +1,8 @@
 rules:
+  # ============================================================
+  # SECURITY RULES
+  # ============================================================
+  
   - id: dangerous-eval-usage
     pattern-either:
       - pattern: eval($X)
@@ -10,6 +14,7 @@ rules:
     languages: [python]
     metadata:
       category: security
+      canonical_rule_id: SECURITY-001
 
   - id: sql-injection-string-concat
     pattern-either:
@@ -21,6 +26,67 @@ rules:
     languages: [python]
     metadata:
       category: security
+      canonical_rule_id: SECURITY-027
+
+  - id: unsafe-pickle
+    pattern-either:
+      - pattern: pickle.loads($X)
+      - pattern: pickle.load($X)
+    message: |
+      Pickle can deserialize arbitrary objects. Never use with untrusted data!
+    severity: ERROR
+    languages: [python]
+    metadata:
+      category: security
+      canonical_rule_id: SECURITY-008
+
+  - id: shell-injection
+    pattern-either:
+      - pattern: subprocess.run($CMD, shell=True, ...)
+      - pattern: subprocess.call($CMD, shell=True, ...)
+      - pattern: subprocess.Popen($CMD, shell=True, ...)
+      - pattern: os.system($CMD)
+    message: |
+      Shell injection risk! shell=True with user input allows command injection.
+    severity: ERROR
+    languages: [python]
+    metadata:
+      category: security
+      canonical_rule_id: SECURITY-021
+
+  - id: hardcoded-password
+    pattern-either:
+      - pattern: password = "..."
+      - pattern: PASSWORD = "..."
+      - pattern: secret = "..."
+      - pattern: SECRET = "..."
+      - pattern: api_key = "..."
+      - pattern: API_KEY = "..."
+      - pattern: token = "..."
+      - pattern: TOKEN = "..."
+    message: |
+      Hardcoded secret detected! Use environment variables instead.
+    severity: WARNING
+    languages: [python]
+    metadata:
+      category: security
+      canonical_rule_id: HARDCODE-001
+
+  - id: path-traversal
+    pattern-either:
+      - pattern: open($PATH + $USER_INPUT, ...)
+      - pattern: open(f"...{$USER_INPUT}...", ...)
+    message: |
+      Potential path traversal vulnerability. Validate path before use.
+    severity: ERROR
+    languages: [python]
+    metadata:
+      category: security
+      canonical_rule_id: PATH-001
+
+  # ============================================================
+  # BEST PRACTICE RULES
+  # ============================================================
 
   - id: mutable-default-argument
     pattern-either:
@@ -37,3 +103,79 @@ rules:
     languages: [python]
     metadata:
       category: best-practice
+      canonical_rule_id: PATTERN-001
+
+  - id: bare-except
+    pattern: |
+      try:
+        ...
+      except:
+        ...
+    message: |
+      Bare except catches everything including KeyboardInterrupt and SystemExit.
+      Use 'except Exception:' instead.
+    severity: WARNING
+    languages: [python]
+    metadata:
+      category: best-practice
+      canonical_rule_id: EXCEPT-001
+
+  - id: open-without-context-manager
+    pattern: |
+      $F = open($PATH, ...)
+    message: |
+      File opened without context manager. Use 'with open(...) as f:' instead.
+    severity: WARNING
+    languages: [python]
+    metadata:
+      category: best-practice
+      canonical_rule_id: RESOURCE-001
+
+  - id: assert-for-validation
+    pattern: |
+      assert $COND, $MSG
+    message: |
+      Assert statements are removed with -O flag. Don't use for input validation.
+    severity: WARNING
+    languages: [python]
+    metadata:
+      category: security
+      canonical_rule_id: ASSERT-001
+
+  - id: print-in-production
+    pattern: print(...)
+    message: |
+      Print statements in production code. Use logging module instead.
+    severity: INFO
+    languages: [python]
+    metadata:
+      category: style
+      canonical_rule_id: PRINT-001
+
+  # ============================================================
+  # DESIGN RULES
+  # ============================================================
+
+  - id: too-many-parameters
+    pattern: |
+      def $FUNC($A1, $A2, $A3, $A4, $A5, $A6, $A7, ...):
+        ...
+    message: |
+      Function has too many parameters (>6). Consider using a config object.
+    severity: WARNING
+    languages: [python]
+    metadata:
+      category: design
+      canonical_rule_id: SOLID-001
+
+  - id: global-variable
+    pattern: |
+      global $VAR
+      $VAR = ...
+    message: |
+      Modifying global variables creates hidden dependencies. Avoid globals.
+    severity: WARNING
+    languages: [python]
+    metadata:
+      category: design
+      canonical_rule_id: GLOBAL-001

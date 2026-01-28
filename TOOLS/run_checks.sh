@@ -13,10 +13,15 @@ mkdir -p "$OUTPUT_DIR"
 
 # 1. RUFF - Find ALL Python files recursively
 echo "[1/5] Running Ruff (style & best practices)..."
+# Note: ruff check returns exit code 1 when issues are found, so we need to handle that
 find "$TARGET_DIR" -name "*.py" -type f | xargs ruff check \
     --output-format=json \
     --config pyproject.toml \
-    > "$OUTPUT_DIR/ruff.json" 2>/dev/null || echo "[]" > "$OUTPUT_DIR/ruff.json"
+    > "$OUTPUT_DIR/ruff.json" 2>/dev/null || true
+# Only write empty array if file doesn't exist or is empty
+if [ ! -s "$OUTPUT_DIR/ruff.json" ]; then
+    echo "[]" > "$OUTPUT_DIR/ruff.json"
+fi
 echo "      ✓ Ruff complete"
 
 # 2. SEMGREP
@@ -62,8 +67,13 @@ echo "      ✓ Radon complete"
 
 # 6. BANDIT - Security scanner
 echo "[6/6] Running Bandit (security vulnerabilities)..."
+# Note: bandit returns exit code 1 when issues are found
 find "$TARGET_DIR" -name "*.py" -type f | xargs bandit -f json -q \
-    > "$OUTPUT_DIR/bandit.json" 2>/dev/null || echo '{"results":[]}' > "$OUTPUT_DIR/bandit.json"
+    > "$OUTPUT_DIR/bandit.json" 2>/dev/null || true
+# Only write empty results if file doesn't exist or is empty
+if [ ! -s "$OUTPUT_DIR/bandit.json" ]; then
+    echo '{"results":[]}' > "$OUTPUT_DIR/bandit.json"
+fi
 echo "      ✓ Bandit complete"
 
 echo ""

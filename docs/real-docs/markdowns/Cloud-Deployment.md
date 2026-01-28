@@ -1,136 +1,161 @@
-# Render.com Deployment - Step by Step
+# Cloud Deployment Guide (No Credit Card Needed!)
 
-## Prerequisites
-- GitHub account with your ACR-QA repo pushed
-- Render.com account (free)
+## Option 1: PythonAnywhere (RECOMMENDED)
+
+**Cost:** FREE ✅  
+**Credit Card:** NOT REQUIRED ✅  
+**Best For:** Flask/Python apps
 
 ---
 
-## Step 1: Push Code to GitHub
+### Step 1: Create Account
+
+1. Go to **[pythonanywhere.com](https://www.pythonanywhere.com)**
+2. Click **"Start running Python online"**
+3. Choose **"Create a Beginner account"** (FREE)
+4. Sign up with email (no credit card!)
+
+---
+
+### Step 2: Upload Your Code
+
+**Option A: Git Clone (Recommended)**
+
+1. Open **Bash Console** (Consoles → Bash)
+2. Run:
+```bash
+git clone https://github.com/ahmed-145/ACR-QA.git
+cd ACR-QA
+pip3 install --user -r requirements.txt
+```
+
+**Option B: Upload ZIP**
+1. Go to **Files** tab
+2. Upload your project ZIP
+3. Extract and install requirements
+
+---
+
+### Step 3: Create Web App
+
+1. Go to **Web** tab
+2. Click **"Add a new web app"**
+3. Choose **"Flask"**
+4. Select **Python 3.10**
+5. Set path to: `/home/yourusername/ACR-QA/FRONTEND/app.py`
+
+---
+
+### Step 4: Configure WSGI
+
+1. Click on **WSGI configuration file**
+2. Replace content with:
+
+```python
+import sys
+path = '/home/yourusername/ACR-QA'
+if path not in sys.path:
+    sys.path.append(path)
+
+from FRONTEND.app import app as application
+```
+
+---
+
+### Step 5: Set Environment Variables (in WSGI file)
+
+Add these lines at the TOP of your WSGI file (before imports):
+
+```python
+import os
+os.environ['FLASK_SECRET_KEY'] = 'your-random-secret-key-here'
+```
+
+Your complete WSGI file should look like:
+
+```python
+import os
+import sys
+
+# Set environment variables
+os.environ['FLASK_SECRET_KEY'] = 'my-super-secret-key-12345'
+
+# Add project path
+path = '/home/yourusername/ACR-QA'
+if path not in sys.path:
+    sys.path.append(path)
+
+from FRONTEND.app import app as application
+```
+
+---
+
+### Step 6: Reload
+
+1. Click **"Reload"** button
+2. Your app is live at: `https://yourusername.pythonanywhere.com`
+
+---
+
+### Step 7: Test It!
 
 ```bash
-cd /home/ahmeed/Documents/KSIU/GRAD/SOLO
-git add -A
-git commit -m "Add cloud deployment config"
-git push origin main
-```
-
----
-
-## Step 2: Create Render Account
-
-1. Go to **[render.com](https://render.com)**
-2. Click **"Get Started for Free"**
-3. Sign up with **GitHub** (recommended)
-
----
-
-## Step 3: Create New Web Service
-
-1. Click **"New +"** button (top right)
-2. Select **"Web Service"**
-3. Connect your GitHub repository
-4. Select **"ahmed-145/ACR-QA"** repo
-
----
-
-## Step 4: Configure Service
-
-Fill in these settings:
-
-| Setting | Value |
-|---------|-------|
-| **Name** | `acrqa-api` |
-| **Region** | Choose nearest to you |
-| **Branch** | `main` |
-| **Runtime** | `Python 3` |
-| **Build Command** | `pip install -r requirements.txt` |
-| **Start Command** | `gunicorn FRONTEND.app:app --bind 0.0.0.0:$PORT` |
-| **Plan** | `Free` |
-
----
-
-## Step 5: Add Environment Variables
-
-Click **"Advanced"** → **"Add Environment Variable"**:
-
-| Key | Value |
-|-----|-------|
-| `FLASK_SECRET_KEY` | (click Generate) |
-| `PYTHON_VERSION` | `3.11.4` |
-
----
-
-## Step 6: Create PostgreSQL Database (Optional)
-
-If you need the database:
-
-1. Click **"New +"** → **"PostgreSQL"**
-2. Name: `acrqa-db`
-3. Plan: `Free`
-4. Click **"Create Database"**
-5. Copy the **Internal Database URL**
-6. Add to web service as `DATABASE_URL`
-
----
-
-## Step 7: Deploy
-
-1. Click **"Create Web Service"**
-2. Wait 5-10 minutes for build
-3. Watch the logs for errors
-
----
-
-## Step 8: Get Your URL
-
-After deployment, your API is at:
-```
-https://acrqa-api.onrender.com
-```
-
-Test it:
-```bash
-curl https://acrqa-api.onrender.com/api/health
+curl https://yourusername.pythonanywhere.com/api/health
 # Returns: {"status": "healthy", "version": "2.0"}
 ```
 
 ---
 
-## Step 9: Update VSCode Extension
+## Limitations (Free Tier)
 
-In VSCode settings, set:
-```json
-{
-  "acrqa.apiUrl": "https://acrqa-api.onrender.com"
-}
+- CPU: Limited (enough for demos)
+- Outbound: Only allowlisted sites
+- Storage: 512 MB
+- Apps: 1 web app
+
+**Perfect for thesis demos!**
+
+---
+
+## Option 2: Replit
+
+**Also free, no credit card**
+
+1. Go to [replit.com](https://replit.com)
+2. Create account with GitHub
+3. Import from GitHub
+4. Click "Run"
+
+Your API: `https://your-repl-name.your-username.repl.co`
+
+---
+
+## Option 3: Local (For Thesis Demo)
+
+**Simplest approach:**
+
+1. Run locally: `python FRONTEND/app.py`
+2. Share via ngrok for external access:
+```bash
+# Install ngrok
+curl -s https://ngrok-agent.s3.amazonaws.com/ngrok.asc | sudo tee /etc/apt/trusted.gpg.d/ngrok.asc >/dev/null
+echo "deb https://ngrok-agent.s3.amazonaws.com buster main" | sudo tee /etc/apt/sources.list.d/ngrok.list
+sudo apt update && sudo apt install ngrok
+
+# Expose your local server
+ngrok http 5000
 ```
 
----
-
-## Troubleshooting
-
-**Build Failed?**
-- Check logs for missing dependencies
-- Ensure `gunicorn` is in `requirements.txt`
-
-**App Not Starting?**
-- Verify start command is correct
-- Check for import errors in logs
-
-**Cold Starts (30-60 sec)?**
-- Normal for free tier
-- App spins down after 15 min of inactivity
+You get a public URL like: `https://abc123.ngrok.io`
 
 ---
 
-## Cost: FREE ✅
+## Summary
 
-Render free tier includes:
-- 750 hours/month (enough for 1 always-on app)
-- Auto-deploy on git push
-- Free PostgreSQL (90-day retention)
+| Option | Setup Time | Best For |
+|--------|------------|----------|
+| PythonAnywhere | 10 min | Thesis + Production |
+| Replit | 5 min | Quick demos |
+| ngrok + Local | 2 min | Thesis defense only |
 
----
-
-**Done!** Your API is now live at `https://acrqa-api.onrender.com` 🎉
+**My recommendation:** Use **PythonAnywhere** for a permanent URL, or **ngrok** for quick thesis demo!
