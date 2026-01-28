@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ACR-QA Dashboard</title>
+    <link rel="stylesheet" href="/static/dashboard.css">
+</head>
+
+<body>
+    <div class="container">
+        <!-- Header -->
+        <header class="header">
+            <div class="header-content">
+                <h1>🤖 ACR-QA Dashboard</h1>
+                <p class="subtitle">Automated Code Review & Quality Assurance v2.0</p>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Sidebar: Run History -->
+            <aside class="sidebar">
+                <h2>Analysis Runs</h2>
+                <div id="runs-list" class="runs-list">
+                    <div class="loading">Loading runs...</div>
+                </div>
+            </aside>
+
+            <!-- Main Panel: Findings -->
+            <section class="findings-panel">
+                <!-- Filters -->
+                <div class="filters">
+                    <h2>Findings</h2>
+                    <div class="filter-controls">
+                        <select id="severity-filter" class="filter-select">
+                            <option value="">All Severities</option>
+                            <option value="high">🔴 High</option>
+                            <option value="medium">🟡 Medium</option>
+                            <option value="low">🟢 Low</option>
+                        </select>
+
+                        <select id="category-filter" class="filter-select">
+                            <option value="">All Categories</option>
+                            <option value="security">Security</option>
+                            <option value="design">Design</option>
+                            <option value="style">Style</option>
+                            <option value="dead-code">Dead Code</option>
+                        </select>
+
+                        <input type="text" id="search-input" class="search-input" placeholder="Search files, rules...">
+                    </div>
+                </div>
+
+                <!-- Findings List -->
+                <div id="findings-container" class="findings-container">
+                    <div class="empty-state">
+                        <p>Select a run to view findings</p>
+                    </div>
+                </div>
+            </section>
+        </main>
+
+        <!-- Modal for Finding Details -->
+        <div id="detail-modal" class="modal">
+            <div class="modal-content">
+                <span class="close">&times;</span>
+                <div id="modal-body"></div>
+            </div>
+        </div>
+    </div>
+
+    <script src="/static/dashboard.js"></script>
+</body>
+
+</html>

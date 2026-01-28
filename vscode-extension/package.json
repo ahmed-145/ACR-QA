@@ -1,0 +1,56 @@
+{
+  "name": "acrqa-vscode",
+  "displayName": "ACR-QA Code Review",
+  "description": "AI-powered code review and quality assurance",
+  "version": "1.0.0",
+  "publisher": "acrqa",
+  "engines": {
+    "vscode": "^1.75.0"
+  },
+  "categories": [
+    "Linters",
+    "Programming Languages"
+  ],
+  "activationEvents": [
+    "onLanguage:python"
+  ],
+  "main": "./extension.js",
+  "contributes": {
+    "commands": [
+      {
+        "command": "acrqa.analyzeFile",
+        "title": "ACR-QA: Analyze Current File"
+      },
+      {
+        "command": "acrqa.analyzeWorkspace",
+        "title": "ACR-QA: Analyze Workspace"
+      },
+      {
+        "command": "acrqa.clearDiagnostics",
+        "title": "ACR-QA: Clear Diagnostics"
+      }
+    ],
+    "configuration": {
+      "title": "ACR-QA",
+      "properties": {
+        "acrqa.apiUrl": {
+          "type": "string",
+          "default": "http://localhost:5000",
+          "description": "ACR-QA API URL"
+        },
+        "acrqa.enableAutoAnalysis": {
+          "type": "boolean",
+          "default": false,
+          "description": "Automatically analyze files on save"
+        }
+      }
+    }
+  },
+  "scripts": {
+    "package": "vsce package"
+  },
+  "devDependencies": {
+    "@types/vscode": "^1.75.0",
+    "vsce": "^2.15.0"
+  }
+}

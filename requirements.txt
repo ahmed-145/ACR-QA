@@ -32,3 +32,4 @@ pytest-mock==3.12.0
 # Utilities
 tenacity==8.2.3
 requests==2.31.0
+gunicorn==21.2.0

@@ -197,6 +197,92 @@ def get_categories():
         return jsonify({"success": False, "error": str(e)}), 500
 
 
+
+@app.route("/api/health")
+def health_check():
+    """Health check endpoint for cloud deployment"""
+    return jsonify({"status": "healthy", "version": "2.0"})
+
+
+@app.route("/api/analyze", methods=["POST"])
+def analyze_single_file():
+    """
+    Analyze a single file and return findings
+    Used by VSCode extension for real-time analysis
+    """
+    import tempfile
+    import subprocess
+    import json as json_module
+    
+    try:
+        data = request.get_json()
+        content = data.get("content", "")
+        filename = data.get("filename", "temp.py")
+        
+        if not content:
+            return jsonify({"success": False, "error": "No content provided"}), 400
+        
+        # Create temp file with content
+        with tempfile.NamedTemporaryFile(mode='w', suffix='.py', delete=False) as f:
+            f.write(content)
+            temp_path = f.name
+        
+        findings = []
+        
+        try:
+            # Run Ruff (fast linter)
+            result = subprocess.run(
+                ["ruff", "check", temp_path, "--output-format=json"],
+                capture_output=True, text=True
+            )
+            if result.stdout:
+                ruff_findings = json_module.loads(result.stdout)
+                for finding in ruff_findings:
+                    findings.append({
+                        "line": finding.get("location", {}).get("row", 1),
+                        "column": finding.get("location", {}).get("column", 1),
+                        "rule_id": finding.get("code", "UNKNOWN"),
+                        "severity": "medium" if finding.get("code", "").startswith("E") else "low",
+                        "message": finding.get("message", ""),
+                        "tool": "ruff"
+                    })
+            
+            # Run Vulture (unused code detection)
+            result = subprocess.run(
+                ["vulture", temp_path, "--min-confidence", "80"],
+                capture_output=True, text=True
+            )
+            for line in result.stdout.strip().split('\n'):
+                if line and ':' in line:
+                    parts = line.split(':')
+                    if len(parts) >= 3:
+                        findings.append({
+                            "line": int(parts[1]) if parts[1].isdigit() else 1,
+                            "column": 1,
+                            "rule_id": "DEAD-001",
+                            "severity": "low",
+                            "message": ':'.join(parts[2:]).strip(),
+                            "tool": "vulture"
+                        })
+            
+        finally:
+            # Clean up temp file
+            os.unlink(temp_path)
+        
+        return jsonify({
+            "success": True,
+            "filename": filename,
+            "findings": findings,
+            "total": len(findings)
+        })
+        
+    except Exception as e:
+        print(f"Error in /api/analyze: {e}")
+        import traceback
+        traceback.print_exc()
+        return jsonify({"success": False, "error": str(e)}), 500
+
+
 if __name__ == "__main__":
     print("🚀 Starting ACR-QA Dashboard...")
     print("📊 Access at: http://localhost:5000")

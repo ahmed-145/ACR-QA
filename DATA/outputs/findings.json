@@ -1,6 +1,6 @@
 [
   {
-    "finding_id": "ed8b32c8-23b4-47aa-8d04-596f185ca628",
+    "finding_id": "3a6b2f59-4dec-4ce3-9719-fb25e308b8d5",
     "canonical_rule_id": "PATTERN-001",
     "original_rule_id": "mutable-default-argument",
     "severity": "medium",
@@ -56,7 +56,7 @@
     "original_severity": "ERROR"
   },
   {
-    "finding_id": "22537fb7-0622-489b-b6e8-223fb5704d9b",
+    "finding_id": "246d46de-c8c8-4403-8336-52a43ecd95c0",
     "canonical_rule_id": "SECURITY-001",
     "original_rule_id": "dangerous-eval-usage",
     "severity": "high",
@@ -112,7 +112,7 @@
     "original_severity": "ERROR"
   },
   {
-    "finding_id": "8aa9a57a-412b-4b59-be89-3f477f9eadf9",
+    "finding_id": "46929d2d-3062-4f68-a9d7-fbf9ed1bc612",
     "canonical_rule_id": "IMPORT-001",
     "original_rule_id": "unused-import",
     "severity": "low",
@@ -146,7 +146,7 @@
     "original_severity": "info"
   },
   {
-    "finding_id": "3b6939a9-c802-46ef-9b61-1b4a464d99d4",
+    "finding_id": "1662880b-3219-4072-90b1-849501be9570",
     "canonical_rule_id": "DEAD-001",
     "original_rule_id": "unused-function",
     "severity": "low",
@@ -180,7 +180,7 @@
     "original_severity": "info"
   },
   {
-    "finding_id": "6386a758-3763-4093-b412-0a76cb2e6571",
+    "finding_id": "ac65e2df-6363-4318-b244-a52299d8ba01",
     "canonical_rule_id": "VAR-001",
     "original_rule_id": "unused-variable",
     "severity": "low",
@@ -214,7 +214,7 @@
     "original_severity": "info"
   },
   {
-    "finding_id": "3874170b-f1cf-4fb7-adfc-56f3338dbb59",
+    "finding_id": "8d3a1aea-8474-4869-9184-90e1fbb76d73",
     "canonical_rule_id": "VAR-001",
     "original_rule_id": "unused-variable",
     "severity": "low",
@@ -248,7 +248,7 @@
     "original_severity": "info"
   },
   {
-    "finding_id": "32140183-7f12-4bad-9175-c07b1c91f2ad",
+    "finding_id": "7eeb7ece-2f53-47ac-a9c8-e87f076a5c51",
     "canonical_rule_id": "VAR-001",
     "original_rule_id": "unused-variable",
     "severity": "low",
@@ -282,7 +282,7 @@
     "original_severity": "info"
   },
   {
-    "finding_id": "a8f643c9-55bc-400d-b327-70f856d5e54d",
+    "finding_id": "b26f7c11-1586-4908-9c1e-6f83707df7c5",
     "canonical_rule_id": "VAR-001",
     "original_rule_id": "unused-variable",
     "severity": "low",
@@ -316,7 +316,7 @@
     "original_severity": "info"
   },
   {
-    "finding_id": "c0153af1-8f3c-4632-a8ac-c2848567aa98",
+    "finding_id": "2753f0ad-3bb2-433d-baf0-2ee7adce8e1c",
     "canonical_rule_id": "VAR-001",
     "original_rule_id": "unused-variable",
     "severity": "low",
@@ -350,7 +350,7 @@
     "original_severity": "info"
   },
   {
-    "finding_id": "2a4b5570-07bd-4c48-9244-970884c53db5",
+    "finding_id": "a598fa9d-edab-4d70-9847-2f1555a1c83d",
     "canonical_rule_id": "DEAD-001",
     "original_rule_id": "unused-function",
     "severity": "low",
@@ -384,7 +384,7 @@
     "original_severity": "info"
   },
   {
-    "finding_id": "3f55c499-e2b0-4b9b-93b8-589628fe2fdb",
+    "finding_id": "fd74721c-3674-4c71-a31d-e41be56cfc5d",
     "canonical_rule_id": "DEAD-001",
     "original_rule_id": "unused-function",
     "severity": "low",
@@ -418,7 +418,7 @@
     "original_severity": "info"
   },
   {
-    "finding_id": "ec381647-fb2d-47ba-8991-bd3d57b6ec0e",
+    "finding_id": "22a180b1-f3cd-4af9-8c52-f5f10b375c89",
     "canonical_rule_id": "IMPORT-001",
     "original_rule_id": "unused-import",
     "severity": "low",
@@ -452,7 +452,7 @@
     "original_severity": "info"
   },
   {
-    "finding_id": "ba934719-65c8-4493-b3a5-65e82080c5fb",
+    "finding_id": "b563bb96-5257-43e7-b8c4-c7b9cf1000a9",
     "canonical_rule_id": "DEAD-001",
     "original_rule_id": "unused-function",
     "severity": "low",
@@ -486,7 +486,7 @@
     "original_severity": "info"
   },
   {
-    "finding_id": "b37c4f55-2106-4e08-9ed8-94bf4838b5c4",
+    "finding_id": "ba84374b-cca0-4b03-ab0a-88c05358859c",
     "canonical_rule_id": "VAR-001",
     "original_rule_id": "unused-variable",
     "severity": "low",
@@ -520,7 +520,7 @@
     "original_severity": "info"
   },
   {
-    "finding_id": "00094e4d-9c2a-4611-8f16-30cfb26a3435",
+    "finding_id": "9d1fd63a-c45e-42c2-be57-04bc9fcaf859",
     "canonical_rule_id": "VAR-001",
     "original_rule_id": "unused-variable",
     "severity": "low",
@@ -554,7 +554,7 @@
     "original_severity": "info"
   },
   {
-    "finding_id": "58cca7dd-46ae-45d2-90ab-0b2034805bd3",
+    "finding_id": "1480321b-282b-4ee1-97c1-fe4eb1dacd34",
     "canonical_rule_id": "DEAD-001",
     "original_rule_id": "unused-class",
     "severity": "medium",
@@ -588,7 +588,7 @@
     "original_severity": "info"
   },
   {
-    "finding_id": "e59d4e8f-a6b0-46c3-8123-cd1e8173788f",
+    "finding_id": "59bed21e-84b2-40c5-9e8d-0335685e4a71",
     "canonical_rule_id": "DEAD-001",
     "original_rule_id": "unused-class",
     "severity": "medium",
@@ -622,7 +622,7 @@
     "original_severity": "info"
   },
   {
-    "finding_id": "32905f93-e8f0-4c3d-ab7e-2df01f23d223",
+    "finding_id": "7c50bc47-11fe-4ec0-ae0f-9547e4b6a209",
     "canonical_rule_id": "DEAD-001",
     "original_rule_id": "unused-code",
     "severity": "low",
@@ -656,7 +656,7 @@
     "original_severity": "info"
   },
   {
-    "finding_id": "e9a884aa-14bd-47b0-8f76-ad8fe6b050f5",
+    "finding_id": "fd2fdacf-37b6-459d-88d5-e012e34be6b0",
     "canonical_rule_id": "DEAD-001",
     "original_rule_id": "unused-code",
     "severity": "low",
@@ -689,7 +689,7 @@
     "original_severity": "info"
   },
   {
-    "finding_id": "ac562129-23f7-4c0c-8050-772c41818996",
+    "finding_id": "6ae0f05a-7b0f-416d-82c8-8423a9feba4b",
     "canonical_rule_id": "IMPORT-001",
     "original_rule_id": "unused-import",
     "severity": "low",
@@ -723,7 +723,7 @@
     "original_severity": "info"
   },
   {
-    "finding_id": "3931f4db-f896-4513-9bee-d12e440ffd19",
+    "finding_id": "804b76af-e1be-46ec-9531-85b6449ab050",
     "canonical_rule_id": "IMPORT-001",
     "original_rule_id": "unused-import",
     "severity": "low",
@@ -757,7 +757,7 @@
     "original_severity": "info"
   },
   {
-    "finding_id": "599b1411-0203-43e4-9684-76653a0f827c",
+    "finding_id": "8c61c50b-db86-4bba-9a7d-1b0272847b99",
     "canonical_rule_id": "DEAD-001",
     "original_rule_id": "unused-function",
     "severity": "low",
@@ -791,7 +791,7 @@
     "original_severity": "info"
   },
   {
-    "finding_id": "c3e70e2b-930e-44b2-8c2e-7d903e323693",
+    "finding_id": "6bc33b77-e0b3-42ec-996d-f373cef6ca77",
     "canonical_rule_id": "DEAD-001",
     "original_rule_id": "unused-function",
     "severity": "low",
@@ -825,7 +825,7 @@
     "original_severity": "info"
   },
   {
-    "finding_id": "9783c513-6ef2-4a73-80b5-fb08cf530237",
+    "finding_id": "0c252506-a487-4bbe-9839-adae20821a04",
     "canonical_rule_id": "DEAD-001",
     "original_rule_id": "unused-function",
     "severity": "low",
@@ -859,7 +859,7 @@
     "original_severity": "info"
   },
   {
-    "finding_id": "d4baeba8-ba85-4337-9e44-2a6e9467a3e4",
+    "finding_id": "bf0dee0a-f82a-441a-831e-c9b6ecae2f05",
     "canonical_rule_id": "VAR-001",
     "original_rule_id": "unused-variable",
     "severity": "low",
@@ -893,7 +893,7 @@
     "original_severity": "info"
   },
   {
-    "finding_id": "438554ca-39b9-4762-8801-6d4f2a047259",
+    "finding_id": "835e1638-62cb-4c0c-b859-2b4b59a6c27e",
     "canonical_rule_id": "VAR-001",
     "original_rule_id": "unused-variable",
     "severity": "low",
@@ -927,7 +927,7 @@
     "original_severity": "info"
   },
   {
-    "finding_id": "1542ffdd-0b74-446f-b4e3-b101cf388112",
+    "finding_id": "55a0039e-6bf7-4a68-a46e-e5c7a87e23f4",
     "canonical_rule_id": "VAR-001",
     "original_rule_id": "unused-variable",
     "severity": "low",
@@ -961,7 +961,7 @@
     "original_severity": "info"
   },
   {
-    "finding_id": "b69c4f49-db74-4b7a-a81f-2b2d56eac0f2",
+    "finding_id": "9f036f63-3f01-44fe-b4d9-5d4a35af9ed1",
     "canonical_rule_id": "DEAD-001",
     "original_rule_id": "unused-class",
     "severity": "medium",
@@ -995,7 +995,7 @@
     "original_severity": "info"
   },
   {
-    "finding_id": "caad276e-2271-4e63-a9de-544ceb9db8ae",
+    "finding_id": "c558302d-c346-4163-b4e2-8bb845e678c7",
     "canonical_rule_id": "DEAD-001",
     "original_rule_id": "unused-code",
     "severity": "low",
@@ -1029,7 +1029,7 @@
     "original_severity": "info"
   },
   {
-    "finding_id": "0a0966c2-7f21-4da6-a7a5-d0d2d61777e6",
+    "finding_id": "1eb4b6fc-4a8f-4c92-a696-f1d4bcaf64d8",
     "canonical_rule_id": "DEAD-001",
     "original_rule_id": "unused-code",
     "severity": "low",
@@ -1063,7 +1063,7 @@
     "original_severity": "info"
   },
   {
-    "finding_id": "c28b60de-362f-4dec-ae08-00ffe0a0e2a7",
+    "finding_id": "67a678d5-dda1-4220-88f8-6c091f975df2",
     "canonical_rule_id": "DEAD-001",
     "original_rule_id": "unused-function",
     "severity": "low",
@@ -1097,7 +1097,7 @@
     "original_severity": "info"
   },
   {
-    "finding_id": "c1543f75-979b-4903-aabe-babcd6488afc",
+    "finding_id": "a61fee3b-6a08-48b0-914f-441906108021",
     "canonical_rule_id": "VAR-001",
     "original_rule_id": "unused-variable",
     "severity": "low",
@@ -1130,7 +1130,7 @@
     "original_severity": "info"
   },
   {
-    "finding_id": "449ed321-fd59-421b-8917-4fa7dd784778",
+    "finding_id": "6f6fad5a-8441-48aa-8a69-bf6c2995c8a1",
     "canonical_rule_id": "DEAD-001",
     "original_rule_id": "unused-function",
     "severity": "low",
@@ -1164,7 +1164,7 @@
     "original_severity": "info"
   },
   {
-    "finding_id": "532a57dd-5614-4d25-b1c9-f1d59fe68242",
+    "finding_id": "a2ae6555-8d28-4fbf-bd4d-2f6ffa19ec6b",
     "canonical_rule_id": "DEAD-001",
     "original_rule_id": "unused-function",
     "severity": "low",
@@ -1198,7 +1198,7 @@
     "original_severity": "info"
   },
   {
-    "finding_id": "750662d9-3a4e-4369-b22a-70b86ed95174",
+    "finding_id": "0a2a58ae-783d-40eb-af96-1d5715ad145f",
     "canonical_rule_id": "DEAD-001",
     "original_rule_id": "unused-function",
     "severity": "low",
@@ -1232,7 +1232,7 @@
     "original_severity": "info"
   },
   {
-    "finding_id": "818ae6b5-f633-468a-96a4-e1d000454a61",
+    "finding_id": "e3ec1add-3b60-4715-9bd1-158a75fc7e78",
     "canonical_rule_id": "DEAD-001",
     "original_rule_id": "unused-function",
     "severity": "low",
@@ -1266,7 +1266,7 @@
     "original_severity": "info"
   },
   {
-    "finding_id": "9c6572ab-2393-445e-8c7d-96cc8afafc5a",
+    "finding_id": "32933f1e-93d9-4bfb-a0ef-506d3cf865b8",
     "canonical_rule_id": "IMPORT-001",
     "original_rule_id": "unused-import",
     "severity": "low",
@@ -1300,7 +1300,7 @@
     "original_severity": "info"
   },
   {
-    "finding_id": "6c29d786-8599-4170-9e4d-85dcbe6d87c5",
+    "finding_id": "79116d0e-4801-427c-a000-ac9f574db264",
     "canonical_rule_id": "DEAD-001",
     "original_rule_id": "unused-function",
     "severity": "low",
@@ -1334,7 +1334,7 @@
     "original_severity": "info"
   },
   {
-    "finding_id": "7f906797-37d7-416f-939c-8253b4603df1",
+    "finding_id": "53a30bff-9cf7-46cc-98d4-52beaf5e6f5a",
     "canonical_rule_id": "DEAD-001",
     "original_rule_id": "unused-function",
     "severity": "low",
@@ -1368,7 +1368,7 @@
     "original_severity": "info"
   },
   {
-    "finding_id": "32cc200f-761a-45c0-9e12-7ceea3192a99",
+    "finding_id": "289b4cb4-ce91-4d52-9779-9d2abd67fda3",
     "canonical_rule_id": "VAR-001",
     "original_rule_id": "unused-variable",
     "severity": "low",
@@ -1402,7 +1402,7 @@
     "original_severity": "info"
   },
   {
-    "finding_id": "244c0b19-33f9-41c1-8b7e-cb9ab7a86eaf",
+    "finding_id": "ada9f259-483b-4d25-8028-5b413ade03ef",
     "canonical_rule_id": "VAR-001",
     "original_rule_id": "unused-variable",
     "severity": "low",
@@ -1436,7 +1436,7 @@
     "original_severity": "info"
   },
   {
-    "finding_id": "117b1d98-d2d5-491b-8a2c-e47c663dce3c",
+    "finding_id": "4aae67b0-bd66-4eba-972f-33ee11713a8b",
     "canonical_rule_id": "DEAD-001",
     "original_rule_id": "unused-class",
     "severity": "medium",
@@ -1470,7 +1470,7 @@
     "original_severity": "info"
   },
   {
-    "finding_id": "2c254ffc-bc60-4d02-b934-f81b6aee40a7",
+    "finding_id": "5d60ee07-aa93-4894-83bd-23b8395995d7",
     "canonical_rule_id": "DEAD-001",
     "original_rule_id": "unused-function",
     "severity": "low",
@@ -1504,7 +1504,7 @@
     "original_severity": "info"
   },
   {
-    "finding_id": "e74071c3-7c3a-481c-af9d-2a921b1664be",
+    "finding_id": "f07c80d3-b052-450e-a0ff-9c538a08b81e",
     "canonical_rule_id": "VAR-001",
     "original_rule_id": "unused-variable",
     "severity": "low",
@@ -1538,7 +1538,7 @@
     "original_severity": "info"
   },
   {
-    "finding_id": "73f6a540-7242-4a0b-bd21-6cdd36e4e911",
+    "finding_id": "68c1ab5b-cfad-4604-b372-244a9d34e115",
     "canonical_rule_id": "VAR-001",
     "original_rule_id": "unused-variable",
     "severity": "low",
@@ -1572,7 +1572,7 @@
     "original_severity": "info"
   },
   {
-    "finding_id": "7c98d6d5-d615-412c-ab77-05a4bf052ce4",
+    "finding_id": "c0e15a3d-d3d9-4f60-a4c5-c5be1d3a03ef",
     "canonical_rule_id": "VAR-001",
     "original_rule_id": "unused-variable",
     "severity": "low",
@@ -1606,7 +1606,7 @@
     "original_severity": "info"
   },
   {
-    "finding_id": "fb9fae48-46a3-4f2e-a63f-5fd10edc6f63",
+    "finding_id": "ed31875c-89aa-48fc-afad-94e096d6c45a",
     "canonical_rule_id": "VAR-001",
     "original_rule_id": "unused-variable",
     "severity": "low",
@@ -1640,7 +1640,7 @@
     "original_severity": "info"
   },
   {
-    "finding_id": "03569c11-064a-4673-86a2-10dccc012e11",
+    "finding_id": "c27250d6-336f-464e-b7c8-c9a8d81396f3",
     "canonical_rule_id": "VAR-001",
     "original_rule_id": "unused-variable",
     "severity": "low",
@@ -1674,7 +1674,7 @@
     "original_severity": "info"
   },
   {
-    "finding_id": "e4029070-7e47-4553-977b-25fb32513329",
+    "finding_id": "184a3d13-0480-424b-a163-efb18826deb2",
     "canonical_rule_id": "VAR-001",
     "original_rule_id": "unused-variable",
     "severity": "low",
@@ -1708,7 +1708,7 @@
     "original_severity": "info"
   },
   {
-    "finding_id": "b7d4e034-1d72-4d58-b3f0-33ae829ab70b",
+    "finding_id": "74fa67c1-8ec5-49af-b07b-887aba849f3c",
     "canonical_rule_id": "VAR-001",
     "original_rule_id": "unused-variable",
     "severity": "low",
@@ -1742,7 +1742,7 @@
     "original_severity": "info"
   },
   {
-    "finding_id": "3de00a2f-442a-4bc4-bb0d-696c580cd5f6",
+    "finding_id": "8bde4b8c-60f9-4b9b-ac4f-ca9e891cd5e3",
     "canonical_rule_id": "DEAD-001",
     "original_rule_id": "unused-function",
     "severity": "low",
@@ -1776,7 +1776,7 @@
     "original_severity": "info"
   },
   {
-    "finding_id": "801512db-c12b-4d33-a0cd-599250cb3255",
+    "finding_id": "dcf953f4-5f6d-41bc-b76d-36277ad9883b",
     "canonical_rule_id": "DEAD-001",
     "original_rule_id": "unused-function",
     "severity": "low",
@@ -1810,7 +1810,7 @@
     "original_severity": "info"
   },
   {
-    "finding_id": "08ca3e1d-3905-4ab1-8ffa-ff113919abef",
+    "finding_id": "c64e76b8-8343-4aeb-9f05-dd313fb4cf00",
     "canonical_rule_id": "VAR-001",
     "original_rule_id": "unused-variable",
     "severity": "low",
@@ -1844,7 +1844,7 @@
     "original_severity": "info"
   },
   {
-    "finding_id": "bdbb1772-7023-449d-8a23-51e2794f3137",
+    "finding_id": "4b82d878-e8b2-42f8-9eeb-ad85acd286c5",
     "canonical_rule_id": "VAR-001",
     "original_rule_id": "unused-variable",
     "severity": "low",
@@ -1878,7 +1878,7 @@
     "original_severity": "info"
   },
   {
-    "finding_id": "75f0e07c-4e45-4aec-a619-b88405fc1996",
+    "finding_id": "9795ca00-cbfb-48e8-8ea0-01f6dae7236a",
     "canonical_rule_id": "VAR-001",
     "original_rule_id": "unused-variable",
     "severity": "low",
@@ -1912,7 +1912,7 @@
     "original_severity": "info"
   },
   {
-    "finding_id": "05741143-fd5a-4b25-83b4-a8fc28199e98",
+    "finding_id": "a70b229c-9a32-4376-9f56-8fcb3a85e312",
     "canonical_rule_id": "VAR-001",
     "original_rule_id": "unused-variable",
     "severity": "low",
@@ -1946,7 +1946,7 @@
     "original_severity": "info"
   },
   {
-    "finding_id": "47312f8e-63b7-4e5a-96ab-2cd63d571566",
+    "finding_id": "849983c6-f590-450f-815b-b6dc0c8539a4",
     "canonical_rule_id": "DEAD-001",
     "original_rule_id": "unused-function",
     "severity": "low",
@@ -1980,7 +1980,7 @@
     "original_severity": "info"
   },
   {
-    "finding_id": "9def0a3f-58d1-4873-8d4e-a8e37cd70192",
+    "finding_id": "56763cc5-a1ce-4988-b90f-10a6b2551c8b",
     "canonical_rule_id": "IMPORT-001",
     "original_rule_id": "unused-import",
     "severity": "low",
@@ -2014,7 +2014,7 @@
     "original_severity": "info"
   },
   {
-    "finding_id": "89b9abbc-1e66-498a-acca-d10456c80496",
+    "finding_id": "294beb92-e94c-4ebc-a9ed-a4b24dfe175a",
     "canonical_rule_id": "DEAD-001",
     "original_rule_id": "unused-function",
     "severity": "low",
@@ -2048,7 +2048,7 @@
     "original_severity": "info"
   },
   {
-    "finding_id": "efab4f57-26a7-45e3-a52c-1e02dbbd400d",
+    "finding_id": "909ee7b5-55e7-4cd8-ae34-5ae61dfcf3cf",
     "canonical_rule_id": "VAR-001",
     "original_rule_id": "unused-variable",
     "severity": "low",
@@ -2082,7 +2082,7 @@
     "original_severity": "info"
   },
   {
-    "finding_id": "f3a2c01c-7232-43f7-9500-763c9c7b72f7",
+    "finding_id": "87c35125-1885-4e2a-b7b9-2baa7ae1ed3b",
     "canonical_rule_id": "VAR-001",
     "original_rule_id": "unused-variable",
     "severity": "low",
@@ -2116,7 +2116,7 @@
     "original_severity": "info"
   },
   {
-    "finding_id": "066a0ead-09bd-4b69-9886-95ffa03cf217",
+    "finding_id": "af58d1ba-29a6-43d6-be1b-aafa0fdcb2be",
     "canonical_rule_id": "DEAD-001",
     "original_rule_id": "unused-class",
     "severity": "medium",
@@ -2150,7 +2150,7 @@
     "original_severity": "info"
   },
   {
-    "finding_id": "997bc43b-0739-4188-a0bf-b8d348969600",
+    "finding_id": "0c452d6e-87b5-4cd9-8123-5362143d3f82",
     "canonical_rule_id": "DEAD-001",
     "original_rule_id": "unused-function",
     "severity": "low",
@@ -2184,7 +2184,7 @@
     "original_severity": "info"
   },
   {
-    "finding_id": "893c0d8a-9137-4a8a-b438-c7bfbcd7b9b8",
+    "finding_id": "05e5f142-a5e1-4f65-b416-994f8c5fda97",
     "canonical_rule_id": "DEAD-001",
     "original_rule_id": "unused-function",
     "severity": "low",
@@ -2218,7 +2218,7 @@
     "original_severity": "info"
   },
   {
-    "finding_id": "25859d86-00b5-4697-a631-e7833d996223",
+    "finding_id": "91592192-de71-4a6d-9273-18560dbb35a5",
     "canonical_rule_id": "DEAD-001",
     "original_rule_id": "unused-function",
     "severity": "low",
@@ -2252,7 +2252,7 @@
     "original_severity": "info"
   },
   {
-    "finding_id": "105f6244-5d15-4a22-8a87-c7747d74e01e",
+    "finding_id": "e714b6ea-1be6-49b9-b650-6fa285133bef",
     "canonical_rule_id": "DEAD-001",
     "original_rule_id": "unused-function",
     "severity": "low",
@@ -2286,7 +2286,7 @@
     "original_severity": "info"
   },
   {
-    "finding_id": "337b687a-78f8-4b64-9294-65c2ea1b4c73",
+    "finding_id": "6bb75ce4-93b8-4d3d-83cf-eedadebbcf51",
     "canonical_rule_id": "DEAD-001",
     "original_rule_id": "unused-function",
     "severity": "low",
@@ -2320,7 +2320,7 @@
     "original_severity": "info"
   },
   {
-    "finding_id": "993e50a8-1ca7-4fdd-ba53-4f685ea02fbd",
+    "finding_id": "f1aceeed-2bd3-431a-a349-bf97071b9896",
     "canonical_rule_id": "VAR-001",
     "original_rule_id": "unused-variable",
     "severity": "low",
@@ -2354,7 +2354,7 @@
     "original_severity": "info"
   },
   {
-    "finding_id": "1ea1fc33-eec6-4bfd-8d4e-9df74d16d6e0",
+    "finding_id": "30010b4d-627e-4d82-96b9-34963d7936bd",
     "canonical_rule_id": "VAR-001",
     "original_rule_id": "unused-variable",
     "severity": "low",
@@ -2388,7 +2388,7 @@
     "original_severity": "info"
   },
   {
-    "finding_id": "309616b9-951f-4473-96dc-41a7804d3596",
+    "finding_id": "fe6573ba-c297-40b0-934b-236059a51197",
     "canonical_rule_id": "VAR-001",
     "original_rule_id": "unused-variable",
     "severity": "low",
@@ -2422,7 +2422,7 @@
     "original_severity": "info"
   },
   {
-    "finding_id": "5f865183-c2fa-4ac3-aeda-54a2302ac148",
+    "finding_id": "14610e59-39e2-4212-9b2e-0744eafea7dc",
     "canonical_rule_id": "VAR-001",
     "original_rule_id": "unused-variable",
     "severity": "low",
@@ -2456,7 +2456,7 @@
     "original_severity": "info"
   },
   {
-    "finding_id": "6947b81d-784b-4e51-84c0-8c9972c513fc",
+    "finding_id": "12333279-929e-4bb4-ba02-a130010573d0",
     "canonical_rule_id": "DEAD-001",
     "original_rule_id": "unused-function",
     "severity": "low",
@@ -2490,7 +2490,7 @@
     "original_severity": "info"
   },
   {
-    "finding_id": "2a9cf10d-4f71-4e98-87b7-35b89c5ba3f0",
+    "finding_id": "0a8b2af0-b1da-477d-b216-24fd539377c7",
     "canonical_rule_id": "VAR-001",
     "original_rule_id": "unused-variable",
     "severity": "low",
@@ -2524,7 +2524,7 @@
     "original_severity": "info"
   },
   {
-    "finding_id": "d6946a86-8071-4a11-ab78-55525e607673",
+    "finding_id": "5d615d43-4d41-4229-ac67-d743198450f7",
     "canonical_rule_id": "VAR-001",
     "original_rule_id": "unused-variable",
     "severity": "low",
@@ -2558,7 +2558,7 @@
     "original_severity": "info"
   },
   {
-    "finding_id": "aeb03968-ca70-435b-bc20-c2832dfbf699",
+    "finding_id": "086c10bd-0c01-45f5-a3f5-88628f553556",
     "canonical_rule_id": "VAR-001",
     "original_rule_id": "unused-variable",
     "severity": "low",
@@ -2592,7 +2592,7 @@
     "original_severity": "info"
   },
   {
-    "finding_id": "f8102225-6aea-4c26-9cc1-cc43fe95afd9",
+    "finding_id": "14767c6f-253a-4769-9793-1757be37d2a6",
     "canonical_rule_id": "VAR-001",
     "original_rule_id": "unused-variable",
     "severity": "low",
@@ -2626,7 +2626,7 @@
     "original_severity": "info"
   },
   {
-    "finding_id": "4676c243-dae5-4457-af4f-a94fa63e5e83",
+    "finding_id": "23171576-fbe8-40b8-a0e0-a522b34578ea",
     "canonical_rule_id": "VAR-001",
     "original_rule_id": "unused-variable",
     "severity": "low",
@@ -2660,7 +2660,7 @@
     "original_severity": "info"
   },
   {
-    "finding_id": "93b0cd86-0a10-4751-a411-bcb350c36a70",
+    "finding_id": "8e61b466-032d-46b5-9a73-f3fa3f0e23e5",
     "canonical_rule_id": "VAR-001",
     "original_rule_id": "unused-variable",
     "severity": "low",
@@ -2694,7 +2694,7 @@
     "original_severity": "info"
   },
   {
-    "finding_id": "69fd3915-4757-4f71-9ba2-23c09be1244e",
+    "finding_id": "8e3a0691-d926-4b3f-99bd-1e1302bba5d3",
     "canonical_rule_id": "COMPLEXITY-001",
     "original_rule_id": "high-complexity",
     "severity": "high",
@@ -2724,10 +2724,10 @@
       "original_output": {
         "type": "function",
         "rank": "D",
-        "endline": 97,
         "name": "validate_and_process_user_input",
-        "col_offset": 0,
         "lineno": 29,
+        "endline": 97,
+        "col_offset": 0,
         "complexity": 25,
         "closures": []
       }
@@ -2735,7 +2735,7 @@
     "original_severity": "high"
   },
   {
-    "finding_id": "d797362d-8a6e-46df-a4b5-e236f0516194",
+    "finding_id": "d3673368-214b-47a7-9567-714fe1ea0d3f",
     "canonical_rule_id": "COMPLEXITY-001",
     "original_rule_id": "high-complexity",
     "severity": "medium",
@@ -2765,10 +2765,10 @@
       "original_output": {
         "type": "function",
         "rank": "C",
-        "endline": 95,
         "name": "process_complex_payment",
-        "col_offset": 0,
         "lineno": 41,
+        "endline": 95,
+        "col_offset": 0,
         "complexity": 19,
         "closures": []
       }

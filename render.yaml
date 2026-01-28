@@ -1,0 +1,26 @@
+# Render.com Deployment Configuration
+# https://render.com/docs/blueprint-spec
+
+services:
+  - type: web
+    name: acrqa-api
+    runtime: python
+    buildCommand: pip install -r requirements.txt
+    startCommand: gunicorn FRONTEND.app:app --bind 0.0.0.0:$PORT
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.11.4
+      - key: FLASK_SECRET_KEY
+        generateValue: true
+      - key: DATABASE_URL
+        fromDatabase:
+          name: acrqa-db
+          property: connectionString
+    healthCheckPath: /api/health
+    plan: free
+
+databases:
+  - name: acrqa-db
+    plan: free
+    databaseName: acrqa
+    user: acrqa_user

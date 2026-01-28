@@ -163,7 +163,7 @@ def main():
     parser.add_argument("--repo-name", default="local", help="Repository name")
     parser.add_argument("--pr-number", type=int, help="Pull request number")
     parser.add_argument(
-        "--limit", type=int, default=10, help="Limit explanations (for speed)"
+        "--limit", type=int, default=None, help="Limit explanations (for speed)"
     )
 
     args = parser.parse_args()
