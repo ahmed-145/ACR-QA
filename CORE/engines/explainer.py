@@ -171,6 +171,8 @@ Start with: "This code violates {canonical_id}..."
                 "cites_rule": cites_rule,
                 "confidence": 0.9 if cites_rule else 0.6,
                 "cache_hit": False,
+                "consistency_score": None,
+                "self_eval_score": None,
             }
 
             # Phase 2: Store in cache
@@ -201,7 +203,136 @@ Start with: "This code violates {canonical_id}..."
                 "error": str(e),
                 "cites_rule": False,
                 "confidence": 0.5,
+                "consistency_score": None,
+                "self_eval_score": None,
             }
+
+    def compute_semantic_entropy(self, finding, code_snippet="", num_samples=3):
+        """
+        N1: Semantic Entropy for Hallucination Detection
+        
+        Runs the prompt multiple times with temperature=0.5 and computes
+        the consistency score across responses using n-gram similarity.
+        Low consistency → likely hallucination.
+        
+        Returns:
+            Dict with consistency_score (0.0-1.0), individual responses, variance info
+        """
+        prompt = self._build_evidence_grounded_prompt(finding, code_snippet)
+        responses = []
+
+        for _ in range(num_samples):
+            try:
+                completion = self.client.chat.completions.create(
+                    messages=[{"role": "user", "content": prompt}],
+                    model=self.model,
+                    max_tokens=self.max_tokens,
+                    temperature=0.5,  # Slightly higher temp for variance detection
+                )
+                responses.append(completion.choices[0].message.content.strip())
+            except Exception as e:
+                responses.append(f"[Error: {e}]")
+
+        if len(responses) < 2:
+            return {"consistency_score": None, "responses": responses, "status": "insufficient_samples"}
+
+        # Compute pairwise n-gram similarity
+        scores = []
+        for i in range(len(responses)):
+            for j in range(i + 1, len(responses)):
+                score = self._ngram_similarity(responses[i], responses[j])
+                scores.append(score)
+
+        consistency = sum(scores) / len(scores) if scores else 0.0
+
+        return {
+            "consistency_score": round(consistency, 3),
+            "num_samples": len(responses),
+            "pairwise_scores": [round(s, 3) for s in scores],
+            "responses": responses,
+            "is_likely_hallucination": consistency < 0.5,
+            "status": "success",
+        }
+
+    def _ngram_similarity(self, text_a, text_b, n=3):
+        """Compute n-gram (trigram) Jaccard similarity between two texts."""
+        def get_ngrams(text, n):
+            words = text.lower().split()
+            return set(tuple(words[i:i+n]) for i in range(len(words) - n + 1))
+
+        ngrams_a = get_ngrams(text_a, n)
+        ngrams_b = get_ngrams(text_b, n)
+
+        if not ngrams_a and not ngrams_b:
+            return 1.0
+        if not ngrams_a or not ngrams_b:
+            return 0.0
+
+        intersection = ngrams_a & ngrams_b
+        union = ngrams_a | ngrams_b
+        return len(intersection) / len(union)
+
+    def self_evaluate_explanation(self, explanation_text, finding):
+        """
+        N2: Explanation Quality Self-Evaluation
+        
+        Asks the LLM to rate its own explanation on three criteria:
+        - Relevance (1-5): Does it address the actual code issue?
+        - Accuracy (1-5): Is the information technically correct?
+        - Clarity (1-5): Is it easy to understand?
+        
+        Returns:
+            Dict with scores and overall average
+        """
+        canonical_id = finding.get("canonical_rule_id", finding.get("rule_id", "UNKNOWN"))
+
+        eval_prompt = f"""Rate this code review explanation on a scale of 1-5 for each criterion.
+
+**Explanation to evaluate:**
+{explanation_text}
+
+**Original issue:** {canonical_id} - {finding.get('message', '')}
+
+Rate each criterion (1=poor, 5=excellent):
+1. Relevance: Does this explanation directly address the code issue?
+2. Accuracy: Is the technical information correct?
+3. Clarity: Is the explanation clear and easy to understand?
+
+Respond ONLY in this exact format:
+Relevance: X
+Accuracy: X
+Clarity: X"""
+
+        try:
+            completion = self.client.chat.completions.create(
+                messages=[{"role": "user", "content": eval_prompt}],
+                model=self.model,
+                max_tokens=50,
+                temperature=0.1,
+            )
+            response = completion.choices[0].message.content.strip()
+
+            # Parse scores
+            scores = {}
+            for line in response.split("\n"):
+                for key in ["Relevance", "Accuracy", "Clarity"]:
+                    if key.lower() in line.lower():
+                        try:
+                            val = int("".join(c for c in line.split(":")[-1] if c.isdigit())[:1])
+                            scores[key.lower()] = min(max(val, 1), 5)
+                        except (ValueError, IndexError):
+                            scores[key.lower()] = 3  # Default
+
+            avg_score = round(sum(scores.values()) / len(scores), 1) if scores else 3.0
+            return {
+                "scores": scores,
+                "overall": avg_score,
+                "raw_response": response,
+                "status": "success",
+            }
+
+        except Exception as e:
+            return {"scores": {}, "overall": None, "status": "error", "error": str(e)}
 
     def _calculate_cost(self, tokens):
         """

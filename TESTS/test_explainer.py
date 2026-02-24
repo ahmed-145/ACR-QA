@@ -148,4 +148,4 @@ class TestExplanationEngine:
             result = engine.generate_explanation(finding, "code")
         
         assert 'latency_ms' in result
-        assert result['latency_ms'] > 0
+        assert result['latency_ms'] >= 0

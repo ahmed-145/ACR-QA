@@ -1,7 +1,8 @@
 # Docker Compose for ACR-QA v2.0
+# Starts: PostgreSQL, Redis, Flask App, Prometheus, Grafana
 
 services:
-  # PostgreSQL Database
+  # ─── PostgreSQL Database ──────────────────────────────────────────────────
   postgres:
     image: postgres:15-alpine
     container_name: acr-qa-postgres
@@ -12,19 +13,17 @@ services:
     ports:
       - "5433:5432"
     volumes:
-      # Persist database data
       - postgres_data:/var/lib/postgresql/data
-      # Auto-initialize schema
       - ./DATABASE/schema.sql:/docker-entrypoint-initdb.d/schema.sql:ro
     healthcheck:
-      test: [ "CMD-SHELL", "pg_isready -U postgres -d acrqa" ]
+      test: ["CMD-SHELL", "pg_isready -U postgres -d acrqa"]
       interval: 10s
       timeout: 5s
       retries: 5
     networks:
       - acr-network
 
-  # Redis for Rate Limiting
+  # ─── Redis (Rate Limiting & Caching) ─────────────────────────────────────
   redis:
     image: redis:7-alpine
     container_name: acr-qa-redis
@@ -33,41 +32,34 @@ services:
     volumes:
       - redis_data:/data
     healthcheck:
-      test: [ "CMD", "redis-cli", "ping" ]
+      test: ["CMD", "redis-cli", "ping"]
       interval: 10s
       timeout: 5s
       retries: 5
     networks:
       - acr-network
 
-  # ACR-QA Application
+  # ─── ACR-QA Flask Application ────────────────────────────────────────────
   app:
     build:
       context: .
       dockerfile: Dockerfile
     container_name: acr-qa-app
     environment:
-      # Database connection (connects to postgres service)
       DB_NAME: acrqa
       DB_USER: postgres
       DB_PASSWORD: ${DB_PASSWORD:-postgres}
-      DB_HOST: postgres # Service name in docker-compose
+      DB_HOST: postgres
       DB_PORT: 5432
-
-      # Cerebras API
       CEREBRAS_API_KEY: ${CEREBRAS_API_KEY}
-
-      # Redis (Rate Limiting)
-      REDIS_HOST: redis # Service name in docker-compose
+      REDIS_HOST: redis
       REDIS_PORT: 6379
-
-      # GitHub/GitLab (optional)
       GITHUB_TOKEN: ${GITHUB_TOKEN:-}
       GITLAB_TOKEN: ${GITLAB_TOKEN:-}
+      FLASK_SECRET_KEY: ${FLASK_SECRET_KEY:-acr-qa-dev-secret}
     ports:
-      - "5000:5000" # Flask API
+      - "5000:5000"
     volumes:
-      # Mount specific directories (exclude .venv and cache)
       - ./CORE:/app/CORE
       - ./DATABASE:/app/DATABASE
       - ./FRONTEND:/app/FRONTEND
@@ -85,14 +77,59 @@ services:
         condition: service_healthy
     networks:
       - acr-network
-    # Keep container running for interactive commands
     stdin_open: true
     tty: true
+
+  # ─── Prometheus (Metrics Scraping) ───────────────────────────────────────
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: acr-qa-prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--web.console.libraries=/usr/share/prometheus/console_libraries'
+      - '--web.console.templates=/usr/share/prometheus/consoles'
+      - '--web.enable-lifecycle'
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./config/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus_data:/prometheus
+    depends_on:
+      - app
+    networks:
+      - acr-network
+    restart: unless-stopped
+
+  # ─── Grafana (Dashboards) ────────────────────────────────────────────────
+  grafana:
+    image: grafana/grafana:latest
+    container_name: acr-qa-grafana
+    environment:
+      GF_SECURITY_ADMIN_USER: admin
+      GF_SECURITY_ADMIN_PASSWORD: admin
+      GF_USERS_ALLOW_SIGN_UP: "false"
+      GF_DASHBOARDS_DEFAULT_HOME_DASHBOARD_PATH: /var/lib/grafana/dashboards/acr-qa-dashboard.json
+    ports:
+      - "3000:3000"
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./config/grafana/provisioning:/etc/grafana/provisioning:ro
+      - ./config/grafana/dashboards:/var/lib/grafana/dashboards:ro
+    depends_on:
+      - prometheus
+    networks:
+      - acr-network
+    restart: unless-stopped
 
 volumes:
   postgres_data:
     driver: local
   redis_data:
+    driver: local
+  prometheus_data:
+    driver: local
+  grafana_data:
     driver: local
 
 networks:

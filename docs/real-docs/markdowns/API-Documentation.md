@@ -378,6 +378,173 @@ await fetch(`${BASE_URL}/api/findings/123/mark-false-positive`, {
 
 ---
 
+## Additional Endpoints (v2.4)
+
+### 5. Get Trend Analytics
+
+**GET** `/api/trends`
+
+Get time-series trend data for dashboard charts.
+
+**Query Parameters:**
+| Parameter | Type | Default | Description |
+|-----------|------|---------|-------------|
+| `limit` | integer | 30 | Number of recent runs to include |
+
+**Response:**
+```json
+{
+  "success": true,
+  "labels": ["2026-01-25", "2026-01-26"],
+  "severity": {"high": [2, 1], "medium": [5, 4], "low": [10, 8]},
+  "categories": {"security": [3, 2], "style": [8, 7]},
+  "totals": [17, 13],
+  "data_points": 2
+}
+```
+
+---
+
+### 6. Get Run Statistics
+
+**GET** `/api/runs/{run_id}/stats`
+
+Get detailed statistics for a specific run.
+
+**Response:**
+```json
+{
+  "success": true,
+  "run_id": 42,
+  "findings_count": 15,
+  "high_severity_count": 2,
+  "medium_severity_count": 5,
+  "low_severity_count": 8,
+  "categories": {"security": 3, "design": 5, "style": 7}
+}
+```
+
+---
+
+### 7. Get Fix Confidence
+
+**GET** `/api/fix-confidence/{rule_id}`
+
+Get auto-fix confidence score for a rule.
+
+**Response:**
+```json
+{
+  "success": true,
+  "rule_id": "IMPORT-001",
+  "confidence": 95,
+  "level": "high",
+  "auto_fixable": true,
+  "recommendation": "Safe to auto-apply"
+}
+```
+
+---
+
+### 8. Scan for Secrets
+
+**POST** `/api/scan/secrets`
+
+Run secrets detection on a target directory.
+
+**Request Body:**
+```json
+{
+  "target_dir": "TESTS/samples"
+}
+```
+
+**Response:**
+```json
+{
+  "success": true,
+  "files_scanned": 10,
+  "total_secrets": 3,
+  "severity_breakdown": {"high": 2, "medium": 1},
+  "secret_types": ["aws_key", "hardcoded_password"],
+  "findings": [...]
+}
+```
+
+---
+
+### 9. SCA Dependency Scan
+
+**POST** `/api/scan/sca`
+
+Run dependency vulnerability scan.
+
+**Request Body:**
+```json
+{
+  "project_dir": "."
+}
+```
+
+**Response:**
+```json
+{
+  "success": true,
+  "total_vulnerabilities": 2,
+  "vulnerable_packages": ["package-name"],
+  "findings": [...]
+}
+```
+
+---
+
+### 10. AI Code Detection
+
+**POST** `/api/scan/ai-detection`
+
+Detect AI-generated code patterns.
+
+**Request Body:**
+```json
+{
+  "target_dir": "src/"
+}
+```
+
+**Response:**
+```json
+{
+  "success": true,
+  "files_analyzed": 15,
+  "flagged_files": 3,
+  "flagged_percentage": 20.0,
+  "files": [...]
+}
+```
+
+---
+
+### 11. Prometheus Metrics
+
+**GET** `/metrics`
+
+Returns application metrics in Prometheus text format.
+
+**Response (text/plain):**
+```
+# HELP acrqa_http_requests_total Counter metric
+# TYPE acrqa_http_requests_total counter
+acrqa_http_requests_total{endpoint="/api/analyze"} 42
+
+# HELP acrqa_analysis_duration_seconds Histogram metric
+# TYPE acrqa_analysis_duration_seconds histogram
+acrqa_analysis_duration_seconds_bucket{le="0.5"} 35
+acrqa_analysis_duration_seconds_bucket{le="1.0"} 40
+acrqa_analysis_duration_seconds_count 42
+```
+
+---
+
 ## CORS
 
 CORS is enabled for all origins in development mode.
@@ -387,6 +554,15 @@ CORS is enabled for all origins in development mode.
 ---
 
 ## Changelog
+
+### v2.4 (February 2026)
+- Added trend analytics endpoint
+- Added secrets scanning endpoint
+- Added SCA dependency scanning endpoint
+- Added AI code detection endpoint
+- Added Prometheus /metrics endpoint
+- Added fix confidence endpoint
+- Added run statistics endpoint
 
 ### v2.0 (January 2026)
 - Initial API release

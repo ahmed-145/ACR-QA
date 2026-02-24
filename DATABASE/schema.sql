@@ -27,6 +27,10 @@ CREATE TABLE IF NOT EXISTS findings (
     category VARCHAR(50) NOT NULL,
     message TEXT NOT NULL,
     raw_output JSONB,
+    canonical_rule_id VARCHAR(50),
+    canonical_severity VARCHAR(20),
+    evidence JSONB,
+    ground_truth VARCHAR(10) CHECK (ground_truth IN ('TP', 'FP', 'TN', 'FN')),
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
@@ -44,6 +48,9 @@ CREATE TABLE IF NOT EXISTS llm_explanations (
     latency_ms INTEGER NOT NULL,
     cost_usd DECIMAL(10, 6) DEFAULT 0,
     status VARCHAR(20) DEFAULT 'success',
+    confidence_score FLOAT DEFAULT 0.6,
+    self_eval_score INTEGER CHECK (self_eval_score BETWEEN 1 AND 5),
+    consistency_score FLOAT,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
@@ -75,6 +82,7 @@ CREATE TABLE IF NOT EXISTS feedback (
 CREATE INDEX IF NOT EXISTS idx_findings_run_id ON findings(run_id);
 CREATE INDEX IF NOT EXISTS idx_findings_file_path ON findings(file_path);
 CREATE INDEX IF NOT EXISTS idx_findings_severity ON findings(severity);
+CREATE INDEX IF NOT EXISTS idx_findings_ground_truth ON findings(ground_truth);
 CREATE INDEX IF NOT EXISTS idx_llm_finding_id ON llm_explanations(finding_id);
 CREATE INDEX IF NOT EXISTS idx_pr_comments_finding ON pr_comments(finding_id);
 CREATE INDEX IF NOT EXISTS idx_pr_comments_pr_number ON pr_comments(pr_number);
@@ -86,15 +94,3 @@ COMMENT ON TABLE findings IS 'Individual code issues detected by tools';
 COMMENT ON TABLE llm_explanations IS 'AI-generated explanations for findings';
 COMMENT ON TABLE pr_comments IS 'Comments posted to PRs/MRs';
 COMMENT ON TABLE feedback IS 'User feedback for evaluation';
-
-
-ALTER TABLE findings ADD COLUMN canonical_rule_id VARCHAR(50);
-ALTER TABLE findings ADD COLUMN canonical_severity VARCHAR(20);
-ALTER TABLE findings ADD COLUMN evidence JSONB;
-
-
--- Add ground_truth column
-ALTER TABLE findings ADD COLUMN ground_truth VARCHAR(10) 
-    CHECK (ground_truth IN ('TP', 'FP', 'TN', 'FN'));
-
-CREATE INDEX idx_findings_ground_truth ON findings(ground_truth);

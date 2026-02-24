@@ -1,12 +1,16 @@
 # ACR-QA v2.0 - Makefile
 # One-click setup and common operations
 
-.PHONY: help setup install-deps install-tools init-db docker-up docker-down run dashboard test clean
+.PHONY: help up down setup install-deps install-tools init-db docker-up docker-down run dashboard test test-all clean
 
 # Default target
 help:
-	@echo "ACR-QA v2.0 - Available Commands"
+	@echo "ACR-QA v2.4 - Available Commands"
 	@echo "=================================="
+	@echo ""
+	@echo "🚀 Quick Start:"
+	@echo "  make up             - Start EVERYTHING (DB + Redis + App + Prometheus + Grafana)"
+	@echo "  make down           - Stop everything"
 	@echo ""
 	@echo "Setup & Installation:"
 	@echo "  make setup          - Complete setup (deps + tools + DB)"
@@ -26,7 +30,8 @@ help:
 	@echo "  make dashboard      - Start Flask dashboard"
 	@echo ""
 	@echo "Testing:"
-	@echo "  make test           - Run all acceptance tests"
+	@echo "  make test-all       - Run FULL pytest suite (77 tests)"
+	@echo "  make test           - Run acceptance tests only"
 	@echo "  make test-pydantic  - Test Pydantic validation"
 	@echo "  make test-rate      - Test rate limiting"
 	@echo "  make test-e2e       - End-to-end integration test"
@@ -75,6 +80,28 @@ init-db:
 # Docker Operations
 # ============================================
 
+# ─── Primary one-command startup ───────────────────────────────────────────
+up:
+	@echo "🚀 Starting ACR-QA full stack..."
+	docker-compose up -d
+	@echo ""
+	@echo "✅ All services started!"
+	@echo ""
+	@echo "  📊 Dashboard:   http://localhost:5000"
+	@echo "  📈 Grafana:     http://localhost:3000  (admin / admin)"
+	@echo "  🔥 Prometheus:  http://localhost:9090"
+	@echo "  🗄️  PostgreSQL:  localhost:5433"
+	@echo "  🔴 Redis:       localhost:6379"
+	@echo ""
+	@echo "Run analysis: make run"
+	@echo "Stop stack:   make down"
+	@echo ""
+
+down:
+	@echo "🛑 Stopping ACR-QA stack..."
+	docker-compose down
+	@echo "✓ All services stopped"
+
 docker-up:
 	@echo "🐳 Starting Docker Compose stack..."
 	docker-compose up -d
@@ -85,6 +112,8 @@ docker-up:
 	@echo "  - PostgreSQL: localhost:5433"
 	@echo "  - Redis: localhost:6379"
 	@echo "  - Dashboard: http://localhost:5000"
+	@echo "  - Prometheus: http://localhost:9090"
+	@echo "  - Grafana: http://localhost:3000"
 	@echo ""
 	@echo "View logs: make docker-logs"
 	@echo ""
@@ -130,13 +159,17 @@ dashboard:
 # Testing
 # ============================================
 
-test:
-	@echo "🧪 Running all acceptance tests..."
-	pytest TESTS/test_acceptance.py -v
-	pytest TESTS/test_pydantic_validation.py -v
-	pytest TESTS/test_rate_limiting.py -v
+test-all:
+	@echo "🧪 Running FULL test suite (77 tests)..."
+	.venv/bin/pytest TESTS/ -v --tb=short --override-ini="addopts=" 2>&1
 	@echo ""
-	@echo "✅ All tests passed!"
+	@echo "✅ Full suite complete!"
+
+test:
+	@echo "🧪 Running acceptance tests..."
+	.venv/bin/pytest TESTS/test_acceptance.py TESTS/test_pydantic_validation.py TESTS/test_rate_limiting.py -v --override-ini="addopts="
+	@echo ""
+	@echo "✅ Acceptance tests passed!"
 
 test-pydantic:
 	@echo "🧪 Testing Pydantic validation..."

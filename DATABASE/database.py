@@ -393,6 +393,39 @@ class Database:
         results = self.execute(query, (run_id,), fetch=True)
         return results[0] if results else None
 
+    def get_trend_data(self, limit=30):
+        """
+        Get trend data for analytics dashboard.
+        Aggregates findings by severity and category across recent runs.
+        
+        Args:
+            limit: Number of recent runs to include
+            
+        Returns:
+            List of dicts with per-run aggregated data
+        """
+        query = """
+            SELECT 
+                ar.id as run_id,
+                ar.repo_name,
+                ar.started_at,
+                ar.total_findings,
+                COALESCE(SUM(CASE WHEN f.canonical_severity = 'high' THEN 1 ELSE 0 END), 0) as high_count,
+                COALESCE(SUM(CASE WHEN f.canonical_severity = 'medium' THEN 1 ELSE 0 END), 0) as medium_count,
+                COALESCE(SUM(CASE WHEN f.canonical_severity = 'low' THEN 1 ELSE 0 END), 0) as low_count,
+                COALESCE(SUM(CASE WHEN f.category = 'security' THEN 1 ELSE 0 END), 0) as security_count,
+                COALESCE(SUM(CASE WHEN f.category = 'style' THEN 1 ELSE 0 END), 0) as style_count,
+                COALESCE(SUM(CASE WHEN f.category = 'complexity' THEN 1 ELSE 0 END), 0) as complexity_count,
+                COALESCE(SUM(CASE WHEN f.category = 'performance' THEN 1 ELSE 0 END), 0) as performance_count
+            FROM analysis_runs ar
+            LEFT JOIN findings f ON ar.id = f.run_id
+            WHERE ar.status = 'completed'
+            GROUP BY ar.id, ar.repo_name, ar.started_at, ar.total_findings
+            ORDER BY ar.started_at DESC
+            LIMIT %s
+        """
+        return self.execute(query, (limit,), fetch=True)
+
     def close(self):
         """Close database connection"""
         if self.conn:

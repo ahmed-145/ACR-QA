@@ -13,6 +13,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
 from DATABASE.database import Database
+from CORE.utils.metrics import register_metrics_endpoint, metrics, track_request
 
 app = Flask(__name__)
 CORS(app)
@@ -22,6 +23,9 @@ app.config["SECRET_KEY"] = os.getenv(
 )
 
 db = Database()
+
+# Register Prometheus /metrics endpoint
+register_metrics_endpoint(app)
 
 
 @app.route("/")
@@ -491,6 +495,226 @@ def get_fix_confidence(rule_id):
                          "Review recommended" if confidence >= 60 else
                          "Manual fix recommended"
     })
+
+
+@app.route("/api/trends")
+def get_trends():
+    """
+    Get trend analytics data for dashboard visualization.
+    Returns time-series severity and category data across recent runs.
+    """
+    try:
+        limit = request.args.get("limit", 30, type=int)
+        trend_data = db.get_trend_data(limit=limit)
+        
+        # Format for charting
+        labels = []
+        severity_series = {"high": [], "medium": [], "low": []}
+        category_series = {"security": [], "style": [], "complexity": [], "performance": []}
+        total_series = []
+        
+        for row in reversed(trend_data):  # Chronological order
+            created = row.get("created_at")
+            label = str(created)[:10] if created else "unknown"
+            labels.append(label)
+            
+            severity_series["high"].append(row.get("high_count", 0))
+            severity_series["medium"].append(row.get("medium_count", 0))
+            severity_series["low"].append(row.get("low_count", 0))
+            
+            category_series["security"].append(row.get("security_count", 0))
+            category_series["style"].append(row.get("style_count", 0))
+            category_series["complexity"].append(row.get("complexity_count", 0))
+            category_series["performance"].append(row.get("performance_count", 0))
+            
+            total_series.append(row.get("total_findings", 0))
+        
+        return jsonify({
+            "success": True,
+            "labels": labels,
+            "severity": severity_series,
+            "categories": category_series,
+            "totals": total_series,
+            "data_points": len(labels)
+        })
+    except Exception as e:
+        print(f"Error in /api/trends: {e}")
+        return jsonify({"success": False, "error": str(e)}), 500
+
+
+@app.route("/api/scan/secrets", methods=["POST"])
+def scan_secrets():
+    """Run secrets detection on a target directory."""
+    try:
+        data = request.get_json() or {}
+        target_dir = data.get("target_dir", ".")
+        
+        from CORE.engines.secrets_detector import SecretsDetector
+        detector = SecretsDetector()
+        results = detector.scan_directory(target_dir)
+        
+        return jsonify({
+            "success": True,
+            "files_scanned": results["files_scanned"],
+            "total_secrets": results["total_secrets"],
+            "severity_breakdown": results["severity_breakdown"],
+            "secret_types": results["secret_types_found"],
+            "findings": results["findings"][:50],  # Limit response size
+        })
+    except Exception as e:
+        return jsonify({"success": False, "error": str(e)}), 500
+
+
+@app.route("/api/scan/sca", methods=["POST"])
+def scan_dependencies():
+    """Run SCA (dependency vulnerability) scan."""
+    try:
+        data = request.get_json() or {}
+        project_dir = data.get("project_dir", ".")
+        
+        from CORE.engines.sca_scanner import SCAScanner
+        scanner = SCAScanner(project_dir=project_dir)
+        results = scanner.scan()
+        
+        return jsonify({
+            "success": True,
+            "scanner": results["scanner"],
+            "total_vulnerabilities": results["total_vulnerabilities"],
+            "severity_breakdown": results["severity_breakdown"],
+            "vulnerabilities": results["vulnerabilities"],
+        })
+    except Exception as e:
+        return jsonify({"success": False, "error": str(e)}), 500
+
+
+@app.route("/api/scan/ai-detection", methods=["POST"])
+def scan_ai_code():
+    """Run AI-generated code detection on a target."""
+    try:
+        data = request.get_json() or {}
+        target = data.get("target", ".")
+        threshold = data.get("threshold", 0.5)
+        
+        from CORE.engines.ai_code_detector import AICodeDetector
+        detector = AICodeDetector(threshold=threshold)
+        
+        if Path(target).is_file():
+            result = detector.analyze_file(target)
+            return jsonify({"success": True, "result": result})
+        else:
+            results = detector.analyze_directory(target)
+            return jsonify({
+                "success": True,
+                "total_files": results["total_files"],
+                "flagged_files": results["flagged_files"],
+                "flagged_percentage": results["flagged_percentage"],
+                "files": results["files"][:50],  # Limit response size
+            })
+    except Exception as e:
+        return jsonify({"success": False, "error": str(e)}), 500
+
+
+@app.route("/api/cost-benefit/<int:run_id>")
+@track_request("/api/cost-benefit")
+def cost_benefit(run_id):
+    """N4: Cost-benefit analysis for an analysis run."""
+    try:
+        findings = db.get_findings(run_id)
+        if not findings:
+            return jsonify({"success": False, "error": "No findings found"})
+
+        # Calculate total LLM cost from explanations
+        total_cost = 0.0
+        for f in findings:
+            cost = f.get("cost_usd", 0) or 0
+            total_cost += float(cost)
+
+        # Estimate hours saved:
+        # High severity: ~30 min manual review each
+        # Medium: ~15 min, Low: ~5 min
+        hours_saved = 0
+        for f in findings:
+            sev = (f.get("severity", "low") or "low").lower()
+            if sev == "high":
+                hours_saved += 0.5
+            elif sev == "medium":
+                hours_saved += 0.25
+            else:
+                hours_saved += 0.083  # ~5 min
+
+        # Developer cost: ~$75/hr average
+        dev_cost_saved = hours_saved * 75
+        roi = dev_cost_saved / total_cost if total_cost > 0 else float("inf")
+        cost_per_finding = total_cost / len(findings) if findings else 0
+
+        return jsonify({
+            "success": True,
+            "analysis_cost_usd": round(total_cost, 4),
+            "hours_saved": round(hours_saved, 1),
+            "dev_cost_saved_usd": round(dev_cost_saved, 2),
+            "roi_ratio": round(roi, 0) if roi != float("inf") else "∞",
+            "cost_per_finding": round(cost_per_finding, 5),
+            "total_findings": len(findings),
+        })
+    except Exception as e:
+        return jsonify({"success": False, "error": str(e)}), 500
+
+
+@app.route("/api/findings/<int:finding_id>/mark-false-positive", methods=["POST"])
+@track_request("/api/findings/mark-false-positive")
+def mark_false_positive(finding_id):
+    """Mark a finding as a false positive via user feedback."""
+    try:
+        data = request.get_json() or {}
+        reason = data.get("reason", "")
+        user_id = data.get("user_id", "dashboard-user")
+
+        feedback_id = db.insert_feedback(
+            finding_id=finding_id,
+            user_id=user_id,
+            is_false_positive=True,
+            is_helpful=False,
+            comment=reason,
+        )
+
+        if feedback_id:
+            return jsonify({
+                "success": True,
+                "feedback_id": feedback_id,
+                "message": f"Finding {finding_id} marked as false positive",
+            })
+        else:
+            return jsonify({"success": False, "error": "Failed to store feedback"}), 500
+    except Exception as e:
+        return jsonify({"success": False, "error": str(e)}), 500
+
+
+@app.route("/api/findings/<int:finding_id>/feedback", methods=["POST"])
+@track_request("/api/findings/feedback")
+def submit_feedback(finding_id):
+    """Submit general feedback (helpful/not helpful) for a finding."""
+    try:
+        data = request.get_json() or {}
+        is_helpful = data.get("is_helpful", True)
+        clarity_rating = data.get("clarity_rating")
+        comment = data.get("comment", "")
+        user_id = data.get("user_id", "dashboard-user")
+
+        feedback_id = db.insert_feedback(
+            finding_id=finding_id,
+            user_id=user_id,
+            is_false_positive=False,
+            is_helpful=is_helpful,
+            clarity_rating=clarity_rating,
+            comment=comment,
+        )
+
+        if feedback_id:
+            return jsonify({"success": True, "feedback_id": feedback_id})
+        else:
+            return jsonify({"success": False, "error": "Failed to store feedback"}), 500
+    except Exception as e:
+        return jsonify({"success": False, "error": str(e)}), 500
 
 
 if __name__ == "__main__":

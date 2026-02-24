@@ -89,15 +89,51 @@ def generate_compliance_report(run_id=None):
     
     print(f"\n   Total SANS-related issues: {sans_total}")
     
-    # Compliance Score
+    # Compliance Score — Weighted by Severity
     print(f"\n{'='*60}")
-    total_security = len([f for f in findings if f.get('category') == 'security'])
-    compliance_score = max(0, 100 - (owasp_total + sans_total) * 2)
     
-    print(f"🎯 Compliance Score: {compliance_score}/100")
-    print(f"   Security Issues: {total_security}")
-    print(f"   OWASP Coverage: {len([c for c, r in OWASP_TOP_10.items() if any(rule_counts.get(rule, 0) > 0 for rule in r)])}/10")
-    print(f"   SANS Coverage: {len([c for c, r in SANS_TOP_25.items() if any(rule_counts.get(rule, 0) > 0 for rule in r)])}/10")
+    # Severity-weighted scoring: high = -5, medium = -2, low = -1
+    severity_weights = {'high': 5, 'medium': 2, 'low': 1}
+    weighted_deductions = 0
+    severity_counts = {'high': 0, 'medium': 0, 'low': 0}
+    
+    for f in findings:
+        if f.get('category') == 'security':
+            sev = f.get('canonical_severity', 'medium').lower()
+            severity_counts[sev] = severity_counts.get(sev, 0) + 1
+            weighted_deductions += severity_weights.get(sev, 2)
+    
+    total_security = sum(severity_counts.values())
+    
+    # Score: start at 100, deduct weighted points, floor at 0
+    compliance_score = max(0, 100 - weighted_deductions)
+    
+    # OWASP and SANS coverage
+    owasp_categories_hit = len([c for c, r in OWASP_TOP_10.items() if any(rule_counts.get(rule, 0) > 0 for rule in r)])
+    sans_categories_hit = len([c for c, r in SANS_TOP_25.items() if any(rule_counts.get(rule, 0) > 0 for rule in r)])
+    owasp_coverage_pct = round((owasp_categories_hit / 10) * 100, 1)
+    sans_coverage_pct = round((sans_categories_hit / 10) * 100, 1)
+    
+    # Letter grade
+    if compliance_score >= 90:
+        grade = "A"
+    elif compliance_score >= 80:
+        grade = "B"
+    elif compliance_score >= 70:
+        grade = "C"
+    elif compliance_score >= 60:
+        grade = "D"
+    else:
+        grade = "F"
+    
+    print(f"🎯 Compliance Score: {compliance_score}/100 (Grade: {grade})")
+    print(f"   Scoring: High=-5pts, Medium=-2pts, Low=-1pt per issue")
+    print(f"   High severity:   {severity_counts.get('high', 0)} issues (-{severity_counts.get('high', 0) * 5} pts)")
+    print(f"   Medium severity: {severity_counts.get('medium', 0)} issues (-{severity_counts.get('medium', 0) * 2} pts)")
+    print(f"   Low severity:    {severity_counts.get('low', 0)} issues (-{severity_counts.get('low', 0) * 1} pts)")
+    print(f"   Total Security Issues: {total_security}")
+    print(f"   OWASP Coverage: {owasp_categories_hit}/10 ({owasp_coverage_pct}%)")
+    print(f"   SANS Coverage:  {sans_categories_hit}/10 ({sans_coverage_pct}%)")
     print(f"{'='*60}\n")
 
 

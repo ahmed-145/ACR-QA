@@ -1,10 +1,12 @@
 <!DOCTYPE html>
 <html lang="en" class="dark">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ACR-QA Dashboard</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
     <script>
         tailwind.config = {
             darkMode: 'class',
@@ -30,89 +32,106 @@
     </script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
-        
+
         * {
             font-family: 'Inter', sans-serif;
         }
-        
+
         @keyframes float {
-            0%, 100% { transform: translateY(0px); }
-            50% { transform: translateY(-20px); }
+
+            0%,
+            100% {
+                transform: translateY(0px);
+            }
+
+            50% {
+                transform: translateY(-20px);
+            }
         }
-        
+
         .float-animation {
             animation: float 6s ease-in-out infinite;
         }
-        
+
         @keyframes glow {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.5; }
+
+            0%,
+            100% {
+                opacity: 1;
+            }
+
+            50% {
+                opacity: 0.5;
+            }
         }
-        
+
         .glow-effect {
             animation: glow 3s ease-in-out infinite;
         }
-        
+
         .gradient-text {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             background-clip: text;
         }
-        
+
         .card-hover {
             transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
-        
+
         .card-hover:hover {
             transform: translateY(-8px) scale(1.02);
         }
-        
+
         .glass-morphism {
             background: rgba(15, 23, 42, 0.7);
             backdrop-filter: blur(20px);
             border: 1px solid rgba(148, 163, 184, 0.1);
         }
-        
+
         .neon-border {
             box-shadow: 0 0 20px rgba(56, 189, 248, 0.5);
         }
-        
+
         /* Custom scrollbar */
         ::-webkit-scrollbar {
             width: 10px;
         }
-        
+
         ::-webkit-scrollbar-track {
             background: #0f172a;
         }
-        
+
         ::-webkit-scrollbar-thumb {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             border-radius: 10px;
         }
-        
+
         .dot-pattern {
             background-image: radial-gradient(rgba(148, 163, 184, 0.1) 1px, transparent 1px);
             background-size: 20px 20px;
         }
     </style>
 </head>
+
 <body class="bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 min-h-screen text-white">
     <!-- Background Pattern -->
     <div class="fixed inset-0 dot-pattern opacity-50 pointer-events-none"></div>
-    
+
     <!-- Floating Orbs -->
     <div class="fixed top-20 right-20 w-96 h-96 bg-purple-500 rounded-full blur-3xl opacity-20 float-animation"></div>
-    <div class="fixed bottom-20 left-20 w-96 h-96 bg-blue-500 rounded-full blur-3xl opacity-20 float-animation" style="animation-delay: 2s;"></div>
-    
+    <div class="fixed bottom-20 left-20 w-96 h-96 bg-blue-500 rounded-full blur-3xl opacity-20 float-animation"
+        style="animation-delay: 2s;"></div>
+
     <div class="relative z-10">
         <!-- Header -->
         <header class="border-b border-slate-800">
             <div class="max-w-7xl mx-auto px-6 py-6">
                 <div class="flex justify-between items-center">
                     <div class="flex items-center space-x-4">
-                        <div class="w-12 h-12 bg-gradient-to-br from-purple-500 to-blue-500 rounded-xl flex items-center justify-center text-2xl font-bold shadow-lg shadow-purple-500/50">
+                        <div
+                            class="w-12 h-12 bg-gradient-to-br from-purple-500 to-blue-500 rounded-xl flex items-center justify-center text-2xl font-bold shadow-lg shadow-purple-500/50">
                             🛡️
                         </div>
                         <div>
@@ -120,7 +139,8 @@
                             <p class="text-slate-400 text-sm font-medium">Automated Code Review Platform</p>
                         </div>
                     </div>
-                    <button onclick="refreshData()" class="group px-6 py-3 bg-gradient-to-r from-purple-600 to-blue-600 rounded-lg hover:from-purple-500 hover:to-blue-500 transition-all font-semibold flex items-center space-x-2 shadow-lg shadow-purple-500/30">
+                    <button onclick="refreshData()"
+                        class="group px-6 py-3 bg-gradient-to-r from-purple-600 to-blue-600 rounded-lg hover:from-purple-500 hover:to-blue-500 transition-all font-semibold flex items-center space-x-2 shadow-lg shadow-purple-500/30">
                         <span>🔄</span>
                         <span class="group-hover:translate-x-1 transition-transform">Refresh</span>
                     </button>
@@ -145,11 +165,13 @@
                     </div>
                     <div class="h-1 bg-gradient-to-r from-slate-700 to-slate-800 rounded-full"></div>
                 </div>
-                
+
                 <!-- High Severity -->
-                <div class="glass-morphism rounded-2xl p-6 card-hover neon-border" style="box-shadow: 0 0 20px rgba(239, 68, 68, 0.3);">
+                <div class="glass-morphism rounded-2xl p-6 card-hover neon-border"
+                    style="box-shadow: 0 0 20px rgba(239, 68, 68, 0.3);">
                     <div class="flex items-center justify-between mb-4">
-                        <div class="w-12 h-12 bg-red-900/30 rounded-xl flex items-center justify-center text-2xl glow-effect">
+                        <div
+                            class="w-12 h-12 bg-red-900/30 rounded-xl flex items-center justify-center text-2xl glow-effect">
                             🔴
                         </div>
                         <div class="text-right">
@@ -159,9 +181,10 @@
                     </div>
                     <div class="h-1 bg-gradient-to-r from-red-600 to-red-800 rounded-full"></div>
                 </div>
-                
+
                 <!-- Medium Severity -->
-                <div class="glass-morphism rounded-2xl p-6 card-hover" style="box-shadow: 0 0 20px rgba(251, 191, 36, 0.2);">
+                <div class="glass-morphism rounded-2xl p-6 card-hover"
+                    style="box-shadow: 0 0 20px rgba(251, 191, 36, 0.2);">
                     <div class="flex items-center justify-between mb-4">
                         <div class="w-12 h-12 bg-yellow-900/30 rounded-xl flex items-center justify-center text-2xl">
                             🟡
@@ -173,7 +196,7 @@
                     </div>
                     <div class="h-1 bg-gradient-to-r from-yellow-600 to-yellow-800 rounded-full"></div>
                 </div>
-                
+
                 <!-- Low Severity -->
                 <div class="glass-morphism rounded-2xl p-6 card-hover">
                     <div class="flex items-center justify-between mb-4">
@@ -189,6 +212,32 @@
                 </div>
             </div>
 
+            <!-- Cost-Benefit Widget (N4) -->
+            <div id="cost-benefit-widget" class="glass-morphism rounded-2xl p-6 mb-8 hidden">
+                <h2 class="text-xl font-bold mb-4 flex items-center space-x-2">
+                    <span class="text-2xl">💰</span>
+                    <span>Cost-Benefit Analysis</span>
+                </h2>
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                    <div class="bg-slate-800/60 rounded-xl p-4 text-center border border-slate-700/50">
+                        <p class="text-xs text-slate-400 uppercase tracking-wider mb-1">Analysis Cost</p>
+                        <p id="cb-cost" class="text-2xl font-bold text-green-400">$0.000</p>
+                    </div>
+                    <div class="bg-slate-800/60 rounded-xl p-4 text-center border border-slate-700/50">
+                        <p class="text-xs text-slate-400 uppercase tracking-wider mb-1">Manual Hours Saved</p>
+                        <p id="cb-hours" class="text-2xl font-bold text-blue-400">0h</p>
+                    </div>
+                    <div class="bg-slate-800/60 rounded-xl p-4 text-center border border-slate-700/50">
+                        <p class="text-xs text-slate-400 uppercase tracking-wider mb-1">ROI Ratio</p>
+                        <p id="cb-roi" class="text-2xl font-bold text-purple-400">0x</p>
+                    </div>
+                    <div class="bg-slate-800/60 rounded-xl p-4 text-center border border-slate-700/50">
+                        <p class="text-xs text-slate-400 uppercase tracking-wider mb-1">Cost per Finding</p>
+                        <p id="cb-per-finding" class="text-2xl font-bold text-yellow-400">$0.000</p>
+                    </div>
+                </div>
+            </div>
+
             <!-- Filters -->
             <div class="glass-morphism rounded-2xl p-6 mb-8">
                 <h2 class="text-xl font-bold mb-6 flex items-center space-x-2">
@@ -197,25 +246,54 @@
                 </h2>
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <div>
-                        <label class="block text-sm font-semibold text-slate-400 mb-2 uppercase tracking-wider">Severity</label>
-                        <select id="filter-severity" onchange="applyFilters()" class="w-full px-4 py-3 bg-slate-800 border border-slate-700 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all font-medium text-white">
+                        <label
+                            class="block text-sm font-semibold text-slate-400 mb-2 uppercase tracking-wider">Severity</label>
+                        <select id="filter-severity" onchange="applyFilters()"
+                            class="w-full px-4 py-3 bg-slate-800 border border-slate-700 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all font-medium text-white">
                             <option value="">All Severities</option>
                             <option value="high">🔴 Critical</option>
                             <option value="medium">🟡 Warning</option>
                             <option value="low">🟢 Info</option>
                         </select>
                     </div>
-                    
+
                     <div>
-                        <label class="block text-sm font-semibold text-slate-400 mb-2 uppercase tracking-wider">Category</label>
-                        <select id="filter-category" onchange="applyFilters()" class="w-full px-4 py-3 bg-slate-800 border border-slate-700 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all font-medium text-white">
+                        <label
+                            class="block text-sm font-semibold text-slate-400 mb-2 uppercase tracking-wider">Category</label>
+                        <select id="filter-category" onchange="applyFilters()"
+                            class="w-full px-4 py-3 bg-slate-800 border border-slate-700 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all font-medium text-white">
                             <option value="">All Categories</option>
                         </select>
                     </div>
-                    
+
                     <div>
-                        <label class="block text-sm font-semibold text-slate-400 mb-2 uppercase tracking-wider">Search</label>
-                        <input type="text" id="filter-search" onkeyup="applyFilters()" placeholder="Search files, rules..." class="w-full px-4 py-3 bg-slate-800 border border-slate-700 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all font-medium text-white placeholder-slate-500">
+                        <label
+                            class="block text-sm font-semibold text-slate-400 mb-2 uppercase tracking-wider">Search</label>
+                        <input type="text" id="filter-search" onkeyup="applyFilters()"
+                            placeholder="Search files, rules..."
+                            class="w-full px-4 py-3 bg-slate-800 border border-slate-700 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all font-medium text-white placeholder-slate-500">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Trend Charts -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+                <div class="glass-morphism rounded-2xl p-6">
+                    <h2 class="text-lg font-bold mb-4 flex items-center space-x-2">
+                        <span class="text-xl">📈</span>
+                        <span>Severity Trends</span>
+                    </h2>
+                    <div style="height: 260px;">
+                        <canvas id="severityTrendChart"></canvas>
+                    </div>
+                </div>
+                <div class="glass-morphism rounded-2xl p-6">
+                    <h2 class="text-lg font-bold mb-4 flex items-center space-x-2">
+                        <span class="text-xl">🗂️</span>
+                        <span>Category Breakdown</span>
+                    </h2>
+                    <div style="height: 260px;">
+                        <canvas id="categoryChart"></canvas>
                     </div>
                 </div>
             </div>
@@ -226,7 +304,8 @@
                     <h2 class="text-2xl font-bold flex items-center space-x-3">
                         <span class="text-3xl">📋</span>
                         <span>Findings</span>
-                        <span class="px-3 py-1 bg-gradient-to-r from-purple-600 to-blue-600 rounded-lg text-sm font-black">
+                        <span
+                            class="px-3 py-1 bg-gradient-to-r from-purple-600 to-blue-600 rounded-lg text-sm font-black">
                             <span id="findings-count">0</span>
                         </span>
                     </h2>
@@ -234,7 +313,8 @@
                 <div id="findings-container" class="space-y-4">
                     <div class="text-center py-20">
                         <div class="relative inline-block">
-                            <div class="animate-spin rounded-full h-16 w-16 border-t-4 border-b-4 border-purple-500"></div>
+                            <div class="animate-spin rounded-full h-16 w-16 border-t-4 border-b-4 border-purple-500">
+                            </div>
                             <div class="absolute inset-0 rounded-full bg-purple-500/20 blur-xl"></div>
                         </div>
                         <p class="text-slate-400 mt-6 text-lg font-medium">Loading findings...</p>
@@ -253,16 +333,17 @@
                 console.log('Loading dashboard...');
                 const runsResp = await fetch('/api/runs?limit=1');
                 const runsData = await runsResp.json();
-                
+
                 if (!runsData.success || runsData.runs.length === 0) {
                     showError('No analysis runs found. Run an analysis first!');
                     return;
                 }
-                
+
                 currentRunId = runsData.runs[0].id;
                 await loadStats();
                 await loadCategories();
                 await loadFindings();
+                loadCostBenefit(currentRunId);
             } catch (error) {
                 console.error('Error:', error);
                 showError('Error loading data: ' + error.message);
@@ -272,9 +353,9 @@
         async function loadStats() {
             const resp = await fetch(`/api/runs/${currentRunId}/stats`);
             const data = await resp.json();
-            
+
             if (!data.success) return;
-            
+
             document.getElementById('stat-total').textContent = data.total_findings;
             document.getElementById('stat-high').textContent = data.high;
             document.getElementById('stat-medium').textContent = data.medium;
@@ -284,9 +365,9 @@
         async function loadCategories() {
             const resp = await fetch('/api/categories');
             const data = await resp.json();
-            
+
             if (!data.success) return;
-            
+
             const select = document.getElementById('filter-category');
             data.categories.forEach(cat => {
                 const option = document.createElement('option');
@@ -300,20 +381,20 @@
             const severity = document.getElementById('filter-severity').value;
             const category = document.getElementById('filter-category').value;
             const search = document.getElementById('filter-search').value;
-            
+
             let url = `/api/runs/${currentRunId}/findings?`;
             if (severity) url += `severity=${severity}&`;
             if (category) url += `category=${category}&`;
             if (search) url += `search=${encodeURIComponent(search)}&`;
-            
+
             const resp = await fetch(url);
             const data = await resp.json();
-            
+
             if (!data.success) {
                 showError('Failed to load findings');
                 return;
             }
-            
+
             allFindings = data.findings;
             document.getElementById('findings-count').textContent = data.total;
             renderFindings(allFindings);
@@ -321,7 +402,7 @@
 
         function renderFindings(findings) {
             const container = document.getElementById('findings-container');
-            
+
             if (findings.length === 0) {
                 container.innerHTML = `
                     <div class="text-center py-20">
@@ -331,34 +412,34 @@
                 `;
                 return;
             }
-            
+
             container.innerHTML = findings.map(f => {
                 const sevConfig = {
-                    high: { 
-                        bg: 'bg-red-900/20', 
-                        border: 'border-red-500/50', 
+                    high: {
+                        bg: 'bg-red-900/20',
+                        border: 'border-red-500/50',
                         text: 'text-red-400',
                         badge: 'bg-red-900/40 text-red-300 border-red-500/50',
                         emoji: '🔴'
                     },
-                    medium: { 
-                        bg: 'bg-yellow-900/20', 
-                        border: 'border-yellow-500/50', 
+                    medium: {
+                        bg: 'bg-yellow-900/20',
+                        border: 'border-yellow-500/50',
                         text: 'text-yellow-400',
                         badge: 'bg-yellow-900/40 text-yellow-300 border-yellow-500/50',
                         emoji: '🟡'
                     },
-                    low: { 
-                        bg: 'bg-green-900/20', 
-                        border: 'border-green-500/50', 
+                    low: {
+                        bg: 'bg-green-900/20',
+                        border: 'border-green-500/50',
                         text: 'text-green-400',
                         badge: 'bg-green-900/40 text-green-300 border-green-500/50',
                         emoji: '🟢'
                     }
                 };
-                
+
                 const config = sevConfig[f.severity] || sevConfig.low;
-                
+
                 return `
                     <div class="glass-morphism rounded-xl p-6 border ${config.border} card-hover">
                         <div class="flex items-start gap-4">
@@ -378,6 +459,14 @@
                                     <span class="px-3 py-1 bg-blue-900/40 text-blue-300 rounded-lg text-xs font-medium">
                                         ${f.tool}
                                     </span>
+                                    ${f.confidence_score ? `
+                                        <span class="px-3 py-1 rounded-lg text-xs font-bold border ${f.confidence_score >= 0.8 ? 'bg-green-900/40 text-green-300 border-green-500/50' :
+                            f.confidence_score >= 0.6 ? 'bg-yellow-900/40 text-yellow-300 border-yellow-500/50' :
+                                'bg-orange-900/40 text-orange-300 border-orange-500/50'
+                        }">
+                                            🎯 ${Math.round(f.confidence_score * 100)}% confidence
+                                        </span>
+                                    ` : ''}
                                 </div>
                                 
                                 <p class="text-sm font-mono text-slate-400 mb-3">
@@ -400,6 +489,18 @@
                                         </p>
                                     </details>
                                 ` : ''}
+                                
+                                <div class="flex items-center gap-2 mt-4 pt-3 border-t border-slate-700/50">
+                                    <span class="text-xs text-slate-500 mr-2">Feedback:</span>
+                                    <button onclick="markFalsePositive(${f.id || 0})" id="fp-btn-${f.id || 0}" 
+                                            class="px-3 py-1 text-xs bg-slate-800 hover:bg-red-900/40 text-slate-400 hover:text-red-300 rounded-lg border border-slate-700 hover:border-red-500/50 transition-all">
+                                        👎 False Positive
+                                    </button>
+                                    <button onclick="markHelpful(${f.id || 0})" id="helpful-btn-${f.id || 0}"
+                                            class="px-3 py-1 text-xs bg-slate-800 hover:bg-green-900/40 text-slate-400 hover:text-green-300 rounded-lg border border-slate-700 hover:border-green-500/50 transition-all">
+                                        👍 Helpful
+                                    </button>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -427,7 +528,112 @@
             location.reload();
         }
 
+        // ─── Trend Charts ────────────────────────────────────
+        async function loadTrendCharts() {
+            try {
+                const resp = await fetch('/api/trends?limit=15');
+                const data = await resp.json();
+                if (!data.success || data.data_points === 0) return;
+
+                // Severity Trend Line Chart
+                const sevCtx = document.getElementById('severityTrendChart');
+                if (sevCtx) {
+                    new Chart(sevCtx, {
+                        type: 'line',
+                        data: {
+                            labels: data.labels,
+                            datasets: [
+                                { label: 'High', data: data.severity.high, borderColor: '#ef4444', backgroundColor: 'rgba(239,68,68,0.1)', tension: 0.3, fill: true },
+                                { label: 'Medium', data: data.severity.medium, borderColor: '#fbbf24', backgroundColor: 'rgba(251,191,36,0.1)', tension: 0.3, fill: true },
+                                { label: 'Low', data: data.severity.low, borderColor: '#22c55e', backgroundColor: 'rgba(34,197,94,0.1)', tension: 0.3, fill: true },
+                            ]
+                        },
+                        options: {
+                            responsive: true, maintainAspectRatio: false,
+                            plugins: { legend: { labels: { color: '#94a3b8', font: { family: 'Inter' } } } },
+                            scales: {
+                                x: { ticks: { color: '#64748b', maxRotation: 45 }, grid: { color: 'rgba(148,163,184,0.08)' } },
+                                y: { ticks: { color: '#64748b' }, grid: { color: 'rgba(148,163,184,0.08)' }, beginAtZero: true }
+                            }
+                        }
+                    });
+                }
+
+                // Category Doughnut Chart
+                const catCtx = document.getElementById('categoryChart');
+                if (catCtx) {
+                    const catTotals = {};
+                    for (const [cat, vals] of Object.entries(data.categories)) {
+                        catTotals[cat] = vals.reduce((a, b) => a + b, 0);
+                    }
+                    const cats = Object.keys(catTotals).filter(c => catTotals[c] > 0);
+                    const catColors = { security: '#ef4444', style: '#a78bfa', complexity: '#fbbf24', performance: '#38bdf8' };
+                    new Chart(catCtx, {
+                        type: 'doughnut',
+                        data: {
+                            labels: cats.map(c => c.charAt(0).toUpperCase() + c.slice(1)),
+                            datasets: [{ data: cats.map(c => catTotals[c]), backgroundColor: cats.map(c => catColors[c] || '#64748b'), borderWidth: 0 }]
+                        },
+                        options: {
+                            responsive: true, maintainAspectRatio: false,
+                            plugins: { legend: { position: 'right', labels: { color: '#94a3b8', font: { family: 'Inter' }, padding: 16 } } },
+                            cutout: '65%'
+                        }
+                    });
+                }
+            } catch (e) { console.log('Trends not available:', e); }
+        }
+
+        // ─── Feedback ────────────────────────────────────────
+        async function markFalsePositive(findingId) {
+            try {
+                const resp = await fetch(`/api/findings/${findingId}/mark-false-positive`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ reason: 'Marked via dashboard' })
+                });
+                const data = await resp.json();
+                if (data.success) {
+                    const btn = document.getElementById(`fp-btn-${findingId}`);
+                    if (btn) { btn.innerHTML = '✅ Marked FP'; btn.disabled = true; btn.classList.add('opacity-50'); }
+                }
+            } catch (e) { console.error('FP marking failed:', e); }
+        }
+
+        async function markHelpful(findingId) {
+            try {
+                const resp = await fetch(`/api/findings/${findingId}/feedback`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ is_helpful: true })
+                });
+                const data = await resp.json();
+                if (data.success) {
+                    const btn = document.getElementById(`helpful-btn-${findingId}`);
+                    if (btn) { btn.innerHTML = '✅ Thanks!'; btn.disabled = true; btn.classList.add('opacity-50'); }
+                }
+            } catch (e) { console.error('Feedback failed:', e); }
+        }
+
+        // ─── Cost-Benefit Widget (N4) ────────────────────────
+        async function loadCostBenefit(runId) {
+            try {
+                const resp = await fetch(`/api/cost-benefit/${runId}`);
+                const data = await resp.json();
+                if (!data.success) return;
+
+                const widget = document.getElementById('cost-benefit-widget');
+                widget.classList.remove('hidden');
+                document.getElementById('cb-cost').textContent = `$${data.analysis_cost_usd.toFixed(3)}`;
+                document.getElementById('cb-hours').textContent = `${data.hours_saved}h`;
+                document.getElementById('cb-roi').textContent = data.roi_ratio === '∞' ? '∞' : `${data.roi_ratio}x`;
+                document.getElementById('cb-per-finding').textContent = `$${data.cost_per_finding.toFixed(4)}`;
+            } catch (e) { console.log('Cost-benefit not available:', e); }
+        }
+
         loadDashboard();
+        loadTrendCharts();
     </script>
 </body>
+
 </html>

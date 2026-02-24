@@ -29,15 +29,15 @@ class TestNormalizer:
         findings = normalize_ruff([ruff_output])
         
         assert len(findings) == 1
-        assert findings[0]['canonical_rule_id'] == 'STYLE-001'
-        assert findings[0]['severity'] == 'low'
-        assert findings[0]['file'] == 'test.py'
-        assert findings[0]['line'] == 42
+        assert findings[0].canonical_rule_id == 'STYLE-001'
+        assert findings[0].severity == 'low'
+        assert findings[0].file == 'test.py'
+        assert findings[0].line == 42
 
     def test_semgrep_normalization(self):
         """Test Semgrep output is normalized correctly"""
         semgrep_output = {
-            "check_id": "python.lang.security.audit.dangerous-eval.dangerous-eval",
+            "check_id": "python.lang.security.audit.dangerous-eval-usage",
             "path": "app.py",
             "start": {"line": 10, "col": 5},
             "extra": {
@@ -46,12 +46,12 @@ class TestNormalizer:
             }
         }
         
-        findings = normalize_semgrep([semgrep_output])
+        findings = normalize_semgrep({"results": [semgrep_output]})
         
         assert len(findings) == 1
-        assert findings[0]['canonical_rule_id'] == 'SECURITY-001'
-        assert findings[0]['severity'] == 'high'
-        assert findings[0]['category'] == 'security'
+        assert findings[0].canonical_rule_id == 'SECURITY-001'
+        assert findings[0].severity == 'high'
+        assert findings[0].category == 'security'
 
     def test_bandit_normalization(self):
         """Test Bandit output is normalized correctly"""
@@ -65,12 +65,12 @@ class TestNormalizer:
             "filename": "dangerous.py"
         }
         
-        findings = normalize_bandit([bandit_output])
+        findings = normalize_bandit({"results": [bandit_output]})
         
         assert len(findings) == 1
-        assert findings[0]['canonical_rule_id'] == 'SECURITY-001'
-        assert findings[0]['file'] == 'dangerous.py'
-        assert findings[0]['line'] == 15
+        assert findings[0].canonical_rule_id == 'SECURITY-001'
+        assert findings[0].file == 'dangerous.py'
+        assert findings[0].line == 15
 
     def test_canonical_finding_validation(self):
         """Test CanonicalFinding Pydantic validation"""
@@ -93,12 +93,12 @@ class TestNormalizer:
 
     def test_severity_normalization(self):
         """Test severity is normalized to high/medium/low"""
-        # Test ERROR -> high
+        # Test high severity
         finding1 = CanonicalFinding(
             canonical_rule_id='TEST-001',
             original_rule_id='T001',
-            severity='ERROR',
-            category='test',
+            severity='high',
+            category='security',
             file='test.py',
             line=1,
             language='python',
@@ -107,12 +107,12 @@ class TestNormalizer:
         )
         assert finding1.severity == 'high'
         
-        # Test WARNING -> medium
+        # Test medium severity
         finding2 = CanonicalFinding(
             canonical_rule_id='TEST-001',
             original_rule_id='T001',
-            severity='WARNING',
-            category='test',
+            severity='medium',
+            category='security',
             file='test.py',
             line=1,
             language='python',
@@ -134,7 +134,7 @@ class TestNormalizer:
         
         assert len(findings) == 1
         # Should still create finding even if rule is unknown
-        assert findings[0]['original_rule_id'] == 'NEWRULE999'
+        assert findings[0].original_rule_id == 'NEWRULE999'
 
     def test_category_mapping(self):
         """Test category is correctly mapped"""

@@ -1,0 +1,1804 @@
+\documentclass[11pt,a4paper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[margin=1in]{geometry}
+\usepackage{graphicx}
+\usepackage{hyperref}
+\usepackage{listings}
+\usepackage{xcolor}
+\usepackage{booktabs}
+\usepackage{longtable}
+\usepackage{enumitem}
+\usepackage{fancyhdr}
+
+% Code listing style
+\lstset{
+    basicstyle=\ttfamily\small,
+    breaklines=true,
+    frame=single,
+    language=Python,
+    showstringspaces=false,
+    commentstyle=\color{gray},
+    keywordstyle=\color{blue},
+    stringstyle=\color{red}
+}
+
+% Header and footer
+\pagestyle{fancy}
+\fancyhf{}
+\rhead{ACR-QA v2.0 PRD}
+\lhead{Ahmed Mahmoud Abbas}
+\rfoot{Page \thepage}
+
+\title{\textbf{Product Requirements Document (PRD)\\
+ACR-QA v2.4: Language-Agnostic Code Review Platform}}
+\author{Ahmed Mahmoud Abbas\\
+Student ID: 222101213\\
+King Salman International University (KSIU)\\
+Supervisor: Dr. Samy AbdelNabi}
+\date{January 28, 2026}
+
+\begin{document}
+
+\maketitle
+\thispagestyle{empty}
+
+\vspace{1cm}
+
+\section*{Document Information}
+\begin{tabular}{ll}
+\toprule
+\textbf{Field} & \textbf{Value} \\
+\midrule
+Project Name & ACR-QA v2.4 (Automated Code Review \& Quality Assurance) \\
+Owner & Ahmed Mahmoud Abbas (Student ID: 222101213) \\
+Supervisor & Dr. Samy AbdelNabi \\
+Institution & King Salman International University (KSIU) \\
+Timeline & October 2025 - June 2026 (8 months) \\
+Version & 2.4 (Platform Version) \\
+Last Updated & January 28, 2026 \\
+\bottomrule
+\end{tabular}
+
+\newpage
+\tableofcontents
+\newpage
+
+\section{Executive Summary}
+
+\subsection{Product Vision}
+ACR-QA v2.4 is a language-agnostic, on-premises code review platform that automatically detects bad practices, security vulnerabilities, design anti-patterns, and style violations in pull requests. It uses Retrieval-Augmented Generation (RAG) with Cerebras AI to provide evidence-grounded, natural language explanations that help developers understand and fix issues. The MVP focuses on analyzing pull request diffs only, not entire repositories, to keep scope feasible for an 8-month academic project. The system is packaged as a production-ready, Docker-based pipeline with Prometheus metrics, Grafana dashboards, k6 load testing validation, and Pydantic schema validation, aligning with modern backend/DevOps observability and reliability practices.
+
+\subsection{Problem Statement}
+\begin{itemize}[leftmargin=*]
+    \item \textbf{Current Pain:} Code review quality varies by reviewer availability; manual reviews miss security issues; commercial tools cost \$10k-50k/year; cloud-based tools can't handle proprietary code
+    \item \textbf{Target Users:} University instructors (grading student PRs), small dev teams (5-20 engineers), open-source maintainers, technical recruiters
+    \item \textbf{Key Gap:} Existing tools lack explanations or use generic AI that hallucinates incorrect guidance
+\end{itemize}
+
+\subsection{Core Innovation (v2.0 Differentiators)}
+\begin{enumerate}
+    \item \textbf{Canonical Findings Schema:} Universal JSON format normalizes outputs from disparate tools (Ruff, Semgrep, ESLint) across languages
+    \item \textbf{RAG-Enhanced Explanations:} Evidence-grounded prompts reduce hallucinations 42-68\% vs. direct LLM calls
+    \item \textbf{Provenance-First Architecture:} Stores raw tool outputs, LLM prompts/responses, and user feedback for reproducible evaluation
+    \item \textbf{Adapter SDK:} Pluggable language support (Python first, JavaScript/Java next) via standardized interface
+\end{enumerate}
+
+\section{Product Objectives \& Success Metrics}
+
+\subsection{Primary Goals}
+
+\begin{longtable}{p{3.5cm}p{3.5cm}p{2.5cm}p{2.5cm}}
+\toprule
+\textbf{Goal} & \textbf{Metric} & \textbf{Target} & \textbf{Timeline} \\
+\midrule
+\endfirsthead
+\toprule
+\textbf{Goal} & \textbf{Metric} & \textbf{Target} & \textbf{Timeline} \\
+\midrule
+\endhead
+Multi-Language Platform & Languages supported & Python (100\%), +1 language & Nov 2025 / Mar 2026 \\
+\midrule
+Detection Quality & Precision (high-severity rules) & $\geq$70\% & Feb 2026 \\
+& False positive rate & $<$30\% & Feb 2026 \\
+\midrule
+AI Explanation Quality & User rating (1-5 scale) & $\geq$3.0 median & Feb 2026 \\
+& LLM vs template preference & LLM rated $\geq$0.5 higher & Feb 2026 \\
+\midrule
+Performance & Analysis latency (PR $<$200 lines) & $\leq$90 seconds & Jan 2026 \\
+\midrule
+Deployment & On-prem setup time & $\leq$30 minutes & Apr 2026 \\
+\midrule
+Cost & Total recurring cost & \$0 (zero) & Ongoing \\
+\midrule
+PR Review Experience & All findings posted as inline PR comments & 100\% of detected issues appear as GitHub review comments & Jan 2026 \\
+\bottomrule
+\end{longtable}
+
+\subsection{Academic Requirements}
+\begin{enumerate}
+    \item Working software system with Docker Compose packaging
+    \item Evaluation report: precision/recall on 80+ labeled issues
+    \item User study: 8-10 participants rating explanation usefulness
+    \item Adapter SDK documentation proving extensibility
+    \item Demonstration video showing end-to-end workflow
+\end{enumerate}
+
+\section{User Personas \& Use Cases}
+
+\subsection{Primary Personas}
+
+\subsubsection{Persona 1: University Instructor (Dr. Sarah)}
+\begin{itemize}[leftmargin=*]
+    \item \textbf{Context:} Teaches Software Engineering to 120 students; receives 300+ PRs/semester
+    \item \textbf{Pain:} Can't manually review all PRs; students repeat same mistakes; no time for personalized feedback
+    \item \textbf{Jobs-to-be-Done:} Automatically grade PRs for code quality; provide consistent feedback; track student progress
+    \item \textbf{Success Criteria:} Reduces review time from 10min/PR to 2min/PR; students understand why code failed
+\end{itemize}
+
+\subsubsection{Persona 2: Small Team Tech Lead (Omar)}
+\begin{itemize}[leftmargin=*]
+    \item \textbf{Context:} Leads 8-person dev team at Egyptian startup; can't afford SonarQube Enterprise
+    \item \textbf{Pain:} Junior devs push bad code; manual reviews miss security issues; cloud tools violate data policy
+    \item \textbf{Jobs-to-be-Done:} Enforce quality gates on PRs; educate juniors via AI explanations; deploy on-prem
+    \item \textbf{Success Criteria:} Catches SQL injection before production; costs \$0/month; runs on existing server
+\end{itemize}
+
+\subsubsection{Persona 3: Open-Source Maintainer (Fatima)}
+\begin{itemize}[leftmargin=*]
+    \item \textbf{Context:} Maintains popular Python library; receives PRs from 100+ external contributors
+    \item \textbf{Pain:} Contributors ignore style guide; duplicate code gets merged; explaining issues wastes time
+    \item \textbf{Jobs-to-be-Done:} Auto-comment on PRs with guidance; reduce back-and-forth; maintain code quality
+    \item \textbf{Success Criteria:} 50\% fewer ``please fix style'' comments; contributors self-correct before re-submission
+\end{itemize}
+
+\subsection{User Workflows}
+
+\subsubsection{Workflow 1: Student Submits PR (Primary)}
+\begin{enumerate}
+    \item Student opens PR with homework solution
+    \item GitHub webhook triggers ACR-QA analysis (30-90s)
+    \item System posts comment: ``Found 3 issues: [AI explanations with line numbers]''
+    \item Student reads explanations, fixes code, pushes update
+    \item Re-analysis confirms fixes, instructor reviews only logic
+\end{enumerate}
+
+\subsubsection{Workflow 2: Team Lead Reviews Metrics \& Marks FP}
+\begin{enumerate}
+    \item Tech lead runs \texttt{acr-qa review <pr-url>} to view findings (Terminal UI with Rich library)
+    \item OR (Phase 2): Opens Prometheus/Grafana dashboard in browser to view trends (``Security findings down 40\% this month'')
+    \item Marks 2 findings as false positive (API endpoint: POST /findings/\{id\}/mark-false-positive)
+    \item System records feedback in database
+    \item System adjusts thresholds for future PRs based on FP feedback
+\end{enumerate}
+
+\subsubsection{Workflow 3: Maintainer Configures Rules}
+\begin{enumerate}
+    \item Maintainer edits \texttt{rules.yml} in repo
+    \item Adds custom rule: ``No \texttt{requests.get()} without timeout''
+    \item Commits rule definition with rationale + example
+    \item Next PR triggers analysis using new rule
+    \item AI explanation cites the custom rule definition
+\end{enumerate}
+
+\section{Functional Requirements}
+
+\subsection{Core Features (MVP - Phase 1, Nov-Jan 2026)}
+
+\subsubsection{F1: Python Code Analysis}
+\textbf{Description:} Detect 10 categories of issues in Python code with 32 rules
+
+\textbf{Categories:}
+\begin{itemize}[leftmargin=*]
+    \item \textbf{Bad Practices:} Mutable defaults, unused variables, dead code
+    \item \textbf{Style Violations:} PEP 8 compliance, import ordering, line length
+    \item \textbf{Design Smells:} Too many parameters ($>$5), large classes ($>$300 lines), high complexity (CC $>$10)
+    \item \textbf{Security Issues:} SQL injection patterns, unsafe eval/exec, weak crypto
+    \item \textbf{Code Duplication:} Token-based similarity ($>$80\% match over 50+ tokens)
+\end{itemize}
+
+\textbf{Tools Used:} Ruff, Vulture, Radon, Semgrep, Bandit, jscpd
+
+\textbf{Input:} Python files (.py) from PR diff
+
+\textbf{Output:} Canonical findings with severity, confidence, line numbers. Severity rules: security issues and potential crashes = high, design smells affecting maintainability = medium, stylistic issues and minor formatting problems = low.
+
+\subsubsection{F2: Canonical Findings Schema}
+\textbf{Description:} Universal JSON format normalizing all tool outputs
+
+\textbf{Schema:}
+\begin{lstlisting}[language=json]
+{
+  "finding_id": "uuid-v4",
+  "rule_id": "SOLID-001",
+  "category": "design | security | style | duplication | unused",
+  "severity": "high | medium | low",
+  "confidence": 0.87,
+  "file": "app/auth.py",
+  "line": 42,
+  "column": 10,
+  "language": "python",
+  "evidence": {
+    "snippet": "def authenticate(user, pass, token, session, db):",
+    "tool_output": {"radon": {"complexity": 12}},
+    "context_before": ["line 39", "line 40", "line 41"],
+    "context_after": ["line 43", "line 44", "line 45"]
+  },
+  "explanation": "AI-generated natural language...",
+  "explanation_source": "llm | template",
+  "timestamp": "2025-11-23T17:30:00Z"
+}
+\end{lstlisting}
+
+\textbf{Normalizer:} Maps Ruff, Semgrep, Vulture, Radon, jscpd $\rightarrow$ canonical format
+
+\textbf{Rationale:} Enables language-agnostic dashboard, cross-language comparisons, consistent API
+
+\subsubsection{F3: RAG-Enhanced AI Explanations}
+\textbf{Description:} Generate natural language explanations using Cerebras LLM with evidence-grounding. Explanations include \texttt{[RULE-ID](config/rules.yml)} citations and ``How to Fix'' remediation.
+
+\textbf{Process:}
+\begin{enumerate}
+    \item Load rule definition from \texttt{rules.yml} (description, rationale, remediation, examples)
+    \item Retrieve 3-6 lines of code context around issue
+    \item Construct prompt: ``Explain using ONLY this rule definition and code context''
+    \item Call Cerebras API (llama3.1-8b, temperature=0.3, max tokens=150)
+    \item Validate: Check if response cites rule id; if not, use template fallback
+    \item Log prompt + response to provenance DB
+\end{enumerate}
+
+\textbf{Rules Catalog (\texttt{rules.yml}):}
+\begin{lstlisting}[language=yaml]
+SOLID-001:
+  name: "Too Many Parameters"
+  category: "design"
+  severity: "medium"
+  description: "Functions with >5 parameters violate Single Responsibility"
+  rationale: "Complex signatures indicate function does too much"
+  remediation: "Extract parameters into dataclass or config object"
+  example_good: |
+    @dataclass
+    class Config:
+      user: str; token: str
+    def auth(cfg: Config): ...
+  example_bad: |
+    def auth(user, pass, token, session, db): ...
+\end{lstlisting}
+
+\textbf{Cost:} $\sim$\$0.0014 per PR analysis (50-200 explanations at \$0.60/1M tokens)
+
+\textbf{Fallback:} Template-based explanation if LLM confidence $<$0.7 or API fails
+
+\subsubsection{F4: GitHub PR Integration}
+\textbf{Description:} Automatically analyze PRs and post findings as comments. Also supports GitLab CI/CD with MR comments via \texttt{.gitlab-ci.yml}.
+
+\textbf{Trigger Options:}
+\begin{itemize}[leftmargin=*]
+    \item \textbf{GitHub Action (Phase 1):} Workflow file in \texttt{.github/workflows/}
+    \item \textbf{Webhook Endpoint (Phase 2):} Flask/FastAPI server receives PR events
+    \item \textbf{Manual trigger:} PR comment \texttt{acr-qa review} starts analysis (optional mode for demos)
+\end{itemize}
+
+\textbf{Flow:}
+\begin{enumerate}
+    \item PR opened/updated $\rightarrow$ GitHub triggers action/webhook
+    \item Fetch PR diff via GitHub API (pygithub library)
+    \item Extract changed files + line ranges
+    \item Run analysis on changed code only (not entire repo)
+    \item Compute severity for each finding (high/medium/low) and sort comments by severity so the most critical issues appear first
+    \item Post findings as PR review comments with line annotations
+    \item Store PR metadata + findings in database
+\end{enumerate}
+
+\textbf{Comment Format:}
+\begin{lstlisting}
+**ACR-QA Detected Issue**
+**Rule**: SOLID-001 (Too Many Parameters)
+**Severity**: Medium
+**File**: 'app/auth.py:42'
+
+This function has 5 parameters, which violates the Single
+Responsibility Principle. Complex parameter lists indicate
+the function is doing too much and becomes hard to test
+and maintain.
+
+**Suggested Fix**:
+Extract related parameters into a dataclass:
+
+@dataclass
+class AuthConfig:
+  username: str
+  password: str
+  token: str
+
+def authenticate(config: AuthConfig, session, db): ...
+
+[Mark as False Positive](#) | [View Details](#)
+\end{lstlisting}
+
+\textbf{Rate Limiting:} Max 1 analysis/PR/minute to avoid spam
+
+\subsubsection{F5: Provenance Database}
+\textbf{Description:} PostgreSQL stores all analysis data for reproducibility and evaluation
+
+\textbf{Tables:}
+\begin{itemize}[leftmargin=*]
+    \item \textbf{analyses:} PR metadata, timestamp, status, total findings count
+    \item \textbf{findings:} Canonical finding objects (see F2 schema)
+    \item \textbf{raw\_outputs:} Original JSON from each tool (Ruff, Semgrep, etc.)
+    \item \textbf{llm\_interactions:} Prompts sent, responses received, model, temperature, cost
+    \item \textbf{feedback:} User marks (false positive, helpful, unclear)
+\end{itemize}
+
+\textbf{Stores:} Analysis metadata, LLM prompts/responses, cost/latency metrics, rate limit events (for monitoring and debugging)
+
+\textbf{Enables Observability:}
+\begin{itemize}[leftmargin=*]
+    \item Full audit trail of all decisions (why was this finding flagged?)
+    \item Cost tracking per PR (Cerebras token count)
+    \item Performance monitoring (latency percentiles, queue depth)
+    \item Rate limit debugging (when did limits kick in?)
+\end{itemize}
+
+\textbf{Retention:} Unlimited (storage $\sim$85MB for entire project)
+
+\textbf{Backup:} Docker volume persists across container restarts
+
+\subsubsection{F6: Findings \& Metrics Interface}
+\textbf{Description:} Provide developers with access to findings and metrics through appropriate interfaces (not a heavy UI, just access). Includes OWASP Top 10 and SANS Top 25 compliance scoring.
+
+\textbf{Features:}
+
+\textit{Phase 1 (MVP):}
+\begin{itemize}[leftmargin=*]
+    \item \textbf{Terminal UI (Rich library)}
+    \begin{itemize}
+        \item Display findings with syntax highlighting
+        \item Sort by severity (high $\rightarrow$ low)
+        \item Show rule ID, file, line, explanation
+        \item Usage: \texttt{acr-qa review <pr-url> --local}
+    \end{itemize}
+    
+    \item \textbf{Manual Reporting}
+    \begin{itemize}
+        \item Console output with findings table
+        \item Markdown export for GitHub comments
+        \item JSON export for metrics aggregation
+    \end{itemize}
+\end{itemize}
+
+\textit{Phase 2 (Optional):}
+\begin{itemize}[leftmargin=*]
+    \item \textbf{REST API endpoint: GET /findings}
+    \begin{itemize}
+        \item Returns canonical findings as JSON
+        \item Enables external tools to consume results
+        \item No frontend UI required for MVP
+    \end{itemize}
+\end{itemize}
+
+\textbf{Acceptance:}
+\begin{itemize}[leftmargin=*]
+    \item[$\checkmark$] Terminal UI displays 50 findings without lag
+    \item[$\checkmark$] Output is readable from 10ft away (font size OK)
+    \item[$\checkmark$] JSON export is valid and parseable
+\end{itemize}
+
+\subsection{Extended Features (Phase 2, Feb-Jun 2026)}
+
+\subsubsection{F7: Multi-Language Support}
+\textbf{Description:} Design a pluggable adapter pattern allowing future language support. Phase 1 focuses on Python; other languages are gated behind performance criteria.
+
+\textbf{Features:}
+
+\textit{Phase 1 (MVP):}
+\begin{itemize}[leftmargin=*]
+    \item \textbf{Python Adapter}
+    \begin{itemize}
+        \item Ruff, Semgrep, Vulture, Radon, Bandit, jscpd
+        \item Fully tested and validated
+        \item Target: 70\%+ precision on high-severity rules
+    \end{itemize}
+\end{itemize}
+
+\textit{Phase 2 (Conditional):}
+\begin{itemize}[leftmargin=*]
+    \item \textbf{JavaScript/TypeScript Adapter}
+    \begin{itemize}
+        \item Gate: Only start if Phase 1 Python precision $\geq$ 80\%
+        \item Uses ESLint, similar pattern
+    \end{itemize}
+\end{itemize}
+
+\textit{Stretch Goal (Lower Priority):}
+\begin{itemize}[leftmargin=*]
+    \item \textbf{Java Adapter} (only if time permits after JS)
+\end{itemize}
+
+\textbf{Acceptance:}
+\begin{itemize}[leftmargin=*]
+    \item[$\checkmark$] Python adapter achieves $\geq$70\% precision on labeled dataset
+    \item[$\checkmark$] Adapter SDK documented (enabling future languages)
+    \item[$\checkmark$] Gate enforced: No new languages start until gating criteria met
+\end{itemize}
+
+\subsubsection{F8: Evaluation Framework}
+\textbf{Seeded Dataset:} 80-100 manually labeled issues
+\begin{itemize}[leftmargin=*]
+    \item 20 duplications, 20 style, 20 design, 20 security, 20 unused code
+    \item Ground truth: True Positive (TP) or False Positive (FP)
+\end{itemize}
+
+\textbf{Metrics Calculation (\texttt{compute\_metrics.py}):}
+\begin{align*}
+\text{Precision} &= \frac{TP}{TP + FP} \\
+\text{Recall} &= \frac{TP}{TP + FN} \\
+\text{F1 Score} &= \frac{2 \times (\text{Precision} \times \text{Recall})}{\text{Precision} + \text{Recall}}
+\end{align*}
+
+\textbf{CI Integration:} Nightly runs compute metrics on seeded dataset
+
+\textbf{Target:} Precision $\geq$70\% for high-severity rules
+
+\subsubsection{F9: User Study Tools}
+\textbf{Comparison Setup:} 20 findings with dual explanations (LLM + template)
+
+\textbf{Google Form:} Code snippet, two explanations (randomized order), rating scale
+
+\textbf{Questions:}
+\begin{enumerate}
+    \item ``Rate Explanation A usefulness (1-5)''
+    \item ``Rate Explanation B usefulness (1-5)''
+    \item ``Which is clearer? A / B / Equal''
+    \item ``Would you follow this guidance? Yes / No''
+\end{enumerate}
+
+\textbf{Target:} 8-10 participants, $\geq$3.0/5.0 median rating
+
+\subsubsection{F10: Configuration \& Feedback}
+\textbf{Description:} Allow teams to customize ACR-QA behavior and provide feedback to improve future runs.
+
+\textbf{Features:}
+
+\textit{Phase 1 (MVP):}
+\begin{itemize}[leftmargin=*]
+    \item \textbf{False Positive Marking (Backend)}
+    \begin{itemize}
+        \item API endpoint: POST /findings/\{id\}/mark-false-positive
+        \item Records user feedback in database
+        \item Enables trend analysis: \% of findings marked as FP per rule
+    \end{itemize}
+    
+    \item \textbf{Provenance \& Logging}
+    \begin{itemize}
+        \item All analysis decisions logged (why was this rule triggered?)
+        \item Export: JSON with prompts, responses, timestamps
+        \item For debugging and user study analysis
+    \end{itemize}
+\end{itemize}
+
+\textit{Phase 2:}
+\begin{itemize}[leftmargin=*]
+    \item \textbf{Configuration File (.acr-ignore)}
+    \begin{itemize}
+        \item Repository owners can ignore specific rules or files
+        \item Format: Same as .gitignore
+        \item Example:
+        \begin{verbatim}
+tests/ STYLE-*
+generated/ COMPLEXITY-001
+        \end{verbatim}
+        \item Enables: Infrastructure-as-Code approach to rule management
+    \end{itemize}
+    
+    \item \textbf{Metrics Dashboarding}
+    \begin{itemize}
+        \item Queries computed over findings database
+        \item Export: CSV/JSON with precision, recall, FP rate over time
+        \item Display: Terminal UI or simple HTML report
+    \end{itemize}
+\end{itemize}
+
+\textbf{Acceptance:}
+\begin{itemize}[leftmargin=*]
+    \item[$\checkmark$] FP marking stored in database
+    \item[$\checkmark$] Queries can extract: ``\% of findings marked FP per rule''
+    \item[$\checkmark$] Provenance export includes all decision metadata
+    \item[$\checkmark$] .acr-ignore file is parsed and honored (Phase 2)
+\end{itemize}
+
+\subsubsection{F11: Observability \& Monitoring Stack}
+\textbf{Description:} Production-grade monitoring infrastructure enabling operators to understand system behavior, identify bottlenecks, and troubleshoot failures under load. Provides visibility into analysis latency, error rates, LLM token usage, and rule performance over time.
+
+\textbf{Components:}
+
+\textit{A. Prometheus Metrics Exporter (30 hrs)}
+\begin{itemize}[leftmargin=*]
+    \item Expose \texttt{/metrics} endpoint (prometheus client library)
+    \item Track metrics per analysis:
+    \begin{itemize}
+        \item \texttt{analysis\_latency\_ms} (histogram, by severity level)
+        \item \texttt{llm\_token\_count} (counter, cumulative)
+        \item \texttt{error\_rate\_percent} (gauge)
+        \item \texttt{false\_positive\_rate\_percent} (gauge, per rule\_id)
+        \item \texttt{redis\_queue\_depth} (gauge, jobs waiting)
+        \item \texttt{cerebras\_api\_latency\_ms} (histogram)
+    \end{itemize}
+    \item Prometheus scrapes every 15 seconds
+    \item Metrics retention: 30 days (configurable)
+\end{itemize}
+
+\textbf{Example metrics output:}
+\begin{verbatim}
+# HELP analysis_latency_ms Analysis time in milliseconds
+# TYPE analysis_latency_ms histogram
+analysis_latency_ms_bucket{severity="high",le="30"} 5
+analysis_latency_ms_bucket{severity="high",le="60"} 18
+analysis_latency_ms_bucket{severity="high",le="90"} 22
+analysis_latency_ms_count{severity="high"} 22
+analysis_latency_ms_sum{severity="high"} 1204
+
+llm_token_count_total 45620
+error_rate_percent 0.5
+false_positive_rate_by_rule{rule_id="UNUSED-001"} 25.0
+redis_queue_depth 3
+\end{verbatim}
+
+\textit{B. Grafana Dashboard (35 hrs)}
+\begin{itemize}[leftmargin=*]
+    \item Install Grafana in docker-compose
+    \item Create 5 key panels:
+    
+    \textbf{Panel 1: ``Analysis Latency by Severity''}
+    \begin{itemize}
+        \item Line chart: X-axis = time, Y-axis = latency (ms)
+        \item 3 lines: high-severity, medium-severity, low-severity
+        \item SLA threshold: 90s (red line)
+        \item Queries: \texttt{analysis\_latency\_ms} by severity
+        \item Shows trend over hours/days
+        \item Alert: if latency $>$ 120s for 5 mins $\rightarrow$ red
+    \end{itemize}
+    
+    \textbf{Panel 2: ``LLM Token Cost Trend''}
+    \begin{itemize}
+        \item Area chart: cumulative token count over time
+        \item Cost calculation: tokens / 1M $\times$ \$0.60
+        \item Daily cost label (e.g., ``Today: \$0.47'')
+        \item Query: \texttt{rate(llm\_token\_count[1d])}
+    \end{itemize}
+    
+    \textbf{Panel 3: ``System Error Rate''}
+    \begin{itemize}
+        \item Gauge (0-100\%): Current error \%
+        \item Red zone: $>$10\%, Yellow zone: 5-10\%, Green: $<$5\%
+        \item Query: \texttt{error\_rate\_percent}
+    \end{itemize}
+    
+    \textbf{Panel 4: ``False Positive Rate per Rule''}
+    \begin{itemize}
+        \item Bar chart: Each bar = rule\_id, height = FP \%
+        \item Sort descending (highest FP first)
+        \item Threshold line at 30\% (acceptable)
+        \item Query: \texttt{false\_positive\_rate\_by\_rule}
+        \item Identify which rules need threshold tuning
+    \end{itemize}
+    
+    \textbf{Panel 5: ``Redis Queue Depth''}
+    \begin{itemize}
+        \item Line chart: jobs waiting in queue
+        \item Alert: if depth $>$ 10 jobs, queue is backed up
+        \item Shows when system is overwhelmed
+        \item Query: \texttt{redis\_queue\_depth}
+    \end{itemize}
+    
+    \item Dashboard JSON export (for sharing/versioning)
+    \item Annotations: Mark major events (e.g., ``Precision tuning applied'')
+    \item Time range: 24h/7d/30d selectable
+\end{itemize}
+
+\textit{C. Performance Baseline Documentation}
+\begin{itemize}[leftmargin=*]
+    \item Measure before load testing:
+    \begin{itemize}
+        \item p50 analysis latency: 45ms
+        \item p95 analysis latency: 75ms
+        \item p99 analysis latency: 120ms
+        \item Mean error rate: $<$1\%
+        \item Mean FP rate: 28\%
+    \end{itemize}
+    \item Document in \texttt{PERFORMANCE\_BASELINE.md}
+\end{itemize}
+
+\textbf{Acceptance:}
+\begin{itemize}[leftmargin=*]
+    \item[$\checkmark$] \texttt{/metrics} endpoint returns Prometheus-formatted output
+    \item[$\checkmark$] Grafana connects to Prometheus (data visible in all 5 panels)
+    \item[$\checkmark$] Dashboard saves \& loads correctly (JSON export works)
+    \item[$\checkmark$] Alert thresholds trigger as expected
+    \item[$\checkmark$] Historical data persists across container restarts
+\end{itemize}
+
+\subsubsection{F12: Load Testing \& Stress Analysis}
+\textbf{Description:} Validate system reliability and identify performance bottlenecks under realistic and extreme load. Prove system can handle concurrent PR analyses without degradation or failure. Document scaling constraints and recommendations.
+
+\textbf{Components:}
+
+\textit{A. k6 Load Testing Suite (25 hrs)}
+
+\textbf{Test Framework:} k6 (https://k6.io/)
+\begin{itemize}[leftmargin=*]
+    \item Open-source, cloud-ready
+    \item JavaScript-based test scripts
+    \item Built-in metrics: latency, throughput, error rate
+    \item HTML report generation
+\end{itemize}
+
+\textbf{Scenario 1: ``Ramp-up Test'' (Gradual Load)}
+
+\textit{Goal:} Measure latency as load increases
+
+\textit{Load profile:}
+\begin{itemize}[leftmargin=*]
+    \item 0 min: 0 PRs/min
+    \item 1 min: 5 PRs/min
+    \item 2 min: 10 PRs/min
+    \item 3 min: 20 PRs/min
+    \item 4 min: 50 PRs/min (peak)
+    \item 5 min: Hold at 50 PRs/min for 2 min
+    \item 6 min: Ramp down to 0
+\end{itemize}
+
+\textit{Success Criteria:}
+\begin{itemize}[leftmargin=*]
+    \item[$\checkmark$] p95 latency stays $<$120s throughout
+    \item[$\checkmark$] Error rate $<$5\% at peak
+    \item[$\checkmark$] No system crashes/OOM errors
+    \item[$\checkmark$] Redis queue handles all jobs (none stuck)
+\end{itemize}
+
+\textit{Metrics captured:}
+\begin{itemize}[leftmargin=*]
+    \item Latency distribution (p50, p95, p99)
+    \item Throughput (requests/sec)
+    \item Error rate \%
+    \item Queue depth over time
+\end{itemize}
+
+Export: HTML report with graphs
+
+\textbf{Scenario 2: ``Steady State Test'' (Sustained Load)}
+
+\textit{Goal:} Ensure system stability under constant stress
+
+\textit{Load profile:}
+\begin{itemize}[leftmargin=*]
+    \item 0 min: Ramp to 20 PRs/min over 2 mins
+    \item 2 min: Hold at 20 PRs/min for 10 mins
+    \item 12 min: Ramp down
+\end{itemize}
+
+\textit{Success Criteria:}
+\begin{itemize}[leftmargin=*]
+    \item[$\checkmark$] Latency stable (no degradation over 10 mins)
+    \item[$\checkmark$] Error rate $<$3\%
+    \item[$\checkmark$] Memory doesn't leak (Docker memory usage flat)
+    \item[$\checkmark$] Responses arrive in expected time
+\end{itemize}
+
+\textit{Metrics:} Same as ramp-up
+
+\textbf{Scenario 3: ``Spike Test'' (Sudden Traffic Burst)}
+
+\textit{Goal:} Measure recovery from traffic spikes
+
+\textit{Load profile:}
+\begin{itemize}[leftmargin=*]
+    \item 0 min: Baseline 5 PRs/min
+    \item 1 min: Spike to 100 PRs/min for 30 secs
+    \item 1.5 min: Return to 5 PRs/min
+\end{itemize}
+
+\textit{Success Criteria:}
+\begin{itemize}[leftmargin=*]
+    \item[$\checkmark$] No errors during spike
+    \item[$\checkmark$] Latency spikes but recovers
+    \item[$\checkmark$] Queue depth returns to normal within 1 min
+    \item[$\checkmark$] No data loss
+\end{itemize}
+
+\textit{Metrics:} Peak latency, recovery time
+
+\textbf{k6 Script Structure (pseudo-code):}
+\begin{lstlisting}[language=JavaScript]
+import http from 'k6/http';
+import { sleep, group } from 'k6';
+
+export let options = {
+  stages: [
+    { duration: '1m', target: 5 },   // Ramp-up
+    { duration: '2m', target: 50 },
+    { duration: '2m', target: 50 },  // Hold
+    { duration: '1m', target: 0 },   // Ramp-down
+  ],
+  thresholds: {
+    http_req_duration: ['p(95)<120000'],  // p95 latency < 120s
+    http_req_failed: ['rate<0.05'],       // error rate < 5%
+  },
+};
+
+export default function() {
+  group('Analyze PR', () => {
+    let res = http.post(
+      'http://localhost:8000/analyze',
+      {
+        pr_url: 'https://github.com/...',
+        repo_name: 'test-repo',
+      }
+    );
+    sleep(1);
+  });
+}
+\end{lstlisting}
+
+\textit{B. Stress Test Manual Report (10 hrs)}
+\begin{itemize}[leftmargin=*]
+    \item Document findings in \texttt{STRESS\_TEST\_REPORT.md}
+    \item Include:
+    \begin{itemize}
+        \item Test scenarios run (dates, times)
+        \item Hardware specs (CPU, RAM, Docker limits)
+        \item Raw latency data (p50, p95, p99)
+        \item Error logs (if any failures)
+        \item Peak throughput achieved
+        \item Bottleneck identification
+        \begin{itemize}
+            \item Example: ``At 60 concurrent PRs, Redis queue maxes out. Recommendation: increase Redis memory or scale horizontally.''
+        \end{itemize}
+        \item Recommendations for production scaling
+        \begin{itemize}
+            \item Example: ``For 10x growth, recommend Kubernetes with 3 worker pods''
+        \end{itemize}
+    \end{itemize}
+\end{itemize}
+
+\textit{C. Performance Regression Testing}
+\begin{itemize}[leftmargin=*]
+    \item CI/CD integration: Run k6 tests on every major commit
+    \item Compare against baseline (\texttt{PERFORMANCE\_BASELINE.md})
+    \item Fail CI if latency regresses $>$20\% or error rate $>$5\%
+    \item GitHub Actions job: \texttt{tests/ci\_load\_test.yml}
+\end{itemize}
+
+\textbf{Acceptance:}
+\begin{itemize}[leftmargin=*]
+    \item[$\checkmark$] k6 script executes without errors
+    \item[$\checkmark$] Ramp-up test: p95 latency $<$120s, error rate $<$5\%
+    \item[$\checkmark$] Steady state test: latency stable over 10 mins, $<$3\% errors
+    \item[$\checkmark$] Spike test: recovery time $<$1 min
+    \item[$\checkmark$] HTML report generated with graphs
+    \item[$\checkmark$] Stress test report identifies 1+ optimization opportunity
+    \item[$\checkmark$] CI fails gracefully if thresholds exceeded
+\end{itemize}
+
+\subsubsection{F13: Production Readiness \& Quality Assurance}
+\textbf{Description:} Implement production-grade reliability, testability, and operational excellence practices to ensure the system is production-ready and maintainable. These features focus on depth of implementation rather than breadth of new capabilities.
+
+\textbf{Components:}
+
+\textit{A. Circuit Breaker Pattern for API Resilience (10 hrs)}
+
+\textbf{Objective:} Prevent cascading failures when external APIs (Cerebras, GitHub) fail.
+
+\textbf{Implementation:}
+\begin{itemize}[leftmargin=*]
+    \item Monitor Cerebras API response times and error rates
+    \item States: CLOSED (normal) $\rightarrow$ OPEN (too many failures) $\rightarrow$ HALF\_OPEN (testing recovery)
+    \item When OPEN: immediately fall back to template explanations (no retry delay)
+    \item When HALF\_OPEN: allow 1 probe request to check if API recovered
+    \item Thresholds:
+    \begin{itemize}
+        \item CLOSE$\rightarrow$OPEN: 5 failures in 10 seconds OR latency $>$5 seconds for 3+ requests
+        \item OPEN$\rightarrow$HALF\_OPEN: 30 second timeout
+        \item HALF\_OPEN$\rightarrow$CLOSED: first probe succeeds
+        \item HALF\_OPEN$\rightarrow$OPEN: probe fails
+    \end{itemize}
+\end{itemize}
+
+\textbf{Code example:}
+\begin{lstlisting}[language=Python]
+from circuitbreaker import circuit
+
+@circuit(failure_threshold=5, recovery_timeout=30)
+def call_cerebras_api(prompt):
+    response = cerebras_api.explain(prompt)
+    return response
+
+# Usage: 
+try:
+    explanation = call_cerebras_api(prompt)
+except CircuitBreakerListener as e:
+    explanation = template_fallback(prompt)  # Fast fallback
+\end{lstlisting}
+
+\textbf{Monitoring:}
+\begin{itemize}[leftmargin=*]
+    \item Log every state transition (CLOSED$\rightarrow$OPEN, etc.) to PostgreSQL
+    \item Prometheus metric: \texttt{circuit\_breaker\_state\{service="cerebras"\}}
+    \item Alert if circuit breaker opens $>$3 times/day
+\end{itemize}
+
+\textbf{Acceptance:}
+\begin{itemize}[leftmargin=*]
+    \item[$\checkmark$] Circuit breaker transitions correctly through all states
+    \item[$\checkmark$] Fallback triggered immediately when circuit opens (no retry delay)
+    \item[$\checkmark$] Recovery successful after 30s timeout + probe succeeds
+    \item[$\checkmark$] Prometheus metric updates in real-time
+\end{itemize}
+
+\textit{B. Response Caching Layer (8 hrs)}
+
+\textbf{Objective:} Reduce LLM API calls and latency by caching identical findings.
+
+\textbf{Implementation:}
+\begin{itemize}[leftmargin=*]
+    \item Cache key: hash(rule\_id + code\_snippet)
+    \item Cache storage: Redis
+    \item TTL: 24 hours per rule (configurable)
+    \item Cache hit types:
+    \begin{enumerate}
+        \item Identical rule + code $\rightarrow$ return cached explanation
+        \item Same rule, similar code ($>$85\% match) $\rightarrow$ return cached, mark as variant
+    \end{enumerate}
+\end{itemize}
+
+\textbf{Code example:}
+\begin{lstlisting}[language=Python]
+import hashlib
+import redis
+
+cache = redis.Redis(host='localhost', port=6379)
+
+def get_explanation(rule_id, code_snippet):
+    cache_key = f"explain:{rule_id}:{hashlib.md5(code_snippet.encode()).hexdigest()}"
+    
+    # Check cache
+    if cached := cache.get(cache_key):
+        return json.loads(cached)
+    
+    # Cache miss: call LLM
+    explanation = cerebras_api.explain(prompt)
+    
+    # Store in cache (24h TTL)
+    cache.setex(cache_key, 86400, json.dumps(explanation))
+    return explanation
+\end{lstlisting}
+
+\textbf{Monitoring:}
+\begin{itemize}[leftmargin=*]
+    \item Prometheus metric: \texttt{explanation\_cache\_hit\_ratio}
+    \item Log cache stats daily: hit rate, miss rate, size
+    \item Alert if hit rate $<$30\% (misconfigured)
+\end{itemize}
+
+\textbf{Acceptance:}
+\begin{itemize}[leftmargin=*]
+    \item[$\checkmark$] Identical findings return cached explanation (latency $<$10ms)
+    \item[$\checkmark$] Cache size stays $<$100MB (bounded by eviction policy)
+    \item[$\checkmark$] Hit rate $>$60\% on seeded dataset (typical)
+    \item[$\checkmark$] Cache invalidation works (old entries expire after 24h)
+\end{itemize}
+
+\textit{C. Structured Logging for Production (5 hrs)}
+
+\textbf{Objective:} Replace print() statements with JSON-formatted logs for machine parsing.
+
+\textbf{Implementation:}
+\begin{itemize}[leftmargin=*]
+    \item Library: structlog
+    \item Output: JSON to stdout (Docker logs), optionally to file
+    \item Every log includes: timestamp, level, event\_name, actor, metadata
+\end{itemize}
+
+\textbf{Code example:}
+\begin{lstlisting}[language=Python]
+import structlog
+
+logger = structlog.get_logger()
+
+# Phase 1: Analysis starts
+logger.info("analysis_started", 
+    pr_id="123", 
+    repo="myapp", 
+    files_changed=5,
+    timestamp=datetime.now().isoformat()
+)
+
+# Phase 2: Tool execution
+logger.info("tool_executed",
+    tool="ruff",
+    latency_ms=240,
+    findings=12,
+    status="success"
+)
+
+# Phase 3: LLM explanation
+logger.info("explanation_generated",
+    rule_id="SOLID-001",
+    source="llm",
+    latency_ms=350,
+    tokens_used=42,
+    cost_usd=0.000025
+)
+
+# Error: API failure with circuit breaker
+logger.error("api_call_failed",
+    service="cerebras",
+    status_code=503,
+    retry_attempt=2,
+    fallback="template"
+)
+\end{lstlisting}
+
+\textbf{Monitoring:}
+\begin{itemize}[leftmargin=*]
+    \item Prometheus metric: \texttt{log\_events\_total\{level, event\_name\}}
+    \item Query logs with grep: \texttt{cat docker.log | jq 'select(.event\_name=="api\_call\_failed")'}
+    \item ELK integration ready (Phase 3): parse JSON logs to Elasticsearch
+\end{itemize}
+
+\textbf{Acceptance:}
+\begin{itemize}[leftmargin=*]
+    \item[$\checkmark$] All log outputs are valid JSON
+    \item[$\checkmark$] Log includes: timestamp, level, event\_name, actor, context
+    \item[$\checkmark$] No print() statements in codebase
+    \item[$\checkmark$] Log level configurable via env var (DEBUG, INFO, WARNING, ERROR)
+\end{itemize}
+
+\textit{D. Database Connection Pooling (5 hrs)}
+
+\textbf{Objective:} Reuse database connections efficiently, prevent connection exhaustion.
+
+\textbf{Implementation:}
+\begin{itemize}[leftmargin=*]
+    \item Library: SQLAlchemy QueuePool
+    \item Pool size: 10 connections (normal traffic)
+    \item Max overflow: 20 extra connections (burst traffic)
+    \item Connection recycle: 3600s (1 hour) to handle DB restarts
+    \item Timeout: 30s to get connection from pool
+\end{itemize}
+
+\textbf{Code example:}
+\begin{lstlisting}[language=Python]
+from sqlalchemy import create_engine
+from sqlalchemy.pool import QueuePool
+
+engine = create_engine(
+    DATABASE_URL,
+    poolclass=QueuePool,
+    pool_size=10,           # Base pool
+    max_overflow=20,        # Burst capacity
+    pool_recycle=3600,      # Recycle every hour
+    pool_pre_ping=True,     # Check connection alive before use
+    echo=False              # Disable query logging
+)
+
+# Usage: sessions automatically borrow/return from pool
+with Session(engine) as session:
+    findings = session.query(Finding).filter(...).all()
+\end{lstlisting}
+
+\textbf{Monitoring:}
+\begin{itemize}[leftmargin=*]
+    \item Prometheus metric: \texttt{db\_pool\_size}, \texttt{db\_pool\_checked\_in}, \texttt{db\_pool\_overflow\_count}
+    \item Alert if checked\_out $>$ 15 (pool saturated)
+    \item Log pool exhaustion events
+\end{itemize}
+
+\textbf{Acceptance:}
+\begin{itemize}[leftmargin=*]
+    \item[$\checkmark$] No ``too many connections'' errors under load (k6 test)
+    \item[$\checkmark$] Pool size stays within limits (debug logs)
+    \item[$\checkmark$] Connection reuse $>$80\% (not creating new ones each time)
+    \item[$\checkmark$] Latency stable under sustained load (no connection wait times)
+\end{itemize}
+
+\textit{E. Comprehensive Unit Test Suite (15 hrs)}
+
+\textbf{Objective:} Maintain 85\%+ code coverage with focused, fast tests.
+
+\textbf{Test categories:}
+
+\textbf{Schema Validation (Pydantic) - 10 tests}
+\begin{lstlisting}[language=Python]
+def test_canonical_finding_valid():
+    finding = CanonicalFinding(
+        finding_id="abc-123",
+        rule_id="SOLID-001",
+        category="design",
+        severity="medium",
+        confidence=0.87,
+        # ... full schema
+    )
+    assert finding.severity in ["high", "medium", "low"]
+    assert 0 <= finding.confidence <= 1
+    assert finding.serialize()  # Can convert to JSON
+
+def test_canonical_finding_invalid_severity():
+    with pytest.raises(ValidationError):
+        CanonicalFinding(..., severity="urgent")  # Invalid
+\end{lstlisting}
+
+\textbf{Rate Limiting (Token Bucket) - 8 tests}
+\begin{lstlisting}[language=Python]
+def test_token_bucket_allows_under_limit():
+    limiter = TokenBucket(rate=1, capacity=5)
+    assert limiter.allow_request() == True
+
+def test_token_bucket_blocks_over_limit():
+    limiter = TokenBucket(rate=1, capacity=1)
+    limiter.allow_request()
+    assert limiter.allow_request() == False
+\end{lstlisting}
+
+\textbf{Normalizer (Tool Output Mapping) - 12 tests}
+
+\textbf{Circuit Breaker - 6 tests}
+
+\textbf{RAG Fallback - 8 tests}
+
+\textbf{Integration Tests - 10 tests}
+
+\textbf{Configuration:}
+\begin{itemize}[leftmargin=*]
+    \item pytest.ini: min 85\% coverage, fail if lower
+    \item GitHub Actions: run tests on every commit
+    \item Run time: $<$30 seconds (fast feedback)
+\end{itemize}
+
+\textbf{Acceptance:}
+\begin{itemize}[leftmargin=*]
+    \item[$\checkmark$] 85\%+ code coverage
+    \item[$\checkmark$] All tests pass on CI/CD
+    \item[$\checkmark$] Test runtime $<$30 seconds
+    \item[$\checkmark$] Every critical path tested
+\end{itemize}
+
+\textit{F. Error Handling \& Graceful Degradation (8 hrs)}
+
+\textbf{Objective:} Document and test all failure modes. System should never crash; always fall back.
+
+\textbf{Failure modes:}
+
+\begin{table}[h]
+\centering
+\small
+\begin{tabular}{p{4cm}p{3cm}p{5cm}}
+\toprule
+\textbf{Failure} & \textbf{Impact} & \textbf{Fallback} \\
+\midrule
+Cerebras API timeout & Can't generate LLM explanation & Use template explanation \\
+Cerebras API rate limit & Can't generate explanations & Queue job, retry later \\
+GitHub API rate limit & Can't post comments & Queue findings, post when quota refills \\
+Redis down & Can't rate limit & In-memory token bucket \\
+PostgreSQL down & Can't store findings & Log to file, retry on reconnect \\
+Semgrep crash & Can't run static analysis & Skip tool, continue with others \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\textbf{Documentation:} Create \texttt{FAILURE\_MODES.md} with all failure scenarios, impacts, and recovery procedures.
+
+\textbf{Acceptance:}
+\begin{itemize}[leftmargin=*]
+    \item[$\checkmark$] Every failure mode documented
+    \item[$\checkmark$] Every failure handled with fallback (no crashes)
+    \item[$\checkmark$] Logging captures root cause
+    \item[$\checkmark$] System recovers automatically or alerts operator
+\end{itemize}
+
+\textit{G. System Profiling Report (10 hrs)}
+
+\textbf{Objective:} Identify performance bottlenecks with data.
+
+\textbf{Create} \texttt{PERFORMANCE\_PROFILE.md} documenting:
+\begin{itemize}[leftmargin=*]
+    \item Top 10 functions by execution time
+    \item Memory usage by component
+    \item Optimization opportunities
+    \item Recommendations for scaling
+\end{itemize}
+
+\textbf{Acceptance:}
+\begin{itemize}[leftmargin=*]
+    \item[$\checkmark$] Profile identifies top 3 bottlenecks
+    \item[$\checkmark$] Memory usage $<$100MB
+    \item[$\checkmark$] Recommendations documented
+    \item[$\checkmark$] Profile can be re-run after optimization
+\end{itemize}
+
+\textit{H. Deployment \& Operations Runbook (5 hrs)}
+
+\textbf{Objective:} Clear step-by-step guide for deploying to production.
+
+\textbf{Create} \texttt{DEPLOYMENT.md} covering:
+\begin{itemize}[leftmargin=*]
+    \item Pre-deployment checklist
+    \item Single-machine deployment steps
+    \item Scaling to multiple workers (optional)
+    \item Rollback procedures
+    \item Post-deployment verification
+    \item Support runbook for common issues
+\end{itemize}
+
+\textbf{Acceptance:}
+\begin{itemize}[leftmargin=*]
+    \item[$\checkmark$] Runbook is step-by-step (no assumptions)
+    \item[$\checkmark$] Covers rollback procedures
+    \item[$\checkmark$] Includes post-deployment verification
+    \item[$\checkmark$] New operator can deploy without help
+\end{itemize}
+
+\textit{I. Cost Analysis \& Scalability Report (8 hrs)}
+
+\textbf{Objective:} Quantify expenses and scaling limits.
+
+\textbf{Create} \texttt{COST\_ANALYSIS.md} documenting:
+\begin{itemize}[leftmargin=*]
+    \item Monthly cost breakdown at current scale (1000 PRs/month)
+    \item Scaling limits (concurrent PRs, throughput, database connections)
+    \item Cost projections at 10x scale
+    \item Recommendations for horizontal scaling
+\end{itemize}
+
+\textbf{Key findings:}
+\begin{itemize}[leftmargin=*]
+    \item Current monthly cost: \$0.03 (Cerebras API only)
+    \item At 10x scale: \$250-1400/month (with infrastructure)
+    \item Bottleneck: 10 concurrent PRs (single container)
+    \item Scaling solution: Kubernetes with 3 worker pods
+\end{itemize}
+
+\textbf{Acceptance:}
+\begin{itemize}[leftmargin=*]
+    \item[$\checkmark$] Cost broken down by component
+    \item[$\checkmark$] Scaling limits identified
+    \item[$\checkmark$] Remedies proposed
+    \item[$\checkmark$] Scalability roadmap clear
+\end{itemize}
+
+\textit{J. Security Audit Report (8 hrs)}
+
+\textbf{Objective:} Document security practices and compliance.
+
+\textbf{Create} \texttt{SECURITY\_AUDIT.md} covering:
+\begin{itemize}[leftmargin=*]
+    \item Data protection (API keys, code confidentiality, database security)
+    \item Input validation (Pydantic, SQL injection prevention)
+    \item Rate limiting (prevents DoS attacks)
+    \item Access control (authentication, authorization)
+    \item Audit trail (complete logging for compliance)
+    \item Risk assessment with mitigation strategies
+\end{itemize}
+
+\textbf{Key practices:}
+\begin{itemize}[leftmargin=*]
+    \item No API keys in Git (enforced by .gitignore)
+    \item Minimal code context sent to LLM (3-6 lines only)
+    \item All inputs validated via Pydantic schemas
+    \item Rate limiting prevents abuse
+    \item Complete audit trail for compliance
+\end{itemize}
+
+\textbf{Acceptance:}
+\begin{itemize}[leftmargin=*]
+    \item[$\checkmark$] Security practices documented
+    \item[$\checkmark$] Risks identified \& mitigated
+    \item[$\checkmark$] Compliance roadmap clear
+    \item[$\checkmark$] Enterprise concerns addressed
+\end{itemize}
+
+\section{Non-Functional Requirements}
+
+\subsection{Performance}
+
+\begin{table}[h]
+\centering
+\begin{tabular}{p{4cm}p{3cm}p{4cm}}
+\toprule
+\textbf{Metric} & \textbf{Target} & \textbf{Measurement} \\
+\midrule
+Analysis Latency & $\leq$90s for PR $<$200 lines & 90th percentile \\
+ & \multicolumn{2}{p{7cm}}{\textit{Scope: Larger PRs may take longer and are out-of-scope for formal evaluation.}} \\
+\midrule
+LLM Response Time & $\leq$600ms per explanation & Median \\
+\midrule
+Database Query Time & $\leq$100ms for dashboard load & 95th percentile \\
+\midrule
+Concurrent PRs & 10 simultaneous analyses & Stress test \\
+\midrule
+Rate Limiting & $\leq$1 analysis/PR/min & Token Bucket Algorithm \\
+(Concurrency Control) & $\leq$60 GitHub API/hour & (Redis) \\
+ & $\leq$50 Cerebras API/hour & Prevents API quota \\
+ & & exhaustion; LLM cost control \\
+\bottomrule
+\end{tabular}
+\caption{Performance Requirements}
+\end{table}
+
+\subsection{Scalability}
+\begin{itemize}[leftmargin=*]
+    \item \textbf{MVP Scope:} Single Docker Compose instance (1 worker)
+    \item \textbf{Future:} Redis queue enables horizontal worker scaling (out of scope for graduation)
+    \item \textbf{Storage Growth:} $\sim$70KB per PR $\times$ 1000 PRs = 70MB (trivial)
+\end{itemize}
+
+\subsection{Security \& Privacy}
+\begin{itemize}[leftmargin=*]
+    \item \textbf{On-Premises Deployment:} No code leaves customer infrastructure
+    \item \textbf{API Keys:} Stored in \texttt{.env} file (not in Git); Docker secrets in production
+    \item \textbf{LLM Data:} Code snippets sent to Cerebras API (documented in privacy policy)
+    \item \textbf{Only minimal code context} (the offending snippet and a few surrounding lines) is sent to the LLM, never entire repositories, to reduce exposure risk
+    \item \textbf{Local LLM Option:} Architecture supports offline mode with template explanations only
+    \item \textbf{Secret Management (Phase 2 Optional):}
+    \begin{itemize}
+        \item Phase 1: API keys stored in \texttt{.env} (development-safe, documented in \texttt{.gitignore})
+        \item Phase 2: Optional upgrade to Docker Secrets for production deployments
+        \begin{itemize}
+            \item Example: \texttt{docker-compose.yml} with \texttt{secrets:} section
+            \item Fallback to \texttt{.env} for local development
+        \end{itemize}
+    \end{itemize}
+\end{itemize}
+
+\subsection{Reliability}
+\begin{itemize}[leftmargin=*]
+    \item \textbf{Uptime:} Not applicable (on-prem, no SLA)
+    \item \textbf{Error Handling:} Graceful degradation (LLM fails $\rightarrow$ use template)
+    \item \textbf{Data Integrity:} PostgreSQL transactions ensure atomic saves
+    \item \textbf{Backup:} Docker volume persists; users responsible for backup strategy
+\end{itemize}
+
+\subsection{Usability}
+\begin{itemize}[leftmargin=*]
+    \item \textbf{Setup Time:} 5 minutes from git clone to first analysis (via: \texttt{make setup \&\& make up})
+    \item \textbf{One-Click Deploy:} Makefile targets for setup, start, stop, test, clean
+    \begin{itemize}
+        \item Commands: \texttt{make setup}, \texttt{make up}, \texttt{make down}, \texttt{make test}, \texttt{make clean}
+    \end{itemize}
+    \item \textbf{Local CLI Support (Phase 2 Optional):} \texttt{acr-qa scan .} for pre-push validation
+    \item \textbf{Documentation:} README, architecture docs, API reference, video tutorial
+    \item \textbf{Error Messages:} Plain English (no stack traces to end users)
+    \item \textbf{Accessibility:} Terminal UI supports screen readers (basic)
+\end{itemize}
+
+\section{Technical Architecture}
+
+\subsection{System Components}
+
+\begin{figure}[h]
+\centering
+\small
+\begin{tabular}{p{\textwidth}}
+\textbf{GitHub/GitLab} (Code Repository) \\
+$\downarrow$ Webhook / GitHub Action \\
+\textbf{Ingest Service (Python)} - Receives PR events, extracts diffs \\
+$\downarrow$ Enqueue job \\
+\textbf{Redis Job Queue (BullMQ)} - Manages async analysis tasks \\
+$\downarrow$ Dispatch to adapter \\
+\textbf{Adapter Gateway} - Routes files by extension to language adapter \\
+$\downarrow$ \\
+\textbf{Python Adapter} (Ruff, Semgrep, Vulture, Radon, Bandit, jscpd) \\
+\textbf{Future Adapters} (JS, Java, Go) - TBD Phase 2 \\
+$\downarrow$ Tool outputs (JSON) \\
+\textbf{Normalizer} - Maps tool-specific JSON $\rightarrow$ Canonical Finding Schema \\
+$\downarrow$ Canonical findings \\
+\textbf{Rate Limiter (Token Bucket / Redis)} \\
+- Enforce: $\leq$1 analysis per PR per minute \\
+- Enforce: $\leq$60 GitHub API calls/hour \\
+- Enforce: $\leq$50 Cerebras API calls/hour \\
+$\downarrow$ \\
+\textbf{Severity \& Prioritization Layer} - Assigns severity levels to findings and sorts them so that the most critical issues are surfaced first in GitHub PR comments and dashboard views \\
+$\downarrow$ \\
+\textbf{RAG Explanation Engine} \\
+1. Retrieve rule from rules.yml (semantic search) \\
+2. Construct evidence-grounded prompt \\
+3. Call Cerebras API (llama3.1-8b) \\
+4. Validate output (cites rule\_id?) \\
+5. Fallback to template if confidence $<$0.7 \\
+$\downarrow$ Findings + explanations \\
+\textbf{Results Service} \\
+1. Save to PostgreSQL (findings, raw outputs, LLM logs) \\
+2. Post PR comments via GitHub API \\
+3. Update dashboard data \\
+\end{tabular}
+\caption{System Architecture}
+\end{figure}
+
+\subsection{Technology Stack}
+
+\begin{longtable}{p{3.5cm}p{4cm}p{6cm}}
+\toprule
+\textbf{Layer} & \textbf{Technology} & \textbf{Rationale} \\
+\midrule
+\endfirsthead
+\toprule
+\textbf{Layer} & \textbf{Technology} & \textbf{Rationale} \\
+\midrule
+\endhead
+Language & Python 3.11+ & Rich ecosystem, fast prototyping, AST support \\
+\midrule
+Database & PostgreSQL 15+ & JSONB for raw outputs, vector search for RAG \\
+\midrule
+Queue & Redis 7 + BullMQ & Async job processing, proven for CI/CD tools \\
+\midrule
+Caching & Redis & Response caching with 7-day TTL for explanation reuse \\
+\midrule
+LLM API & Cerebras (llama3.1-8b) & Free tier, 60-70$\times$ faster than OpenAI, \$0.60/1M tokens \\
+\midrule
+Containerization & Docker Compose & On-prem deployment, zero-config startup \\
+\midrule
+Static Analysis & Ruff, Semgrep, Vulture, Radon, Bandit, jscpd & Industry-standard tools, broad coverage \\
+\midrule
+Dashboard & Rich (Python terminal UI) + Optional FastAPI & Terminal UI for MVP, REST API for Phase 2 extensibility \\
+\midrule
+VCS Integration & GitHub API (pygithub) & Primary platform, GitLab in Phase 2 \\
+\midrule
+Testing & pytest & Standard Python testing framework \\
+\midrule
+Monitoring & Prometheus + Grafana & Metrics collection + visualization (Phase 2, 30-35 hrs) \\
+\midrule
+Load Testing & k6 (Grafana k6) & Cloud-ready load testing framework (Phase 2, 25 hrs) \\
+\bottomrule
+\end{longtable}
+
+\subsubsection{Additional Infrastructure (Phase 1 Enhancements)}
+
+\begin{longtable}{p{3.5cm}p{4cm}p{6cm}}
+\toprule
+\textbf{Layer} & \textbf{Technology} & \textbf{Rationale} \\
+\midrule
+\endfirsthead
+\toprule
+\textbf{Layer} & \textbf{Technology} & \textbf{Rationale} \\
+\midrule
+\endhead
+Data Validation & Pydantic 2.0+ & Runtime schema validation, automatic serialization \\
+\midrule
+Rate Limiting & Redis Token Bucket Algorithm & Handle GitHub/Cerebras limits \\
+\midrule
+Setup \& Deployment & Makefile + Shell Scripts & One-click setup, DevOps best practices \\
+\midrule
+Secrets Management & Docker Compose Secrets (Phase 1: .env fallback) & Production-grade key handling (defer to Phase 2 if needed) \\
+\bottomrule
+\end{longtable}
+
+\subsection{Data Models}
+
+\textbf{Canonical Finding (Core Data Structure):}
+\begin{lstlisting}[language=Python]
+from pydantic import BaseModel, Field, validator
+from typing import List, Optional
+from datetime import datetime
+
+class Evidence(BaseModel):
+    snippet: str = Field(..., description="Code line causing issue")
+    tool_output: dict = Field(..., description="Raw JSON from tool")
+    context_before: List[str] = Field(..., max_length=3, 
+                                      description="3 lines before")
+    context_after: List[str] = Field(..., max_length=3, 
+                                     description="3 lines after")
+
+class CanonicalFinding(BaseModel):
+    finding_id: str = Field(..., description="UUID")
+    rule_id: str = Field(..., description="e.g., UNUSED-001")
+    category: str = Field(..., 
+                          pattern="^(design|security|style|duplication|unused)$")
+    severity: str = Field(..., pattern="^(high|medium|low)$")
+    confidence: float = Field(..., ge=0.0, le=1.0)
+    file: str = Field(..., description="Relative path")
+    line: int = Field(..., ge=1)
+    column: int = Field(..., ge=0)
+    language: str = Field(default="python")
+    evidence: Evidence
+    explanation: Optional[str] = None
+    explanation_source: Optional[str] = Field(None, 
+                                               pattern="^(llm|template)$")
+    timestamp: datetime
+    
+    class Config:
+        json_schema_extra = {
+            "example": {
+                "finding_id": "abc-123-def",
+                "rule_id": "UNUSED-001",
+                "category": "unused_code",
+                "severity": "medium",
+                "confidence": 0.95,
+                "file": "src/main.py",
+                "line": 42,
+                "column": 1,
+                "language": "python",
+                "evidence": {
+                    "snippet": "import os",
+                    "tool_output": {"code": "F401"},
+                    "context_before": ["import sys", "import json"],
+                    "context_after": ["", "def main():"]
+                },
+                "explanation": "Import os is never used in this module.",
+                "explanation_source": "llm",
+                "timestamp": "2025-01-21T02:47:00Z"
+            }
+        }
+\end{lstlisting}
+
+Severity is defined as: high = security or bug risk (e.g., injections, unsafe calls, crashes), medium = design and maintainability issues (e.g., long functions, too many parameters), and low = style and cosmetic issues (e.g., formatting, naming). This prioritization is used to order findings in PR comments and reports.
+
+\section{Implementation Roadmap}
+
+\subsection{Phase 1: Foundation (Oct-Jan 2026) - CURRENT}
+
+\begin{longtable}{p{3cm}p{8cm}p{3cm}}
+\toprule
+\textbf{Month} & \textbf{Deliverable} & \textbf{Status} \\
+\midrule
+\endfirsthead
+\toprule
+\textbf{Month} & \textbf{Deliverable} & \textbf{Status} \\
+\midrule
+\endhead
+Oct 2025 & Python adapter, Docker setup, database schema & Complete \\
+\midrule
+Nov 2025 & Canonical schema, normalizer, GitHub Action, evidence-grounded prompts & In Progress \\
+\midrule
+Dec 2025 & RAG retrieval, severity scoring, PR comment templates, Pydantic schema validation, Rate limiting (Token Bucket), One-click Makefile, provenance export & Planned \\
+\midrule
+Jan 2026 & Seeded dataset, evaluation metrics, user study prep, manual acr-qa review trigger & Planned \\
+\bottomrule
+\end{longtable}
+
+\subsection{Phase 2: Evaluation \& Optimization (Feb-Jun 2026)}
+
+\begin{longtable}{p{3cm}p{11cm}}
+\toprule
+\textbf{Month} & \textbf{Deliverable} \\
+\midrule
+\endfirsthead
+\toprule
+\textbf{Month} & \textbf{Deliverable} \\
+\midrule
+\endhead
+Feb 2026 & User Study Execution (5-8 participants), Precision/Recall Computation (labeled dataset), Threshold Tuning (optimize for false positive rate), .acr-ignore Support (Configuration as Code) \\
+\midrule
+Mar 2026 & JavaScript/TypeScript Adapter (if Python $>$ 80\% precision), Advanced Metrics Dashboard (SQL queries + CSV export), Performance Optimization (latency tuning, caching) \\
+\midrule
+Apr 2026 & CI/CD Integration Examples (GitHub Actions, GitLab CI), Documentation \& Tutorials, Production Deployment Guide (on-prem) \\
+\midrule
+May 2026 & Load Testing Execution (k6 ramp-up/steady/spike scenarios), Stress Test Report \& Analysis, Performance Regression CI/CD Integration, Circuit Breaker Implementation, Caching Layer, Comprehensive Unit Tests (85\%+ coverage), Profiling Analysis, Error Handling Documentation, Final Hardening \& Edge Cases, Demo Video Recording (showing Grafana dashboard + Prometheus metrics) \\
+\midrule
+Jun 2026 & Final Report \& Thesis Writing, Submission \\
+\bottomrule
+\end{longtable}
+
+\section{Success Criteria \& Acceptance Tests}
+
+\subsection{MVP Acceptance (End of Phase 1)}
+
+\subsubsection{Test 1: GitHub PR Integration}
+\begin{itemize}[leftmargin=*]
+    \item Open test PR with 10 code issues
+    \item System analyzes within 90 seconds
+    \item Posts 10 comments with AI explanations
+    \item Each comment cites a rule id
+    \item Findings are ordered so that high-severity issues appear at the top of the PR review
+    \item Provenance DB logs all LLM interactions
+    \item \textbf{Test Coverage:} 45 unit tests across 6 test suites with pytest-cov achieving 70\% threshold
+\end{itemize}
+
+\subsubsection{Test 2: Canonical Schema}
+\begin{itemize}[leftmargin=*]
+    \item Run Ruff, Semgrep, Vulture on sample code
+    \item Normalizer produces findings with universal rule ids
+    \item Database stores findings in canonical format
+    \item Dashboard displays unified view across tools
+\end{itemize}
+
+\subsubsection{Test 2b: Rate Limiting \& Reliability}
+\begin{itemize}[leftmargin=*]
+    \item Simulate 10 concurrent PR analysis requests
+    \item Verify $\leq$1 analysis queued per repo per minute (Token Bucket enforcement)
+    \item Verify Redis connection retry (exponential backoff) if Redis temporarily down
+    \item Verify all jobs eventually process (no stuck jobs)
+    \item Log all rate-limit events for monitoring
+\end{itemize}
+
+\subsubsection{Test 3: RAG Explanations}
+\begin{itemize}[leftmargin=*]
+    \item Load 20 rules from \texttt{rules.yml}
+    \item Generate explanations for 20 diverse findings
+    \item 100\% of explanations cite correct rule id
+    \item $<$10\% require template fallback
+\end{itemize}
+
+\subsubsection{Test 3b: Schema Validation (Pydantic)}
+\begin{itemize}[leftmargin=*]
+    \item Generate 20 findings with Pydantic CanonicalFinding models
+    \item Verify all findings serialize to valid JSON
+    \item Verify invalid data (e.g., severity=``urgent'') is rejected with clear error
+    \item Verify schema validation errors logged without crashing system
+\end{itemize}
+
+\subsubsection{Test 4: Evaluation}
+\begin{itemize}[leftmargin=*]
+    \item Label 80 findings as TP/FP
+    \item Compute precision: $\geq$70\% for high-severity
+    \item Compute recall: $\geq$60\% overall
+    \item Document methodology in thesis
+\end{itemize}
+
+\subsubsection{Test 5: User Study Validation (Pilot)}
+
+\textbf{Objective:} Validate that LLM-generated explanations are more useful than template-based explanations.
+
+\textbf{Setup:}
+\begin{itemize}[leftmargin=*]
+    \item Recruit 5–8 participants (friends, colleagues, online volunteers)
+    \item Prepare 10 diverse findings (2 duplication, 2 security, 2 style, 2 design, 2 complexity)
+    \item For each finding: Show both LLM explanation and template version
+\end{itemize}
+
+\textbf{Procedure:}
+\begin{itemize}[leftmargin=*]
+    \item Participants rate each explanation 1–5 (``How useful is this?'')
+    \item Randomize LLM vs template order (avoid bias)
+    \item Collect via simple Google Form or survey
+\end{itemize}
+
+\textbf{Success Criteria:}
+\begin{itemize}[leftmargin=*]
+    \item[$\checkmark$] LLM median rating $>$ template median rating (target: LLM 4.0/5, templates 3.0/5; acceptable if trend is consistent)
+    \item[$\checkmark$] Statistically significant difference (t-test p $<$ 0.10) OR qualitative preference evident in comments
+    \item[$\checkmark$] At least 60\% of participants prefer LLM explanations
+\end{itemize}
+
+\textbf{Deliverable:}
+\begin{itemize}[leftmargin=*]
+    \item Report with: ratings distribution, mean/median, t-test results
+    \item Quotes from participant feedback
+    \item Brief analysis: ``Why did LLM score higher?''
+\end{itemize}
+
+\textbf{Timeline:} Feb–Mar 2026 (4 weeks for recruitment + analysis)
+
+\subsubsection{Test 6: Observability Stack}
+\begin{itemize}[leftmargin=*]
+    \item Prometheus \texttt{/metrics} endpoint returns valid metrics
+    \item Grafana connects to Prometheus (all panels load data)
+    \item All 5 dashboard panels display correctly
+    \item Alert thresholds trigger as expected (test: latency spike $\rightarrow$ red alert)
+    \item Historical metrics persist across container restart
+\end{itemize}
+
+\subsubsection{Test 7: Load Testing}
+\begin{itemize}[leftmargin=*]
+    \item k6 ramp-up scenario completes: p95 latency $<$120s, error rate $<$5\%
+    \item k6 steady state (10 mins): latency stable, $<$3\% errors
+    \item k6 spike test: recovery within 1 min
+    \item HTML report generated with graphs
+    \item Stress test report identifies $\geq$1 bottleneck + recommendation
+\end{itemize}
+
+\subsubsection{Test 8: Production Readiness (Quality Assurance)}
+
+\textbf{A. Circuit Breaker}
+\begin{itemize}[leftmargin=*]
+    \item[$\checkmark$] Circuit breaker transitions correctly: CLOSED $\rightarrow$ OPEN $\rightarrow$ HALF\_OPEN $\rightarrow$ CLOSED
+    \item[$\checkmark$] When OPEN, fallback to template (no retry delay)
+    \item[$\checkmark$] Recovery successful after 30s timeout + probe succeeds
+    \item[$\checkmark$] Prometheus metric updates: \texttt{circuit\_breaker\_state\{service="cerebras"\}}
+\end{itemize}
+
+\textbf{B. Caching Layer}
+\begin{itemize}[leftmargin=*]
+    \item[$\checkmark$] Identical findings return cached explanation (latency $<$10ms)
+    \item[$\checkmark$] Cache hit rate $>$60\% on seeded dataset
+    \item[$\checkmark$] Cache size stays $<$100MB
+    \item[$\checkmark$] Old entries expire after 24h TTL
+\end{itemize}
+
+\textbf{C. Structured Logging}
+\begin{itemize}[leftmargin=*]
+    \item[$\checkmark$] All logs are valid JSON format
+    \item[$\checkmark$] Every log includes: timestamp, level, event\_name, actor, context
+    \item[$\checkmark$] No print() statements in codebase
+    \item[$\checkmark$] Log level configurable via env var
+\end{itemize}
+
+\textbf{D. Database Connection Pooling}
+\begin{itemize}[leftmargin=*]
+    \item[$\checkmark$] No ``too many connections'' errors under load (k6 stress test)
+    \item[$\checkmark$] Pool size stays within limits (debug logs verify)
+    \item[$\checkmark$] Connection reuse $>$80\%
+    \item[$\checkmark$] Latency stable under sustained load
+\end{itemize}
+
+\textbf{E. Unit Tests}
+\begin{itemize}[leftmargin=*]
+    \item[$\checkmark$] Code coverage $\geq$85\% (pytest report)
+    \item[$\checkmark$] All tests pass on CI/CD
+    \item[$\checkmark$] Runtime $<$30 seconds
+    \item[$\checkmark$] All critical paths tested
+\end{itemize}
+
+\textbf{F. Error Handling \& Graceful Degradation}
+\begin{itemize}[leftmargin=*]
+    \item[$\checkmark$] Every failure mode documented (\texttt{FAILURE\_MODES.md})
+    \item[$\checkmark$] No crashes: always has fallback
+    \item[$\checkmark$] Root cause logged for debugging
+    \item[$\checkmark$] System recovers automatically or alerts operator
+\end{itemize}
+
+\textbf{G. Performance Profiling}
+\begin{itemize}[leftmargin=*]
+    \item[$\checkmark$] Profiling identifies top 3 bottlenecks
+    \item[$\checkmark$] Memory usage $<$100MB
+    \item[$\checkmark$] Optimization recommendations documented
+    \item[$\checkmark$] Profile can be re-run after changes
+\end{itemize}
+
+\textbf{H. Deployment Runbook}
+\begin{itemize}[leftmargin=*]
+    \item[$\checkmark$] \texttt{DEPLOYMENT.md} is step-by-step (no assumptions)
+    \item[$\checkmark$] Covers rollback procedures
+    \item[$\checkmark$] Post-deployment verification checklist
+    \item[$\checkmark$] New operator can deploy independently
+\end{itemize}
+
+\textbf{I. Cost \& Scalability Analysis}
+\begin{itemize}[leftmargin=*]
+    \item[$\checkmark$] Monthly cost broken down by component
+    \item[$\checkmark$] Scaling limits identified (10 concurrent $\rightarrow$ 50 with Kubernetes)
+    \item[$\checkmark$] Cost at 10x volume estimated
+    \item[$\checkmark$] Scaling roadmap clear
+\end{itemize}
+
+\textbf{J. Security Audit}
+\begin{itemize}[leftmargin=*]
+    \item[$\checkmark$] API keys protected (never in Git)
+    \item[$\checkmark$] Code snippets minimized (3-6 lines only)
+    \item[$\checkmark$] Input validation via Pydantic (no SQL injection)
+    \item[$\checkmark$] Rate limiting prevents DoS
+    \item[$\checkmark$] Audit trail complete (timestamps, sources)
+    \item[$\checkmark$] Enterprise recommendations documented
+\end{itemize}
+
+\section{Risk Management}
+
+\begin{longtable}{p{3.5cm}p{2cm}p{2cm}p{6cm}}
+\toprule
+\textbf{Risk} & \textbf{Probability} & \textbf{Impact} & \textbf{Mitigation} \\
+\midrule
+\endfirsthead
+\toprule
+\textbf{Risk} & \textbf{Probability} & \textbf{Impact} & \textbf{Mitigation} \\
+\midrule
+\endhead
+Cerebras API downtime & Medium & High & Template fallback; store all prompts for replay \\
+\midrule
+GitHub rate limits & Low & Medium & Cache PR diffs; batch comment posts \\
+\midrule
+Low precision ($<$70\%) & Medium & High & Tune thresholds conservatively; focus on high-confidence rules \\
+\midrule
+User study recruitment fails & Medium & Medium & Expand to online (Reddit, GitHub); offer small incentive \\
+\midrule
+Scope creep (too many languages) & High & High & Gate: Python must hit 70\% precision before adding JS \\
+\midrule
+Database migration issues & Low & Low & Version schema; test migrations in staging \\
+\midrule
+Enterprise feature creep (e.g., full codebase context engine, advanced analytics) & Medium & High & Limit scope to PR diffs, 1-2 languages, and clearly documented non-goals; defer full-repo context and enterprise features beyond graduation \\
+\midrule
+Pydantic serialization bugs & Low & Medium & Unit test all CanonicalFinding serialization; mock Pydantic validators \\
+\midrule
+Rate limiting not enforcing & Medium & High & Integration test Token Bucket with mock Redis; verify queue behavior under load \\
+\midrule
+Docker Secrets setup complexity & Low & Medium & Document .env as Phase 1; defer Docker Secrets to Phase 2 \\
+\midrule
+Prometheus scraping fails & Low & Medium & Test /metrics endpoint manually; add retry logic \\
+\midrule
+k6 test flakiness (network) & Medium & Low & Run tests 3x, take median; use local test endpoint \\
+\midrule
+Grafana dashboard too complex & Low & Medium & Start with 3 panels, add 2 more if time \\
+\midrule
+Load testing reveals blocker & Medium & High & Mitigation: Fix top bottleneck, re-test, document findings \\
+\midrule
+Circuit breaker misconfigured & Low & Medium & Unit test state transitions; monitor state changes \\
+\midrule
+Cache coherency issues & Low & Low & TTL-based invalidation (24h); rebuild on failure \\
+\midrule
+Logging overhead (JSON serialization) & Low & Low & Async logging; benchmark $<$5\% CPU overhead \\
+\midrule
+Connection pool exhaustion & Medium & High & Monitor pool size; alert if checked\_out$>$15 \\
+\midrule
+Unit test maintenance burden & Medium & Low & Use pytest fixtures; keep tests focused \\
+\midrule
+Profiling runtime overhead & Low & Low & Profile in dev only; disable in prod \\
+\midrule
+Deployment mistakes & Medium & High & Runbook checklist; dry-run on staging first \\
+\midrule
+Cost analysis becomes outdated & Low & Low & Re-analyze quarterly; alert on cost spike \\
+\bottomrule
+\end{longtable}
+
+\section{Open Questions \& Decisions Needed}
+
+\subsection{Immediate (Week 1)}
+\begin{itemize}[leftmargin=*]
+    \item \textbf{GitHub Action vs Webhook?} $\rightarrow$ Recommendation: Action first (simpler)
+    \item \textbf{Rules.yml structure?} $\rightarrow$ Recommendation: YAML (version controlled), DB later
+    \item \textbf{Template fallback format?} $\rightarrow$ Recommendation: Jinja2 templates with same structure as LLM output
+    \item \textbf{Pydantic vs Dataclasses?} $\rightarrow$ Recommendation: Pydantic (industry standard, automatic validation + serialization)
+    \item \textbf{Rate Limiting Algorithm?} $\rightarrow$ Recommendation: Token Bucket in Redis (proven, handles concurrent requests)
+    \item \textbf{Setup Tool?} $\rightarrow$ Recommendation: Makefile (simple, portable, DevOps standard)
+\end{itemize}
+
+\subsection{Phase 2 (Jan-Mar)}
+\begin{itemize}[leftmargin=*]
+    \item \textbf{Second language: JS or Java?} $\rightarrow$ Depends on user study feedback
+    \item \textbf{Self-hosted LLM option?} $\rightarrow$ Optional; Ollama + Llama 3.1 8B documented
+    \item \textbf{GitLab support priority?} $\rightarrow$ Low unless user requests
+    \item \textbf{Should future versions add full-repository context analysis, or remain PR-diff focused to keep complexity and costs low?}
+\end{itemize}
+
+\section{Appendices}
+
+\subsection{Glossary}
+\begin{description}[leftmargin=*]
+    \item[Canonical Finding] Normalized detection result in universal JSON schema
+    \item[RAG (Retrieval-Augmented Generation)] LLM technique that injects retrieved context into prompts
+    \item[Provenance] Complete audit trail of analysis (tool outputs, prompts, responses)
+    \item[Adapter] Language-specific module that runs tools and normalizes outputs
+    \item[False Positive (FP)] Detection flagged as issue but is actually correct code
+    \item[True Positive (TP)] Detection correctly identifies a real code issue
+\end{description}
+
+\subsection{References}
+\begin{enumerate}
+    \item CustomGPT (2025) ``RAG API vs Traditional LLM APIs'' - 42-68\% hallucination reduction
+    \item IEEE (2023) ``Towards Multi-Language Static Code Analysis'' - Adapter pattern validation
+    \item Semgrep Documentation - Pattern-based rule engine design
+    \item Johnson et al. (2013) ``Why don't developers use static analysis?'' - User study methodology
+    \item Pydantic Documentation (2025) - ``Data Validation with Python''
+    \item Redis Token Bucket Pattern - Rate limiting at scale
+    \item IEEE (2024) - ``DevOps Best Practices for Python Services''
+    \item Prometheus Documentation (2025) - ``Metrics and Alerting''
+    \item Grafana Documentation (2025) - ``Dashboard Best Practices''
+    \item k6 Documentation (2025) - ``Load Testing with k6''
+    \item SRE Handbook - ``Performance Testing \& Scaling''
+\end{enumerate}
+
+\subsection{Document Change Log}
+
+\begin{longtable}{p{3cm}p{2cm}p{5cm}p{3cm}}
+\toprule
+\textbf{Date} & \textbf{Version} & \textbf{Changes} & \textbf{Author} \\
+\midrule
+\endfirsthead
+\toprule
+\textbf{Date} & \textbf{Version} & \textbf{Changes} & \textbf{Author} \\
+\midrule
+\endhead
+Nov 23, 2025 & 1.0 & Initial PRD creation & Ahmed Abbas \\
+\midrule
+Jan 21, 2026 & 2.1 & Enhanced Phase 1 with Pydantic, rate limiting, Makefile, Docker Secrets; clarified Phase 2 scope (JS + CLI optional); relaxed user study acceptance criteria & Ahmed Abbas \\
+\midrule
+Jan 24, 2026 & 2.2 & Added Observability Stack (F11) and Load Testing (F12) to Phase 2 for production-grade monitoring and performance validation & Ahmed Abbas \\
+\midrule
+Jan 24, 2026 & 2.3 & Added Production Readiness \& Quality Assurance (F13): Circuit Breaker, Caching, Structured Logging, Connection Pooling, 85\%+ Unit Tests, Error Handling, Profiling, Deployment Runbook, Cost Analysis, Security Audit. Updated Product Vision with DevOps angle. & Ahmed Abbas \\
+\midrule
+Jan 28, 2026 & 2.4 & Phase 1 Completion Updates: Added GitLab CI/CD support, Added response caching with Redis (7-day TTL), Added OWASP/SANS compliance reporting, Expanded knowledge base to 32 rules across 10 categories, Added 45 unit tests with 70\% coverage threshold, Added source citations and remediation in reports & Ahmed Abbas \\
+\bottomrule
+\end{longtable}
+
+\vspace{1cm}
+\begin{center}
+\textbf{End of Product Requirements Document}
+\end{center}
+
+\end{document}
