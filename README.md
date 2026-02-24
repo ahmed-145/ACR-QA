@@ -1,6 +1,6 @@
 <div align="center">
 
-# 🛡️ ACR-QA v2.4
+# 🛡️ ACR-QA
 ### Automated Code Review & Quality Assurance Platform
 
 *Intelligent, context-aware code analysis with RAG-enhanced AI explanations*
