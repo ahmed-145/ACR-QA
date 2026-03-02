@@ -78,7 +78,7 @@ Designed as an academic thesis project at KSIU, it covers the full code-review l
 
 ```bash
 # 1. Clone
-git clone https://github.com/yourusername/acr-qa.git && cd acr-qa
+git clone https://github.com/ahmed-145/acr-qa.git && cd acr-qa
 
 # 2. Configure
 cp .env.example .env          # add your CEREBRAS_API_KEY
@@ -412,5 +412,5 @@ MIT License — see [LICENSE](LICENSE)
 ---
 
 <div align="center">
-Built with ❤️ at King Salman International University · <a href="https://github.com/yourusername/acr-qa">⭐ Star this repo</a>
+Built with ❤️ at King Salman International University · <a href="https://github.com/ahmed-145/acr-qa">⭐ Star this repo</a>
 </div>
