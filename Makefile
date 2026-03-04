@@ -45,13 +45,13 @@ help:
 # Setup & Installation
 # ============================================
 
-setup: install-deps install-tools init-db
+setup: install-deps install-tools init-db init-config
 	@echo ""
 	@echo "✅ Setup complete!"
 	@echo ""
 	@echo "Next steps:"
-	@echo "  1. Configure .env with your API keys"
-	@echo "  2. Run: make docker-up"
+	@echo "  1. cp .env.example .env   # add your API keys"
+	@echo "  2. Run: make up"
 	@echo "  3. Run: make run"
 	@echo ""
 
@@ -74,6 +74,14 @@ init-db:
 		echo "✓ Database initialized"; \
 	else \
 		echo "⚠️  PostgreSQL not found. Use Docker instead: make docker-up"; \
+	fi
+
+init-config:
+	@echo "📋 Generating default .acrqa.yml config..."
+	@if [ ! -f .acrqa.yml ]; then \
+		.venv/bin/python3 CORE/config_loader.py --generate .acrqa.yml; \
+	else \
+		echo "   .acrqa.yml already exists, skipping"; \
 	fi
 
 # ============================================

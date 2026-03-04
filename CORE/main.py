@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
-ACR-QA v2.0 - Main Analysis Pipeline
-Orchestrates: Detection → Explanation → Storage
+ACR-QA v2.4 - Main Analysis Pipeline
+Orchestrates: Detection → Normalization → Config Filtering → Quality Gate → Explanation → Storage
 """
 
 import sys
@@ -17,6 +17,8 @@ import shutil
 import tempfile
 from DATABASE.database import Database
 from CORE.engines.explainer import ExplanationEngine
+from CORE.engines.quality_gate import QualityGate
+from CORE.config_loader import ConfigLoader
 from CORE.utils.code_extractor import extract_code_snippet
 from CORE.utils.rate_limiter import get_rate_limiter
 
@@ -26,15 +28,17 @@ class AnalysisPipeline:
         self.target_dir = target_dir
         self.db = Database()
         self.explainer = ExplanationEngine()
-        self.files = files  # NEW: specific files to analyze
+        self.files = files
+        # Load per-repo config (.acrqa.yml)
+        self.config = ConfigLoader(project_dir=target_dir).load()
 
     def run(self, repo_name="local", pr_number=None, limit=None, files=None):
         """Run full analysis pipeline"""
-        print("🚀 ACR-QA v2.0 Analysis Pipeline")
+        print("🚀 ACR-QA v2.4 Analysis Pipeline")
         print("=" * 50)
 
         # Step 0: Check rate limit
-        print("\n[0/4] Checking rate limit...")
+        print("\n[0/5] Checking rate limit...")
         redis_host = os.getenv("REDIS_HOST", "localhost")
         redis_port = int(os.getenv("REDIS_PORT", 6379))
 
@@ -69,7 +73,6 @@ class AnalysisPipeline:
         if files:
             # Only analyze specific files (for PR diffs)
             print(f"      - Analyzing {len(files)} changed files")
-            # Create temp dir with only changed files for targeted analysis
             analysis_dir = tempfile.mkdtemp(prefix="acrqa_diff_")
             try:
                 for f in files:
@@ -81,7 +84,6 @@ class AnalysisPipeline:
             finally:
                 shutil.rmtree(analysis_dir, ignore_errors=True)
         else:
-            # Analyze entire directory
             subprocess.run(["bash", "TOOLS/run_checks.sh", self.target_dir], check=True)
 
         print("      ✓ Detection complete")
@@ -92,21 +94,29 @@ class AnalysisPipeline:
         extra_findings = self.run_extra_scanners(target)
         print(f"      ✓ {len(extra_findings)} extra findings from secrets/SCA")
 
-        # Step 3: Load findings
+        # Step 3: Load and filter findings
         print("\n[3/5] Loading normalized findings...")
         findings = self._load_findings()
+
+        # Apply config filters: disabled rules, ignored paths, min severity
+        findings = self._apply_config_filters(findings)
+
+        # Deduplicate findings (same file+line+rule from different tools)
+        findings = self._deduplicate_findings(findings)
+
         total_findings = len(findings)
-        print(f"      ✓ {total_findings} issues detected")
+        print(f"      ✓ {total_findings} issues after filtering & dedup")
 
         # Step 4: Generate AI explanations (with caching)
         print("[4/5] Generating AI explanations (Cerebras API)...")
 
-        # Pass Redis client for caching (Phase 2 feature)
         redis_client = rate_limiter.redis if rate_limiter and rate_limiter.redis else None
         explainer = ExplanationEngine(redis_client=redis_client)
 
-        # Limit findings for demo/speed
-        findings_to_process = findings[:limit] if limit else findings
+        # Cap explanations using config
+        max_explanations = self.config.get("ai", {}).get("max_explanations", 50)
+        effective_limit = min(limit, max_explanations) if limit else max_explanations
+        findings_to_process = findings[:effective_limit] if effective_limit else findings
 
         for i, finding in enumerate(findings_to_process, 1):
             print(
@@ -115,46 +125,119 @@ class AnalysisPipeline:
             )
 
             try:
-                # Insert finding into DB
                 finding_id = self.db.insert_finding(run_id, finding)
-
-                # Extract code snippet
                 snippet = extract_code_snippet(
                     finding["file"], finding["line"], context_lines=3
                 )
-
-                # Generate explanation
                 explanation = self.explainer.generate_explanation(finding, snippet)
-
-                # Store explanation
                 self.db.insert_explanation(finding_id, explanation)
-
                 print(f"✓ ({explanation['latency_ms']}ms)")
-
             except Exception as e:
                 print(f"✗ Error: {e}")
 
         # Mark run as complete
         self.db.complete_analysis_run(run_id, total_findings)
 
-        # Save run ID to file for GitHub Actions
+        # Save run ID for GitHub Actions
         try:
             with open("/tmp/acr_run_id.txt", "w") as f:
                 f.write(str(run_id))
         except:
-            pass  # Don't fail if can't write file
+            pass
 
-        print("\n" + "=" * 50)
-        print(f"✅ Analysis Complete!")
-        print(f"   Run ID: {run_id}")
-        print(f"   Total Findings: {total_findings}")
+        # Step 5: Quality Gate
+        print("\n[5/5] Quality Gate evaluation...")
+        gate = QualityGate(config=self.config)
+        gate_result = gate.evaluate(findings)
+        gate.print_report(gate_result)
+
+        # Print summary
+        print(f"\n   Run ID: {run_id}")
         print(f"   Explanations Generated: {len(findings_to_process)}")
         print("\nNext Steps:")
-        print(f"   View results: python scripts/dashboard.py")
-        print(f"   Generate report: python scripts/generate_report.py {run_id}")
-        print(f"   Export data: python scripts/export_provenance.py {run_id}")
+        print(f"   View dashboard: python3 FRONTEND/app.py")
+        print(f"   Generate report: python3 scripts/generate_report.py {run_id}")
+        print(f"   Export SARIF: python3 scripts/export_sarif.py --run-id {run_id}")
 
+        # Return exit code info
+        self._gate_passed = gate_result["passed"]
         return run_id
+
+    def _apply_config_filters(self, findings):
+        """Filter findings based on .acrqa.yml configuration."""
+        loader = ConfigLoader.__new__(ConfigLoader)
+        loader.project_dir = Path(self.target_dir)
+        loader._config = self.config
+        
+        filtered = []
+        removed_rules = 0
+        removed_paths = 0
+        removed_severity = 0
+        
+        min_sev = self.config.get("reporting", {}).get("min_severity", "low")
+        sev_order = {"high": 3, "medium": 2, "low": 1}
+        min_sev_level = sev_order.get(min_sev, 1)
+        
+        for f in findings:
+            rule_id = f.get("canonical_rule_id", f.get("rule_id", ""))
+            
+            # Check if rule is disabled
+            if not loader.is_rule_enabled(rule_id):
+                removed_rules += 1
+                continue
+                
+            # Check if file path is ignored
+            file_path = f.get("file_path", f.get("file", ""))
+            if loader.should_ignore_path(file_path):
+                removed_paths += 1
+                continue
+            
+            # Check minimum severity
+            sev = f.get("canonical_severity", f.get("severity", "low")).lower()
+            if sev_order.get(sev, 1) < min_sev_level:
+                removed_severity += 1
+                continue
+            
+            # Apply severity overrides
+            override = loader.get_severity_override(rule_id)
+            if override:
+                f["canonical_severity"] = override
+                f["severity"] = override
+            
+            filtered.append(f)
+        
+        if removed_rules or removed_paths or removed_severity:
+            print(f"      - Config filters: removed {removed_rules} disabled rules, "
+                  f"{removed_paths} ignored paths, {removed_severity} below min severity")
+        
+        return filtered
+
+    def _deduplicate_findings(self, findings):
+        """Remove duplicate findings (same file + line + canonical rule from different tools)."""
+        seen = {}
+        # Priority: security tools > specialized > general
+        tool_priority = {"bandit": 3, "semgrep": 3, "secrets": 3, "vulture": 2, "radon": 2, "ruff": 1, "jscpd": 1}
+        
+        for f in findings:
+            file_path = f.get("file_path", f.get("file", ""))
+            line = f.get("line_number", f.get("line", 0))
+            rule = f.get("canonical_rule_id", f.get("rule_id", ""))
+            key = (file_path, line, rule)
+            
+            if key not in seen:
+                seen[key] = f
+            else:
+                # Keep finding from higher-priority tool
+                existing_tool = seen[key].get("tool", "")
+                new_tool = f.get("tool", "")
+                if tool_priority.get(new_tool, 0) > tool_priority.get(existing_tool, 0):
+                    seen[key] = f
+        
+        deduped = list(seen.values())
+        removed = len(findings) - len(deduped)
+        if removed:
+            print(f"      - Dedup: removed {removed} duplicate findings")
+        return deduped
 
     def run_autofix(self, findings):
         """Run autofix engine on findings and display diffs."""
@@ -175,7 +258,6 @@ class AnalysisPipeline:
             confidence = engine.get_fix_confidence(rule_id)
 
             try:
-                # Build finding dict with the keys autofix expects
                 finding_dict = {
                     "canonical_rule_id": rule_id,
                     "file_path": filepath,
@@ -204,7 +286,6 @@ class AnalysisPipeline:
         """Run secrets detection and SCA scanning as part of the pipeline."""
         extra_findings = []
 
-        # Secrets detection
         try:
             from CORE.engines.secrets_detector import SecretsDetector
             print("      - Secrets Detector (hardcoded credentials)")
@@ -219,7 +300,6 @@ class AnalysisPipeline:
         except Exception as e:
             print(f"        ✗ Secrets scan error: {e}")
 
-        # SCA (dependency vulnerability) scanning
         try:
             from CORE.engines.sca_scanner import SCAScanner
             print("      - SCA Scanner (dependency vulnerabilities)")
@@ -236,14 +316,11 @@ class AnalysisPipeline:
         return extra_findings
 
     def _load_findings(self):
-        # Import normalizer
         from CORE.engines.normalizer import normalize_all
 
-        # Run normalization
         print("      - Normalizing tool outputs...")
-        findings = normalize_all("DATA/outputs")  # ✅ CORRECT PATH!
+        findings = normalize_all("DATA/outputs")
 
-        # Save to JSON for caching
         with open("DATA/outputs/findings.json", "w") as f:
             json.dump([f.to_dict() for f in findings], f, indent=2)
 
@@ -266,7 +343,7 @@ def get_diff_files(base_branch: str = "main") -> list:
 
 
 def main():
-    parser = argparse.ArgumentParser(description="ACR-QA v2.0 Analysis Pipeline")
+    parser = argparse.ArgumentParser(description="ACR-QA v2.4 Analysis Pipeline")
     parser.add_argument(
         "--target-dir", default="samples/realistic-issues", help="Directory to analyze"
     )
@@ -312,6 +389,11 @@ def main():
             with open(findings_path) as fp:
                 findings = json_mod.load(fp)
             pipeline.run_autofix(findings)
+
+    # Exit with non-zero code if quality gate failed
+    if run_id and hasattr(pipeline, '_gate_passed') and not pipeline._gate_passed:
+        print("\n❌ Exiting with code 1 (quality gate failed)")
+        sys.exit(1)
 
 
 if __name__ == "__main__":

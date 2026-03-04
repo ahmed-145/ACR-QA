@@ -594,8 +594,40 @@ def normalize_all(outputs_dir: str = "outputs") -> List[CanonicalFinding]:
         except Exception as e:
             print(f"  Error processing Bandit: {e}")
 
-    print(f"\n  Total canonical findings: {len(all_findings)}")
-    return all_findings
+    # Inline suppression: filter out findings with # acr-qa:ignore or # acrqa:disable
+    suppressed = 0
+    filtered_findings = []
+    for finding in all_findings:
+        try:
+            file_path = finding.file_path if hasattr(finding, 'file_path') else ""
+            line_num = finding.line_number if hasattr(finding, 'line_number') else 0
+            if file_path and line_num and Path(file_path).exists():
+                with open(file_path) as src:
+                    lines = src.readlines()
+                    if 0 < line_num <= len(lines):
+                        source_line = lines[line_num - 1]
+                        rule_id = finding.canonical_rule_id if hasattr(finding, 'canonical_rule_id') else ""
+                        # Check for blanket ignore
+                        if "# acr-qa:ignore" in source_line or "# acrqa:ignore" in source_line:
+                            suppressed += 1
+                            continue
+                        # Check for rule-specific disable
+                        if "# acrqa:disable" in source_line:
+                            if rule_id and rule_id in source_line:
+                                suppressed += 1
+                                continue
+                            elif rule_id == "" or f"disable {rule_id}" in source_line:
+                                suppressed += 1
+                                continue
+            filtered_findings.append(finding)
+        except Exception:
+            filtered_findings.append(finding)
+    
+    if suppressed:
+        print(f"  Suppressed {suppressed} findings via inline comments")
+
+    print(f"\n  Total canonical findings: {len(filtered_findings)}")
+    return filtered_findings
 
 
 def normalize_bandit(bandit_json: Dict) -> List[CanonicalFinding]:
