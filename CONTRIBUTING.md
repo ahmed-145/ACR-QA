@@ -103,4 +103,4 @@ eval(user_input)       # acrqa:disable SECURITY-001
 
 ## Questions?
 
-Open an issue on GitHub or reach out to Ahmed Mahmoud Abbas (222101213@ksiu.edu.eg).
+Open an [issue on GitHub](https://github.com/ahmed-145/ACR-QA/issues).

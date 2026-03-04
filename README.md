@@ -468,7 +468,7 @@ make test-e2e          # End-to-end with Docker
 
 | | |
 |-|-|
-| **Student** | Ahmed Mahmoud Abbas — ID: 222101213 |
+| **Student** | Ahmed Mahmoud Abbas |
 | **Supervisor** | Dr. Samy AbdelNabi |
 | **Institution** | King Salman International University (KSIU) |
 | **Timeline** | October 2025 – June 2026 |
