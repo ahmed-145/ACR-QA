@@ -16,10 +16,11 @@ ENV/
 *.db
 *.sqlite
 
-# Outputs
-outputs/*.json
-outputs/*.txt
-outputs/provenance/
+# Outputs (generated at runtime)
+DATA/outputs/*.json
+DATA/outputs/*.txt
+DATA/outputs/provenance/
+outputs/
 
 # IDE
 .vscode/
@@ -35,3 +36,16 @@ Thumbs.db
 .coverage
 htmlcov/
 .pytest_cache/
+.ruff_cache/
+
+# Node (VSCode extension)
+vscode-extension/node_modules/
+node_modules/
+
+# Docker
+*.log
+
+# Misc
+*.egg-info/
+dist/
+build/

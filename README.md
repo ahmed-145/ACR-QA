@@ -9,7 +9,7 @@
 [![PostgreSQL 15](https://img.shields.io/badge/PostgreSQL-15+-336791?logo=postgresql&logoColor=white)](https://postgresql.org/)
 [![Flask](https://img.shields.io/badge/Flask-3.x-000000?logo=flask&logoColor=white)](https://flask.palletsprojects.com/)
 [![Prometheus](https://img.shields.io/badge/Prometheus-monitored-e6522c?logo=prometheus&logoColor=white)](https://prometheus.io/)
-[![Tests](https://img.shields.io/badge/Tests-77%20passing-22c55e?logo=pytest&logoColor=white)](./TESTS/)
+[![Tests](https://img.shields.io/badge/Tests-97%20passing-22c55e?logo=pytest&logoColor=white)](./TESTS/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
 [Quick Start](#-quick-start) · [Architecture](#-architecture) · [Dashboard](#-dashboard) · [Monitoring](#-monitoring) · [GitHub Integration](#-github-pr-integration) · [Docs](#-documentation)
@@ -307,7 +307,7 @@ make run
 make test-e2e
 ```
 
-**Test coverage:** 77 passing, 1 skipped (infrastructure-dependent)
+**Test coverage:** 97 passing, 4 skipped (infrastructure-dependent)
 
 Test files in `TESTS/`:
 - `test_acceptance.py` — pipeline acceptance tests
@@ -340,6 +340,10 @@ Test files in `TESTS/`:
 | AI explanations | ✅ | ✅ | ✅ RAG + entropy |
 | Source citations | ✅ | ✅ | ✅ rule ID links |
 | Auto-fix suggestions | ✅ | ✅ | ✅ with verification |
+| **Quality Gates** | ✅ | ✅ | ✅ configurable |
+| **Inline suppression** | ✅ | ✅ | ✅ `# acr-qa:ignore` |
+| **Per-repo config** | ✅ | ✅ | ✅ `.acrqa.yml` |
+| **Finding dedup** | ✅ | ✅ | ✅ tool-priority |
 | GitHub CI/CD | ✅ | ✅ | ✅ |
 | GitLab CI/CD | ✅ | ✅ | ✅ |
 | SARIF export | ✅ | ✅ | ✅ v2.1.0 |
@@ -378,11 +382,11 @@ Test files in `TESTS/`:
 
 ## 📚 Documentation
 
-- [Architecture Details](docs/DOCS/ARCHITECTURE.md)
-- [API Reference](docs/real-docs/markdowns/API-Documentation.md)
-- [Cloud Deployment Guide](docs/real-docs/markdowns/Cloud-Deployment.md)
-- [Token Setup (GitHub / GitLab)](docs/real-docs/markdowns/TOKEN_SETUP.md)
-- [Canonical Schema](docs/DOCS/CANONICAL_SCHEMA.md)
+- [Architecture Details](docs/architecture/ARCHITECTURE.md)
+- [Canonical Schema](docs/architecture/CANONICAL_SCHEMA.md)
+- [API Reference](docs/setup/API-Documentation.md)
+- [Cloud Deployment Guide](docs/setup/Cloud-Deployment.md)
+- [Token Setup (GitHub / GitLab)](docs/setup/TOKEN_SETUP.md)
 
 ---
 
