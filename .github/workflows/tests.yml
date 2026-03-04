@@ -1,3 +1,11 @@
+# =============================================================================
+# ACR-QA — Internal Test & Lint CI
+# =============================================================================
+# PURPOSE: Tests ACR-QA's own codebase (pytest + ruff) on every push/PR.
+#          This is for DEVELOPING ACR-QA — not for analyzing user code.
+#          For the product workflow (PR analysis), see acr-qa.yml.
+# =============================================================================
+
 name: Tests
 
 on:
@@ -10,6 +18,7 @@ jobs:
   test:
     name: Run Test Suite
     runs-on: ubuntu-latest
+    timeout-minutes: 10
 
     services:
       postgres:
@@ -69,6 +78,7 @@ jobs:
   lint:
     name: Lint & Format Check
     runs-on: ubuntu-latest
+    timeout-minutes: 5
 
     steps:
       - name: Checkout code

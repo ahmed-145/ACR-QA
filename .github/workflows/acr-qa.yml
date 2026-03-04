@@ -1,3 +1,23 @@
+# =============================================================================
+# ACR-QA — Code Review Product Workflow
+# =============================================================================
+# PURPOSE: This IS the ACR-QA product — it analyzes Pull Request diffs,
+#          posts AI-powered review comments, and enforces quality gates.
+#          For internal testing of ACR-QA itself, see tests.yml.
+#
+# TRIGGERS:
+#   - Auto: Runs on every PR (opened, updated, reopened)
+#   - Manual: Comment "acr-qa review" on any PR to trigger a full scan
+#
+# WHAT IT DOES:
+#   1. Detects changed files in the PR
+#   2. Runs 6 static analysis tools (Ruff, Semgrep, Vulture, Radon, Bandit, jscpd)
+#   3. Normalizes findings into canonical schema
+#   4. Generates AI explanations via Cerebras (RAG-enhanced)
+#   5. Posts findings as inline PR comments
+#   6. Enforces quality gates — blocks merge if thresholds exceeded
+# =============================================================================
+
 name: ACR-QA Code Review
 
 on:
@@ -12,12 +32,13 @@ permissions:
   issues: write
 
 jobs:
-  # Job 1: Auto-trigger on PR events
+  # ─── Job 1: Auto-trigger on PR events ─────────────────────────────────
   analyze-pr:
     name: Analyze Pull Request
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     if: github.event_name == 'pull_request'
-    
+
     services:
       postgres:
         image: postgres:15
@@ -32,7 +53,7 @@ jobs:
           --health-interval 10s
           --health-timeout 5s
           --health-retries 5
-      
+
       redis:
         image: redis:7
         ports:
@@ -42,31 +63,32 @@ jobs:
           --health-interval 10s
           --health-timeout 5s
           --health-retries 5
-    
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
         with:
           fetch-depth: 0  # Full history for diff analysis
-      
+
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
           python-version: '3.11'
-      
+          cache: 'pip'
+
       - name: Install dependencies
         run: |
+          python -m pip install --upgrade pip
           pip install -r requirements.txt
-          # Install analysis tools
           pip install ruff semgrep vulture radon bandit
           npm install -g jscpd
-      
+
       - name: Initialize database
         env:
           PGPASSWORD: postgres
         run: |
           psql -h localhost -U postgres -d acrqa_test -f DATABASE/schema.sql
-      
+
       - name: Get changed files
         id: changed-files
         uses: tj-actions/changed-files@v41
@@ -76,7 +98,7 @@ jobs:
             **/*.js
             **/*.ts
             **/*.java
-      
+
       - name: Run ACR-QA Analysis
         if: steps.changed-files.outputs.any_changed == 'true'
         id: analysis
@@ -91,10 +113,10 @@ jobs:
           DB_PASSWORD: postgres
         run: |
           set -o pipefail
-          
+
           # Create temp directory for changed files
           mkdir -p /tmp/pr-files
-          
+
           # Copy only changed files
           echo "${{ steps.changed-files.outputs.all_changed_files }}" | tr ' ' '\n' > /tmp/changed_files.txt
           while IFS= read -r file; do
@@ -103,7 +125,7 @@ jobs:
               cp "$file" "/tmp/pr-files/$file"
             fi
           done < /tmp/changed_files.txt
-          
+
           # Run analysis on changed files only
           # Quality gate may exit 1 — we capture it and post comments first
           python3 CORE/main.py \
@@ -111,10 +133,10 @@ jobs:
             --repo-name "${{ github.repository }}" \
             --pr-number ${{ github.event.pull_request.number }} \
             --limit 100 | tee /tmp/analysis_output.txt
-          
+
           # Extract run ID from output
           grep "Run ID:" /tmp/analysis_output.txt | awk '{print $NF}' > /tmp/acr_run_id.txt
-      
+
       - name: Post PR Comments
         if: steps.changed-files.outputs.any_changed == 'true'
         env:
@@ -129,89 +151,122 @@ jobs:
             --repo "${{ github.repository }}" \
             --pr-number ${{ github.event.pull_request.number }} \
             --run-id-file /tmp/acr_run_id.txt
-      
+
       - name: Enforce Quality Gate
         if: steps.analysis.outcome == 'failure'
         run: |
           echo "❌ Quality Gate failed — blocking merge"
           echo "Review findings in the PR comments above"
           exit 1
-  
-  # Job 2: Manual trigger via comment
+
+  # ─── Job 2: Manual trigger via "acr-qa review" comment ────────────────
   manual-trigger:
-    name: Manual Trigger
+    name: Manual Review (comment trigger)
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     if: |
       github.event_name == 'issue_comment' &&
       github.event.issue.pull_request &&
       contains(github.event.comment.body, 'acr-qa review')
-    
+
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_DB: acrqa_test
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+      redis:
+        image: redis:7
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
     steps:
       - name: React to comment
         uses: peter-evans/create-or-update-comment@v3
         with:
           comment-id: ${{ github.event.comment.id }}
           reactions: 'eyes'
-      
+
       - name: Checkout code
         uses: actions/checkout@v4
         with:
           ref: refs/pull/${{ github.event.issue.number }}/head
-      
+
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
           python-version: '3.11'
-      
+          cache: 'pip'
+
       - name: Install dependencies
         run: |
+          python -m pip install --upgrade pip
           pip install -r requirements.txt
           pip install ruff semgrep vulture radon bandit
           npm install -g jscpd
-      
-      - name: Set up PostgreSQL
-        run: |
-          sudo systemctl start postgresql
-          sudo -u postgres psql -c "CREATE DATABASE acrqa_test;"
-          sudo -u postgres psql -c "CREATE USER acrqa_user WITH PASSWORD 'test123';"
-          sudo -u postgres psql -c "GRANT ALL PRIVILEGES ON DATABASE acrqa_test TO acrqa_user;"
-      
+
       - name: Initialize database
         env:
-          DB_HOST: localhost
-          DB_PORT: 5432
-          DB_NAME: acrqa_test
-          DB_USER: acrqa_user
-          DB_PASSWORD: test123
+          PGPASSWORD: postgres
         run: |
-          psql -h localhost -U acrqa_user -d acrqa_test -f DATABASE/schema.sql
-      
+          psql -h localhost -U postgres -d acrqa_test -f DATABASE/schema.sql
+
       - name: Run ACR-QA Analysis (Full Scan)
+        id: analysis
+        continue-on-error: true
         env:
           CEREBRAS_API_KEY: ${{ secrets.CEREBRAS_API_KEY }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           DB_HOST: localhost
           DB_PORT: 5432
           DB_NAME: acrqa_test
-          DB_USER: acrqa_user
-          DB_PASSWORD: test123
+          DB_USER: postgres
+          DB_PASSWORD: postgres
         run: |
+          set -o pipefail
           python3 CORE/main.py \
             --target-dir . \
             --repo-name "${{ github.repository }}" \
             --pr-number ${{ github.event.issue.number }} \
-            --limit 100
-      
+            --limit 100 | tee /tmp/analysis_output.txt
+
       - name: Post PR Comments
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          DB_HOST: localhost
+          DB_PORT: 5432
+          DB_NAME: acrqa_test
+          DB_USER: postgres
+          DB_PASSWORD: postgres
         run: |
           python3 scripts/post_pr_comments.py \
             --repo "${{ github.repository }}" \
             --pr-number ${{ github.event.issue.number }} \
             --run-id-file /tmp/acr_run_id.txt
-      
+
+      - name: Enforce Quality Gate
+        if: steps.analysis.outcome == 'failure'
+        run: |
+          echo "❌ Quality Gate failed — blocking merge"
+          echo "Review findings in the PR comments above"
+          exit 1
+
       - name: React to completion
+        if: always()
         uses: peter-evans/create-or-update-comment@v3
         with:
           comment-id: ${{ github.event.comment.id }}
