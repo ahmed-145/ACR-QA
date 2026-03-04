@@ -101,7 +101,7 @@ from FRONTEND.app import app as application
 
 ```bash
 curl https://yourusername.pythonanywhere.com/api/health
-# Returns: {"status": "healthy", "version": "2.0"}
+# Returns: {"status": "healthy", "version": "2.5.0"}
 ```
 
 ---

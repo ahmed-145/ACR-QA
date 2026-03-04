@@ -1,8 +1,8 @@
 # ACR-QA API Documentation
 
-**Version:** 2.0  
+**Version:** 2.5  
 **Base URL:** `http://localhost:5000`  
-**Last Updated:** January 28, 2026
+**Last Updated:** March 4, 2026
 
 ---
 
