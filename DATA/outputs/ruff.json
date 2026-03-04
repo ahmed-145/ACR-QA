@@ -14,7 +14,7 @@
     },
     "message": "1 blank line required between summary line and description",
     "noqa_row": 4,
-    "url": "https://docs.astral.sh/ruff/rules/blank-line-after-summary"
+    "url": "https://docs.astral.sh/ruff/rules/missing-blank-line-after-summary"
   },
   {
     "cell": null,
@@ -80,7 +80,7 @@
     },
     "message": "First line should end with a period",
     "noqa_row": 4,
-    "url": "https://docs.astral.sh/ruff/rules/ends-in-period"
+    "url": "https://docs.astral.sh/ruff/rules/missing-trailing-period"
   },
   {
     "cell": null,
@@ -113,14 +113,14 @@
     },
     "message": "First line should end with a period, question mark, or exclamation point",
     "noqa_row": 4,
-    "url": "https://docs.astral.sh/ruff/rules/ends-in-punctuation"
+    "url": "https://docs.astral.sh/ruff/rules/missing-terminal-punctuation"
   },
   {
     "cell": null,
     "code": "I001",
     "end_location": {
-      "column": 1,
-      "row": 13
+      "column": 40,
+      "row": 10
     },
     "filename": "/home/ahmeed/Documents/KSIU/GRAD/SOLO/TESTS/samples/comprehensive-issues/all_categories_test.py",
     "fix": {
@@ -345,7 +345,7 @@
     },
     "message": "First line should end with a period",
     "noqa_row": 19,
-    "url": "https://docs.astral.sh/ruff/rules/ends-in-period"
+    "url": "https://docs.astral.sh/ruff/rules/missing-trailing-period"
   },
   {
     "cell": null,
@@ -378,7 +378,7 @@
     },
     "message": "First line should end with a period, question mark, or exclamation point",
     "noqa_row": 19,
-    "url": "https://docs.astral.sh/ruff/rules/ends-in-punctuation"
+    "url": "https://docs.astral.sh/ruff/rules/missing-terminal-punctuation"
   },
   {
     "cell": null,
@@ -411,7 +411,7 @@
     },
     "message": "First line should end with a period",
     "noqa_row": 26,
-    "url": "https://docs.astral.sh/ruff/rules/ends-in-period"
+    "url": "https://docs.astral.sh/ruff/rules/missing-trailing-period"
   },
   {
     "cell": null,
@@ -444,7 +444,7 @@
     },
     "message": "First line should end with a period, question mark, or exclamation point",
     "noqa_row": 26,
-    "url": "https://docs.astral.sh/ruff/rules/ends-in-punctuation"
+    "url": "https://docs.astral.sh/ruff/rules/missing-terminal-punctuation"
   },
   {
     "cell": null,
@@ -477,7 +477,7 @@
     },
     "message": "First line should end with a period",
     "noqa_row": 32,
-    "url": "https://docs.astral.sh/ruff/rules/ends-in-period"
+    "url": "https://docs.astral.sh/ruff/rules/missing-trailing-period"
   },
   {
     "cell": null,
@@ -510,7 +510,7 @@
     },
     "message": "First line should end with a period, question mark, or exclamation point",
     "noqa_row": 32,
-    "url": "https://docs.astral.sh/ruff/rules/ends-in-punctuation"
+    "url": "https://docs.astral.sh/ruff/rules/missing-terminal-punctuation"
   },
   {
     "cell": null,
@@ -524,13 +524,13 @@
       "applicability": "safe",
       "edits": [
         {
-          "content": ", check=False",
+          "content": "check=False, ",
           "end_location": {
-            "column": 40,
+            "column": 30,
             "row": 33
           },
           "location": {
-            "column": 40,
+            "column": 30,
             "row": 33
           }
         }
@@ -576,7 +576,7 @@
     },
     "message": "First line should end with a period",
     "noqa_row": 38,
-    "url": "https://docs.astral.sh/ruff/rules/ends-in-period"
+    "url": "https://docs.astral.sh/ruff/rules/missing-trailing-period"
   },
   {
     "cell": null,
@@ -609,7 +609,7 @@
     },
     "message": "First line should end with a period, question mark, or exclamation point",
     "noqa_row": 38,
-    "url": "https://docs.astral.sh/ruff/rules/ends-in-punctuation"
+    "url": "https://docs.astral.sh/ruff/rules/missing-terminal-punctuation"
   },
   {
     "cell": null,
@@ -642,7 +642,7 @@
     },
     "message": "First line should end with a period",
     "noqa_row": 51,
-    "url": "https://docs.astral.sh/ruff/rules/ends-in-period"
+    "url": "https://docs.astral.sh/ruff/rules/missing-trailing-period"
   },
   {
     "cell": null,
@@ -675,7 +675,7 @@
     },
     "message": "First line should end with a period, question mark, or exclamation point",
     "noqa_row": 51,
-    "url": "https://docs.astral.sh/ruff/rules/ends-in-punctuation"
+    "url": "https://docs.astral.sh/ruff/rules/missing-terminal-punctuation"
   },
   {
     "cell": null,
@@ -698,8 +698,8 @@
     "cell": null,
     "code": "I001",
     "end_location": {
-      "column": 1,
-      "row": 57
+      "column": 15,
+      "row": 56
     },
     "filename": "/home/ahmeed/Documents/KSIU/GRAD/SOLO/TESTS/samples/comprehensive-issues/all_categories_test.py",
     "fix": {
@@ -758,7 +758,7 @@
     },
     "message": "First line should end with a period",
     "noqa_row": 58,
-    "url": "https://docs.astral.sh/ruff/rules/ends-in-period"
+    "url": "https://docs.astral.sh/ruff/rules/missing-trailing-period"
   },
   {
     "cell": null,
@@ -791,7 +791,7 @@
     },
     "message": "First line should end with a period, question mark, or exclamation point",
     "noqa_row": 58,
-    "url": "https://docs.astral.sh/ruff/rules/ends-in-punctuation"
+    "url": "https://docs.astral.sh/ruff/rules/missing-terminal-punctuation"
   },
   {
     "cell": null,
@@ -868,7 +868,7 @@
     },
     "message": "First line should end with a period",
     "noqa_row": 68,
-    "url": "https://docs.astral.sh/ruff/rules/ends-in-period"
+    "url": "https://docs.astral.sh/ruff/rules/missing-trailing-period"
   },
   {
     "cell": null,
@@ -901,7 +901,7 @@
     },
     "message": "First line should end with a period, question mark, or exclamation point",
     "noqa_row": 68,
-    "url": "https://docs.astral.sh/ruff/rules/ends-in-punctuation"
+    "url": "https://docs.astral.sh/ruff/rules/missing-terminal-punctuation"
   },
   {
     "cell": null,
@@ -934,7 +934,7 @@
     },
     "message": "First line should end with a period",
     "noqa_row": 75,
-    "url": "https://docs.astral.sh/ruff/rules/ends-in-period"
+    "url": "https://docs.astral.sh/ruff/rules/missing-trailing-period"
   },
   {
     "cell": null,
@@ -967,7 +967,7 @@
     },
     "message": "First line should end with a period, question mark, or exclamation point",
     "noqa_row": 75,
-    "url": "https://docs.astral.sh/ruff/rules/ends-in-punctuation"
+    "url": "https://docs.astral.sh/ruff/rules/missing-terminal-punctuation"
   },
   {
     "cell": null,
@@ -1017,7 +1017,7 @@
     },
     "message": "First line should end with a period",
     "noqa_row": 84,
-    "url": "https://docs.astral.sh/ruff/rules/ends-in-period"
+    "url": "https://docs.astral.sh/ruff/rules/missing-trailing-period"
   },
   {
     "cell": null,
@@ -1050,7 +1050,7 @@
     },
     "message": "First line should end with a period, question mark, or exclamation point",
     "noqa_row": 84,
-    "url": "https://docs.astral.sh/ruff/rules/ends-in-punctuation"
+    "url": "https://docs.astral.sh/ruff/rules/missing-terminal-punctuation"
   },
   {
     "cell": null,
@@ -1083,7 +1083,7 @@
     },
     "message": "First line should end with a period",
     "noqa_row": 93,
-    "url": "https://docs.astral.sh/ruff/rules/ends-in-period"
+    "url": "https://docs.astral.sh/ruff/rules/missing-trailing-period"
   },
   {
     "cell": null,
@@ -1116,7 +1116,7 @@
     },
     "message": "First line should end with a period, question mark, or exclamation point",
     "noqa_row": 93,
-    "url": "https://docs.astral.sh/ruff/rules/ends-in-punctuation"
+    "url": "https://docs.astral.sh/ruff/rules/missing-terminal-punctuation"
   },
   {
     "cell": null,
@@ -1149,7 +1149,7 @@
     },
     "message": "First line should end with a period",
     "noqa_row": 101,
-    "url": "https://docs.astral.sh/ruff/rules/ends-in-period"
+    "url": "https://docs.astral.sh/ruff/rules/missing-trailing-period"
   },
   {
     "cell": null,
@@ -1182,7 +1182,7 @@
     },
     "message": "First line should end with a period, question mark, or exclamation point",
     "noqa_row": 101,
-    "url": "https://docs.astral.sh/ruff/rules/ends-in-punctuation"
+    "url": "https://docs.astral.sh/ruff/rules/missing-terminal-punctuation"
   },
   {
     "cell": null,
@@ -1232,7 +1232,7 @@
     },
     "message": "First line should end with a period",
     "noqa_row": 113,
-    "url": "https://docs.astral.sh/ruff/rules/ends-in-period"
+    "url": "https://docs.astral.sh/ruff/rules/missing-trailing-period"
   },
   {
     "cell": null,
@@ -1265,7 +1265,7 @@
     },
     "message": "First line should end with a period, question mark, or exclamation point",
     "noqa_row": 113,
-    "url": "https://docs.astral.sh/ruff/rules/ends-in-punctuation"
+    "url": "https://docs.astral.sh/ruff/rules/missing-terminal-punctuation"
   },
   {
     "cell": null,
@@ -1349,7 +1349,7 @@
     },
     "message": "First line should end with a period",
     "noqa_row": 119,
-    "url": "https://docs.astral.sh/ruff/rules/ends-in-period"
+    "url": "https://docs.astral.sh/ruff/rules/missing-trailing-period"
   },
   {
     "cell": null,
@@ -1382,7 +1382,7 @@
     },
     "message": "First line should end with a period, question mark, or exclamation point",
     "noqa_row": 119,
-    "url": "https://docs.astral.sh/ruff/rules/ends-in-punctuation"
+    "url": "https://docs.astral.sh/ruff/rules/missing-terminal-punctuation"
   },
   {
     "cell": null,
@@ -1483,7 +1483,7 @@
     },
     "message": "First line should end with a period",
     "noqa_row": 150,
-    "url": "https://docs.astral.sh/ruff/rules/ends-in-period"
+    "url": "https://docs.astral.sh/ruff/rules/missing-trailing-period"
   },
   {
     "cell": null,
@@ -1516,7 +1516,7 @@
     },
     "message": "First line should end with a period, question mark, or exclamation point",
     "noqa_row": 150,
-    "url": "https://docs.astral.sh/ruff/rules/ends-in-punctuation"
+    "url": "https://docs.astral.sh/ruff/rules/missing-terminal-punctuation"
   },
   {
     "cell": null,
@@ -1566,7 +1566,7 @@
     },
     "message": "First line should end with a period",
     "noqa_row": 161,
-    "url": "https://docs.astral.sh/ruff/rules/ends-in-period"
+    "url": "https://docs.astral.sh/ruff/rules/missing-trailing-period"
   },
   {
     "cell": null,
@@ -1599,7 +1599,7 @@
     },
     "message": "First line should end with a period, question mark, or exclamation point",
     "noqa_row": 161,
-    "url": "https://docs.astral.sh/ruff/rules/ends-in-punctuation"
+    "url": "https://docs.astral.sh/ruff/rules/missing-terminal-punctuation"
   },
   {
     "cell": null,
@@ -1665,7 +1665,7 @@
     },
     "message": "First line should end with a period",
     "noqa_row": 168,
-    "url": "https://docs.astral.sh/ruff/rules/ends-in-period"
+    "url": "https://docs.astral.sh/ruff/rules/missing-trailing-period"
   },
   {
     "cell": null,
@@ -1698,7 +1698,7 @@
     },
     "message": "First line should end with a period, question mark, or exclamation point",
     "noqa_row": 168,
-    "url": "https://docs.astral.sh/ruff/rules/ends-in-punctuation"
+    "url": "https://docs.astral.sh/ruff/rules/missing-terminal-punctuation"
   },
   {
     "cell": null,
@@ -1731,7 +1731,7 @@
     },
     "message": "First line should end with a period",
     "noqa_row": 182,
-    "url": "https://docs.astral.sh/ruff/rules/ends-in-period"
+    "url": "https://docs.astral.sh/ruff/rules/missing-trailing-period"
   },
   {
     "cell": null,
@@ -1764,7 +1764,7 @@
     },
     "message": "First line should end with a period, question mark, or exclamation point",
     "noqa_row": 182,
-    "url": "https://docs.astral.sh/ruff/rules/ends-in-punctuation"
+    "url": "https://docs.astral.sh/ruff/rules/missing-terminal-punctuation"
   },
   {
     "cell": null,
@@ -1831,7 +1831,7 @@
     },
     "message": "First line should end with a period",
     "noqa_row": 193,
-    "url": "https://docs.astral.sh/ruff/rules/ends-in-period"
+    "url": "https://docs.astral.sh/ruff/rules/missing-trailing-period"
   },
   {
     "cell": null,
@@ -1864,7 +1864,7 @@
     },
     "message": "First line should end with a period, question mark, or exclamation point",
     "noqa_row": 193,
-    "url": "https://docs.astral.sh/ruff/rules/ends-in-punctuation"
+    "url": "https://docs.astral.sh/ruff/rules/missing-terminal-punctuation"
   },
   {
     "cell": null,
@@ -1897,7 +1897,7 @@
     },
     "message": "First line should end with a period",
     "noqa_row": 201,
-    "url": "https://docs.astral.sh/ruff/rules/ends-in-period"
+    "url": "https://docs.astral.sh/ruff/rules/missing-trailing-period"
   },
   {
     "cell": null,
@@ -1930,7 +1930,7 @@
     },
     "message": "First line should end with a period, question mark, or exclamation point",
     "noqa_row": 201,
-    "url": "https://docs.astral.sh/ruff/rules/ends-in-punctuation"
+    "url": "https://docs.astral.sh/ruff/rules/missing-terminal-punctuation"
   },
   {
     "cell": null,
@@ -1980,7 +1980,7 @@
     },
     "message": "First line should end with a period",
     "noqa_row": 209,
-    "url": "https://docs.astral.sh/ruff/rules/ends-in-period"
+    "url": "https://docs.astral.sh/ruff/rules/missing-trailing-period"
   },
   {
     "cell": null,
@@ -2013,7 +2013,7 @@
     },
     "message": "First line should end with a period, question mark, or exclamation point",
     "noqa_row": 209,
-    "url": "https://docs.astral.sh/ruff/rules/ends-in-punctuation"
+    "url": "https://docs.astral.sh/ruff/rules/missing-terminal-punctuation"
   },
   {
     "cell": null,
@@ -2079,7 +2079,7 @@
     },
     "message": "First line should end with a period",
     "noqa_row": 220,
-    "url": "https://docs.astral.sh/ruff/rules/ends-in-period"
+    "url": "https://docs.astral.sh/ruff/rules/missing-trailing-period"
   },
   {
     "cell": null,
@@ -2146,7 +2146,7 @@
     },
     "message": "First line should end with a period, question mark, or exclamation point",
     "noqa_row": 220,
-    "url": "https://docs.astral.sh/ruff/rules/ends-in-punctuation"
+    "url": "https://docs.astral.sh/ruff/rules/missing-terminal-punctuation"
   },
   {
     "cell": null,
@@ -2231,7 +2231,7 @@
     },
     "message": "1 blank line required between summary line and description",
     "noqa_row": 4,
-    "url": "https://docs.astral.sh/ruff/rules/blank-line-after-summary"
+    "url": "https://docs.astral.sh/ruff/rules/missing-blank-line-after-summary"
   },
   {
     "cell": null,
@@ -2297,7 +2297,7 @@
     },
     "message": "First line should end with a period",
     "noqa_row": 4,
-    "url": "https://docs.astral.sh/ruff/rules/ends-in-period"
+    "url": "https://docs.astral.sh/ruff/rules/missing-trailing-period"
   },
   {
     "cell": null,
@@ -2330,14 +2330,14 @@
     },
     "message": "First line should end with a period, question mark, or exclamation point",
     "noqa_row": 4,
-    "url": "https://docs.astral.sh/ruff/rules/ends-in-punctuation"
+    "url": "https://docs.astral.sh/ruff/rules/missing-terminal-punctuation"
   },
   {
     "cell": null,
     "code": "I001",
     "end_location": {
-      "column": 1,
-      "row": 10
+      "column": 52,
+      "row": 7
     },
     "filename": "/home/ahmeed/Documents/KSIU/GRAD/SOLO/TESTS/samples/comprehensive-issues/auth_service.py",
     "fix": {
@@ -2501,7 +2501,7 @@
   },
   {
     "cell": null,
-    "code": "UP007",
+    "code": "UP045",
     "end_location": {
       "column": 71,
       "row": 12
@@ -2522,15 +2522,15 @@
           }
         }
       ],
-      "message": "Convert to `X | Y`"
+      "message": "Convert to `X | None`"
     },
     "location": {
       "column": 58,
       "row": 12
     },
-    "message": "Use `X | Y` for type annotations",
+    "message": "Use `X | None` for type annotations",
     "noqa_row": 12,
-    "url": "https://docs.astral.sh/ruff/rules/non-pep604-annotation"
+    "url": "https://docs.astral.sh/ruff/rules/non-pep604-annotation-optional"
   },
   {
     "cell": null,
@@ -2547,7 +2547,7 @@
     },
     "message": "1 blank line required between summary line and description",
     "noqa_row": 16,
-    "url": "https://docs.astral.sh/ruff/rules/blank-line-after-summary"
+    "url": "https://docs.astral.sh/ruff/rules/missing-blank-line-after-summary"
   },
   {
     "cell": null,
@@ -2613,7 +2613,7 @@
     },
     "message": "First line should end with a period",
     "noqa_row": 16,
-    "url": "https://docs.astral.sh/ruff/rules/ends-in-period"
+    "url": "https://docs.astral.sh/ruff/rules/missing-trailing-period"
   },
   {
     "cell": null,
@@ -2646,7 +2646,7 @@
     },
     "message": "First line should end with a period, question mark, or exclamation point",
     "noqa_row": 16,
-    "url": "https://docs.astral.sh/ruff/rules/ends-in-punctuation"
+    "url": "https://docs.astral.sh/ruff/rules/missing-terminal-punctuation"
   },
   {
     "cell": null,
@@ -2764,7 +2764,7 @@
     },
     "message": "1 blank line required between summary line and description",
     "noqa_row": 33,
-    "url": "https://docs.astral.sh/ruff/rules/blank-line-after-summary"
+    "url": "https://docs.astral.sh/ruff/rules/missing-blank-line-after-summary"
   },
   {
     "cell": null,
@@ -2830,7 +2830,7 @@
     },
     "message": "First line should end with a period",
     "noqa_row": 33,
-    "url": "https://docs.astral.sh/ruff/rules/ends-in-period"
+    "url": "https://docs.astral.sh/ruff/rules/missing-trailing-period"
   },
   {
     "cell": null,
@@ -2863,7 +2863,7 @@
     },
     "message": "First line should end with a period, question mark, or exclamation point",
     "noqa_row": 33,
-    "url": "https://docs.astral.sh/ruff/rules/ends-in-punctuation"
+    "url": "https://docs.astral.sh/ruff/rules/missing-terminal-punctuation"
   },
   {
     "cell": null,
@@ -3042,7 +3042,7 @@
     },
     "message": "1 blank line required between summary line and description",
     "noqa_row": 104,
-    "url": "https://docs.astral.sh/ruff/rules/blank-line-after-summary"
+    "url": "https://docs.astral.sh/ruff/rules/missing-blank-line-after-summary"
   },
   {
     "cell": null,
@@ -3085,30 +3085,14 @@
       "row": 104
     },
     "filename": "/home/ahmeed/Documents/KSIU/GRAD/SOLO/TESTS/samples/comprehensive-issues/auth_service.py",
-    "fix": {
-      "applicability": "unsafe",
-      "edits": [
-        {
-          "content": ".",
-          "end_location": {
-            "column": 41,
-            "row": 103
-          },
-          "location": {
-            "column": 41,
-            "row": 103
-          }
-        }
-      ],
-      "message": "Add period"
-    },
+    "fix": null,
     "location": {
       "column": 5,
       "row": 101
     },
     "message": "First line should end with a period",
     "noqa_row": 104,
-    "url": "https://docs.astral.sh/ruff/rules/ends-in-period"
+    "url": "https://docs.astral.sh/ruff/rules/missing-trailing-period"
   },
   {
     "cell": null,
@@ -3131,8 +3115,8 @@
     "cell": null,
     "code": "I001",
     "end_location": {
-      "column": 1,
-      "row": 112
+      "column": 10,
+      "row": 110
     },
     "filename": "/home/ahmeed/Documents/KSIU/GRAD/SOLO/TESTS/samples/comprehensive-issues/auth_service.py",
     "fix": {
@@ -3358,7 +3342,7 @@
     },
     "message": "First line should end with a period",
     "noqa_row": 121,
-    "url": "https://docs.astral.sh/ruff/rules/ends-in-period"
+    "url": "https://docs.astral.sh/ruff/rules/missing-trailing-period"
   },
   {
     "cell": null,
@@ -3391,7 +3375,7 @@
     },
     "message": "First line should end with a period, question mark, or exclamation point",
     "noqa_row": 121,
-    "url": "https://docs.astral.sh/ruff/rules/ends-in-punctuation"
+    "url": "https://docs.astral.sh/ruff/rules/missing-terminal-punctuation"
   },
   {
     "cell": null,
@@ -3424,7 +3408,7 @@
     },
     "message": "First line should end with a period",
     "noqa_row": 124,
-    "url": "https://docs.astral.sh/ruff/rules/ends-in-period"
+    "url": "https://docs.astral.sh/ruff/rules/missing-trailing-period"
   },
   {
     "cell": null,
@@ -3457,7 +3441,7 @@
     },
     "message": "First line should end with a period, question mark, or exclamation point",
     "noqa_row": 124,
-    "url": "https://docs.astral.sh/ruff/rules/ends-in-punctuation"
+    "url": "https://docs.astral.sh/ruff/rules/missing-terminal-punctuation"
   },
   {
     "cell": null,
@@ -3490,7 +3474,7 @@
     },
     "message": "First line should end with a period",
     "noqa_row": 130,
-    "url": "https://docs.astral.sh/ruff/rules/ends-in-period"
+    "url": "https://docs.astral.sh/ruff/rules/missing-trailing-period"
   },
   {
     "cell": null,
@@ -3523,7 +3507,7 @@
     },
     "message": "First line should end with a period, question mark, or exclamation point",
     "noqa_row": 130,
-    "url": "https://docs.astral.sh/ruff/rules/ends-in-punctuation"
+    "url": "https://docs.astral.sh/ruff/rules/missing-terminal-punctuation"
   },
   {
     "cell": null,
@@ -3540,7 +3524,7 @@
     },
     "message": "1 blank line required between summary line and description",
     "noqa_row": 4,
-    "url": "https://docs.astral.sh/ruff/rules/blank-line-after-summary"
+    "url": "https://docs.astral.sh/ruff/rules/missing-blank-line-after-summary"
   },
   {
     "cell": null,
@@ -3606,7 +3590,7 @@
     },
     "message": "First line should end with a period",
     "noqa_row": 4,
-    "url": "https://docs.astral.sh/ruff/rules/ends-in-period"
+    "url": "https://docs.astral.sh/ruff/rules/missing-trailing-period"
   },
   {
     "cell": null,
@@ -3639,14 +3623,14 @@
     },
     "message": "First line should end with a period, question mark, or exclamation point",
     "noqa_row": 4,
-    "url": "https://docs.astral.sh/ruff/rules/ends-in-punctuation"
+    "url": "https://docs.astral.sh/ruff/rules/missing-terminal-punctuation"
   },
   {
     "cell": null,
     "code": "I001",
     "end_location": {
-      "column": 1,
-      "row": 12
+      "column": 30,
+      "row": 9
     },
     "filename": "/home/ahmeed/Documents/KSIU/GRAD/SOLO/TESTS/samples/comprehensive-issues/data_export.py",
     "fix": {
@@ -3904,7 +3888,7 @@
     },
     "message": "First line should end with a period",
     "noqa_row": 13,
-    "url": "https://docs.astral.sh/ruff/rules/ends-in-period"
+    "url": "https://docs.astral.sh/ruff/rules/missing-trailing-period"
   },
   {
     "cell": null,
@@ -3937,7 +3921,7 @@
     },
     "message": "First line should end with a period, question mark, or exclamation point",
     "noqa_row": 13,
-    "url": "https://docs.astral.sh/ruff/rules/ends-in-punctuation"
+    "url": "https://docs.astral.sh/ruff/rules/missing-terminal-punctuation"
   },
   {
     "cell": null,
@@ -3970,7 +3954,7 @@
     },
     "message": "One-line docstring should fit on one line",
     "noqa_row": 23,
-    "url": "https://docs.astral.sh/ruff/rules/fits-on-one-line"
+    "url": "https://docs.astral.sh/ruff/rules/unnecessary-multiline-docstring"
   },
   {
     "cell": null,
@@ -4036,7 +4020,7 @@
     },
     "message": "First line should end with a period",
     "noqa_row": 23,
-    "url": "https://docs.astral.sh/ruff/rules/ends-in-period"
+    "url": "https://docs.astral.sh/ruff/rules/missing-trailing-period"
   },
   {
     "cell": null,
@@ -4069,7 +4053,7 @@
     },
     "message": "First line should end with a period, question mark, or exclamation point",
     "noqa_row": 23,
-    "url": "https://docs.astral.sh/ruff/rules/ends-in-punctuation"
+    "url": "https://docs.astral.sh/ruff/rules/missing-terminal-punctuation"
   },
   {
     "cell": null,
@@ -4135,7 +4119,7 @@
     },
     "message": "First line should end with a period",
     "noqa_row": 28,
-    "url": "https://docs.astral.sh/ruff/rules/ends-in-period"
+    "url": "https://docs.astral.sh/ruff/rules/missing-trailing-period"
   },
   {
     "cell": null,
@@ -4185,7 +4169,7 @@
     },
     "message": "First line should end with a period, question mark, or exclamation point",
     "noqa_row": 28,
-    "url": "https://docs.astral.sh/ruff/rules/ends-in-punctuation"
+    "url": "https://docs.astral.sh/ruff/rules/missing-terminal-punctuation"
   },
   {
     "cell": null,
@@ -4317,7 +4301,7 @@
     },
     "message": "One-line docstring should fit on one line",
     "noqa_row": 42,
-    "url": "https://docs.astral.sh/ruff/rules/fits-on-one-line"
+    "url": "https://docs.astral.sh/ruff/rules/unnecessary-multiline-docstring"
   },
   {
     "cell": null,
@@ -4350,7 +4334,7 @@
     },
     "message": "1 blank line required after class docstring",
     "noqa_row": 42,
-    "url": "https://docs.astral.sh/ruff/rules/one-blank-line-after-class"
+    "url": "https://docs.astral.sh/ruff/rules/incorrect-blank-line-after-class"
   },
   {
     "cell": null,
@@ -4416,7 +4400,7 @@
     },
     "message": "First line should end with a period",
     "noqa_row": 42,
-    "url": "https://docs.astral.sh/ruff/rules/ends-in-period"
+    "url": "https://docs.astral.sh/ruff/rules/missing-trailing-period"
   },
   {
     "cell": null,
@@ -4449,7 +4433,7 @@
     },
     "message": "First line should end with a period, question mark, or exclamation point",
     "noqa_row": 42,
-    "url": "https://docs.astral.sh/ruff/rules/ends-in-punctuation"
+    "url": "https://docs.astral.sh/ruff/rules/missing-terminal-punctuation"
   },
   {
     "cell": null,
@@ -4516,7 +4500,7 @@
     },
     "message": "One-line docstring should fit on one line",
     "noqa_row": 53,
-    "url": "https://docs.astral.sh/ruff/rules/fits-on-one-line"
+    "url": "https://docs.astral.sh/ruff/rules/unnecessary-multiline-docstring"
   },
   {
     "cell": null,
@@ -4582,7 +4566,7 @@
     },
     "message": "First line should end with a period",
     "noqa_row": 53,
-    "url": "https://docs.astral.sh/ruff/rules/ends-in-period"
+    "url": "https://docs.astral.sh/ruff/rules/missing-trailing-period"
   },
   {
     "cell": null,
@@ -4615,7 +4599,7 @@
     },
     "message": "First line should end with a period, question mark, or exclamation point",
     "noqa_row": 53,
-    "url": "https://docs.astral.sh/ruff/rules/ends-in-punctuation"
+    "url": "https://docs.astral.sh/ruff/rules/missing-terminal-punctuation"
   },
   {
     "cell": null,
@@ -4665,7 +4649,7 @@
     },
     "message": "1 blank line required between summary line and description",
     "noqa_row": 4,
-    "url": "https://docs.astral.sh/ruff/rules/blank-line-after-summary"
+    "url": "https://docs.astral.sh/ruff/rules/missing-blank-line-after-summary"
   },
   {
     "cell": null,
@@ -4731,7 +4715,7 @@
     },
     "message": "First line should end with a period",
     "noqa_row": 4,
-    "url": "https://docs.astral.sh/ruff/rules/ends-in-period"
+    "url": "https://docs.astral.sh/ruff/rules/missing-trailing-period"
   },
   {
     "cell": null,
@@ -4764,7 +4748,7 @@
     },
     "message": "First line should end with a period, question mark, or exclamation point",
     "noqa_row": 4,
-    "url": "https://docs.astral.sh/ruff/rules/ends-in-punctuation"
+    "url": "https://docs.astral.sh/ruff/rules/missing-terminal-punctuation"
   },
   {
     "cell": null,
@@ -4781,7 +4765,7 @@
     },
     "message": "1 blank line required between summary line and description",
     "noqa_row": 12,
-    "url": "https://docs.astral.sh/ruff/rules/blank-line-after-summary"
+    "url": "https://docs.astral.sh/ruff/rules/missing-blank-line-after-summary"
   },
   {
     "cell": null,
@@ -4847,7 +4831,7 @@
     },
     "message": "First line should end with a period",
     "noqa_row": 12,
-    "url": "https://docs.astral.sh/ruff/rules/ends-in-period"
+    "url": "https://docs.astral.sh/ruff/rules/missing-trailing-period"
   },
   {
     "cell": null,
@@ -4880,7 +4864,7 @@
     },
     "message": "First line should end with a period, question mark, or exclamation point",
     "noqa_row": 12,
-    "url": "https://docs.astral.sh/ruff/rules/ends-in-punctuation"
+    "url": "https://docs.astral.sh/ruff/rules/missing-terminal-punctuation"
   },
   {
     "cell": null,
@@ -4913,7 +4897,7 @@
     },
     "message": "One-line docstring should fit on one line",
     "noqa_row": 26,
-    "url": "https://docs.astral.sh/ruff/rules/fits-on-one-line"
+    "url": "https://docs.astral.sh/ruff/rules/unnecessary-multiline-docstring"
   },
   {
     "cell": null,
@@ -4979,7 +4963,7 @@
     },
     "message": "First line should end with a period",
     "noqa_row": 26,
-    "url": "https://docs.astral.sh/ruff/rules/ends-in-period"
+    "url": "https://docs.astral.sh/ruff/rules/missing-trailing-period"
   },
   {
     "cell": null,
@@ -5012,7 +4996,7 @@
     },
     "message": "First line should end with a period, question mark, or exclamation point",
     "noqa_row": 26,
-    "url": "https://docs.astral.sh/ruff/rules/ends-in-punctuation"
+    "url": "https://docs.astral.sh/ruff/rules/missing-terminal-punctuation"
   },
   {
     "cell": null,
@@ -5045,7 +5029,7 @@
     },
     "message": "One-line docstring should fit on one line",
     "noqa_row": 36,
-    "url": "https://docs.astral.sh/ruff/rules/fits-on-one-line"
+    "url": "https://docs.astral.sh/ruff/rules/unnecessary-multiline-docstring"
   },
   {
     "cell": null,
@@ -5111,7 +5095,7 @@
     },
     "message": "First line should end with a period",
     "noqa_row": 36,
-    "url": "https://docs.astral.sh/ruff/rules/ends-in-period"
+    "url": "https://docs.astral.sh/ruff/rules/missing-trailing-period"
   },
   {
     "cell": null,
@@ -5144,7 +5128,7 @@
     },
     "message": "First line should end with a period, question mark, or exclamation point",
     "noqa_row": 36,
-    "url": "https://docs.astral.sh/ruff/rules/ends-in-punctuation"
+    "url": "https://docs.astral.sh/ruff/rules/missing-terminal-punctuation"
   },
   {
     "cell": null,
@@ -5177,7 +5161,7 @@
     },
     "message": "One-line docstring should fit on one line",
     "noqa_row": 46,
-    "url": "https://docs.astral.sh/ruff/rules/fits-on-one-line"
+    "url": "https://docs.astral.sh/ruff/rules/unnecessary-multiline-docstring"
   },
   {
     "cell": null,
@@ -5243,7 +5227,7 @@
     },
     "message": "First line should end with a period",
     "noqa_row": 46,
-    "url": "https://docs.astral.sh/ruff/rules/ends-in-period"
+    "url": "https://docs.astral.sh/ruff/rules/missing-trailing-period"
   },
   {
     "cell": null,
@@ -5276,7 +5260,7 @@
     },
     "message": "First line should end with a period, question mark, or exclamation point",
     "noqa_row": 46,
-    "url": "https://docs.astral.sh/ruff/rules/ends-in-punctuation"
+    "url": "https://docs.astral.sh/ruff/rules/missing-terminal-punctuation"
   },
   {
     "cell": null,
@@ -5293,7 +5277,7 @@
     },
     "message": "1 blank line required between summary line and description",
     "noqa_row": 4,
-    "url": "https://docs.astral.sh/ruff/rules/blank-line-after-summary"
+    "url": "https://docs.astral.sh/ruff/rules/missing-blank-line-after-summary"
   },
   {
     "cell": null,
@@ -5359,7 +5343,7 @@
     },
     "message": "First line should end with a period",
     "noqa_row": 4,
-    "url": "https://docs.astral.sh/ruff/rules/ends-in-period"
+    "url": "https://docs.astral.sh/ruff/rules/missing-trailing-period"
   },
   {
     "cell": null,
@@ -5392,7 +5376,7 @@
     },
     "message": "First line should end with a period, question mark, or exclamation point",
     "noqa_row": 4,
-    "url": "https://docs.astral.sh/ruff/rules/ends-in-punctuation"
+    "url": "https://docs.astral.sh/ruff/rules/missing-terminal-punctuation"
   },
   {
     "cell": null,
@@ -5542,7 +5526,7 @@
     },
     "message": "1 blank line required between summary line and description",
     "noqa_row": 15,
-    "url": "https://docs.astral.sh/ruff/rules/blank-line-after-summary"
+    "url": "https://docs.astral.sh/ruff/rules/missing-blank-line-after-summary"
   },
   {
     "cell": null,
@@ -5608,7 +5592,7 @@
     },
     "message": "First line should end with a period",
     "noqa_row": 15,
-    "url": "https://docs.astral.sh/ruff/rules/ends-in-period"
+    "url": "https://docs.astral.sh/ruff/rules/missing-trailing-period"
   },
   {
     "cell": null,
@@ -5641,7 +5625,7 @@
     },
     "message": "First line should end with a period, question mark, or exclamation point",
     "noqa_row": 15,
-    "url": "https://docs.astral.sh/ruff/rules/ends-in-punctuation"
+    "url": "https://docs.astral.sh/ruff/rules/missing-terminal-punctuation"
   },
   {
     "cell": null,
@@ -5758,7 +5742,7 @@
     },
     "message": "First line should end with a period",
     "noqa_row": 33,
-    "url": "https://docs.astral.sh/ruff/rules/ends-in-period"
+    "url": "https://docs.astral.sh/ruff/rules/missing-trailing-period"
   },
   {
     "cell": null,
@@ -5791,7 +5775,7 @@
     },
     "message": "First line should end with a period, question mark, or exclamation point",
     "noqa_row": 33,
-    "url": "https://docs.astral.sh/ruff/rules/ends-in-punctuation"
+    "url": "https://docs.astral.sh/ruff/rules/missing-terminal-punctuation"
   },
   {
     "cell": null,
@@ -5841,7 +5825,7 @@
     },
     "message": "1 blank line required after class docstring",
     "noqa_row": 38,
-    "url": "https://docs.astral.sh/ruff/rules/one-blank-line-after-class"
+    "url": "https://docs.astral.sh/ruff/rules/incorrect-blank-line-after-class"
   },
   {
     "cell": null,
@@ -5874,7 +5858,7 @@
     },
     "message": "First line should end with a period",
     "noqa_row": 38,
-    "url": "https://docs.astral.sh/ruff/rules/ends-in-period"
+    "url": "https://docs.astral.sh/ruff/rules/missing-trailing-period"
   },
   {
     "cell": null,
@@ -5907,7 +5891,7 @@
     },
     "message": "First line should end with a period, question mark, or exclamation point",
     "noqa_row": 38,
-    "url": "https://docs.astral.sh/ruff/rules/ends-in-punctuation"
+    "url": "https://docs.astral.sh/ruff/rules/missing-terminal-punctuation"
   },
   {
     "cell": null,
@@ -5974,7 +5958,7 @@
     },
     "message": "First line should end with a period",
     "noqa_row": 46,
-    "url": "https://docs.astral.sh/ruff/rules/ends-in-period"
+    "url": "https://docs.astral.sh/ruff/rules/missing-trailing-period"
   },
   {
     "cell": null,
@@ -6024,7 +6008,7 @@
     },
     "message": "First line should end with a period, question mark, or exclamation point",
     "noqa_row": 46,
-    "url": "https://docs.astral.sh/ruff/rules/ends-in-punctuation"
+    "url": "https://docs.astral.sh/ruff/rules/missing-terminal-punctuation"
   },
   {
     "cell": null,
@@ -6041,7 +6025,7 @@
     },
     "message": "1 blank line required between summary line and description",
     "noqa_row": 4,
-    "url": "https://docs.astral.sh/ruff/rules/blank-line-after-summary"
+    "url": "https://docs.astral.sh/ruff/rules/missing-blank-line-after-summary"
   },
   {
     "cell": null,
@@ -6107,7 +6091,7 @@
     },
     "message": "First line should end with a period",
     "noqa_row": 4,
-    "url": "https://docs.astral.sh/ruff/rules/ends-in-period"
+    "url": "https://docs.astral.sh/ruff/rules/missing-trailing-period"
   },
   {
     "cell": null,
@@ -6140,7 +6124,7 @@
     },
     "message": "First line should end with a period, question mark, or exclamation point",
     "noqa_row": 4,
-    "url": "https://docs.astral.sh/ruff/rules/ends-in-punctuation"
+    "url": "https://docs.astral.sh/ruff/rules/missing-terminal-punctuation"
   },
   {
     "cell": null,
@@ -6173,7 +6157,7 @@
     },
     "message": "First line should end with a period",
     "noqa_row": 8,
-    "url": "https://docs.astral.sh/ruff/rules/ends-in-period"
+    "url": "https://docs.astral.sh/ruff/rules/missing-trailing-period"
   },
   {
     "cell": null,
@@ -6206,7 +6190,7 @@
     },
     "message": "First line should end with a period, question mark, or exclamation point",
     "noqa_row": 8,
-    "url": "https://docs.astral.sh/ruff/rules/ends-in-punctuation"
+    "url": "https://docs.astral.sh/ruff/rules/missing-terminal-punctuation"
   },
   {
     "cell": null,
@@ -6256,7 +6240,7 @@
     },
     "message": "One-line docstring should fit on one line",
     "noqa_row": 31,
-    "url": "https://docs.astral.sh/ruff/rules/fits-on-one-line"
+    "url": "https://docs.astral.sh/ruff/rules/unnecessary-multiline-docstring"
   },
   {
     "cell": null,
@@ -6322,7 +6306,7 @@
     },
     "message": "First line should end with a period",
     "noqa_row": 31,
-    "url": "https://docs.astral.sh/ruff/rules/ends-in-period"
+    "url": "https://docs.astral.sh/ruff/rules/missing-trailing-period"
   },
   {
     "cell": null,
@@ -6355,7 +6339,7 @@
     },
     "message": "First line should end with a period, question mark, or exclamation point",
     "noqa_row": 31,
-    "url": "https://docs.astral.sh/ruff/rules/ends-in-punctuation"
+    "url": "https://docs.astral.sh/ruff/rules/missing-terminal-punctuation"
   },
   {
     "cell": null,
@@ -6490,7 +6474,7 @@
     },
     "message": "One-line docstring should fit on one line",
     "noqa_row": 44,
-    "url": "https://docs.astral.sh/ruff/rules/fits-on-one-line"
+    "url": "https://docs.astral.sh/ruff/rules/unnecessary-multiline-docstring"
   },
   {
     "cell": null,
@@ -6556,7 +6540,7 @@
     },
     "message": "First line should end with a period",
     "noqa_row": 44,
-    "url": "https://docs.astral.sh/ruff/rules/ends-in-period"
+    "url": "https://docs.astral.sh/ruff/rules/missing-trailing-period"
   },
   {
     "cell": null,
@@ -6589,7 +6573,7 @@
     },
     "message": "First line should end with a period, question mark, or exclamation point",
     "noqa_row": 44,
-    "url": "https://docs.astral.sh/ruff/rules/ends-in-punctuation"
+    "url": "https://docs.astral.sh/ruff/rules/missing-terminal-punctuation"
   },
   {
     "cell": null,
@@ -6672,7 +6656,7 @@
     },
     "message": "1 blank line required between summary line and description",
     "noqa_row": 4,
-    "url": "https://docs.astral.sh/ruff/rules/blank-line-after-summary"
+    "url": "https://docs.astral.sh/ruff/rules/missing-blank-line-after-summary"
   },
   {
     "cell": null,
@@ -6738,7 +6722,7 @@
     },
     "message": "First line should end with a period",
     "noqa_row": 4,
-    "url": "https://docs.astral.sh/ruff/rules/ends-in-period"
+    "url": "https://docs.astral.sh/ruff/rules/missing-trailing-period"
   },
   {
     "cell": null,
@@ -6771,14 +6755,14 @@
     },
     "message": "First line should end with a period, question mark, or exclamation point",
     "noqa_row": 4,
-    "url": "https://docs.astral.sh/ruff/rules/ends-in-punctuation"
+    "url": "https://docs.astral.sh/ruff/rules/missing-terminal-punctuation"
   },
   {
     "cell": null,
     "code": "I001",
     "end_location": {
-      "column": 1,
-      "row": 9
+      "column": 12,
+      "row": 7
     },
     "filename": "/home/ahmeed/Documents/KSIU/GRAD/SOLO/TESTS/samples/comprehensive-issues/style_violations.py",
     "fix": {
@@ -7190,7 +7174,7 @@
     },
     "message": "1 blank line required between summary line and description",
     "noqa_row": 4,
-    "url": "https://docs.astral.sh/ruff/rules/blank-line-after-summary"
+    "url": "https://docs.astral.sh/ruff/rules/missing-blank-line-after-summary"
   },
   {
     "cell": null,
@@ -7256,7 +7240,7 @@
     },
     "message": "First line should end with a period",
     "noqa_row": 4,
-    "url": "https://docs.astral.sh/ruff/rules/ends-in-period"
+    "url": "https://docs.astral.sh/ruff/rules/missing-trailing-period"
   },
   {
     "cell": null,
@@ -7289,7 +7273,7 @@
     },
     "message": "First line should end with a period, question mark, or exclamation point",
     "noqa_row": 4,
-    "url": "https://docs.astral.sh/ruff/rules/ends-in-punctuation"
+    "url": "https://docs.astral.sh/ruff/rules/missing-terminal-punctuation"
   },
   {
     "cell": null,
@@ -7322,7 +7306,7 @@
     },
     "message": "One-line docstring should fit on one line",
     "noqa_row": 10,
-    "url": "https://docs.astral.sh/ruff/rules/fits-on-one-line"
+    "url": "https://docs.astral.sh/ruff/rules/unnecessary-multiline-docstring"
   },
   {
     "cell": null,
@@ -7388,7 +7372,7 @@
     },
     "message": "First line should end with a period",
     "noqa_row": 10,
-    "url": "https://docs.astral.sh/ruff/rules/ends-in-period"
+    "url": "https://docs.astral.sh/ruff/rules/missing-trailing-period"
   },
   {
     "cell": null,
@@ -7421,7 +7405,7 @@
     },
     "message": "First line should end with a period, question mark, or exclamation point",
     "noqa_row": 10,
-    "url": "https://docs.astral.sh/ruff/rules/ends-in-punctuation"
+    "url": "https://docs.astral.sh/ruff/rules/missing-terminal-punctuation"
   },
   {
     "cell": null,
@@ -7471,7 +7455,7 @@
     },
     "message": "One-line docstring should fit on one line",
     "noqa_row": 33,
-    "url": "https://docs.astral.sh/ruff/rules/fits-on-one-line"
+    "url": "https://docs.astral.sh/ruff/rules/unnecessary-multiline-docstring"
   },
   {
     "cell": null,
@@ -7537,7 +7521,7 @@
     },
     "message": "First line should end with a period",
     "noqa_row": 33,
-    "url": "https://docs.astral.sh/ruff/rules/ends-in-period"
+    "url": "https://docs.astral.sh/ruff/rules/missing-trailing-period"
   },
   {
     "cell": null,
@@ -7570,7 +7554,7 @@
     },
     "message": "First line should end with a period, question mark, or exclamation point",
     "noqa_row": 33,
-    "url": "https://docs.astral.sh/ruff/rules/ends-in-punctuation"
+    "url": "https://docs.astral.sh/ruff/rules/missing-terminal-punctuation"
   },
   {
     "cell": null,
@@ -7654,7 +7638,7 @@
     },
     "message": "One-line docstring should fit on one line",
     "noqa_row": 48,
-    "url": "https://docs.astral.sh/ruff/rules/fits-on-one-line"
+    "url": "https://docs.astral.sh/ruff/rules/unnecessary-multiline-docstring"
   },
   {
     "cell": null,
@@ -7720,7 +7704,7 @@
     },
     "message": "First line should end with a period",
     "noqa_row": 48,
-    "url": "https://docs.astral.sh/ruff/rules/ends-in-period"
+    "url": "https://docs.astral.sh/ruff/rules/missing-trailing-period"
   },
   {
     "cell": null,
@@ -7753,6 +7737,6 @@
     },
     "message": "First line should end with a period, question mark, or exclamation point",
     "noqa_row": 48,
-    "url": "https://docs.astral.sh/ruff/rules/ends-in-punctuation"
+    "url": "https://docs.astral.sh/ruff/rules/missing-terminal-punctuation"
   }
 ]

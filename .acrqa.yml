@@ -1,0 +1,42 @@
+# ACR-QA Configuration
+# Place this file in your project root to customize analysis.
+
+version: "1.0"
+
+rules:
+  enabled: true
+  # Disable specific rules:
+  disabled_rules: []
+  #   - IMPORT-001
+  #   - VAR-001
+  
+  # Override severity for specific rules:
+  severity_overrides: {}
+  #   SECURITY-001: high
+  #   STYLE-001: low
+
+analysis:
+  max_file_size_kb: 500
+  ignore_paths:
+    - __pycache__
+    - .venv
+    - node_modules
+    - .git
+    - htmlcov
+    - "*.pyc"
+  file_extensions:
+    - .py
+
+autofix:
+  enabled: true
+  auto_apply_confidence: 80  # Only auto-apply fixes >= 80% confidence
+
+reporting:
+  min_severity: low  # low, medium, or high
+  include_explanations: true
+  max_findings: 500
+
+ai:
+  enabled: true
+  max_explanations: 50
+  model: llama-3.1-8b-instant
