@@ -30,17 +30,28 @@ RUN pip install --no-cache-dir -r requirements.txt
 # Install Python analysis tools
 RUN pip install --no-cache-dir ruff semgrep vulture radon bandit
 
+# Create non-root user for security
+RUN groupadd -r acrqa && useradd -r -g acrqa -d /app -s /sbin/nologin acrqa
+
 # Copy application code
 COPY . .
+
+# Create output directories with correct structure
+RUN mkdir -p DATA/outputs DATA/provenance DATA/reports \
+    && chown -R acrqa:acrqa /app
 
 # Make scripts executable
 RUN chmod +x TOOLS/*.sh scripts/*.py 2>/dev/null || true
 
-# Create output directories with correct structure
-RUN mkdir -p DATA/outputs DATA/provenance DATA/reports
+# Switch to non-root user
+USER acrqa
 
 # Expose port for Flask API
 EXPOSE 5000
+
+# Health check — verifies Flask API is responding
+HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
+    CMD curl -f http://localhost:5000/api/health || exit 1
 
 # Default command (can be overridden in docker-compose)
 CMD ["python3", "FRONTEND/app.py"]

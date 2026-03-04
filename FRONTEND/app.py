@@ -275,7 +275,9 @@ def refresh_findings():
 @app.route("/api/health")
 def health_check():
     """Health check endpoint for cloud deployment"""
-    return jsonify({"status": "healthy", "version": "2.0"})
+    from CORE import __version__
+
+    return jsonify({"status": "healthy", "version": __version__})
 
 
 @app.route("/api/analyze", methods=["POST"])
