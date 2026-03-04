@@ -2,6 +2,7 @@
 Data Export Module with Dead Code
 Triggers: DEAD-001, VAR-001, IMPORT-001
 """
+
 import os  # IMPORT-001: Never used
 import sys  # IMPORT-001: Never used
 import json
@@ -26,13 +27,13 @@ def unused_export_function(data):
 
 def format_user_data(user: Dict):
     """Function with unused variables"""
-    user_id = user['id']  # Used
-    username = user['name']  # Used
-    
-    created_at = user.get('created_at')  # VAR-001: Never used
-    last_login = user.get('last_login')  # VAR-001: Never used
-    email_verified = user.get('email_verified', False)  # VAR-001: Never used
-    
+    user_id = user["id"]  # Used
+    username = user["name"]  # Used
+
+    created_at = user.get("created_at")  # VAR-001: Never used
+    last_login = user.get("last_login")  # VAR-001: Never used
+    email_verified = user.get("email_verified", False)  # VAR-001: Never used
+
     return f"{user_id}: {username}"
 
 
@@ -40,9 +41,10 @@ class UnusedExporter:
     """
     DEAD-001: This class is never instantiated
     """
+
     def __init__(self):
-        self.format = 'json'
-    
+        self.format = "json"
+
     def export(self, data):
         return json.dumps(data)
 

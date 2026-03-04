@@ -14,6 +14,7 @@ from typing import List, Dict, Optional
 # SECURITY ISSUES (Should trigger 10+ security findings)
 # ===========================================================
 
+
 # SECURITY-001: Dangerous eval()
 def process_user_expression(user_input: str):
     """SECURITY-001: eval() with user input is dangerous"""
@@ -46,7 +47,7 @@ DATABASE_PASSWORD = "admin123"  # EXPOSED PASSWORD!
 SECRET_TOKEN = "ghp_xxxxxxxxxxxx"  # GITHUB TOKEN!
 
 
-# INPUT-001: Missing input validation  
+# INPUT-001: Missing input validation
 def set_user_age(user, age):
     """INPUT-001: No validation on user input"""
     user.age = age  # What if age is -5 or 999?
@@ -54,6 +55,8 @@ def set_user_age(user, age):
 
 # LOG-001: Logging sensitive data
 import logging
+
+
 def log_user_login(username, password):
     """LOG-001: Logging passwords is dangerous"""
     logging.info(f"User {username} logged in with password {password}")  # BAD!
@@ -62,6 +65,7 @@ def log_user_login(username, password):
 # ===========================================================
 # BEST PRACTICE ISSUES
 # ===========================================================
+
 
 # PATTERN-001: Mutable default argument
 def append_to_list(item, items=[]):
@@ -91,7 +95,7 @@ def silent_failure():
 # RESOURCE-001: File not closed
 def read_config():
     """RESOURCE-001: File opened without context manager"""
-    f = open('config.txt')  # Not closed if exception!
+    f = open("config.txt")  # Not closed if exception!
     data = f.read()
     return data
 
@@ -107,9 +111,22 @@ async def fetch_data():
 # DESIGN ISSUES
 # ===========================================================
 
+
 # SOLID-001: Too many parameters
-def create_user(name, email, phone, address, city, country, postal_code,
-                company, job_title, department, manager, start_date):
+def create_user(
+    name,
+    email,
+    phone,
+    address,
+    city,
+    country,
+    postal_code,
+    company,
+    job_title,
+    department,
+    manager,
+    start_date,
+):
     """SOLID-001: Way too many parameters (12)"""
     print(f"Creating user {name}")
 
@@ -146,6 +163,8 @@ def complex_validation(data):
 
 # GLOBAL-001: Global variable modification
 counter = 0
+
+
 def increment_counter():
     """GLOBAL-001: Modifying global state"""
     global counter
@@ -155,6 +174,7 @@ def increment_counter():
 # ===========================================================
 # PERFORMANCE ISSUES
 # ===========================================================
+
 
 # PERF-001: Inefficient loop
 def process_items(items):
@@ -178,6 +198,8 @@ def build_message(names: List[str]) -> str:
 
 # THREAD-001: Race condition
 shared_counter = 0
+
+
 def unsafe_increment():
     """THREAD-001: No lock on shared state"""
     global shared_counter
@@ -187,6 +209,7 @@ def unsafe_increment():
 # ===========================================================
 # STYLE ISSUES (for completeness)
 # ===========================================================
+
 
 # NAMING-001: Bad variable names
 def calculate(x, y, z, a, b, c):
@@ -216,6 +239,7 @@ def debug_function(data):
 # DEAD CODE / UNUSED (for vulture)
 # ===========================================================
 
+
 def unused_helper():
     """This function is never called anywhere"""
     pass
@@ -226,7 +250,17 @@ another_unused = "never used"
 
 
 # Helper stubs for the examples above
-def do_something(): pass
-def risky_call(): pass
-async def async_api_call(): pass
-def process(x): return x
+def do_something():
+    pass
+
+
+def risky_call():
+    pass
+
+
+async def async_api_call():
+    pass
+
+
+def process(x):
+    return x

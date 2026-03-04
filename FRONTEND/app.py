@@ -78,81 +78,86 @@ def get_runs():
 def get_run_findings(run_id):
     """Get findings for a specific run with filters"""
     try:
-        severity = request.args.get('severity')
-        category = request.args.get('category')
-        search = request.args.get('search', '').lower()
-        group_by = request.args.get('group_by')  # New: 'rule' for grouping
-        
+        severity = request.args.get("severity")
+        category = request.args.get("category")
+        search = request.args.get("search", "").lower()
+        group_by = request.args.get("group_by")  # New: 'rule' for grouping
+
         # Get findings
         findings = db.get_findings_with_explanations(run_id)
-        
+
         # Apply filters
         filtered = []
         for f in findings:
             # Severity filter
-            if severity and f.get('canonical_severity') != severity:
+            if severity and f.get("canonical_severity") != severity:
                 continue
-            
+
             # Category filter
-            if category and f.get('category') != category:
+            if category and f.get("category") != category:
                 continue
-            
+
             # Search filter
             if search:
                 searchable = f"{f.get('file_path', '')} {f.get('message', '')} {f.get('canonical_rule_id', '')}".lower()
                 if search not in searchable:
                     continue
-            
-            filtered.append({
-                'id': f['id'],
-                'rule_id': f.get('canonical_rule_id', f.get('rule_id')),
-                'severity': f.get('canonical_severity', 'low'),
-                'category': f.get('category'),
-                'file_path': f.get('file_path'),
-                'line_number': f.get('line_number'),
-                'message': f.get('message'),
-                'explanation_text': f.get('explanation_text'),
-                'model_name': f.get('model_name'),
-                'latency_ms': f.get('latency_ms'),
-                'tool': f.get('tool'),
-                # LOW Priority: Display confidence score (calculated based on rule citation)
-                'confidence': 0.9 if f.get('explanation_text') and f.get('canonical_rule_id', '') in str(f.get('explanation_text', '')) else 0.6,
-                'ground_truth': f.get('ground_truth')  # For Phase 2 evaluation
-            })
-        
+
+            filtered.append(
+                {
+                    "id": f["id"],
+                    "rule_id": f.get("canonical_rule_id", f.get("rule_id")),
+                    "severity": f.get("canonical_severity", "low"),
+                    "category": f.get("category"),
+                    "file_path": f.get("file_path"),
+                    "line_number": f.get("line_number"),
+                    "message": f.get("message"),
+                    "explanation_text": f.get("explanation_text"),
+                    "model_name": f.get("model_name"),
+                    "latency_ms": f.get("latency_ms"),
+                    "tool": f.get("tool"),
+                    # LOW Priority: Display confidence score (calculated based on rule citation)
+                    "confidence": 0.9
+                    if f.get("explanation_text")
+                    and f.get("canonical_rule_id", "")
+                    in str(f.get("explanation_text", ""))
+                    else 0.6,
+                    "ground_truth": f.get("ground_truth"),  # For Phase 2 evaluation
+                }
+            )
+
         # Polish: Group by rule if requested
-        if group_by == 'rule':
+        if group_by == "rule":
             grouped = {}
             for f in filtered:
-                rule_id = f['rule_id']
+                rule_id = f["rule_id"]
                 if rule_id not in grouped:
                     grouped[rule_id] = {
-                        'rule_id': rule_id,
-                        'count': 0,
-                        'severity': f['severity'],
-                        'category': f['category'],
-                        'findings': []
+                        "rule_id": rule_id,
+                        "count": 0,
+                        "severity": f["severity"],
+                        "category": f["category"],
+                        "findings": [],
                     }
-                grouped[rule_id]['count'] += 1
-                grouped[rule_id]['findings'].append(f)
-            
-            return jsonify({
-                'success': True,
-                'grouped': True,
-                'groups': list(grouped.values()),
-                'total': len(filtered)
-            })
-        
-        return jsonify({
-            'success': True,
-            'findings': filtered,
-            'total': len(filtered)
-        })
+                grouped[rule_id]["count"] += 1
+                grouped[rule_id]["findings"].append(f)
+
+            return jsonify(
+                {
+                    "success": True,
+                    "grouped": True,
+                    "groups": list(grouped.values()),
+                    "total": len(filtered),
+                }
+            )
+
+        return jsonify({"success": True, "findings": filtered, "total": len(filtered)})
     except Exception as e:
         print(f"Error in /api/runs/{run_id}/findings: {e}")
         import traceback
+
         traceback.print_exc()
-        return jsonify({'success': False, 'error': str(e)}), 500
+        return jsonify({"success": False, "error": str(e)}), 500
 
 
 @app.route("/api/runs/<int:run_id>/stats")
@@ -201,72 +206,78 @@ def get_categories():
         return jsonify({"success": False, "error": str(e)}), 500
 
 
-
 @app.route("/api/refresh-findings", methods=["POST"])
 def refresh_findings():
     """
     Quick Refresh: Re-run detection tools and update database
     WITHOUT generating AI explanations (fast refresh for development)
-    
+
     This solves the synchronization issue where tool outputs are updated
     but the database still has old data.
     """
     import subprocess
     import json as json_module
     from pathlib import Path as PathLib
-    
+
     try:
         # Get parameters
         data = request.get_json() or {}
         target_dir = data.get("target_dir", "TESTS/samples/comprehensive-issues")
         repo_name = data.get("repo_name", "quick-refresh")
-        skip_detection = data.get("skip_detection", False)  # Re-use existing tool outputs
-        
+        skip_detection = data.get(
+            "skip_detection", False
+        )  # Re-use existing tool outputs
+
         project_root = PathLib(__file__).parent.parent
-        
+
         # Step 1: Run detection tools (unless skipped)
         if not skip_detection:
             subprocess.run(
                 ["bash", "TOOLS/run_checks.sh", target_dir],
                 cwd=str(project_root),
                 check=True,
-                capture_output=True
+                capture_output=True,
             )
-        
+
         # Step 2: Normalize findings
         from CORE.engines.normalizer import normalize_all
+
         findings = normalize_all(project_root / "DATA" / "outputs")
-        
+
         # Step 3: Create a new run in database
         run_id = db.create_analysis_run(repo_name=repo_name)
-        
+
         # Step 4: Insert findings into database (without explanations)
         for finding in findings:
             finding_dict = finding.to_dict()
             db.insert_finding(run_id, finding_dict)
-        
+
         # Step 5: Mark run as complete
         db.complete_analysis_run(run_id, len(findings))
-        
+
         # Save findings.json for reference
         with open(project_root / "DATA" / "outputs" / "findings.json", "w") as f:
             json_module.dump([f.to_dict() for f in findings], f, indent=2)
-        
+
         # Category breakdown
         from collections import Counter
+
         cats = Counter(f.category for f in findings)
-        
-        return jsonify({
-            "success": True,
-            "run_id": run_id,
-            "total_findings": len(findings),
-            "categories": dict(cats),
-            "message": f"Quick refresh complete! {len(findings)} findings stored in database.",
-            "note": "No AI explanations generated (use main.py for full analysis)"
-        })
-        
+
+        return jsonify(
+            {
+                "success": True,
+                "run_id": run_id,
+                "total_findings": len(findings),
+                "categories": dict(cats),
+                "message": f"Quick refresh complete! {len(findings)} findings stored in database.",
+                "note": "No AI explanations generated (use main.py for full analysis)",
+            }
+        )
+
     except Exception as e:
         import traceback
+
         traceback.print_exc()
         return jsonify({"success": False, "error": str(e)}), 500
 
@@ -275,7 +286,6 @@ def refresh_findings():
 def health_check():
     """Health check endpoint for cloud deployment"""
     return jsonify({"status": "healthy", "version": "2.0"})
-
 
 
 @app.route("/api/analyze", methods=["POST"])
@@ -287,72 +297,83 @@ def analyze_single_file():
     import tempfile
     import subprocess
     import json as json_module
-    
+
     try:
         data = request.get_json()
         content = data.get("content", "")
         filename = data.get("filename", "temp.py")
-        
+
         if not content:
             return jsonify({"success": False, "error": "No content provided"}), 400
-        
+
         # Create temp file with content
-        with tempfile.NamedTemporaryFile(mode='w', suffix='.py', delete=False) as f:
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".py", delete=False) as f:
             f.write(content)
             temp_path = f.name
-        
+
         findings = []
-        
+
         try:
             # Run Ruff (fast linter)
             result = subprocess.run(
                 ["ruff", "check", temp_path, "--output-format=json"],
-                capture_output=True, text=True
+                capture_output=True,
+                text=True,
             )
             if result.stdout:
                 ruff_findings = json_module.loads(result.stdout)
                 for finding in ruff_findings:
-                    findings.append({
-                        "line": finding.get("location", {}).get("row", 1),
-                        "column": finding.get("location", {}).get("column", 1),
-                        "rule_id": finding.get("code", "UNKNOWN"),
-                        "severity": "medium" if finding.get("code", "").startswith("E") else "low",
-                        "message": finding.get("message", ""),
-                        "tool": "ruff"
-                    })
-            
+                    findings.append(
+                        {
+                            "line": finding.get("location", {}).get("row", 1),
+                            "column": finding.get("location", {}).get("column", 1),
+                            "rule_id": finding.get("code", "UNKNOWN"),
+                            "severity": "medium"
+                            if finding.get("code", "").startswith("E")
+                            else "low",
+                            "message": finding.get("message", ""),
+                            "tool": "ruff",
+                        }
+                    )
+
             # Run Vulture (unused code detection)
             result = subprocess.run(
                 ["vulture", temp_path, "--min-confidence", "80"],
-                capture_output=True, text=True
+                capture_output=True,
+                text=True,
             )
-            for line in result.stdout.strip().split('\n'):
-                if line and ':' in line:
-                    parts = line.split(':')
+            for line in result.stdout.strip().split("\n"):
+                if line and ":" in line:
+                    parts = line.split(":")
                     if len(parts) >= 3:
-                        findings.append({
-                            "line": int(parts[1]) if parts[1].isdigit() else 1,
-                            "column": 1,
-                            "rule_id": "DEAD-001",
-                            "severity": "low",
-                            "message": ':'.join(parts[2:]).strip(),
-                            "tool": "vulture"
-                        })
-            
+                        findings.append(
+                            {
+                                "line": int(parts[1]) if parts[1].isdigit() else 1,
+                                "column": 1,
+                                "rule_id": "DEAD-001",
+                                "severity": "low",
+                                "message": ":".join(parts[2:]).strip(),
+                                "tool": "vulture",
+                            }
+                        )
+
         finally:
             # Clean up temp file
             os.unlink(temp_path)
-        
-        return jsonify({
-            "success": True,
-            "filename": filename,
-            "findings": findings,
-            "total": len(findings)
-        })
-        
+
+        return jsonify(
+            {
+                "success": True,
+                "filename": filename,
+                "findings": findings,
+                "total": len(findings),
+            }
+        )
+
     except Exception as e:
         print(f"Error in /api/analyze: {e}")
         import traceback
+
         traceback.print_exc()
         return jsonify({"success": False, "error": str(e)}), 500
 
@@ -365,12 +386,12 @@ def quick_stats():
     """
     try:
         runs = db.get_recent_runs(limit=10)
-        
+
         total_findings = 0
         total_high = 0
         total_medium = 0
         total_low = 0
-        
+
         for run in runs:
             summary = db.get_run_summary(run["id"])
             if summary:
@@ -378,18 +399,22 @@ def quick_stats():
                 total_high += summary.get("high_severity_count", 0)
                 total_medium += summary.get("medium_severity_count", 0)
                 total_low += summary.get("low_severity_count", 0)
-        
-        return jsonify({
-            "success": True,
-            "stats": {
-                "total_runs": len(runs),
-                "total_findings": total_findings,
-                "high_severity": total_high,
-                "medium_severity": total_medium,
-                "low_severity": total_low,
-                "avg_findings_per_run": round(total_findings / len(runs), 1) if runs else 0
+
+        return jsonify(
+            {
+                "success": True,
+                "stats": {
+                    "total_runs": len(runs),
+                    "total_findings": total_findings,
+                    "high_severity": total_high,
+                    "medium_severity": total_medium,
+                    "low_severity": total_low,
+                    "avg_findings_per_run": round(total_findings / len(runs), 1)
+                    if runs
+                    else 0,
+                },
             }
-        })
+        )
     except Exception as e:
         return jsonify({"success": False, "error": str(e)}), 500
 
@@ -402,22 +427,22 @@ def get_pr_summary(run_id):
     """
     try:
         from collections import Counter
-        
+
         runs = db.get_recent_runs(limit=100)
-        run = next((r for r in runs if r['id'] == run_id), None)
-        
+        run = next((r for r in runs if r["id"] == run_id), None)
+
         if not run:
             return jsonify({"success": False, "error": "Run not found"}), 404
-        
+
         findings = db.get_findings(run_id)
-        
+
         # Calculate stats
-        severity_counts = Counter(f.get('severity', 'low') for f in findings)
-        category_counts = Counter(f.get('category', 'unknown') for f in findings)
-        
+        severity_counts = Counter(f.get("severity", "low") for f in findings)
+        category_counts = Counter(f.get("category", "unknown") for f in findings)
+
         # Critical findings
-        critical = [f for f in findings if f.get('severity') in ('high', 'critical')]
-        
+        critical = [f for f in findings if f.get("severity") in ("high", "critical")]
+
         summary_md = f"""## 📊 ACR-QA Analysis Summary
 
 **Total Issues:** {len(findings)}  
@@ -429,23 +454,26 @@ def get_pr_summary(run_id):
 """
         for cat, count in category_counts.most_common(3):
             summary_md += f"- **{cat}**: {count}\n"
-        
+
         if critical:
             summary_md += f"\n### 🚨 Critical Issues ({len(critical)})\n"
             for f in critical[:3]:
                 summary_md += f"- {f.get('canonical_rule_id', 'UNKNOWN')}: {f.get('message', '')[:60]}\n"
-        
-        return jsonify({
-            "success": True,
-            "run_id": run_id,
-            "summary_markdown": summary_md,
-            "stats": {
-                "total": len(findings),
-                "high": severity_counts.get('high', 0) + severity_counts.get('critical', 0),
-                "medium": severity_counts.get('medium', 0),
-                "low": severity_counts.get('low', 0)
+
+        return jsonify(
+            {
+                "success": True,
+                "run_id": run_id,
+                "summary_markdown": summary_md,
+                "stats": {
+                    "total": len(findings),
+                    "high": severity_counts.get("high", 0)
+                    + severity_counts.get("critical", 0),
+                    "medium": severity_counts.get("medium", 0),
+                    "low": severity_counts.get("low", 0),
+                },
             }
-        })
+        )
     except Exception as e:
         return jsonify({"success": False, "error": str(e)}), 500
 
@@ -459,42 +487,49 @@ def get_fix_confidence(rule_id):
     # High confidence rules (well-tested fixes)
     high_confidence = {
         "IMPORT-001": 95,  # Remove unused import
-        "VAR-001": 90,     # Prefix with underscore
-        "BOOL-001": 95,    # Simplify boolean
-        "F401": 95,        # Ruff unused import
-        "F841": 85,        # Ruff unused variable
+        "VAR-001": 90,  # Prefix with underscore
+        "BOOL-001": 95,  # Simplify boolean
+        "F401": 95,  # Ruff unused import
+        "F841": 85,  # Ruff unused variable
     }
-    
+
     # Medium confidence (usually works)
     medium_confidence = {
         "PATTERN-001": 75,  # Mutable default
-        "STYLE-001": 80,    # Line too long
-        "E501": 80,         # Ruff line length
+        "STYLE-001": 80,  # Line too long
+        "E501": 80,  # Ruff line length
     }
-    
+
     # Low confidence (needs review)
     low_confidence = {
         "SECURITY-001": 40,  # eval() - needs context
         "COMPLEXITY-001": 30,  # Refactoring needed
         "DUP-001": 25,  # Duplication - needs judgment
     }
-    
-    confidence = high_confidence.get(rule_id) or \
-                 medium_confidence.get(rule_id) or \
-                 low_confidence.get(rule_id) or 50
-    
+
+    confidence = (
+        high_confidence.get(rule_id)
+        or medium_confidence.get(rule_id)
+        or low_confidence.get(rule_id)
+        or 50
+    )
+
     level = "high" if confidence >= 80 else "medium" if confidence >= 60 else "low"
-    
-    return jsonify({
-        "success": True,
-        "rule_id": rule_id,
-        "confidence": confidence,
-        "level": level,
-        "auto_fixable": confidence >= 70,
-        "recommendation": "Safe to auto-apply" if confidence >= 80 else 
-                         "Review recommended" if confidence >= 60 else
-                         "Manual fix recommended"
-    })
+
+    return jsonify(
+        {
+            "success": True,
+            "rule_id": rule_id,
+            "confidence": confidence,
+            "level": level,
+            "auto_fixable": confidence >= 70,
+            "recommendation": "Safe to auto-apply"
+            if confidence >= 80
+            else "Review recommended"
+            if confidence >= 60
+            else "Manual fix recommended",
+        }
+    )
 
 
 @app.route("/api/trends")
@@ -506,37 +541,44 @@ def get_trends():
     try:
         limit = request.args.get("limit", 30, type=int)
         trend_data = db.get_trend_data(limit=limit)
-        
+
         # Format for charting
         labels = []
         severity_series = {"high": [], "medium": [], "low": []}
-        category_series = {"security": [], "style": [], "complexity": [], "performance": []}
+        category_series = {
+            "security": [],
+            "style": [],
+            "complexity": [],
+            "performance": [],
+        }
         total_series = []
-        
+
         for row in reversed(trend_data):  # Chronological order
             created = row.get("created_at")
             label = str(created)[:10] if created else "unknown"
             labels.append(label)
-            
+
             severity_series["high"].append(row.get("high_count", 0))
             severity_series["medium"].append(row.get("medium_count", 0))
             severity_series["low"].append(row.get("low_count", 0))
-            
+
             category_series["security"].append(row.get("security_count", 0))
             category_series["style"].append(row.get("style_count", 0))
             category_series["complexity"].append(row.get("complexity_count", 0))
             category_series["performance"].append(row.get("performance_count", 0))
-            
+
             total_series.append(row.get("total_findings", 0))
-        
-        return jsonify({
-            "success": True,
-            "labels": labels,
-            "severity": severity_series,
-            "categories": category_series,
-            "totals": total_series,
-            "data_points": len(labels)
-        })
+
+        return jsonify(
+            {
+                "success": True,
+                "labels": labels,
+                "severity": severity_series,
+                "categories": category_series,
+                "totals": total_series,
+                "data_points": len(labels),
+            }
+        )
     except Exception as e:
         print(f"Error in /api/trends: {e}")
         return jsonify({"success": False, "error": str(e)}), 500
@@ -548,19 +590,22 @@ def scan_secrets():
     try:
         data = request.get_json() or {}
         target_dir = data.get("target_dir", ".")
-        
+
         from CORE.engines.secrets_detector import SecretsDetector
+
         detector = SecretsDetector()
         results = detector.scan_directory(target_dir)
-        
-        return jsonify({
-            "success": True,
-            "files_scanned": results["files_scanned"],
-            "total_secrets": results["total_secrets"],
-            "severity_breakdown": results["severity_breakdown"],
-            "secret_types": results["secret_types_found"],
-            "findings": results["findings"][:50],  # Limit response size
-        })
+
+        return jsonify(
+            {
+                "success": True,
+                "files_scanned": results["files_scanned"],
+                "total_secrets": results["total_secrets"],
+                "severity_breakdown": results["severity_breakdown"],
+                "secret_types": results["secret_types_found"],
+                "findings": results["findings"][:50],  # Limit response size
+            }
+        )
     except Exception as e:
         return jsonify({"success": False, "error": str(e)}), 500
 
@@ -571,18 +616,21 @@ def scan_dependencies():
     try:
         data = request.get_json() or {}
         project_dir = data.get("project_dir", ".")
-        
+
         from CORE.engines.sca_scanner import SCAScanner
+
         scanner = SCAScanner(project_dir=project_dir)
         results = scanner.scan()
-        
-        return jsonify({
-            "success": True,
-            "scanner": results["scanner"],
-            "total_vulnerabilities": results["total_vulnerabilities"],
-            "severity_breakdown": results["severity_breakdown"],
-            "vulnerabilities": results["vulnerabilities"],
-        })
+
+        return jsonify(
+            {
+                "success": True,
+                "scanner": results["scanner"],
+                "total_vulnerabilities": results["total_vulnerabilities"],
+                "severity_breakdown": results["severity_breakdown"],
+                "vulnerabilities": results["vulnerabilities"],
+            }
+        )
     except Exception as e:
         return jsonify({"success": False, "error": str(e)}), 500
 
@@ -594,22 +642,25 @@ def scan_ai_code():
         data = request.get_json() or {}
         target = data.get("target", ".")
         threshold = data.get("threshold", 0.5)
-        
+
         from CORE.engines.ai_code_detector import AICodeDetector
+
         detector = AICodeDetector(threshold=threshold)
-        
+
         if Path(target).is_file():
             result = detector.analyze_file(target)
             return jsonify({"success": True, "result": result})
         else:
             results = detector.analyze_directory(target)
-            return jsonify({
-                "success": True,
-                "total_files": results["total_files"],
-                "flagged_files": results["flagged_files"],
-                "flagged_percentage": results["flagged_percentage"],
-                "files": results["files"][:50],  # Limit response size
-            })
+            return jsonify(
+                {
+                    "success": True,
+                    "total_files": results["total_files"],
+                    "flagged_files": results["flagged_files"],
+                    "flagged_percentage": results["flagged_percentage"],
+                    "files": results["files"][:50],  # Limit response size
+                }
+            )
     except Exception as e:
         return jsonify({"success": False, "error": str(e)}), 500
 
@@ -647,15 +698,17 @@ def cost_benefit(run_id):
         roi = dev_cost_saved / total_cost if total_cost > 0 else float("inf")
         cost_per_finding = total_cost / len(findings) if findings else 0
 
-        return jsonify({
-            "success": True,
-            "analysis_cost_usd": round(total_cost, 4),
-            "hours_saved": round(hours_saved, 1),
-            "dev_cost_saved_usd": round(dev_cost_saved, 2),
-            "roi_ratio": round(roi, 0) if roi != float("inf") else "∞",
-            "cost_per_finding": round(cost_per_finding, 5),
-            "total_findings": len(findings),
-        })
+        return jsonify(
+            {
+                "success": True,
+                "analysis_cost_usd": round(total_cost, 4),
+                "hours_saved": round(hours_saved, 1),
+                "dev_cost_saved_usd": round(dev_cost_saved, 2),
+                "roi_ratio": round(roi, 0) if roi != float("inf") else "∞",
+                "cost_per_finding": round(cost_per_finding, 5),
+                "total_findings": len(findings),
+            }
+        )
     except Exception as e:
         return jsonify({"success": False, "error": str(e)}), 500
 
@@ -678,11 +731,13 @@ def mark_false_positive(finding_id):
         )
 
         if feedback_id:
-            return jsonify({
-                "success": True,
-                "feedback_id": feedback_id,
-                "message": f"Finding {finding_id} marked as false positive",
-            })
+            return jsonify(
+                {
+                    "success": True,
+                    "feedback_id": feedback_id,
+                    "message": f"Finding {finding_id} marked as false positive",
+                }
+            )
         else:
             return jsonify({"success": False, "error": "Failed to store feedback"}), 500
     except Exception as e:
@@ -721,4 +776,3 @@ if __name__ == "__main__":
     print("🚀 Starting ACR-QA Dashboard...")
     print("📊 Access at: http://localhost:5000")
     app.run(host="0.0.0.0", port=5000, debug=True)
-

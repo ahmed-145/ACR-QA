@@ -157,7 +157,9 @@ def generate_sarif(run_id=None, output_file=None):
     print(f"✅ SARIF exported: {output_file}")
     print(f"   Rules: {len(seen_rules)}")
     print(f"   Results: {len(results)}")
-    print(f"\n   Upload to GitHub: gh api repos/OWNER/REPO/code-scanning/sarifs --input {output_file}")
+    print(
+        f"\n   Upload to GitHub: gh api repos/OWNER/REPO/code-scanning/sarifs --input {output_file}"
+    )
     return output_file
 
 

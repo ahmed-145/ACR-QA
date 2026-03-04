@@ -2,11 +2,13 @@
 Style Violations Test File
 Triggers: Ruff style rules (E501, D100, N802, etc.)
 """
+
 import os
 import sys
 import json  # F401: Unused import
 
 # Missing module docstring would be D100, but we have one above
+
 
 def thisIsABadFunctionName(x, y):  # N802: Function name should be lowercase
     """This function has a very long line that exceeds the 88 character limit and should trigger the E501 rule from Ruff linter."""
@@ -30,8 +32,9 @@ def another_function_with_extremely_long_line_that_should_trigger_style_warning(
     return result
 
 
-# Trailing whitespace on next line    
+# Trailing whitespace on next line
 x = 1
+
 
 def MixedCaseFunction():  # N802: Should be lowercase
     """Bad naming convention."""

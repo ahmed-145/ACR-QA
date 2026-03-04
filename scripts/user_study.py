@@ -129,7 +129,7 @@ def generate_survey_form(output_dir: str = "DATA/outputs"):
     """Generate survey questionnaire as Markdown and CSV template."""
     output_path = Path(output_dir)
     output_path.mkdir(parents=True, exist_ok=True)
-    
+
     # Generate Markdown survey
     md_lines = [
         "# ACR-QA User Study Questionnaire",
@@ -143,20 +143,20 @@ def generate_survey_form(output_dir: str = "DATA/outputs"):
         "",
         "**Instructions:** Please rate each statement on a scale of 1-5.",
         "- 1 = Strongly Disagree",
-        "- 2 = Disagree", 
+        "- 2 = Disagree",
         "- 3 = Neutral",
         "- 4 = Agree",
         "- 5 = Strongly Agree",
         "",
     ]
-    
+
     current_section = ""
     for q in SURVEY_QUESTIONS:
         if q["section"] != current_section:
             current_section = q["section"]
             md_lines.append(f"## {current_section}")
             md_lines.append("")
-        
+
         if q["type"] == "likert":
             md_lines.append(f"**{q['id']}.** {q['question']}")
             md_lines.append("")
@@ -173,12 +173,12 @@ def generate_survey_form(output_dir: str = "DATA/outputs"):
             md_lines.append("")
             md_lines.append("_____________________________________________")
             md_lines.append("")
-    
+
     md_file = output_path / "user_study_survey.md"
     with open(md_file, "w") as f:
         f.write("\n".join(md_lines))
     print(f"✅ Survey form: {md_file}")
-    
+
     # Generate CSV template for data collection
     csv_file = output_path / "user_study_responses.csv"
     with open(csv_file, "w", newline="") as f:
@@ -189,11 +189,12 @@ def generate_survey_form(output_dir: str = "DATA/outputs"):
         example = ["P001", datetime.now().isoformat()] + ["" for _ in SURVEY_QUESTIONS]
         writer.writerow(example)
     print(f"✅ CSV template: {csv_file}")
-    
+
     return md_file, csv_file
 
 
 # ─── A/B Comparison Report ───────────────────────────────────
+
 
 def generate_comparison_report(run_id: int = None, output_dir: str = "DATA/outputs"):
     """
@@ -203,7 +204,7 @@ def generate_comparison_report(run_id: int = None, output_dir: str = "DATA/outpu
     db = Database()
     output_path = Path(output_dir)
     output_path.mkdir(parents=True, exist_ok=True)
-    
+
     # Get run data
     if run_id:
         findings = db.get_findings_with_explanations(run_id)
@@ -214,20 +215,25 @@ def generate_comparison_report(run_id: int = None, output_dir: str = "DATA/outpu
             return
         run_id = runs[0]["id"]
         findings = db.get_findings_with_explanations(run_id)
-    
+
     # Categorize findings
     security = [f for f in findings if f.get("category") == "security"]
     style = [f for f in findings if f.get("category") == "style"]
     design = [f for f in findings if f.get("category") in ("design", "complexity")]
     dead_code = [f for f in findings if f.get("category") == "dead-code"]
-    other = [f for f in findings if f.get("category") not in ("security", "style", "design", "complexity", "dead-code")]
-    
+    other = [
+        f
+        for f in findings
+        if f.get("category")
+        not in ("security", "style", "design", "complexity", "dead-code")
+    ]
+
     high = [f for f in findings if f.get("canonical_severity") == "high"]
     medium = [f for f in findings if f.get("canonical_severity") == "medium"]
     low = [f for f in findings if f.get("canonical_severity") == "low"]
-    
+
     with_explanations = [f for f in findings if f.get("explanation_text")]
-    
+
     report = f"""# ACR-QA vs Manual Review — Comparison Report
 
 **Run ID:** {run_id}  
@@ -276,16 +282,17 @@ def generate_comparison_report(run_id: int = None, output_dir: str = "DATA/outpu
 2. Context-dependent issues may need human judgment
 3. Architectural review still requires human expertise
 """
-    
+
     report_file = output_path / f"comparison_report_run_{run_id}.md"
     with open(report_file, "w") as f:
         f.write(report)
-    
+
     print(f"✅ Comparison report: {report_file}")
     return report_file
 
 
 # ─── Analyze Survey Results ──────────────────────────────────
+
 
 def analyze_survey_results(csv_path: str = "DATA/outputs/user_study_responses.csv"):
     """Analyze collected survey responses and generate statistics."""
@@ -294,57 +301,63 @@ def analyze_survey_results(csv_path: str = "DATA/outputs/user_study_responses.cs
         print(f"❌ No responses file found at {csv_path}")
         print("   Generate template: python3 scripts/user_study.py --generate-survey")
         return
-    
+
     with open(csv_file) as f:
         reader = csv.DictReader(f)
         responses = list(reader)
-    
+
     if not responses or all(not r.get("Q1") for r in responses):
         print("⚠️ No completed responses found. Collect responses first.")
         return
-    
+
     print(f"\n{'='*60}")
     print(f"📊 User Study Results ({len(responses)} participants)")
     print(f"{'='*60}\n")
-    
+
     # Compute averages for Likert questions
     likert_qs = [q for q in SURVEY_QUESTIONS if q["type"] == "likert"]
-    
+
     for q in likert_qs:
         values = []
         for r in responses:
             val = r.get(q["id"], "")
             if val and val.isdigit():
                 values.append(int(val))
-        
+
         if values:
             avg = sum(values) / len(values)
             emoji = "✅" if avg >= 4 else "⚠️" if avg >= 3 else "❌"
             print(f"{emoji} {q['id']}: {avg:.1f}/5 — {q['question'][:60]}")
-    
+
     print(f"\n{'='*60}")
 
 
 if __name__ == "__main__":
     import argparse
-    
+
     parser = argparse.ArgumentParser(description="ACR-QA User Study Tools")
-    parser.add_argument("--generate-survey", action="store_true", help="Generate survey questionnaire")
-    parser.add_argument("--comparison", action="store_true", help="Generate A/B comparison report")
-    parser.add_argument("--analyze", action="store_true", help="Analyze survey responses")
+    parser.add_argument(
+        "--generate-survey", action="store_true", help="Generate survey questionnaire"
+    )
+    parser.add_argument(
+        "--comparison", action="store_true", help="Generate A/B comparison report"
+    )
+    parser.add_argument(
+        "--analyze", action="store_true", help="Analyze survey responses"
+    )
     parser.add_argument("--run-id", type=int, help="Analysis run ID")
     parser.add_argument("--all", action="store_true", help="Generate everything")
-    
+
     args = parser.parse_args()
-    
+
     if args.all or args.generate_survey:
         generate_survey_form()
-    
+
     if args.all or args.comparison:
         generate_comparison_report(run_id=args.run_id)
-    
+
     if args.analyze:
         analyze_survey_results()
-    
+
     if not any([args.generate_survey, args.comparison, args.analyze, args.all]):
         parser.print_help()

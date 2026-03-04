@@ -80,7 +80,9 @@ class AnalysisPipeline:
                     if src.exists():
                         dest = Path(analysis_dir) / src.name
                         shutil.copy2(str(src), str(dest))
-                subprocess.run(["bash", "TOOLS/run_checks.sh", analysis_dir], check=True)
+                subprocess.run(
+                    ["bash", "TOOLS/run_checks.sh", analysis_dir], check=True
+                )
             finally:
                 shutil.rmtree(analysis_dir, ignore_errors=True)
         else:
@@ -90,7 +92,7 @@ class AnalysisPipeline:
 
         # Step 2b: Run extra scanners (secrets + SCA)
         print("\n[2b/5] Running extra scanners...")
-        target = analysis_dir if files and 'analysis_dir' in dir() else self.target_dir
+        target = analysis_dir if files and "analysis_dir" in dir() else self.target_dir
         extra_findings = self.run_extra_scanners(target)
         print(f"      ✓ {len(extra_findings)} extra findings from secrets/SCA")
 
@@ -110,13 +112,17 @@ class AnalysisPipeline:
         # Step 4: Generate AI explanations (with caching)
         print("[4/5] Generating AI explanations (Cerebras API)...")
 
-        redis_client = rate_limiter.redis if rate_limiter and rate_limiter.redis else None
+        redis_client = (
+            rate_limiter.redis if rate_limiter and rate_limiter.redis else None
+        )
         explainer = ExplanationEngine(redis_client=redis_client)
 
         # Cap explanations using config
         max_explanations = self.config.get("ai", {}).get("max_explanations", 50)
         effective_limit = min(limit, max_explanations) if limit else max_explanations
-        findings_to_process = findings[:effective_limit] if effective_limit else findings
+        findings_to_process = (
+            findings[:effective_limit] if effective_limit else findings
+        )
 
         for i, finding in enumerate(findings_to_process, 1):
             print(
@@ -168,62 +174,72 @@ class AnalysisPipeline:
         loader = ConfigLoader.__new__(ConfigLoader)
         loader.project_dir = Path(self.target_dir)
         loader._config = self.config
-        
+
         filtered = []
         removed_rules = 0
         removed_paths = 0
         removed_severity = 0
-        
+
         min_sev = self.config.get("reporting", {}).get("min_severity", "low")
         sev_order = {"high": 3, "medium": 2, "low": 1}
         min_sev_level = sev_order.get(min_sev, 1)
-        
+
         for f in findings:
             rule_id = f.get("canonical_rule_id", f.get("rule_id", ""))
-            
+
             # Check if rule is disabled
             if not loader.is_rule_enabled(rule_id):
                 removed_rules += 1
                 continue
-                
+
             # Check if file path is ignored
             file_path = f.get("file_path", f.get("file", ""))
             if loader.should_ignore_path(file_path):
                 removed_paths += 1
                 continue
-            
+
             # Check minimum severity
             sev = f.get("canonical_severity", f.get("severity", "low")).lower()
             if sev_order.get(sev, 1) < min_sev_level:
                 removed_severity += 1
                 continue
-            
+
             # Apply severity overrides
             override = loader.get_severity_override(rule_id)
             if override:
                 f["canonical_severity"] = override
                 f["severity"] = override
-            
+
             filtered.append(f)
-        
+
         if removed_rules or removed_paths or removed_severity:
-            print(f"      - Config filters: removed {removed_rules} disabled rules, "
-                  f"{removed_paths} ignored paths, {removed_severity} below min severity")
-        
+            print(
+                f"      - Config filters: removed {removed_rules} disabled rules, "
+                f"{removed_paths} ignored paths, {removed_severity} below min severity"
+            )
+
         return filtered
 
     def _deduplicate_findings(self, findings):
         """Remove duplicate findings (same file + line + canonical rule from different tools)."""
         seen = {}
         # Priority: security tools > specialized > general
-        tool_priority = {"bandit": 3, "semgrep": 3, "secrets": 3, "vulture": 2, "radon": 2, "ruff": 1, "jscpd": 1}
-        
+        tool_priority = {
+            "bandit": 3,
+            "semgrep": 3,
+            "secrets": 3,
+            "vulture": 2,
+            "radon": 2,
+            "ruff": 1,
+            "jscpd": 1,
+        }
+
         for f in findings:
             file_path = f.get("file_path", f.get("file", ""))
             line = f.get("line_number", f.get("line", 0))
             rule = f.get("canonical_rule_id", f.get("rule_id", ""))
             key = (file_path, line, rule)
-            
+
             if key not in seen:
                 seen[key] = f
             else:
@@ -232,7 +248,7 @@ class AnalysisPipeline:
                 new_tool = f.get("tool", "")
                 if tool_priority.get(new_tool, 0) > tool_priority.get(existing_tool, 0):
                     seen[key] = f
-        
+
         deduped = list(seen.values())
         removed = len(findings) - len(deduped)
         if removed:
@@ -244,7 +260,9 @@ class AnalysisPipeline:
         from CORE.engines.autofix import AutoFixEngine
 
         engine = AutoFixEngine()
-        fixable = [f for f in findings if engine.can_fix(f.get("canonical_rule_id", ""))]
+        fixable = [
+            f for f in findings if engine.can_fix(f.get("canonical_rule_id", ""))
+        ]
         if not fixable:
             print("\n⚙️  No auto-fixable issues found.")
             return []
@@ -266,15 +284,19 @@ class AnalysisPipeline:
                 }
                 fix = engine.generate_fix(finding_dict)
                 if fix and fix.get("fixed") is not None:
-                    results.append({
-                        "rule_id": rule_id,
-                        "file": filepath,
-                        "line": line,
-                        "confidence": confidence,
-                        "original": fix.get("original", ""),
-                        "fixed": fix.get("fixed", ""),
-                    })
-                    print(f"   ✓ {rule_id} @ {filepath}:{line} (confidence: {confidence})")
+                    results.append(
+                        {
+                            "rule_id": rule_id,
+                            "file": filepath,
+                            "line": line,
+                            "confidence": confidence,
+                            "original": fix.get("original", ""),
+                            "fixed": fix.get("fixed", ""),
+                        }
+                    )
+                    print(
+                        f"   ✓ {rule_id} @ {filepath}:{line} (confidence: {confidence})"
+                    )
             except Exception as e:
                 print(f"   ✗ {rule_id} @ {filepath}:{line} — {e}")
 
@@ -288,6 +310,7 @@ class AnalysisPipeline:
 
         try:
             from CORE.engines.secrets_detector import SecretsDetector
+
             print("      - Secrets Detector (hardcoded credentials)")
             detector = SecretsDetector()
             results = detector.scan_directory(target_dir)
@@ -302,12 +325,15 @@ class AnalysisPipeline:
 
         try:
             from CORE.engines.sca_scanner import SCAScanner
+
             print("      - SCA Scanner (dependency vulnerabilities)")
             scanner = SCAScanner(project_dir=target_dir)
             results = scanner.scan()
             if results.get("vulnerabilities"):
                 extra_findings.extend(results.get("findings", []))
-                print(f"        → {len(results['vulnerabilities'])} vulnerabilities found")
+                print(
+                    f"        → {len(results['vulnerabilities'])} vulnerabilities found"
+                )
             else:
                 print("        → Clean (no known vulnerabilities)")
         except Exception as e:
@@ -332,7 +358,9 @@ def get_diff_files(base_branch: str = "main") -> list:
     try:
         result = subprocess.run(
             ["git", "diff", "--name-only", "--diff-filter=ACM", base_branch],
-            capture_output=True, text=True, check=True
+            capture_output=True,
+            text=True,
+            check=True,
         )
         files = [f.strip() for f in result.stdout.strip().split("\n") if f.strip()]
         py_files = [f for f in files if f.endswith(".py")]
@@ -353,16 +381,19 @@ def main():
         "--limit", type=int, default=None, help="Limit explanations (for speed)"
     )
     parser.add_argument(
-        "--diff-only", action="store_true",
-        help="Only analyze files changed in git diff (PR diff mode)"
+        "--diff-only",
+        action="store_true",
+        help="Only analyze files changed in git diff (PR diff mode)",
     )
     parser.add_argument(
-        "--diff-base", default="main",
-        help="Base branch for diff comparison (default: main)"
+        "--diff-base",
+        default="main",
+        help="Base branch for diff comparison (default: main)",
     )
     parser.add_argument(
-        "--auto-fix", action="store_true",
-        help="Generate auto-fix suggestions for fixable issues"
+        "--auto-fix",
+        action="store_true",
+        help="Generate auto-fix suggestions for fixable issues",
     )
 
     args = parser.parse_args()
@@ -379,19 +410,25 @@ def main():
             print("📝 No changed Python files found. Running full analysis.")
 
     pipeline = AnalysisPipeline(target_dir=args.target_dir, files=files)
-    run_id = pipeline.run(repo_name=args.repo_name, pr_number=args.pr_number, limit=args.limit, files=files)
+    run_id = pipeline.run(
+        repo_name=args.repo_name,
+        pr_number=args.pr_number,
+        limit=args.limit,
+        files=files,
+    )
 
     # Run auto-fix if requested
     if args.auto_fix and run_id:
         findings_path = Path("DATA/outputs/findings.json")
         if findings_path.exists():
             import json as json_mod
+
             with open(findings_path) as fp:
                 findings = json_mod.load(fp)
             pipeline.run_autofix(findings)
 
     # Exit with non-zero code if quality gate failed
-    if run_id and hasattr(pipeline, '_gate_passed') and not pipeline._gate_passed:
+    if run_id and hasattr(pipeline, "_gate_passed") and not pipeline._gate_passed:
         print("\n❌ Exiting with code 1 (quality gate failed)")
         sys.exit(1)
 

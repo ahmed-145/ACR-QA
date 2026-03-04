@@ -3,6 +3,7 @@ Test file demonstrating security vulnerabilities
 Triggers: SECURITY-001 (dangerous eval, SQL injection)
 """
 
+
 def execute_user_command(user_input):
     """
     SECURITY-001: Dangerous use of eval()
@@ -18,9 +19,10 @@ def get_user_data(user_id):
     User input directly concatenated into SQL query
     """
     import sqlite3
-    conn = sqlite3.connect('users.db')
+
+    conn = sqlite3.connect("users.db")
     cursor = conn.cursor()
-    
+
     # VULNERABLE: SQL injection possible
     query = "SELECT * FROM users WHERE id = " + user_id
     cursor.execute(query)

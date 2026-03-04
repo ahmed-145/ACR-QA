@@ -12,10 +12,10 @@ IMPORTANT: We intentionally DON'T use any of this code!
 # ==============================================================================
 
 # Example 1: Completely unused imports
-import sys          # UNUSED: Never referenced
-import json         # UNUSED: Never referenced
-import datetime     # UNUSED: Never referenced
-import re           # UNUSED: Never referenced
+import sys  # UNUSED: Never referenced
+import json  # UNUSED: Never referenced
+import datetime  # UNUSED: Never referenced
+import re  # UNUSED: Never referenced
 from pathlib import Path  # UNUSED: Never referenced
 
 
@@ -43,17 +43,17 @@ API_VERSION = "v2"  # UNUSED
 # Example 5: Local unused variables in function
 def calculate_total(price, quantity, tax_rate):
     """Function with unused local variables"""
-    
+
     # Used variable
     subtotal = price * quantity
-    
+
     # UNUSED variables
     discount = 0.10  # UNUSED: Calculated but never used
     shipping_cost = 5.99  # UNUSED: Never used
     processing_fee = 2.50  # UNUSED: Never used
-    
+
     # Note: tax_rate parameter is also UNUSED!
-    
+
     return subtotal
 
 
@@ -64,7 +64,7 @@ def process_order():
     customer_name = "John"  # UNUSED
     order_date = "2024-01-01"  # UNUSED
     status = "pending"  # UNUSED
-    
+
     # Only this is used
     total = 100
     return total
@@ -73,6 +73,7 @@ def process_order():
 # ==============================================================================
 # UNUSED FUNCTIONS
 # ==============================================================================
+
 
 # Example 7: Completely unused function
 def calculate_discount(price, percentage):
@@ -89,7 +90,7 @@ def format_phone_number(phone):
 # Example 9: Unused helper function
 def validate_email(email):
     """UNUSED: Email validation that's never used"""
-    return '@' in email and '.' in email
+    return "@" in email and "." in email
 
 
 # Example 10: Unused utility function
@@ -109,13 +110,15 @@ def legacy_calculation(x, y, z):
 # UNUSED CLASSES
 # ==============================================================================
 
+
 # Example 12: Completely unused class
 class UserProfile:
     """UNUSED: This class is never instantiated"""
+
     def __init__(self, name, age):
         self.name = name
         self.age = age
-    
+
     def get_info(self):
         return f"{self.name}, {self.age}"
 
@@ -123,19 +126,21 @@ class UserProfile:
 # Example 13: Another unused class
 class ShoppingCart:
     """UNUSED: Never created anywhere"""
+
     def __init__(self):
         self.items = []
-    
+
     def add_item(self, item):
         self.items.append(item)
-    
+
     def get_total(self):
-        return sum(item['price'] for item in self.items)
+        return sum(item["price"] for item in self.items)
 
 
 # Example 14: Unused exception class
 class CustomValidationError(Exception):
     """UNUSED: Custom exception that's never raised"""
+
     pass
 
 
@@ -143,25 +148,26 @@ class CustomValidationError(Exception):
 # UNUSED METHODS IN USED CLASS
 # ==============================================================================
 
+
 # Example 15: Class with some unused methods
 class DataProcessor:
     """This class itself is unused, all methods unused"""
-    
+
     def __init__(self, data):
         self.data = data
-    
+
     def process(self):
         """UNUSED: This method is never called"""
         return self.data.upper()
-    
+
     def validate(self):
         """UNUSED: Never called"""
         return len(self.data) > 0
-    
+
     def format(self):
         """UNUSED: Never called"""
         return self.data.strip()
-    
+
     def analyze(self):
         """UNUSED: Never called"""
         return len(self.data)
@@ -170,6 +176,7 @@ class DataProcessor:
 # ==============================================================================
 # UNUSED PARAMETERS
 # ==============================================================================
+
 
 # Example 16: Function with unused parameters
 def send_email(to_address, subject, body, cc=None, bcc=None, priority=None):
@@ -185,11 +192,12 @@ def send_email(to_address, subject, body, cc=None, bcc=None, priority=None):
 # Example 17: Method with unused self attributes
 class ConfigManager:
     """UNUSED class"""
+
     def __init__(self):
         self.settings = {}
         self.cache = {}  # UNUSED attribute: never accessed
         self.history = []  # UNUSED attribute: never accessed
-    
+
     def get_setting(self, key):
         # Only uses self.settings, never touches cache or history
         return self.settings.get(key)
@@ -199,15 +207,16 @@ class ConfigManager:
 # UNUSED CODE BLOCKS
 # ==============================================================================
 
+
 # Example 18: Commented out code (dead code)
 def calculate_price(base_price):
     """Function with commented dead code"""
-    
+
     # Old calculation (no longer used)
     # discount = base_price * 0.1
     # tax = base_price * 0.08
     # total = base_price - discount + tax
-    
+
     # New simple calculation
     return base_price * 1.1
 
@@ -219,7 +228,7 @@ def check_value(x):
         return "positive"
     else:
         return "non-positive"
-    
+
     # UNREACHABLE: Code after return
     print("This never executes")  # UNUSED
     x = x + 1  # UNUSED
@@ -229,23 +238,25 @@ def check_value(x):
 # UNUSED PROPERTIES
 # ==============================================================================
 
+
 # Example 20: Unused property
 class Product:
     """UNUSED class"""
+
     def __init__(self, name, price):
         self._name = name
         self._price = price
-    
+
     @property
     def name(self):
         """UNUSED: Property that's never accessed"""
         return self._name
-    
+
     @property
     def discounted_price(self):
         """UNUSED: Property that's never accessed"""
         return self._price * 0.9
-    
+
     @property
     def tax_amount(self):
         """UNUSED: Property that's never accessed"""
@@ -257,8 +268,8 @@ class Product:
 # ==============================================================================
 
 # Example 21: Unused lambda
-square = lambda x: x ** 2  # UNUSED: Never called
-double = lambda x: x * 2   # UNUSED: Never called
+square = lambda x: x**2  # UNUSED: Never called
+double = lambda x: x * 2  # UNUSED: Never called
 is_even = lambda x: x % 2 == 0  # UNUSED: Never called
 
 
@@ -266,17 +277,18 @@ is_even = lambda x: x % 2 == 0  # UNUSED: Never called
 # UNUSED LIST COMPREHENSIONS
 # ==============================================================================
 
+
 # Example 22: Result never used
 def waste_computation():
     """Creates values but never uses them"""
     data = [1, 2, 3, 4, 5]
-    
+
     # UNUSED: Result is calculated but never used
-    squares = [x ** 2 for x in data]
-    
+    squares = [x**2 for x in data]
+
     # UNUSED: Generator created but never consumed
     evens = (x for x in data if x % 2 == 0)
-    
+
     return "done"
 
 

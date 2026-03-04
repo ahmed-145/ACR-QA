@@ -599,16 +599,23 @@ def normalize_all(outputs_dir: str = "outputs") -> List[CanonicalFinding]:
     filtered_findings = []
     for finding in all_findings:
         try:
-            file_path = finding.file_path if hasattr(finding, 'file_path') else ""
-            line_num = finding.line_number if hasattr(finding, 'line_number') else 0
+            file_path = finding.file_path if hasattr(finding, "file_path") else ""
+            line_num = finding.line_number if hasattr(finding, "line_number") else 0
             if file_path and line_num and Path(file_path).exists():
                 with open(file_path) as src:
                     lines = src.readlines()
                     if 0 < line_num <= len(lines):
                         source_line = lines[line_num - 1]
-                        rule_id = finding.canonical_rule_id if hasattr(finding, 'canonical_rule_id') else ""
+                        rule_id = (
+                            finding.canonical_rule_id
+                            if hasattr(finding, "canonical_rule_id")
+                            else ""
+                        )
                         # Check for blanket ignore
-                        if "# acr-qa:ignore" in source_line or "# acrqa:ignore" in source_line:
+                        if (
+                            "# acr-qa:ignore" in source_line
+                            or "# acrqa:ignore" in source_line
+                        ):
                             suppressed += 1
                             continue
                         # Check for rule-specific disable
@@ -622,7 +629,7 @@ def normalize_all(outputs_dir: str = "outputs") -> List[CanonicalFinding]:
             filtered_findings.append(finding)
         except Exception:
             filtered_findings.append(finding)
-    
+
     if suppressed:
         print(f"  Suppressed {suppressed} findings via inline comments")
 

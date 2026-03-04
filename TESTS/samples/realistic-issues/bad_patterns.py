@@ -3,6 +3,7 @@ Test file demonstrating anti-patterns
 Triggers: PATTERN-001 (mutable default arguments)
 """
 
+
 def add_item_to_cart(item, cart=[]):
     """
     PATTERN-001: Mutable default argument
@@ -26,5 +27,5 @@ def configure_settings(options={}):
     """
     PATTERN-001: Another mutable default
     """
-    options['timestamp'] = '2025-01-01'
+    options["timestamp"] = "2025-01-01"
     return options

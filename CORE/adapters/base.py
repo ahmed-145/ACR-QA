@@ -12,13 +12,13 @@ from pathlib import Path
 class LanguageAdapter(ABC):
     """
     Abstract base class for language-specific analysis adapters.
-    
+
     Each language adapter defines:
     - Which tools to run (e.g., Ruff for Python, ESLint for JS)
     - How to invoke those tools
     - What file extensions to scan
     - Language-specific rule mappings
-    
+
     Usage:
         adapter = PythonAdapter(target_dir="/path/to/project")
         results = adapter.run_tools()
@@ -44,7 +44,7 @@ class LanguageAdapter(ABC):
     def get_tools(self) -> List[Dict[str, Any]]:
         """
         Return list of tools this adapter uses.
-        
+
         Returns:
             List of dicts: [{"name": "ruff", "version": "0.x", "purpose": "..."}]
         """
@@ -54,10 +54,10 @@ class LanguageAdapter(ABC):
     def run_tools(self, output_dir: str = "DATA/outputs") -> Dict[str, Any]:
         """
         Run all language-specific analysis tools.
-        
+
         Args:
             output_dir: Directory to write tool output files
-            
+
         Returns:
             Dict with tool results and any errors
         """
@@ -67,7 +67,7 @@ class LanguageAdapter(ABC):
     def get_rule_mappings(self) -> Dict[str, str]:
         """
         Return tool-specific rule ID → canonical rule ID mappings.
-        
+
         Returns:
             Dict mapping tool rule IDs to canonical IDs
         """

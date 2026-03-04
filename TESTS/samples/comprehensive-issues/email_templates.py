@@ -2,13 +2,16 @@
 Email Template Generator with Style Issues
 Triggers: STYLE-001, STYLE-002, NAMING-001, F401, PLR0913
 """
+
 import os  # F401: Unused import
 import sys  # F401: Unused import
 from typing import Dict
 
 
 # STYLE-001: Line too long (>88 chars)
-def generate_welcome_email_with_user_info_and_personalization_and_marketing_links_and_tracking(username, email, plan):
+def generate_welcome_email_with_user_info_and_personalization_and_marketing_links_and_tracking(
+    username, email, plan
+):
     """
     NAMING-001: Bad parameter names
     PLR0913: Too many parameters (if we add more)
@@ -22,7 +25,7 @@ def send_notification(user):
     subject = "Notification"
     body = f"Hello {user['name']}"
     unused_var = "never used"  # F841: Unused variable
-    return {'subject': subject, 'body': body}
+    return {"subject": subject, "body": body}
 
 
 # STYLE-001: Line exceeds 88 characters
@@ -36,6 +39,7 @@ def x(a, b, c):  # STYLE-002: Missing docstring, NAMING-001: Bad names
 
 class badClassName:  # NAMING-001: Class name should be PascalCase
     """STYLE-002: Missing class docstring"""
+
     def __init__(self):
         pass
 

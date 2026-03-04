@@ -15,7 +15,7 @@ from CORE.adapters.base import LanguageAdapter
 class PythonAdapter(LanguageAdapter):
     """
     Python language adapter for ACR-QA.
-    
+
     Tools:
         - Ruff: Style, imports, PEP8, best practices
         - Semgrep: Security patterns, OWASP, custom rules
@@ -35,12 +35,28 @@ class PythonAdapter(LanguageAdapter):
 
     def get_tools(self) -> List[Dict[str, Any]]:
         return [
-            {"name": "ruff", "purpose": "Style, imports, PEP8, best practices", "check": "ruff"},
-            {"name": "semgrep", "purpose": "Security patterns, OWASP", "check": "semgrep"},
-            {"name": "bandit", "purpose": "Python security vulnerabilities", "check": "bandit"},
+            {
+                "name": "ruff",
+                "purpose": "Style, imports, PEP8, best practices",
+                "check": "ruff",
+            },
+            {
+                "name": "semgrep",
+                "purpose": "Security patterns, OWASP",
+                "check": "semgrep",
+            },
+            {
+                "name": "bandit",
+                "purpose": "Python security vulnerabilities",
+                "check": "bandit",
+            },
             {"name": "vulture", "purpose": "Dead code detection", "check": "vulture"},
             {"name": "radon", "purpose": "Cyclomatic complexity", "check": "radon"},
-            {"name": "jscpd", "purpose": "Code duplication detection", "check": "jscpd"},
+            {
+                "name": "jscpd",
+                "purpose": "Code duplication detection",
+                "check": "jscpd",
+            },
         ]
 
     def check_tools_available(self) -> Dict[str, bool]:
@@ -54,15 +70,15 @@ class PythonAdapter(LanguageAdapter):
     def run_tools(self, output_dir: str = "DATA/outputs") -> Dict[str, Any]:
         """
         Run all Python analysis tools via the existing run_checks.sh script.
-        
+
         This delegates to the battle-tested shell script for now.
         Future: migrate each tool invocation to pure Python for better control.
         """
         output_path = Path(output_dir)
         output_path.mkdir(parents=True, exist_ok=True)
-        
+
         results = {"tools_run": [], "errors": []}
-        
+
         try:
             subprocess.run(
                 ["bash", "TOOLS/run_checks.sh", str(self.target_dir)],
@@ -87,6 +103,7 @@ class PythonAdapter(LanguageAdapter):
         # Import from normalizer to avoid duplication
         try:
             from CORE.engines.normalizer import RULE_MAPPING
+
             return RULE_MAPPING
         except ImportError:
             return {}
@@ -96,13 +113,13 @@ class PythonAdapter(LanguageAdapter):
 class JavaScriptAdapter(LanguageAdapter):
     """
     JavaScript/TypeScript language adapter for ACR-QA.
-    
+
     Phase 2 implementation will add:
         - ESLint: Style, best practices, security
         - Semgrep: JS security patterns
         - jscpd: Duplication (already supports JS)
         - npm audit / Snyk: Dependency vulnerabilities
-    
+
     Folder structure when implemented:
         TOOLS/
         ├── run_checks.sh          # Python tools
@@ -122,9 +139,17 @@ class JavaScriptAdapter(LanguageAdapter):
 
     def get_tools(self) -> List[Dict[str, Any]]:
         return [
-            {"name": "eslint", "purpose": "Style, best practices, security", "check": "eslint"},
+            {
+                "name": "eslint",
+                "purpose": "Style, best practices, security",
+                "check": "eslint",
+            },
             {"name": "semgrep", "purpose": "JS security patterns", "check": "semgrep"},
-            {"name": "jscpd", "purpose": "Code duplication detection", "check": "jscpd"},
+            {
+                "name": "jscpd",
+                "purpose": "Code duplication detection",
+                "check": "jscpd",
+            },
         ]
 
     def run_tools(self, output_dir: str = "DATA/outputs") -> Dict[str, Any]:

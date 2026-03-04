@@ -14,10 +14,10 @@ def calculate_total(items):
     total = 0
     count = 0  # VAR-001: Unused variable
     max_price = 0  # VAR-001: Unused variable
-    
+
     for item in items:
-        total += item['price']
-    
+        total += item["price"]
+
     return total
 
 
@@ -40,5 +40,6 @@ class UnusedClass:
     """
     DEAD-001: This class is never instantiated
     """
+
     def __init__(self):
         self.value = 42

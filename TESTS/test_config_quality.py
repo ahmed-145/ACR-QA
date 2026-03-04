@@ -18,6 +18,7 @@ from CORE.engines.quality_gate import QualityGate, DEFAULT_THRESHOLDS
 
 # ─── ConfigLoader Tests ────────────────────────────────────────────────────
 
+
 class TestConfigLoader:
     """Test per-repo configuration loading and merging."""
 
@@ -33,14 +34,18 @@ class TestConfigLoader:
         """Should merge user YAML with defaults."""
         tmpdir = tempfile.mkdtemp()
         config_path = Path(tmpdir) / ".acrqa.yml"
-        config_path.write_text(yaml.dump({
-            "rules": {"disabled_rules": ["IMPORT-001", "VAR-001"]},
-            "reporting": {"min_severity": "medium"},
-        }))
-        
+        config_path.write_text(
+            yaml.dump(
+                {
+                    "rules": {"disabled_rules": ["IMPORT-001", "VAR-001"]},
+                    "reporting": {"min_severity": "medium"},
+                }
+            )
+        )
+
         loader = ConfigLoader(project_dir=tmpdir)
         config = loader.load()
-        
+
         assert "IMPORT-001" in config["rules"]["disabled_rules"]
         assert "VAR-001" in config["rules"]["disabled_rules"]
         assert config["reporting"]["min_severity"] == "medium"
@@ -56,10 +61,10 @@ class TestConfigLoader:
     def test_is_rule_disabled(self):
         """Disabled rules should return False."""
         tmpdir = tempfile.mkdtemp()
-        (Path(tmpdir) / ".acrqa.yml").write_text(yaml.dump({
-            "rules": {"disabled_rules": ["IMPORT-001"]}
-        }))
-        
+        (Path(tmpdir) / ".acrqa.yml").write_text(
+            yaml.dump({"rules": {"disabled_rules": ["IMPORT-001"]}})
+        )
+
         loader = ConfigLoader(project_dir=tmpdir)
         assert loader.is_rule_enabled("IMPORT-001") is False
         assert loader.is_rule_enabled("VAR-001") is True
@@ -67,10 +72,10 @@ class TestConfigLoader:
     def test_rules_globally_disabled(self):
         """When rules.enabled is False, all rules are disabled."""
         tmpdir = tempfile.mkdtemp()
-        (Path(tmpdir) / ".acrqa.yml").write_text(yaml.dump({
-            "rules": {"enabled": False}
-        }))
-        
+        (Path(tmpdir) / ".acrqa.yml").write_text(
+            yaml.dump({"rules": {"enabled": False}})
+        )
+
         loader = ConfigLoader(project_dir=tmpdir)
         assert loader.is_rule_enabled("IMPORT-001") is False
         assert loader.is_rule_enabled("SECURITY-001") is False
@@ -78,10 +83,10 @@ class TestConfigLoader:
     def test_severity_override(self):
         """Should return severity override for a rule."""
         tmpdir = tempfile.mkdtemp()
-        (Path(tmpdir) / ".acrqa.yml").write_text(yaml.dump({
-            "rules": {"severity_overrides": {"IMPORT-001": "high"}}
-        }))
-        
+        (Path(tmpdir) / ".acrqa.yml").write_text(
+            yaml.dump({"rules": {"severity_overrides": {"IMPORT-001": "high"}}})
+        )
+
         loader = ConfigLoader(project_dir=tmpdir)
         assert loader.get_severity_override("IMPORT-001") == "high"
         assert loader.get_severity_override("VAR-001") is None
@@ -107,10 +112,10 @@ class TestConfigLoader:
     def test_custom_max_explanations(self):
         """Should use custom max_explanations from YAML."""
         tmpdir = tempfile.mkdtemp()
-        (Path(tmpdir) / ".acrqa.yml").write_text(yaml.dump({
-            "ai": {"max_explanations": 10}
-        }))
-        
+        (Path(tmpdir) / ".acrqa.yml").write_text(
+            yaml.dump({"ai": {"max_explanations": 10}})
+        )
+
         loader = ConfigLoader(project_dir=tmpdir)
         assert loader.get_max_explanations() == 10
 
@@ -119,7 +124,7 @@ class TestConfigLoader:
         tmpdir = tempfile.mkdtemp()
         output = os.path.join(tmpdir, ".acrqa.yml")
         ConfigLoader.generate_default_config(output)
-        
+
         assert Path(output).exists()
         with open(output) as f:
             config = yaml.safe_load(f)
@@ -135,6 +140,7 @@ class TestConfigLoader:
 
 
 # ─── QualityGate Tests ──────────────────────────────────────────────────────
+
 
 class TestQualityGate:
     """Test quality gate evaluation logic."""

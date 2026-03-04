@@ -102,7 +102,9 @@ Start with: "This code violates {canonical_id}..."
 """
         return prompt
 
-    @retry(stop=stop_after_attempt(3), wait=wait_exponential(multiplier=1, min=2, max=10))
+    @retry(
+        stop=stop_after_attempt(3), wait=wait_exponential(multiplier=1, min=2, max=10)
+    )
     def generate_explanation(self, finding, code_snippet=""):
         """
         Generate RAG-enhanced explanation for a finding
@@ -210,11 +212,11 @@ Start with: "This code violates {canonical_id}..."
     def compute_semantic_entropy(self, finding, code_snippet="", num_samples=3):
         """
         N1: Semantic Entropy for Hallucination Detection
-        
+
         Runs the prompt multiple times with temperature=0.5 and computes
         the consistency score across responses using n-gram similarity.
         Low consistency → likely hallucination.
-        
+
         Returns:
             Dict with consistency_score (0.0-1.0), individual responses, variance info
         """
@@ -234,7 +236,11 @@ Start with: "This code violates {canonical_id}..."
                 responses.append(f"[Error: {e}]")
 
         if len(responses) < 2:
-            return {"consistency_score": None, "responses": responses, "status": "insufficient_samples"}
+            return {
+                "consistency_score": None,
+                "responses": responses,
+                "status": "insufficient_samples",
+            }
 
         # Compute pairwise n-gram similarity
         scores = []
@@ -256,9 +262,10 @@ Start with: "This code violates {canonical_id}..."
 
     def _ngram_similarity(self, text_a, text_b, n=3):
         """Compute n-gram (trigram) Jaccard similarity between two texts."""
+
         def get_ngrams(text, n):
             words = text.lower().split()
-            return set(tuple(words[i:i+n]) for i in range(len(words) - n + 1))
+            return set(tuple(words[i : i + n]) for i in range(len(words) - n + 1))
 
         ngrams_a = get_ngrams(text_a, n)
         ngrams_b = get_ngrams(text_b, n)
@@ -275,16 +282,18 @@ Start with: "This code violates {canonical_id}..."
     def self_evaluate_explanation(self, explanation_text, finding):
         """
         N2: Explanation Quality Self-Evaluation
-        
+
         Asks the LLM to rate its own explanation on three criteria:
         - Relevance (1-5): Does it address the actual code issue?
         - Accuracy (1-5): Is the information technically correct?
         - Clarity (1-5): Is it easy to understand?
-        
+
         Returns:
             Dict with scores and overall average
         """
-        canonical_id = finding.get("canonical_rule_id", finding.get("rule_id", "UNKNOWN"))
+        canonical_id = finding.get(
+            "canonical_rule_id", finding.get("rule_id", "UNKNOWN")
+        )
 
         eval_prompt = f"""Rate this code review explanation on a scale of 1-5 for each criterion.
 
@@ -318,7 +327,11 @@ Clarity: X"""
                 for key in ["Relevance", "Accuracy", "Clarity"]:
                     if key.lower() in line.lower():
                         try:
-                            val = int("".join(c for c in line.split(":")[-1] if c.isdigit())[:1])
+                            val = int(
+                                "".join(c for c in line.split(":")[-1] if c.isdigit())[
+                                    :1
+                                ]
+                            )
                             scores[key.lower()] = min(max(val, 1), 5)
                         except (ValueError, IndexError):
                             scores[key.lower()] = 3  # Default

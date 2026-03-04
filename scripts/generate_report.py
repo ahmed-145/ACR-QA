@@ -4,7 +4,6 @@ Markdown Report Generator for ACR-QA v2.0
 Creates human-readable reports from analysis runs
 """
 
-
 import sys
 import yaml
 from pathlib import Path

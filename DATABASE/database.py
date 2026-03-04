@@ -397,10 +397,10 @@ class Database:
         """
         Get trend data for analytics dashboard.
         Aggregates findings by severity and category across recent runs.
-        
+
         Args:
             limit: Number of recent runs to include
-            
+
         Returns:
             List of dicts with per-run aggregated data
         """

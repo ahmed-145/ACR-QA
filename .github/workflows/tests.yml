@@ -54,6 +54,7 @@ jobs:
           DB_NAME: acrqa_test
           DB_USER: postgres
           DB_PASSWORD: postgres
+          CEREBRAS_API_KEY: ${{ secrets.CEREBRAS_API_KEY }}
         run: |
           pytest TESTS/ -v --override-ini="addopts=" --tb=short \
             --junitxml=test-results.xml 2>&1
@@ -83,7 +84,7 @@ jobs:
         run: pip install ruff==0.6.0
 
       - name: Check formatting
-        run: ruff format --check CORE/ DATABASE/ scripts/ FRONTEND/
+        run: ruff format --check CORE/ DATABASE/ scripts/ FRONTEND/ TESTS/
 
       - name: Check linting
-        run: ruff check CORE/ DATABASE/ scripts/ FRONTEND/
+        run: ruff check CORE/ DATABASE/ scripts/ FRONTEND/ TESTS/

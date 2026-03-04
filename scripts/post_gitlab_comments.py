@@ -2,6 +2,7 @@
 """
 Post ACR-QA findings as GitLab Merge Request comments
 """
+
 import sys
 import os
 import argparse

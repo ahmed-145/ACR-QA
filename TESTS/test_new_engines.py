@@ -25,6 +25,7 @@ from CORE.engines.autofix import AutoFixEngine
 
 # ─── AI Code Detector Tests ──────────────────────────────────
 
+
 class TestAICodeDetector:
     """Tests for the AI code detection heuristics."""
 
@@ -54,7 +55,7 @@ def calculate_fibonacci(n: int) -> list[int]:
 
     def test_generic_names_detected(self, tmp_path):
         """Code with many generic variable names should trigger signal."""
-        code = '''
+        code = """
 def process(data):
     result = []
     for item in data:
@@ -71,16 +72,18 @@ def transform(input_data):
         obj = val
         res.append(obj)
     return res
-'''
+"""
         f = tmp_path / "generic.py"
         f.write_text(code)
         result = self.detector.analyze_file(str(f))
-        has_generic_signal = any(s["type"] == "generic_names" for s in result["signals"])
+        has_generic_signal = any(
+            s["type"] == "generic_names" for s in result["signals"]
+        )
         assert has_generic_signal, "Should detect generic variable names"
 
     def test_ai_template_patterns(self, tmp_path):
         """Code with AI template patterns should trigger signal."""
-        code = '''
+        code = """
 def feature_one():
     # TODO: implement this function
     pass  # placeholder
@@ -91,11 +94,13 @@ def feature_two():
 def feature_three():
     # TODO: add error handling
     pass  # stub
-'''
+"""
         f = tmp_path / "templates.py"
         f.write_text(code)
         result = self.detector.analyze_file(str(f))
-        has_template_signal = any(s["type"] == "ai_templates" for s in result["signals"])
+        has_template_signal = any(
+            s["type"] == "ai_templates" for s in result["signals"]
+        )
         assert has_template_signal, "Should detect AI template patterns"
 
     def test_empty_file_safe(self, tmp_path):
@@ -117,7 +122,7 @@ def feature_three():
         for i in range(3):
             f = tmp_path / f"file_{i}.py"
             f.write_text(f"def func_{i}(): pass")
-        
+
         result = self.detector.analyze_directory(str(tmp_path))
         assert result["total_files"] == 3
         assert "flagged_files" in result
@@ -125,6 +130,7 @@ def feature_three():
 
 
 # ─── Secrets Detector Tests ──────────────────────────────────
+
 
 class TestSecretsDetector:
     """Tests for the secrets detection engine."""
@@ -158,14 +164,14 @@ class TestSecretsDetector:
 
     def test_clean_code_no_secrets(self, tmp_path):
         """Clean code should not trigger false positives."""
-        code = '''
+        code = """
 import os
 
 def get_config():
     api_key = os.environ.get("API_KEY")
     password = os.getenv("DB_PASSWORD")
     return {"key": api_key, "pass": password}
-'''
+"""
         f = tmp_path / "clean_config.py"
         f.write_text(code)
         result = self.detector.scan_file(str(f))
@@ -175,8 +181,8 @@ def get_config():
     def test_directory_scan(self, tmp_path):
         """Directory scan should aggregate results."""
         (tmp_path / "file1.py").write_text('api_key = "sk-1234567890abcdef"\n')
-        (tmp_path / "file2.py").write_text('def safe_func(): pass\n')
-        
+        (tmp_path / "file2.py").write_text("def safe_func(): pass\n")
+
         result = self.detector.scan_directory(str(tmp_path))
         assert result["files_scanned"] >= 2
         assert "total_secrets" in result
@@ -192,6 +198,7 @@ def get_config():
 
 # ─── Extended AutoFix Tests ──────────────────────────────────
 
+
 class TestExtendedAutoFix:
     """Tests for the 3 new AutoFix rules."""
 
@@ -203,22 +210,22 @@ class TestExtendedAutoFix:
         code = "try:\n    x = 1\nexcept:\n    pass\n"
         f = tmp_path / "test.py"
         f.write_text(code)
-        
+
         finding = {"file_path": str(f), "line": 3, "canonical_rule_id": "EXCEPT-001"}
         result = self.engine.fix_bare_except(finding)
-        
+
         assert result is not None
         assert "except Exception:" in result["fixed"]
 
     def test_eval_usage_fix(self, tmp_path):
         """SECURITY-027: Should replace eval() with ast.literal_eval()."""
-        code = 'result = eval(user_input)\n'
+        code = "result = eval(user_input)\n"
         f = tmp_path / "test.py"
         f.write_text(code)
-        
+
         finding = {"file_path": str(f), "line": 1, "canonical_rule_id": "SECURITY-027"}
         result = self.engine.fix_eval_usage(finding)
-        
+
         assert result is not None
         assert "ast.literal_eval" in result["fixed"]
 
@@ -227,10 +234,10 @@ class TestExtendedAutoFix:
         code = "def func():\n    return 42\n    x = 1\n    y = 2\n"
         f = tmp_path / "test.py"
         f.write_text(code)
-        
+
         finding = {"file_path": str(f), "line": 3, "canonical_rule_id": "DEAD-001"}
         result = self.engine.fix_dead_code(finding)
-        
+
         assert result is not None
 
     def test_can_fix_new_rules(self):
