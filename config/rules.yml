@@ -740,3 +740,441 @@ PRINT-001:
     logging.debug(f"Processing user {user_id}")
   example_bad: |
     print(f"DEBUG: user = {user}")  # Should use logging
+
+# ─── Additional Security Rules (Bandit-mapped) ─────────────────────────
+
+SECURITY-003:
+  name: "Bad File Permissions"
+  category: "security"
+  severity: "high"
+  description: "Setting overly permissive file permissions (e.g., 0o777)"
+  rationale: |
+    Overly permissive file permissions allow any user on the system to read,
+    write, or execute the file. This can lead to unauthorized data access,
+    code injection, or privilege escalation.
+  remediation: "Use restrictive permissions: 0o600 for sensitive files, 0o644 for readable files"
+  example_good: |
+    os.chmod("config.ini", 0o600)  # Owner read/write only
+  example_bad: |
+    os.chmod("config.ini", 0o777)  # World-readable/writable!
+
+SECURITY-004:
+  name: "Hardcoded Bind All Interfaces"
+  category: "security"
+  severity: "medium"
+  description: "Binding to 0.0.0.0 exposes the service to all network interfaces"
+  rationale: |
+    Binding to 0.0.0.0 makes the service accessible from any network interface,
+    including public ones. In production, services should bind to specific
+    interfaces (e.g., 127.0.0.1 for local-only or a private IP).
+  remediation: "Bind to 127.0.0.1 for development or a specific interface for production"
+  example_good: |
+    app.run(host="127.0.0.1", port=8080)
+  example_bad: |
+    app.run(host="0.0.0.0", port=8080)  # Exposed to all interfaces
+
+SECURITY-006:
+  name: "Hardcoded Temporary Directory"
+  category: "security"
+  severity: "medium"
+  description: "Using hardcoded /tmp paths instead of secure temp file creation"
+  rationale: |
+    Hardcoded /tmp paths are predictable and vulnerable to symlink attacks,
+    race conditions, and information leakage. Other users on shared systems
+    can monitor or manipulate these files.
+  remediation: "Use tempfile.mkdtemp() or tempfile.NamedTemporaryFile() for secure temp files"
+  example_good: |
+    import tempfile
+    with tempfile.NamedTemporaryFile(delete=False) as f:
+        f.write(data)
+  example_bad: |
+    with open("/tmp/myapp_data.txt", "w") as f:
+        f.write(sensitive_data)
+
+SECURITY-007:
+  name: "Try-Except-Pass"
+  category: "security"
+  severity: "medium"
+  description: "Silently catching and ignoring exceptions hides errors and security issues"
+  rationale: |
+    Using try/except with pass or continue silently swallows errors, making
+    debugging impossible and potentially hiding security-critical failures
+    like authentication errors or permission denials.
+  remediation: "Log the exception or handle it explicitly"
+  example_good: |
+    try:
+        process_payment()
+    except PaymentError as e:
+        logging.error(f"Payment failed: {e}")
+        raise
+  example_bad: |
+    try:
+        process_payment()
+    except Exception:
+        pass  # Silently swallowed!
+
+SECURITY-009:
+  name: "Weak Hash Algorithm"
+  category: "security"
+  severity: "high"
+  description: "Using MD5 or SHA1 for hashing — these are cryptographically broken"
+  rationale: |
+    MD5 and SHA1 have known collision vulnerabilities. Attackers can generate
+    different inputs that produce the same hash, defeating integrity checks
+    and password storage. NIST deprecated both for cryptographic use.
+  remediation: "Use SHA-256 or SHA-3 for integrity checks, bcrypt/argon2 for passwords"
+  example_good: |
+    import hashlib
+    digest = hashlib.sha256(data).hexdigest()
+  example_bad: |
+    import hashlib
+    digest = hashlib.md5(data).hexdigest()  # Broken!
+
+SECURITY-010:
+  name: "Weak Cipher Algorithm"
+  category: "security"
+  severity: "high"
+  description: "Using DES or other deprecated encryption ciphers"
+  rationale: |
+    DES has a 56-bit key length which can be brute-forced in hours.
+    Other weak ciphers like RC4 and Blowfish have known vulnerabilities.
+    Modern encryption requires AES-256 or ChaCha20.
+  remediation: "Use AES-256-GCM or ChaCha20-Poly1305 for encryption"
+  example_good: |
+    from cryptography.fernet import Fernet
+    cipher = Fernet(Fernet.generate_key())
+  example_bad: |
+    from Crypto.Cipher import DES  # 56-bit key, easily broken
+
+SECURITY-011:
+  name: "Insecure Temp File Creation"
+  category: "security"
+  severity: "high"
+  description: "Using mktemp() which is vulnerable to race conditions"
+  rationale: |
+    os.tempnam() and tempfile.mktemp() create a filename but don't create
+    the file atomically. An attacker can create the file between the name
+    generation and the open() call (TOCTOU race condition).
+  remediation: "Use tempfile.mkstemp() or tempfile.NamedTemporaryFile() instead"
+  example_good: |
+    import tempfile
+    fd, path = tempfile.mkstemp()
+  example_bad: |
+    import tempfile
+    path = tempfile.mktemp()  # Race condition!
+
+SECURITY-012:
+  name: "Django mark_safe Misuse"
+  category: "security"
+  severity: "high"
+  description: "Using mark_safe() on user-controlled input enables XSS attacks"
+  rationale: |
+    Django's mark_safe() tells the template engine to render HTML without
+    escaping. If used on user input, it enables Cross-Site Scripting (XSS)
+    attacks where attackers inject malicious JavaScript.
+  remediation: "Sanitize input before marking as safe, or use template autoescaping"
+  example_good: |
+    from django.utils.html import escape
+    safe_content = mark_safe(escape(user_input))
+  example_bad: |
+    return mark_safe(user_input)  # XSS vulnerability!
+
+SECURITY-013:
+  name: "SSL Certificate Verification Disabled"
+  category: "security"
+  severity: "high"
+  description: "Making HTTPS requests with verify=False disables certificate checking"
+  rationale: |
+    Disabling SSL certificate verification allows man-in-the-middle attacks.
+    An attacker can intercept and modify traffic between your application
+    and the server without detection.
+  remediation: "Always verify certificates. Use verify=True (default) or specify a CA bundle"
+  example_good: |
+    requests.get("https://api.example.com", verify=True)
+  example_bad: |
+    requests.get("https://api.example.com", verify=False)  # MITM risk!
+
+SECURITY-014:
+  name: "Insecure SSL Version"
+  category: "security"
+  severity: "high"
+  description: "Using deprecated SSL/TLS versions (SSLv2, SSLv3, TLSv1.0)"
+  rationale: |
+    SSLv2, SSLv3, and TLSv1.0 have known vulnerabilities (POODLE, BEAST).
+    Modern security requires TLS 1.2 or 1.3 minimum. PCI-DSS compliance
+    mandates TLS 1.2+.
+  remediation: "Use ssl.PROTOCOL_TLS_CLIENT or specify minimum version TLS 1.2"
+  example_good: |
+    context = ssl.SSLContext(ssl.PROTOCOL_TLS_CLIENT)
+    context.minimum_version = ssl.TLSVersion.TLSv1_2
+  example_bad: |
+    context = ssl.SSLContext(ssl.PROTOCOL_SSLv3)  # Vulnerable!
+
+SECURITY-015:
+  name: "Insecure SSL Defaults"
+  category: "security"
+  severity: "medium"
+  description: "SSL context created with insecure default settings"
+  rationale: |
+    Default SSL context settings may allow weak ciphers or protocols.
+    Explicitly configuring security parameters ensures only strong
+    ciphers and protocols are used.
+  remediation: "Create SSL context with explicit security parameters"
+  example_good: |
+    context = ssl.create_default_context()
+    context.set_ciphers("ECDHE+AESGCM")
+  example_bad: |
+    context = ssl.SSLContext()  # Insecure defaults
+
+SECURITY-016:
+  name: "SSL Context Without Version"
+  category: "security"
+  severity: "medium"
+  description: "SSL context created without specifying protocol version"
+  rationale: |
+    Without explicit version specification, the SSL context may negotiate
+    deprecated protocol versions vulnerable to known attacks.
+  remediation: "Specify minimum TLS version when creating SSL context"
+  example_good: |
+    context = ssl.SSLContext(ssl.PROTOCOL_TLS_CLIENT)
+  example_bad: |
+    context = ssl.SSLContext()  # No version specified
+
+SECURITY-017:
+  name: "Weak Cryptographic Key"
+  category: "security"
+  severity: "high"
+  description: "RSA key shorter than 2048 bits or DSA key shorter than 2048 bits"
+  rationale: |
+    Short cryptographic keys can be factored or brute-forced with modern
+    hardware. NIST recommends minimum 2048-bit RSA keys and 256-bit ECC keys.
+    Keys shorter than this are considered insecure.
+  remediation: "Use RSA 2048+ bits or ECC 256+ bits"
+  example_good: |
+    from cryptography.hazmat.primitives.asymmetric import rsa
+    key = rsa.generate_private_key(public_exponent=65537, key_size=4096)
+  example_bad: |
+    key = rsa.generate_private_key(public_exponent=65537, key_size=1024)  # Too short!
+
+SECURITY-018:
+  name: "Unsafe YAML Load"
+  category: "security"
+  severity: "high"
+  description: "Using yaml.load() without SafeLoader enables arbitrary code execution"
+  rationale: |
+    yaml.load() with the default Loader can deserialize arbitrary Python
+    objects, enabling Remote Code Execution (RCE). An attacker can craft
+    a YAML file that executes arbitrary commands when loaded.
+  remediation: "Use yaml.safe_load() instead of yaml.load()"
+  example_good: |
+    import yaml
+    data = yaml.safe_load(open("config.yml"))
+  example_bad: |
+    import yaml
+    data = yaml.load(open("config.yml"))  # RCE vulnerability!
+
+SECURITY-019:
+  name: "SSH No Host Key Verification"
+  category: "security"
+  severity: "high"
+  description: "SSH connections without host key verification are vulnerable to MITM"
+  rationale: |
+    Disabling host key verification in SSH (AutoAddPolicy) allows
+    man-in-the-middle attacks. An attacker can impersonate the server
+    and intercept credentials and data.
+  remediation: "Use RejectPolicy or load known host keys"
+  example_good: |
+    client = paramiko.SSHClient()
+    client.load_system_host_keys()
+  example_bad: |
+    client = paramiko.SSHClient()
+    client.set_missing_host_key_policy(paramiko.AutoAddPolicy())  # MITM risk!
+
+SECURITY-020:
+  name: "Paramiko Exec Command"
+  category: "security"
+  severity: "medium"
+  description: "Remote command execution via Paramiko without input sanitization"
+  rationale: |
+    Executing commands over SSH with user-controlled input can lead to
+    command injection on remote systems. Always validate and sanitize
+    commands before execution.
+  remediation: "Sanitize inputs and use allowlists for permitted commands"
+  example_good: |
+    allowed_commands = {"ls", "df", "uptime"}
+    if cmd in allowed_commands:
+        client.exec_command(cmd)
+  example_bad: |
+    client.exec_command(user_input)  # Command injection!
+
+SECURITY-022:
+  name: "Subprocess Without Shell"
+  category: "security"
+  severity: "low"
+  description: "Subprocess call without shell=True (informational)"
+  rationale: |
+    While subprocess calls without shell=True are generally safer, they
+    still require input validation to prevent argument injection attacks.
+  remediation: "Validate all inputs passed to subprocess calls"
+  example_good: |
+    subprocess.run(["git", "status"], check=True)
+  example_bad: |
+    subprocess.run([user_command, user_arg])  # Validate inputs
+
+SECURITY-023:
+  name: "Function Call With Shell"
+  category: "security"
+  severity: "high"
+  description: "Calling system functions with shell=True and user input"
+  rationale: |
+    Functions like os.popen(), popen2, or subprocess with shell=True
+    interpret the command string through the shell, enabling injection
+    of additional commands via metacharacters (; | && etc).
+  remediation: "Use subprocess.run() with a list of arguments and shell=False"
+  example_good: |
+    subprocess.run(["ls", "-la", directory], shell=False)
+  example_bad: |
+    os.popen(f"ls -la {user_input}")  # Shell injection!
+
+SECURITY-024:
+  name: "Start Process With Shell"
+  category: "security"
+  severity: "high"
+  description: "Starting a process using a shell command string"
+  rationale: |
+    Using os.system() or similar functions passes commands through the
+    system shell, enabling command injection if input is not sanitized.
+  remediation: "Use subprocess.run() with argument lists instead"
+  example_good: |
+    subprocess.run(["ping", "-c", "3", hostname], check=True)
+  example_bad: |
+    os.system(f"ping -c 3 {hostname}")  # Command injection risk
+
+SECURITY-025:
+  name: "Start Process Without Shell Validation"
+  category: "security"
+  severity: "low"
+  description: "Starting a process without input validation (informational)"
+  rationale: |
+    Even without shell=True, subprocess calls with unvalidated user input
+    can lead to unexpected behavior or argument injection.
+  remediation: "Validate and sanitize all process arguments"
+  example_good: |
+    if filename.isalnum():
+        subprocess.run(["cat", filename])
+  example_bad: |
+    subprocess.run(["cat", user_filename])  # Validate first
+
+SECURITY-026:
+  name: "Start Process With Partial Path"
+  category: "security"
+  severity: "medium"
+  description: "Using a partial executable path in subprocess calls"
+  rationale: |
+    Using partial paths (e.g., 'python' instead of '/usr/bin/python')
+    relies on PATH resolution, which can be manipulated by an attacker
+    to execute a malicious binary instead.
+  remediation: "Use absolute paths for executables in subprocess calls"
+  example_good: |
+    subprocess.run(["/usr/bin/python3", "script.py"])
+  example_bad: |
+    subprocess.run(["python3", "script.py"])  # PATH manipulation risk
+
+SECURITY-028:
+  name: "Wildcard Injection in Linux Commands"
+  category: "security"
+  severity: "high"
+  description: "Using wildcards in shell commands that can be exploited for injection"
+  rationale: |
+    Shell wildcards (*) in commands like tar, rsync, or find can be
+    exploited through specially named files. For example, a file named
+    '--checkpoint-action=exec=malicious.sh' will be interpreted as a
+    tar flag, not a filename.
+  remediation: "Use -- to separate flags from filenames, or use glob.glob() in Python"
+  example_good: |
+    import glob
+    files = glob.glob("*.txt")
+    subprocess.run(["tar", "cf", "backup.tar", "--"] + files)
+  example_bad: |
+    os.system("tar cf backup.tar *.txt")  # Wildcard injection!
+
+SECURITY-029:
+  name: "Django extra() SQL Injection"
+  category: "security"
+  severity: "high"
+  description: "Using Django ORM extra() method with unescaped user input"
+  rationale: |
+    Django's extra() method allows raw SQL fragments which bypass the
+    ORM's SQL injection protections. User input in extra() can lead to
+    SQL injection attacks.
+  remediation: "Use Django ORM methods (filter, annotate) or parameterized queries"
+  example_good: |
+    User.objects.filter(name=user_input)
+  example_bad: |
+    User.objects.extra(where=[f"name = '{user_input}'"])  # SQL injection!
+
+SECURITY-030:
+  name: "Django RawSQL Usage"
+  category: "security"
+  severity: "high"
+  description: "Using Django RawSQL with unparameterized user input"
+  rationale: |
+    Django's RawSQL allows arbitrary SQL execution. Without proper
+    parameterization, user input can be injected into queries,
+    leading to data theft or database manipulation.
+  remediation: "Use parameterized queries with %s placeholders"
+  example_good: |
+    from django.db.models.expressions import RawSQL
+    qs = Model.objects.annotate(val=RawSQL("select col from tbl where id = %s", [param]))
+  example_bad: |
+    qs = Model.objects.annotate(val=RawSQL(f"select col from tbl where id = {user_id}", []))
+
+SECURITY-031:
+  name: "Jinja2 Autoescape Disabled"
+  category: "security"
+  severity: "high"
+  description: "Jinja2 template engine with autoescaping disabled enables XSS"
+  rationale: |
+    Jinja2 autoescaping prevents Cross-Site Scripting (XSS) by escaping
+    HTML special characters in template variables. Disabling it allows
+    attackers to inject malicious scripts through user-controlled data.
+  remediation: "Set autoescape=True in Jinja2 Environment"
+  example_good: |
+    env = jinja2.Environment(autoescape=True, loader=loader)
+  example_bad: |
+    env = jinja2.Environment(autoescape=False, loader=loader)  # XSS!
+
+SECURITY-032:
+  name: "Mako Template Usage"
+  category: "security"
+  severity: "medium"
+  description: "Mako templates do not auto-escape by default, enabling XSS"
+  rationale: |
+    Unlike Jinja2, Mako templates do not escape HTML output by default.
+    User-controlled data rendered through Mako can contain malicious
+    scripts that execute in the victim's browser.
+  remediation: "Use Jinja2 with autoescaping, or configure Mako's default_filters"
+  example_good: |
+    from mako.template import Template
+    t = Template(text, default_filters=["h"])  # HTML escape
+  example_bad: |
+    from mako.template import Template
+    t = Template("Hello ${user_input}")  # No escaping!
+
+SECURITY-033:
+  name: "Django mark_safe on Sensitive Data"
+  category: "security"
+  severity: "high"
+  description: "Using django.utils.safestring.mark_safe on potentially unsafe content"
+  rationale: |
+    mark_safe() bypasses Django's template autoescaping. Using it on
+    user-controlled data or data from external sources creates XSS
+    vulnerabilities. Only use on content you fully control and trust.
+  remediation: "Use format_html() for safe HTML construction with escaping"
+  example_good: |
+    from django.utils.html import format_html
+    output = format_html("<b>{}</b>", user_name)
+  example_bad: |
+    from django.utils.safestring import mark_safe
+    output = mark_safe(f"<b>{user_name}</b>")  # XSS if user_name has HTML
+

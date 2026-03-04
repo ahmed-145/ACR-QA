@@ -21,10 +21,10 @@ CORS(app)
 # Security: Use environment variable for SECRET_KEY
 app.config["SECRET_KEY"] = os.getenv("FLASK_SECRET_KEY", "dev-secret-key-change-in-production")
 
-db = Database()
-
-# Register Prometheus /metrics endpoint
+# Register Prometheus /metrics endpoint for observability
 register_metrics_endpoint(app)
+
+db = Database()
 
 
 @app.route("/")

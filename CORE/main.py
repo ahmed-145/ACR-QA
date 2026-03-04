@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-ACR-QA v2.4 - Main Analysis Pipeline
+ACR-QA v2.5 - Main Analysis Pipeline
 Orchestrates: Detection → Normalization → Config Filtering → Quality Gate → Explanation → Storage
 """
 
@@ -33,9 +33,9 @@ class AnalysisPipeline:
         # Load per-repo config (.acrqa.yml)
         self.config = ConfigLoader(project_dir=target_dir).load()
 
-    def run(self, repo_name="local", pr_number=None, limit=None, files=None):
-        """Run full analysis pipeline"""
-        print("🚀 ACR-QA v2.4 Analysis Pipeline")
+    def run(self, repo_name="local", pr_number=None, limit=None, files=None, rich_output=False):
+        """Run full analysis pipeline."""
+        print("🚀 ACR-QA v2.5 Analysis Pipeline")
         print("=" * 50)
 
         # Step 0: Check rate limit
@@ -148,19 +148,114 @@ class AnalysisPipeline:
         print("\n[5/5] Quality Gate evaluation...")
         gate = QualityGate(config=self.config)
         gate_result = gate.evaluate(findings)
-        gate.print_report(gate_result)
 
-        # Print summary
-        print(f"\n   Run ID: {run_id}")
-        print(f"   Explanations Generated: {len(findings_to_process)}")
-        print("\nNext Steps:")
-        print("   View dashboard: python3 FRONTEND/app.py")
-        print(f"   Generate report: python3 scripts/generate_report.py {run_id}")
-        print(f"   Export SARIF: python3 scripts/export_sarif.py --run-id {run_id}")
+        if rich_output:
+            self._print_rich_output(findings, gate_result, run_id, len(findings_to_process))
+        else:
+            gate.print_report(gate_result)
+            print(f"\n   Run ID: {run_id}")
+            print(f"   Explanations Generated: {len(findings_to_process)}")
+            print("\nNext Steps:")
+            print("   View dashboard: python3 FRONTEND/app.py")
+            print(f"   Generate report: python3 scripts/generate_report.py {run_id}")
+            print(f"   Export SARIF: python3 scripts/export_sarif.py --run-id {run_id}")
 
         # Return exit code info
         self._gate_passed = gate_result["passed"]
         return run_id
+
+    def _print_rich_output(self, findings, gate_result, run_id, num_explained):
+        """Display findings using Rich library for beautiful terminal output."""
+        from rich.console import Console
+        from rich.panel import Panel
+        from rich.table import Table
+
+        console = Console()
+
+        # ── Findings Table ──
+        table = Table(
+            title="🔍 ACR-QA Analysis Results",
+            show_lines=True,
+            title_style="bold cyan",
+            border_style="dim",
+        )
+        table.add_column("#", style="dim", width=4, justify="right")
+        table.add_column("Severity", width=10, justify="center")
+        table.add_column("Rule", style="cyan", width=16)
+        table.add_column("Category", width=12)
+        table.add_column("File", style="blue")
+        table.add_column("Line", width=6, justify="right")
+        table.add_column("Message", style="white", max_width=50)
+
+        severity_colors = {"high": "red bold", "medium": "yellow", "low": "green"}
+        severity_icons = {"high": "🔴", "medium": "🟡", "low": "🟢"}
+
+        for i, f in enumerate(findings[:50], 1):
+            sev = f.get("canonical_severity", f.get("severity", "low")).lower()
+            rule = f.get("canonical_rule_id", f.get("rule_id", "UNKNOWN"))
+            cat = f.get("category", "unknown")
+            filepath = f.get("file", "unknown")
+            # Shorten file path for display
+            if len(filepath) > 35:
+                filepath = "..." + filepath[-32:]
+            line = str(f.get("line", "?"))
+            msg = f.get("message", f.get("description", ""))[:50]
+
+            icon = severity_icons.get(sev, "⚪")
+            color = severity_colors.get(sev, "white")
+
+            table.add_row(
+                str(i),
+                f"[{color}]{icon} {sev.upper()}[/{color}]",
+                rule,
+                cat,
+                filepath,
+                line,
+                msg,
+            )
+
+        if len(findings) > 50:
+            table.add_row(
+                "...",
+                "",
+                f"[dim]+{len(findings) - 50} more[/dim]",
+                "",
+                "",
+                "",
+                "",
+            )
+
+        console.print()
+        console.print(table)
+
+        # ── Quality Gate Panel ──
+        counts = gate_result["counts"]
+        status = "[green bold]✅ PASSED[/green bold]" if gate_result["passed"] else "[red bold]❌ FAILED[/red bold]"
+        checks_text = ""
+        for check in gate_result["checks"]:
+            icon = "✅" if check["passed"] else "❌"
+            checks_text += f"  {icon} {check['message']}\n"
+
+        gate_content = (
+            f"  Status: {status}\n"
+            f"  Total: {counts['total']}  │  "
+            f"🔴 High: {counts['high']}  │  "
+            f"🟡 Medium: {counts['medium']}  │  "
+            f"🟢 Low: {counts['low']}\n\n"
+            f"{checks_text}\n"
+            f"  [dim]Run ID: {run_id}  │  Explanations: {num_explained}[/dim]\n"
+            f"  [dim]Dashboard: python3 FRONTEND/app.py[/dim]\n"
+            f"  [dim]Report: python3 scripts/generate_report.py {run_id}[/dim]\n"
+            f"  [dim]SARIF: python3 scripts/export_sarif.py --run-id {run_id}[/dim]"
+        )
+
+        panel = Panel(
+            gate_content,
+            title="🚦 Quality Gate",
+            border_style="green" if gate_result["passed"] else "red",
+            padding=(1, 2),
+        )
+        console.print(panel)
 
     def _apply_config_filters(self, findings):
         """Filter findings based on .acrqa.yml configuration."""
@@ -358,7 +453,7 @@ def get_diff_files(base_branch: str = "main") -> list:
 
 
 def main():
-    parser = argparse.ArgumentParser(description="ACR-QA v2.4 Analysis Pipeline")
+    parser = argparse.ArgumentParser(description="ACR-QA v2.5 Analysis Pipeline")
     parser.add_argument("--target-dir", default="samples/realistic-issues", help="Directory to analyze")
     parser.add_argument("--repo-name", default="local", help="Repository name")
     parser.add_argument("--pr-number", type=int, help="Pull request number")
@@ -377,6 +472,11 @@ def main():
         "--auto-fix",
         action="store_true",
         help="Generate auto-fix suggestions for fixable issues",
+    )
+    parser.add_argument(
+        "--rich",
+        action="store_true",
+        help="Use Rich library for beautiful terminal output (tables, colors, panels)",
     )
 
     args = parser.parse_args()
@@ -398,6 +498,7 @@ def main():
         pr_number=args.pr_number,
         limit=args.limit,
         files=files,
+        rich_output=args.rich,
     )
 
     # Run auto-fix if requested
