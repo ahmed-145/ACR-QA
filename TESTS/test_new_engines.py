@@ -8,20 +8,13 @@ Tests for new ACR-QA engines:
 """
 
 import sys
-import os
-import tempfile
-import json
 from pathlib import Path
-from unittest.mock import patch, MagicMock
-
-import pytest
 
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
 from CORE.engines.ai_code_detector import AICodeDetector
-from CORE.engines.secrets_detector import SecretsDetector
 from CORE.engines.autofix import AutoFixEngine
-
+from CORE.engines.secrets_detector import SecretsDetector
 
 # ─── AI Code Detector Tests ──────────────────────────────────
 

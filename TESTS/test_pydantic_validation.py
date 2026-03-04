@@ -3,14 +3,16 @@ Pydantic Validation Tests for ACR-QA v2.0
 Tests schema validation for CanonicalFinding
 """
 
-import pytest
 import sys
 from pathlib import Path
 
+import pytest
+
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-from CORE.engines.normalizer import CanonicalFinding
 from pydantic import ValidationError
+
+from CORE.engines.normalizer import CanonicalFinding
 
 
 class TestPydanticValidation:

@@ -4,11 +4,10 @@ Triggers ALL rule categories for balanced testing
 """
 
 import os
-import sys
 import pickle
 import subprocess
-from typing import List, Dict, Optional
-
+import sys
+from typing import Dict, List, Optional
 
 # ===========================================================
 # SECURITY ISSUES (Should trigger 10+ security findings)

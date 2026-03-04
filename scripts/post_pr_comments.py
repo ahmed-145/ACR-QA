@@ -4,15 +4,16 @@ Post ACR-QA findings as GitHub PR comments
 Sorted by severity: HIGH → MEDIUM → LOW
 """
 
+import argparse
 import os
 import sys
-import argparse
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-from DATABASE.database import Database
 from github import Github
+
+from DATABASE.database import Database
 
 
 def format_severity_emoji(severity):
@@ -74,14 +75,14 @@ def format_pr_comment(findings):
                 f"**📍 Location:** `{finding['file_path']}:{finding['line_number']}`"
             )
             lines.append("")
-            lines.append(f"**📝 Issue:**")
+            lines.append("**📝 Issue:**")
             lines.append(f"> {finding['message']}")
             lines.append("")
 
             # Get explanation from database
             explanation = finding.get("explanation_text")
             if explanation:
-                lines.append(f"**💡 AI Explanation:**")
+                lines.append("**💡 AI Explanation:**")
                 lines.append("")
                 lines.append(explanation)
                 lines.append("")

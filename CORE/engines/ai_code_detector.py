@@ -4,12 +4,11 @@ ACR-QA AI-Generated Code Detector
 Heuristic-based detection of AI-generated code patterns
 """
 
-import re
 import ast
+import re
 import sys
 from pathlib import Path
-from typing import Dict, List, Any, Optional
-from collections import Counter
+from typing import Any
 
 sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 
@@ -78,7 +77,7 @@ class AICodeDetector:
         """
         self.threshold = threshold
 
-    def analyze_file(self, filepath: str) -> Dict[str, Any]:
+    def analyze_file(self, filepath: str) -> dict[str, Any]:
         """
         Analyze a single file for AI-generated code indicators.
 
@@ -86,7 +85,7 @@ class AICodeDetector:
             Dict with score (0-1), signals found, and confidence level
         """
         try:
-            with open(filepath, "r", encoding="utf-8", errors="replace") as f:
+            with open(filepath, encoding="utf-8", errors="replace") as f:
                 content = f.read()
         except Exception as e:
             return {"score": 0, "error": str(e), "signals": [], "confidence": "none"}
@@ -208,7 +207,7 @@ class AICodeDetector:
         generic_count = sum(1 for n in all_names if n.lower() in self.GENERIC_NAMES)
         return min(1.0, generic_count / max(len(all_names), 1) * 3)
 
-    def _check_comment_uniformity(self, lines: List[str]) -> float:
+    def _check_comment_uniformity(self, lines: list[str]) -> float:
         """Check if comments are suspiciously uniform in density."""
         comment_lines = [
             i for i, line in enumerate(lines) if line.strip().startswith("#")
@@ -273,7 +272,7 @@ class AICodeDetector:
 
         func_lengths = []
         for node in ast.walk(tree):
-            if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef)):
+            if isinstance(node, ast.FunctionDef | ast.AsyncFunctionDef):
                 end_line = getattr(node, "end_lineno", node.lineno + 5)
                 length = end_line - node.lineno
                 func_lengths.append(length)
@@ -297,8 +296,8 @@ class AICodeDetector:
         return 0
 
     def analyze_directory(
-        self, directory: str, extensions: List[str] = None
-    ) -> Dict[str, Any]:
+        self, directory: str, extensions: list[str] = None
+    ) -> dict[str, Any]:
         """
         Analyze all files in a directory.
 

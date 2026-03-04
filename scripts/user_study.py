@@ -5,16 +5,14 @@ Generates survey questionnaires and A/B comparison reports
 for academic evaluation of the code review platform.
 """
 
-import sys
-import json
 import csv
-from pathlib import Path
+import sys
 from datetime import datetime
+from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
 from DATABASE.database import Database
-
 
 # ─── Survey Questionnaire ────────────────────────────────────
 
@@ -135,7 +133,7 @@ def generate_survey_form(output_dir: str = "DATA/outputs"):
         "# ACR-QA User Study Questionnaire",
         "",
         f"**Generated:** {datetime.now().strftime('%Y-%m-%d %H:%M')}",
-        f"**Version:** ACR-QA v2.0",
+        "**Version:** ACR-QA v2.0",
         "",
         "---",
         "",
@@ -221,7 +219,7 @@ def generate_comparison_report(run_id: int = None, output_dir: str = "DATA/outpu
     style = [f for f in findings if f.get("category") == "style"]
     design = [f for f in findings if f.get("category") in ("design", "complexity")]
     dead_code = [f for f in findings if f.get("category") == "dead-code"]
-    other = [
+    [
         f
         for f in findings
         if f.get("category")

@@ -3,9 +3,9 @@ Test file demonstrating unused code
 Triggers: IMPORT-001, VAR-001, DEAD-001
 """
 
+import json
 import os  # IMPORT-001: Unused import
 import sys  # IMPORT-001: Unused import
-import json
 from datetime import datetime
 
 

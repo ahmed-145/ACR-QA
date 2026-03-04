@@ -3,9 +3,9 @@
 Post ACR-QA findings as GitLab Merge Request comments
 """
 
-import sys
-import os
 import argparse
+import os
+import sys
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).parent.parent))

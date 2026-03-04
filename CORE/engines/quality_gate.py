@@ -4,8 +4,7 @@ ACR-QA Quality Gate Engine
 Enforces configurable thresholds to pass/fail CI pipelines.
 """
 
-from typing import Dict, List, Any, Optional
-
+from typing import Any
 
 DEFAULT_THRESHOLDS = {
     "max_high": 0,  # Zero tolerance for high-severity findings
@@ -31,14 +30,14 @@ class QualityGate:
           max_security: 0
     """
 
-    def __init__(self, config: Optional[Dict] = None):
+    def __init__(self, config: dict | None = None):
         self.thresholds = DEFAULT_THRESHOLDS.copy()
         if config and isinstance(config, dict):
             gate_config = config.get("quality_gate", {})
             if gate_config:
                 self.thresholds.update(gate_config)
 
-    def evaluate(self, findings: List[Dict]) -> Dict[str, Any]:
+    def evaluate(self, findings: list[dict]) -> dict[str, Any]:
         """
         Evaluate findings against quality gate thresholds.
 
@@ -143,7 +142,7 @@ class QualityGate:
             "category_counts": category_counts,
         }
 
-    def print_report(self, result: Dict) -> None:
+    def print_report(self, result: dict) -> None:
         """Print a formatted quality gate report to stdout."""
         print("\n" + "═" * 50)
         print(f"  🚦 Quality Gate: {result['status']}")

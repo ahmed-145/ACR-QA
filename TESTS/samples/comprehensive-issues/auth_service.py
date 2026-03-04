@@ -5,7 +5,7 @@ Triggers: SECURITY-001, SOLID-001, COMPLEXITY-001, PATTERN-001
 
 import hashlib
 import sqlite3
-from typing import Dict, Any, Optional, List, Tuple
+from typing import Any, Dict, List, Optional, Tuple
 
 
 def authenticate_user(

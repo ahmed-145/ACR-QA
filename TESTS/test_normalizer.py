@@ -3,12 +3,11 @@ Unit tests for Normalizer (tool output parsing)
 Tests canonical schema mapping and rule normalization
 """
 
-import pytest
 from CORE.engines.normalizer import (
+    CanonicalFinding,
+    normalize_bandit,
     normalize_ruff,
     normalize_semgrep,
-    normalize_bandit,
-    CanonicalFinding,
 )
 
 

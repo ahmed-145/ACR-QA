@@ -4,8 +4,10 @@ Tests caching, grounding, and confidence scoring
 """
 
 import os
+from unittest.mock import MagicMock, Mock, patch
+
 import pytest
-from unittest.mock import Mock, patch, MagicMock
+
 from CORE.engines.explainer import ExplanationEngine
 
 

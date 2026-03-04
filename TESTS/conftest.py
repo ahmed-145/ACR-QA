@@ -3,8 +3,9 @@ Shared test fixtures for ACR-QA tests.
 Provides mock Redis and mock Cerebras clients.
 """
 
+from unittest.mock import MagicMock, Mock, patch
+
 import pytest
-from unittest.mock import Mock, MagicMock, patch
 
 
 @pytest.fixture

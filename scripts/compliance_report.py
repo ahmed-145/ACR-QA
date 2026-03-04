@@ -167,7 +167,7 @@ def generate_compliance_report(run_id=None):
         grade = "F"
 
     print(f"🎯 Compliance Score: {compliance_score}/100 (Grade: {grade})")
-    print(f"   Scoring: High=-5pts, Medium=-2pts, Low=-1pt per issue")
+    print("   Scoring: High=-5pts, Medium=-2pts, Low=-1pt per issue")
     print(
         f"   High severity:   {severity_counts.get('high', 0)} issues (-{severity_counts.get('high', 0) * 5} pts)"
     )

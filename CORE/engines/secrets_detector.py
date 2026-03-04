@@ -7,7 +7,7 @@ Pattern-based detection of hardcoded secrets, API keys, passwords, and tokens
 import re
 import sys
 from pathlib import Path
-from typing import Dict, List, Any
+from typing import Any
 
 sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 
@@ -205,7 +205,7 @@ class SecretsDetector:
         ]
         self.skip_compiled = [re.compile(p) for p in self.SKIP_PATTERNS]
 
-    def scan_file(self, filepath: str) -> List[Dict[str, Any]]:
+    def scan_file(self, filepath: str) -> list[dict[str, Any]]:
         """
         Scan a single file for secrets.
 
@@ -215,7 +215,7 @@ class SecretsDetector:
         results = []
 
         try:
-            with open(filepath, "r", encoding="utf-8", errors="replace") as f:
+            with open(filepath, encoding="utf-8", errors="replace") as f:
                 lines = f.readlines()
         except Exception:
             return []
@@ -264,7 +264,7 @@ class SecretsDetector:
 
         return results
 
-    def scan_directory(self, directory: str) -> Dict[str, Any]:
+    def scan_directory(self, directory: str) -> dict[str, Any]:
         """
         Scan an entire directory for secrets.
 
@@ -311,7 +311,7 @@ class SecretsDetector:
             "findings": all_findings,
         }
 
-    def to_canonical_findings(self, findings: List[Dict]) -> List[Dict]:
+    def to_canonical_findings(self, findings: list[dict]) -> list[dict]:
         """Convert findings to canonical format for database storage."""
         canonical = []
         for f in findings:

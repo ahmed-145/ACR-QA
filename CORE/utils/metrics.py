@@ -4,8 +4,8 @@ ACR-QA Prometheus Metrics Exporter
 Exposes application metrics in Prometheus format at /metrics
 """
 
-import time
 import threading
+import time
 from functools import wraps
 
 
@@ -143,7 +143,7 @@ def track_request(endpoint: str):
                     {"endpoint": endpoint},
                 )
                 return result
-            except Exception as e:
+            except Exception:
                 metrics.inc_counter("acrqa_http_errors_total", {"endpoint": endpoint})
                 raise
 

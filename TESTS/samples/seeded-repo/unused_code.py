@@ -12,23 +12,20 @@ IMPORTANT: We intentionally DON'T use any of this code!
 # ==============================================================================
 
 # Example 1: Completely unused imports
-import sys  # UNUSED: Never referenced
-import json  # UNUSED: Never referenced
 import datetime  # UNUSED: Never referenced
+import json  # UNUSED: Never referenced
 import re  # UNUSED: Never referenced
-from pathlib import Path  # UNUSED: Never referenced
-
+import sys  # UNUSED: Never referenced
 
 # Example 2: Partially unused imports
-from collections import OrderedDict, defaultdict, Counter
+from collections import Counter, OrderedDict, defaultdict
+from pathlib import Path  # UNUSED: Never referenced
+
 # OrderedDict is UNUSED
 # defaultdict and Counter are also UNUSED now!
-
-
 # Example 3: Import with alias, never used
 import numpy as np  # UNUSED: Never use 'np'
 import pandas as pd  # UNUSED: Never use 'pd'
-
 
 # ==============================================================================
 # UNUSED VARIABLES
@@ -307,7 +304,7 @@ GLOBAL_CACHE = {}  # UNUSED
 # ==============================================================================
 
 # Example 24: Type aliases never used
-from typing import List, Dict, Tuple, Optional
+from typing import Dict, List, Optional, Tuple
 
 UserID = int  # UNUSED type alias
 UserData = Dict[str, str]  # UNUSED type alias

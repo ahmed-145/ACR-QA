@@ -3,11 +3,12 @@ Rate Limiting Tests for ACR-QA v2.0
 Tests Token Bucket rate limiter with Redis (mocked)
 """
 
-import pytest
-import time
 import sys
+import time
 from pathlib import Path
 from unittest.mock import MagicMock, patch
+
+import pytest
 
 sys.path.insert(0, str(Path(__file__).parent.parent))
 

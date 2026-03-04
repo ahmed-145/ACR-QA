@@ -3,9 +3,9 @@ Style Violations Test File
 Triggers: Ruff style rules (E501, D100, N802, etc.)
 """
 
+import json  # F401: Unused import
 import os
 import sys
-import json  # F401: Unused import
 
 # Missing module docstring would be D100, but we have one above
 

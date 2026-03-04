@@ -3,18 +3,17 @@
 Tests for ConfigLoader and QualityGate engines.
 """
 
-import sys
 import os
+import sys
 import tempfile
-import pytest
-import yaml
 from pathlib import Path
+
+import yaml
 
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-from CORE.config_loader import ConfigLoader, DEFAULT_CONFIG
-from CORE.engines.quality_gate import QualityGate, DEFAULT_THRESHOLDS
-
+from CORE.config_loader import ConfigLoader
+from CORE.engines.quality_gate import QualityGate
 
 # ─── ConfigLoader Tests ────────────────────────────────────────────────────
 

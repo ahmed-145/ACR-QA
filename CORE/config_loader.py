@@ -4,10 +4,10 @@ ACR-QA Per-Repository Configuration Loader
 Reads .acrqa.yml from a project to customize analysis behavior.
 """
 
-import yaml
 from pathlib import Path
-from typing import Dict, List, Any, Optional
+from typing import Any
 
+import yaml
 
 DEFAULT_CONFIG = {
     "version": "1.0",
@@ -55,7 +55,7 @@ class ConfigLoader:
         self.project_dir = Path(project_dir)
         self._config = None
 
-    def load(self) -> Dict[str, Any]:
+    def load(self) -> dict[str, Any]:
         """Load config from project directory, falling back to defaults."""
         if self._config is not None:
             return self._config
@@ -77,7 +77,7 @@ class ConfigLoader:
 
         return self._config
 
-    def _find_config_file(self) -> Optional[Path]:
+    def _find_config_file(self) -> Path | None:
         """Search for config file in project directory."""
         for name in self.CONFIG_FILENAMES:
             path = self.project_dir / name
@@ -117,7 +117,7 @@ class ConfigLoader:
 
         return True
 
-    def get_severity_override(self, rule_id: str) -> Optional[str]:
+    def get_severity_override(self, rule_id: str) -> str | None:
         """Get severity override for a rule, if any."""
         config = self.load()
         overrides = config.get("rules", {}).get("severity_overrides", {})

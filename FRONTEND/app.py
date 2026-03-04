@@ -4,16 +4,17 @@ ACR-QA v2.0 Web Dashboard
 Flask + Tailwind CSS
 """
 
-from flask import Flask, render_template, jsonify, request
-from flask_cors import CORS
-import sys
 import os
+import sys
 from pathlib import Path
+
+from flask import Flask, jsonify, render_template, request
+from flask_cors import CORS
 
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
+from CORE.utils.metrics import register_metrics_endpoint, track_request
 from DATABASE.database import Database
-from CORE.utils.metrics import register_metrics_endpoint, metrics, track_request
 
 app = Flask(__name__)
 CORS(app)
@@ -215,8 +216,8 @@ def refresh_findings():
     This solves the synchronization issue where tool outputs are updated
     but the database still has old data.
     """
-    import subprocess
     import json as json_module
+    import subprocess
     from pathlib import Path as PathLib
 
     try:
@@ -294,9 +295,9 @@ def analyze_single_file():
     Analyze a single file and return findings
     Used by VSCode extension for real-time analysis
     """
-    import tempfile
-    import subprocess
     import json as json_module
+    import subprocess
+    import tempfile
 
     try:
         data = request.get_json()

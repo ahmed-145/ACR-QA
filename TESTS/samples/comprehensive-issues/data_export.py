@@ -3,11 +3,11 @@ Data Export Module with Dead Code
 Triggers: DEAD-001, VAR-001, IMPORT-001
 """
 
+import json
 import os  # IMPORT-001: Never used
 import sys  # IMPORT-001: Never used
-import json
 from datetime import datetime
-from typing import List, Dict
+from typing import Dict, List
 
 
 def export_users_to_csv(users: List[Dict]):

@@ -3,7 +3,7 @@ Severity Scoring Engine for ACR-QA v2.0
 Maps canonical rule IDs to severity levels following PRD guidelines
 """
 
-from typing import Dict, Any
+from typing import Any
 
 
 class SeverityScorer:
@@ -48,7 +48,7 @@ class SeverityScorer:
     def __init__(self):
         pass
 
-    def score(self, canonical_rule_id: str, finding_dict: Dict[str, Any]) -> str:
+    def score(self, canonical_rule_id: str, finding_dict: dict[str, Any]) -> str:
         """
         Determine severity for a finding
 
@@ -70,7 +70,7 @@ class SeverityScorer:
         return severity
 
     def _apply_context_adjustments(
-        self, base_severity: str, canonical_rule_id: str, finding: Dict[str, Any]
+        self, base_severity: str, canonical_rule_id: str, finding: dict[str, Any]
     ) -> str:
         """Apply context-specific severity adjustments"""
 
@@ -110,7 +110,7 @@ class SeverityScorer:
         # Default: use base severity
         return base_severity
 
-    def _extract_complexity(self, finding: Dict[str, Any]) -> int:
+    def _extract_complexity(self, finding: dict[str, Any]) -> int:
         """Extract cyclomatic complexity from Radon output"""
         try:
             raw_output = finding.get("tool_raw", {}).get("original_output", {})
@@ -129,7 +129,7 @@ class SeverityScorer:
                     pass
             return 0
 
-    def _extract_duplication_size(self, finding: Dict[str, Any]) -> int:
+    def _extract_duplication_size(self, finding: dict[str, Any]) -> int:
         """Extract token count from duplication finding"""
         try:
             raw_output = finding.get("tool_raw", {}).get("original_output", {})
@@ -158,7 +158,7 @@ class SeverityScorer:
 
 
 # Convenience function for quick scoring
-def score_severity(canonical_rule_id: str, finding_dict: Dict[str, Any]) -> str:
+def score_severity(canonical_rule_id: str, finding_dict: dict[str, Any]) -> str:
     """Quick severity scoring without instantiating scorer"""
     scorer = SeverityScorer()
     return scorer.score(canonical_rule_id, finding_dict)

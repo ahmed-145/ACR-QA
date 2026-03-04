@@ -23,7 +23,7 @@ def extract_code_snippet(file_path, line_number, context_lines=3):
         if not path.exists():
             return f"# File not found: {file_path}"
 
-        with open(path, "r", encoding="utf-8", errors="ignore") as f:
+        with open(path, encoding="utf-8", errors="ignore") as f:
             lines = f.readlines()
 
         # Calculate range (handle edge cases)
@@ -61,7 +61,7 @@ def extract_function_context(file_path, line_number):
         if not path.exists():
             return extract_code_snippet(file_path, line_number)
 
-        with open(path, "r", encoding="utf-8", errors="ignore") as f:
+        with open(path, encoding="utf-8", errors="ignore") as f:
             lines = f.readlines()
 
         # Find function/class definition
@@ -94,5 +94,5 @@ def extract_function_context(file_path, line_number):
         # Fallback to line-based
         return extract_code_snippet(file_path, line_number)
 
-    except Exception as e:
+    except Exception:
         return extract_code_snippet(file_path, line_number)

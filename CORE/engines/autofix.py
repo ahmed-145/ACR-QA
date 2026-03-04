@@ -5,7 +5,6 @@ Generates code fixes for common issues
 """
 
 import re
-from typing import Dict, List, Optional
 
 
 class AutoFixEngine:
@@ -41,7 +40,7 @@ class AutoFixEngine:
         }
         return confidence_map.get(rule_id, 0.5)
 
-    def generate_fix(self, finding: Dict) -> Optional[Dict]:
+    def generate_fix(self, finding: dict) -> dict | None:
         """
         Generate a fix for a finding
 
@@ -62,7 +61,7 @@ class AutoFixEngine:
         fix_func = self.fixable_rules[rule_id]
         return fix_func(finding)
 
-    def fix_unused_import(self, finding: Dict) -> Dict:
+    def fix_unused_import(self, finding: dict) -> dict:
         """Remove unused import statement"""
         file_path = finding["file_path"]
         line_num = finding["line"]
@@ -81,7 +80,7 @@ class AutoFixEngine:
             "description": f"Remove unused import on line {line_num}",
         }
 
-    def fix_unused_variable(self, finding: Dict) -> Dict:
+    def fix_unused_variable(self, finding: dict) -> dict:
         """Remove or prefix unused variable with underscore"""
         file_path = finding["file_path"]
         line_num = finding["line"]
@@ -120,7 +119,7 @@ class AutoFixEngine:
             "description": f"Prefix unused variable '{var_name}' with underscore",
         }
 
-    def fix_fstring_conversion(self, finding: Dict) -> Dict:
+    def fix_fstring_conversion(self, finding: dict) -> dict:
         """Convert % formatting to f-strings"""
         file_path = finding["file_path"]
         line_num = finding["line"]
@@ -148,7 +147,7 @@ class AutoFixEngine:
 
         return None
 
-    def fix_boolean_comparison(self, finding: Dict) -> Dict:
+    def fix_boolean_comparison(self, finding: dict) -> dict:
         """Simplify boolean comparisons"""
         file_path = finding["file_path"]
         line_num = finding["line"]
@@ -175,7 +174,7 @@ class AutoFixEngine:
 
         return None
 
-    def add_type_hints(self, finding: Dict) -> Dict:
+    def add_type_hints(self, finding: dict) -> dict:
         """Add basic type hints to function"""
         file_path = finding["file_path"]
         line_num = finding["line"]
@@ -201,7 +200,7 @@ class AutoFixEngine:
 
         return None
 
-    def fix_bare_except(self, finding: Dict) -> Dict:
+    def fix_bare_except(self, finding: dict) -> dict:
         """Replace bare except with except Exception"""
         file_path = finding["file_path"]
         line_num = finding["line"]
@@ -225,7 +224,7 @@ class AutoFixEngine:
 
         return None
 
-    def fix_eval_usage(self, finding: Dict) -> Dict:
+    def fix_eval_usage(self, finding: dict) -> dict:
         """Replace eval() with ast.literal_eval() for safer evaluation"""
         file_path = finding["file_path"]
         line_num = finding["line"]
@@ -249,7 +248,7 @@ class AutoFixEngine:
 
         return None
 
-    def fix_dead_code(self, finding: Dict) -> Dict:
+    def fix_dead_code(self, finding: dict) -> dict:
         """Remove dead/unreachable code"""
         file_path = finding["file_path"]
         line_num = finding["line"]
@@ -265,11 +264,11 @@ class AutoFixEngine:
             "line": line_num,
             "original": original_line.rstrip(),
             "fixed": "",  # Empty = remove line
-            "description": f"Remove dead/unreachable code",
+            "description": "Remove dead/unreachable code",
         }
 
 
-def apply_fixes(fixes: List[Dict]) -> Dict[str, List[str]]:
+def apply_fixes(fixes: list[dict]) -> dict[str, list[str]]:
     """
     Apply fixes to files
 
@@ -307,7 +306,7 @@ def apply_fixes(fixes: List[Dict]) -> Dict[str, List[str]]:
     return changes_by_file
 
 
-def verify_fix(fix_result: Dict) -> Dict:
+def verify_fix(fix_result: dict) -> dict:
     """
     N3: Fix Verification Testing
 
@@ -320,13 +319,13 @@ def verify_fix(fix_result: Dict) -> Dict:
     Returns:
         Dict with verification result: 'verified' (bool), 'remaining_issues' (list)
     """
+    import os
     import subprocess
     import tempfile
-    import os
 
     filepath = fix_result.get("file", "")
     line = fix_result.get("line", 0)
-    original = fix_result.get("original", "")
+    fix_result.get("original", "")
     fixed = fix_result.get("fixed", "")
 
     if not filepath or not os.path.exists(filepath):

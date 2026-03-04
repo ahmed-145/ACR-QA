@@ -9,10 +9,11 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 
 
-import uuid
 import json
-from typing import Dict, Any, List, Optional
+import uuid
 from pathlib import Path
+from typing import Any
+
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 
 # Universal Rule Mapping: Tool-specific → Canonical
@@ -136,7 +137,7 @@ class CanonicalFinding(BaseModel):
     message: str
 
     # Evidence
-    evidence: Dict[str, Any] = Field(
+    evidence: dict[str, Any] = Field(
         default_factory=lambda: {
             "snippet": "",
             "context_before": [],
@@ -145,7 +146,7 @@ class CanonicalFinding(BaseModel):
     )
 
     # Tool metadata
-    tool_raw: Dict[str, Any]
+    tool_raw: dict[str, Any]
 
     # Original severity for audit trail
     original_severity: str = ""
@@ -194,7 +195,7 @@ class CanonicalFinding(BaseModel):
         category: str,
         message: str,
         tool_name: str,
-        tool_output: Dict[str, Any],
+        tool_output: dict[str, Any],
         column: int = 0,
     ) -> "CanonicalFinding":
         """
@@ -311,7 +312,7 @@ class CanonicalFinding(BaseModel):
                 "context_after": context_after[:3] if context_after else [],  # First 3
             }
 
-        except Exception as e:
+        except Exception:
             # Fallback: just use the message
             self.evidence = {
                 "snippet": f"# Line {self.line}",
@@ -319,12 +320,12 @@ class CanonicalFinding(BaseModel):
                 "context_after": [],
             }
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Convert to dictionary for JSON serialization (uses Pydantic's model_dump)"""
         return self.model_dump()
 
 
-def normalize_ruff(ruff_json: List[Dict]) -> List[CanonicalFinding]:
+def normalize_ruff(ruff_json: list[dict]) -> list[CanonicalFinding]:
     """Convert Ruff findings to canonical format"""
     findings = []
 
@@ -346,7 +347,7 @@ def normalize_ruff(ruff_json: List[Dict]) -> List[CanonicalFinding]:
     return findings
 
 
-def normalize_semgrep(semgrep_json: Dict) -> List[CanonicalFinding]:
+def normalize_semgrep(semgrep_json: dict) -> list[CanonicalFinding]:
     """Convert Semgrep findings to canonical format"""
     findings = []
 
@@ -376,7 +377,7 @@ def normalize_semgrep(semgrep_json: Dict) -> List[CanonicalFinding]:
     return findings
 
 
-def normalize_vulture(vulture_txt: str) -> List[CanonicalFinding]:
+def normalize_vulture(vulture_txt: str) -> list[CanonicalFinding]:
     """Convert Vulture text output to canonical format"""
     findings = []
 
@@ -425,7 +426,7 @@ def normalize_vulture(vulture_txt: str) -> List[CanonicalFinding]:
     return findings
 
 
-def normalize_jscpd(jscpd_json: Dict) -> List[CanonicalFinding]:
+def normalize_jscpd(jscpd_json: dict) -> list[CanonicalFinding]:
     """Convert jscpd findings to canonical format"""
     findings = []
 
@@ -459,7 +460,7 @@ def normalize_jscpd(jscpd_json: Dict) -> List[CanonicalFinding]:
     return findings
 
 
-def normalize_radon(radon_json: Dict) -> List[CanonicalFinding]:
+def normalize_radon(radon_json: dict) -> list[CanonicalFinding]:
     """Convert Radon complexity findings to canonical format"""
     findings = []
 
@@ -504,7 +505,7 @@ def normalize_radon(radon_json: Dict) -> List[CanonicalFinding]:
     return findings
 
 
-def normalize_all(outputs_dir: str = "outputs") -> List[CanonicalFinding]:
+def normalize_all(outputs_dir: str = "outputs") -> list[CanonicalFinding]:
     """
     Load and normalize all tool outputs from directory
 
@@ -637,7 +638,7 @@ def normalize_all(outputs_dir: str = "outputs") -> List[CanonicalFinding]:
     return filtered_findings
 
 
-def normalize_bandit(bandit_json: Dict) -> List[CanonicalFinding]:
+def normalize_bandit(bandit_json: dict) -> list[CanonicalFinding]:
     """Convert Bandit security findings to canonical format"""
     findings = []
 
@@ -673,5 +674,5 @@ if __name__ == "__main__":
     findings = normalize_all()
 
     if findings:
-        print(f"\nSample canonical finding:")
+        print("\nSample canonical finding:")
         print(json.dumps(findings[0].to_dict(), indent=2))

@@ -4,15 +4,14 @@ ACR-QA SCA (Software Composition Analysis) Scanner
 Scans dependencies for known vulnerabilities using pip-audit
 """
 
-import subprocess
 import json
+import subprocess
 import sys
 from pathlib import Path
-from typing import Dict, List, Any, Optional
+from typing import Any
 
 sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 
-from CORE.engines.normalizer import CanonicalFinding
 
 
 class SCAScanner:
@@ -36,7 +35,7 @@ class SCAScanner:
     def __init__(self, project_dir: str = "."):
         self.project_dir = Path(project_dir)
 
-    def scan(self) -> Dict[str, Any]:
+    def scan(self) -> dict[str, Any]:
         """
         Run SCA scan on the project.
 
@@ -79,7 +78,7 @@ class SCAScanner:
         except (FileNotFoundError, subprocess.TimeoutExpired):
             return False
 
-    def _run_pip_audit(self) -> Optional[List[Dict]]:
+    def _run_pip_audit(self) -> list[dict] | None:
         """Run pip-audit and parse results."""
         if not self._pip_audit_available():
             return None
@@ -108,7 +107,7 @@ class SCAScanner:
             print(f"⚠️ pip-audit error: {e}")
             return None
 
-    def _parse_pip_audit(self, data: Dict) -> List[Dict]:
+    def _parse_pip_audit(self, data: dict) -> list[dict]:
         """Parse pip-audit JSON output."""
         vulnerabilities = []
 
@@ -129,7 +128,7 @@ class SCAScanner:
 
         return vulnerabilities
 
-    def _find_requirements(self) -> Optional[Path]:
+    def _find_requirements(self) -> Path | None:
         """Find requirements file in project."""
         candidates = [
             "requirements.txt",
@@ -144,7 +143,7 @@ class SCAScanner:
                 return path
         return None
 
-    def _scan_requirements(self) -> List[Dict]:
+    def _scan_requirements(self) -> list[dict]:
         """
         Fallback: parse requirements and check for known vulnerable patterns.
         This is a basic check — not a replacement for pip-audit.
@@ -238,7 +237,7 @@ class SCAScanner:
         except (ValueError, AttributeError):
             return False
 
-    def _to_canonical_findings(self, vulnerabilities: List[Dict]) -> List[Dict]:
+    def _to_canonical_findings(self, vulnerabilities: list[dict]) -> list[dict]:
         """Convert vulnerabilities to canonical finding dicts."""
         findings = []
 
@@ -270,7 +269,7 @@ if __name__ == "__main__":
     scanner = SCAScanner(project_dir=".")
     results = scanner.scan()
 
-    print(f"\n🔍 SCA Scan Results")
+    print("\n🔍 SCA Scan Results")
     print(f"   Scanner: {results['scanner']}")
     print(f"   Total vulnerabilities: {results['total_vulnerabilities']}")
     print(f"   Breakdown: {results['severity_breakdown']}")

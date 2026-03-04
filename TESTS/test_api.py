@@ -3,10 +3,11 @@ Unit tests for Dashboard API endpoints
 Tests filtering, grouping, and data integrity
 """
 
-import pytest
 import json
+
+import pytest
+
 from FRONTEND.app import app
-from DATABASE.database import Database
 
 
 @pytest.fixture

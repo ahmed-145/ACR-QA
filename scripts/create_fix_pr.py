@@ -3,17 +3,17 @@
 Create GitHub PR with auto-fixes
 """
 
-import sys
-import os
 import argparse
-import subprocess
+import os
+import sys
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-from DATABASE.database import Database
-from CORE.engines.autofix import AutoFixEngine, apply_fixes
 from github import Github
+
+from CORE.engines.autofix import AutoFixEngine, apply_fixes
+from DATABASE.database import Database
 
 
 def create_fix_pr(run_id: int, github_token: str, repo_name: str):
@@ -63,12 +63,12 @@ def create_fix_pr(run_id: int, github_token: str, repo_name: str):
 
         # Create new branch
         repo.create_git_ref(f"refs/heads/{branch_name}", base_sha)
-        print(f"   ✓ Branch created")
+        print("   ✓ Branch created")
     except Exception as e:
         print(f"   ⚠️  Branch might already exist: {e}")
 
     # Apply fixes locally
-    print(f"   Applying fixes...")
+    print("   Applying fixes...")
     changes_by_file = apply_fixes(fixes)
 
     # Commit changes
@@ -114,7 +114,7 @@ This PR contains automatic fixes for issues detected by ACR-QA.
         for change in changes:
             pr_body += f"- {change}\n"
 
-    pr_body += f"""
+    pr_body += """
 ### Review Checklist
 - [ ] All fixes are correct
 - [ ] Tests pass
@@ -129,7 +129,7 @@ This PR contains automatic fixes for issues detected by ACR-QA.
             title=pr_title, body=pr_body, head=branch_name, base=base_branch
         )
 
-        print(f"\n✅ PR Created!")
+        print("\n✅ PR Created!")
         print(f"   URL: {pr.html_url}")
         print(f"   Number: #{pr.number}")
 

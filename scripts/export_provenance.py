@@ -5,15 +5,16 @@ Complete audit trail: raw tool outputs, LLM interactions, timestamps
 For academic evaluation and thesis defense
 """
 
-import sys
 import json
-from pathlib import Path
+import sys
 from datetime import datetime
+from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-from DATABASE.database import Database
 import argparse
+
+from DATABASE.database import Database
 
 
 def export_provenance(run_id=None, output_dir="DATA/outputs/provenance"):
@@ -95,7 +96,6 @@ def export_provenance(run_id=None, output_dir="DATA/outputs/provenance"):
 
     # Process findings
     latencies = []
-    costs = []
 
     for f in findings:
         # Convert to serializable format

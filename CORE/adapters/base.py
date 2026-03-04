@@ -5,8 +5,8 @@ Abstract base for language-specific tool orchestration.
 """
 
 from abc import ABC, abstractmethod
-from typing import Dict, List, Any, Optional
 from pathlib import Path
+from typing import Any
 
 
 class LanguageAdapter(ABC):
@@ -36,12 +36,12 @@ class LanguageAdapter(ABC):
 
     @property
     @abstractmethod
-    def file_extensions(self) -> List[str]:
+    def file_extensions(self) -> list[str]:
         """File extensions this adapter handles (e.g., ['.py'], ['.js', '.ts'])."""
         ...
 
     @abstractmethod
-    def get_tools(self) -> List[Dict[str, Any]]:
+    def get_tools(self) -> list[dict[str, Any]]:
         """
         Return list of tools this adapter uses.
 
@@ -51,7 +51,7 @@ class LanguageAdapter(ABC):
         ...
 
     @abstractmethod
-    def run_tools(self, output_dir: str = "DATA/outputs") -> Dict[str, Any]:
+    def run_tools(self, output_dir: str = "DATA/outputs") -> dict[str, Any]:
         """
         Run all language-specific analysis tools.
 
@@ -64,7 +64,7 @@ class LanguageAdapter(ABC):
         ...
 
     @abstractmethod
-    def get_rule_mappings(self) -> Dict[str, str]:
+    def get_rule_mappings(self) -> dict[str, str]:
         """
         Return tool-specific rule ID → canonical rule ID mappings.
 
@@ -73,7 +73,7 @@ class LanguageAdapter(ABC):
         """
         ...
 
-    def find_files(self) -> List[Path]:
+    def find_files(self) -> list[Path]:
         """Find all files matching this adapter's extensions in target_dir."""
         files = []
         for ext in self.file_extensions:

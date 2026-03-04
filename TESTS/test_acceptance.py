@@ -3,16 +3,17 @@ Acceptance Tests for ACR-QA v2.0 Phase 1
 Tests PRD2026 acceptance criteria
 """
 
-import pytest
-import sys
 import json
+import sys
 from pathlib import Path
-from unittest.mock import Mock, patch, MagicMock
+from unittest.mock import MagicMock, Mock, patch
+
+import pytest
 
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-from CORE.engines.normalizer import normalize_all, CanonicalFinding
 from CORE.engines.explainer import ExplanationEngine
+from CORE.engines.normalizer import CanonicalFinding
 from CORE.utils.rate_limiter import RateLimiter
 
 

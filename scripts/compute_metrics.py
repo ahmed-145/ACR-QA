@@ -5,13 +5,14 @@ Computes precision, recall, F1 score from labeled ground truth
 """
 
 import sys
-from pathlib import Path
 from collections import defaultdict
+from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-from DATABASE.database import Database
 import argparse
+
+from DATABASE.database import Database
 
 
 def compute_metrics(run_id=None, by_severity=False, by_category=False):

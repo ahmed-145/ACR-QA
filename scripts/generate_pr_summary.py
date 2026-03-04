@@ -5,16 +5,16 @@ Generates human-readable summaries for pull requests with risk scoring
 """
 
 import sys
-from pathlib import Path
-from typing import List, Dict, Any, Optional
 from collections import Counter
+from pathlib import Path
+from typing import Any
 
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
 from DATABASE.database import Database
 
 
-def calculate_risk_score(findings: List[Dict]) -> Dict[str, Any]:
+def calculate_risk_score(findings: list[dict]) -> dict[str, Any]:
     """
     Calculate a risk score (0-100) based on findings.
 
@@ -65,7 +65,7 @@ def calculate_risk_score(findings: List[Dict]) -> Dict[str, Any]:
     }
 
 
-def generate_pr_summary(run_id: int = None, findings: List[Dict] = None) -> str:
+def generate_pr_summary(run_id: int = None, findings: list[dict] = None) -> str:
     """
     Generate a markdown summary for a PR based on analysis findings.
 
@@ -202,7 +202,7 @@ def generate_pr_summary(run_id: int = None, findings: List[Dict] = None) -> str:
     return summary
 
 
-def generate_summary_from_findings(findings: List[Dict]) -> str:
+def generate_summary_from_findings(findings: list[dict]) -> str:
     """
     Generate a summary directly from a list of finding dicts (no DB required).
     Useful for inline PR comments.

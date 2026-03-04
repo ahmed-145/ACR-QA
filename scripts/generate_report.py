@@ -5,15 +5,17 @@ Creates human-readable reports from analysis runs
 """
 
 import sys
-import yaml
-from pathlib import Path
 from datetime import datetime
+from pathlib import Path
+
+import yaml
 
 # Add parent directory to path
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-from DATABASE.database import Database
 import argparse
+
+from DATABASE.database import Database
 
 
 # Load rules catalog for remediation suggestions
@@ -166,12 +168,12 @@ def generate_report(run_id=None, output_file=None):
                 f"**Tool:** {finding['tool']} | **Rule:** [{canonical_id}](config/rules.yml)"
             )
             report_lines.append("")
-            report_lines.append(f"**Issue:**")
+            report_lines.append("**Issue:**")
             report_lines.append(f"> {finding['message']}")
             report_lines.append("")
 
             if finding.get("explanation_text"):
-                report_lines.append(f"**AI Explanation:**")
+                report_lines.append("**AI Explanation:**")
                 report_lines.append("")
                 report_lines.append(finding["explanation_text"])
                 report_lines.append("")

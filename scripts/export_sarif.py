@@ -5,16 +5,17 @@ Exports findings in SARIF v2.1.0 format for GitHub Security tab integration.
 SARIF = Static Analysis Results Interchange Format (OASIS standard)
 """
 
-import sys
 import json
+import sys
 import uuid
-from pathlib import Path
 from datetime import datetime
+from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-from DATABASE.database import Database
 import argparse
+
+from DATABASE.database import Database
 
 
 def generate_sarif(run_id=None, output_file=None):

@@ -9,18 +9,19 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-import json
-import subprocess
 import argparse
+import json
 import os
 import shutil
+import subprocess
 import tempfile
-from DATABASE.database import Database
+
+from CORE.config_loader import ConfigLoader
 from CORE.engines.explainer import ExplanationEngine
 from CORE.engines.quality_gate import QualityGate
-from CORE.config_loader import ConfigLoader
 from CORE.utils.code_extractor import extract_code_snippet
 from CORE.utils.rate_limiter import get_rate_limiter
+from DATABASE.database import Database
 
 
 class AnalysisPipeline:
@@ -46,16 +47,16 @@ class AnalysisPipeline:
         allowed, retry_after = rate_limiter.check_rate_limit(repo_name, pr_number)
 
         if not allowed:
-            print(f"      ✗ RATE LIMITED!")
+            print("      ✗ RATE LIMITED!")
             print(f"      Repository: {repo_name}")
             if pr_number:
                 print(f"      PR Number: {pr_number}")
             print(f"      Retry after: {retry_after:.1f} seconds")
-            print(f"\n⚠️  Rate limit: ≤1 analysis per repo per minute")
+            print("\n⚠️  Rate limit: ≤1 analysis per repo per minute")
             print(f"    Please wait {retry_after:.1f}s before retrying.")
             return None
 
-        print(f"      ✓ Rate limit OK")
+        print("      ✓ Rate limit OK")
 
         # Step 1: Create analysis run
         print("\n[1/5] Creating analysis run in database...")
@@ -115,7 +116,7 @@ class AnalysisPipeline:
         redis_client = (
             rate_limiter.redis if rate_limiter and rate_limiter.redis else None
         )
-        explainer = ExplanationEngine(redis_client=redis_client)
+        ExplanationEngine(redis_client=redis_client)
 
         # Cap explanations using config
         max_explanations = self.config.get("ai", {}).get("max_explanations", 50)
@@ -161,7 +162,7 @@ class AnalysisPipeline:
         print(f"\n   Run ID: {run_id}")
         print(f"   Explanations Generated: {len(findings_to_process)}")
         print("\nNext Steps:")
-        print(f"   View dashboard: python3 FRONTEND/app.py")
+        print("   View dashboard: python3 FRONTEND/app.py")
         print(f"   Generate report: python3 scripts/generate_report.py {run_id}")
         print(f"   Export SARIF: python3 scripts/export_sarif.py --run-id {run_id}")
 

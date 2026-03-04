@@ -3,14 +3,15 @@ Cerebras API Integration for Natural Language Explanations
 Evidence-grounded prompt engineering for code quality issues
 """
 
+import hashlib
+import json
 import os
 import time
-import json
-import hashlib
+
+import yaml
 from cerebras.cloud.sdk import Cerebras
 from dotenv import load_dotenv
 from tenacity import retry, stop_after_attempt, wait_exponential
-import yaml
 
 load_dotenv()
 

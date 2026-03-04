@@ -4,18 +4,18 @@ ACR-QA Integration Tests and Performance Benchmarks
 Tests end-to-end workflows and measures performance
 """
 
-import pytest
-import time
-import json
 import os
 import sys
+import time
 from pathlib import Path
+
+import pytest
 
 # Add project root to path
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-from CORE.main import AnalysisPipeline
 from CORE.engines.autofix import AutoFixEngine
+from CORE.main import AnalysisPipeline
 from DATABASE.database import Database
 
 

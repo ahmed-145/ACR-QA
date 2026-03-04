@@ -4,11 +4,11 @@ Handles provenance storage and retrieval
 """
 
 import os
-import psycopg2
-from psycopg2.extras import RealDictCursor, Json
-from datetime import datetime
-from dotenv import load_dotenv
 from pathlib import Path
+
+import psycopg2
+from dotenv import load_dotenv
+from psycopg2.extras import Json, RealDictCursor
 
 # Load .env from project root
 project_root = Path(__file__).parent.parent

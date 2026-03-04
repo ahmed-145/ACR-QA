@@ -4,10 +4,10 @@ ACR-QA Python Language Adapter
 Orchestrates Python-specific analysis tools: Ruff, Semgrep, Bandit, Vulture, Radon, jscpd.
 """
 
-import subprocess
 import shutil
+import subprocess
 from pathlib import Path
-from typing import Dict, List, Any
+from typing import Any
 
 from CORE.adapters.base import LanguageAdapter
 
@@ -30,10 +30,10 @@ class PythonAdapter(LanguageAdapter):
         return "Python"
 
     @property
-    def file_extensions(self) -> List[str]:
+    def file_extensions(self) -> list[str]:
         return [".py"]
 
-    def get_tools(self) -> List[Dict[str, Any]]:
+    def get_tools(self) -> list[dict[str, Any]]:
         return [
             {
                 "name": "ruff",
@@ -59,7 +59,7 @@ class PythonAdapter(LanguageAdapter):
             },
         ]
 
-    def check_tools_available(self) -> Dict[str, bool]:
+    def check_tools_available(self) -> dict[str, bool]:
         """Check which tools are installed and available."""
         availability = {}
         for tool in self.get_tools():
@@ -67,7 +67,7 @@ class PythonAdapter(LanguageAdapter):
             availability[tool["name"]] = shutil.which(cmd) is not None
         return availability
 
-    def run_tools(self, output_dir: str = "DATA/outputs") -> Dict[str, Any]:
+    def run_tools(self, output_dir: str = "DATA/outputs") -> dict[str, Any]:
         """
         Run all Python analysis tools via the existing run_checks.sh script.
 
@@ -94,7 +94,7 @@ class PythonAdapter(LanguageAdapter):
 
         return results
 
-    def get_rule_mappings(self) -> Dict[str, str]:
+    def get_rule_mappings(self) -> dict[str, str]:
         """
         Return Python-specific rule mappings.
         These are already defined in normalizer.py's RULE_MAPPING dict.
@@ -134,10 +134,10 @@ class JavaScriptAdapter(LanguageAdapter):
         return "JavaScript"
 
     @property
-    def file_extensions(self) -> List[str]:
+    def file_extensions(self) -> list[str]:
         return [".js", ".jsx", ".ts", ".tsx", ".mjs", ".cjs"]
 
-    def get_tools(self) -> List[Dict[str, Any]]:
+    def get_tools(self) -> list[dict[str, Any]]:
         return [
             {
                 "name": "eslint",
@@ -152,14 +152,14 @@ class JavaScriptAdapter(LanguageAdapter):
             },
         ]
 
-    def run_tools(self, output_dir: str = "DATA/outputs") -> Dict[str, Any]:
+    def run_tools(self, output_dir: str = "DATA/outputs") -> dict[str, Any]:
         # Phase 2: Will implement JS tool orchestration
         raise NotImplementedError(
             "JavaScript adapter is a Phase 2 feature. "
             "See CORE/adapters/base.py for the interface to implement."
         )
 
-    def get_rule_mappings(self) -> Dict[str, str]:
+    def get_rule_mappings(self) -> dict[str, str]:
         # Phase 2: ESLint rule → canonical mappings
         return {
             # ESLint rules → Universal IDs (to be expanded)

@@ -3,11 +3,11 @@ Rate Limiter for ACR-QA v2.0
 Token Bucket algorithm with Redis backend
 """
 
-import time
-import redis
-from typing import Optional
-from tenacity import retry, stop_after_attempt, wait_exponential
 import logging
+import time
+
+import redis
+from tenacity import retry, stop_after_attempt, wait_exponential
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -60,7 +60,7 @@ class RateLimiter:
         wait=wait_exponential(multiplier=1, min=1, max=10),
         reraise=True,
     )
-    def _connect_redis(self) -> Optional[redis.Redis]:
+    def _connect_redis(self) -> redis.Redis | None:
         """
         Connect to Redis with exponential backoff retry.
 
@@ -88,7 +88,7 @@ class RateLimiter:
             logger.error(f"✗ Unexpected Redis error: {e}")
             return None
 
-    def _get_bucket_key(self, repo_name: str, pr_number: Optional[int] = None) -> str:
+    def _get_bucket_key(self, repo_name: str, pr_number: int | None = None) -> str:
         """
         Generate Redis key for rate limit bucket.
 
@@ -104,8 +104,8 @@ class RateLimiter:
         return f"rate_limit:{repo_name}"
 
     def check_rate_limit(
-        self, repo_name: str, pr_number: Optional[int] = None
-    ) -> tuple[bool, Optional[float]]:
+        self, repo_name: str, pr_number: int | None = None
+    ) -> tuple[bool, float | None]:
         """
         Check if request is allowed under rate limit (Token Bucket algorithm).
 
@@ -194,7 +194,7 @@ class RateLimiter:
             return True, None
 
     def _log_rate_limit_event(
-        self, repo_name: str, pr_number: Optional[int], retry_after: float
+        self, repo_name: str, pr_number: int | None, retry_after: float
     ) -> None:
         """
         Log rate limit event for monitoring.
@@ -225,7 +225,7 @@ class RateLimiter:
         except Exception as e:
             logger.error(f"Failed to log rate limit event to Redis: {e}")
 
-    def reset_rate_limit(self, repo_name: str, pr_number: Optional[int] = None) -> bool:
+    def reset_rate_limit(self, repo_name: str, pr_number: int | None = None) -> bool:
         """
         Reset rate limit for a specific repo/PR (admin function).
 
@@ -251,7 +251,7 @@ class RateLimiter:
 
 
 # Singleton instance
-_rate_limiter_instance: Optional[RateLimiter] = None
+_rate_limiter_instance: RateLimiter | None = None
 
 
 def get_rate_limiter(
