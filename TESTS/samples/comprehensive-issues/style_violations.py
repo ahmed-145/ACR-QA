@@ -13,7 +13,9 @@ import sys
 def thisIsABadFunctionName(x, y):  # N802: Function name should be lowercase
     """This function has a very long line that exceeds the 88 character limit and should trigger the E501 rule from Ruff linter."""
     unused_variable = 42  # F841: Unused variable
-    very_long_variable_name_that_goes_on_and_on = "This is a very long line that definitely exceeds 88 characters and should be caught by Ruff"
+    very_long_variable_name_that_goes_on_and_on = (
+        "This is a very long line that definitely exceeds 88 characters and should be caught by Ruff"
+    )
     return x + y
 
 

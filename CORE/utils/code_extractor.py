@@ -77,9 +77,7 @@ def extract_function_context(file_path, line_number):
             end_line = len(lines)
             for i in range(def_line + 1, len(lines)):
                 stripped = lines[i].strip()
-                if (
-                    stripped.startswith("def ") or stripped.startswith("class ")
-                ) and lines[i][0] not in (" ", "\t"):
+                if (stripped.startswith("def ") or stripped.startswith("class ")) and lines[i][0] not in (" ", "\t"):
                     end_line = i
                     break
 

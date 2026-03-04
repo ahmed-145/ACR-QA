@@ -19,9 +19,7 @@ from DATABASE.database import Database
 app = Flask(__name__)
 CORS(app)
 # Security: Use environment variable for SECRET_KEY
-app.config["SECRET_KEY"] = os.getenv(
-    "FLASK_SECRET_KEY", "dev-secret-key-change-in-production"
-)
+app.config["SECRET_KEY"] = os.getenv("FLASK_SECRET_KEY", "dev-secret-key-change-in-production")
 
 db = Database()
 
@@ -53,15 +51,9 @@ def get_runs():
                     "pr_number": run.get("pr_number"),
                     "status": run["status"],
                     "started_at": str(run["started_at"]),
-                    "total_findings": summary.get("findings_count", 0)
-                    if summary
-                    else 0,
-                    "high_count": summary.get("high_severity_count", 0)
-                    if summary
-                    else 0,
-                    "medium_count": summary.get("medium_severity_count", 0)
-                    if summary
-                    else 0,
+                    "total_findings": summary.get("findings_count", 0) if summary else 0,
+                    "high_count": summary.get("high_severity_count", 0) if summary else 0,
+                    "medium_count": summary.get("medium_severity_count", 0) if summary else 0,
                     "low_count": summary.get("low_severity_count", 0) if summary else 0,
                 }
             )
@@ -120,8 +112,7 @@ def get_run_findings(run_id):
                     # LOW Priority: Display confidence score (calculated based on rule citation)
                     "confidence": 0.9
                     if f.get("explanation_text")
-                    and f.get("canonical_rule_id", "")
-                    in str(f.get("explanation_text", ""))
+                    and f.get("canonical_rule_id", "") in str(f.get("explanation_text", ""))
                     else 0.6,
                     "ground_truth": f.get("ground_truth"),  # For Phase 2 evaluation
                 }
@@ -225,9 +216,7 @@ def refresh_findings():
         data = request.get_json() or {}
         target_dir = data.get("target_dir", "TESTS/samples/comprehensive-issues")
         repo_name = data.get("repo_name", "quick-refresh")
-        skip_detection = data.get(
-            "skip_detection", False
-        )  # Re-use existing tool outputs
+        skip_detection = data.get("skip_detection", False)  # Re-use existing tool outputs
 
         project_root = PathLib(__file__).parent.parent
 
@@ -329,9 +318,7 @@ def analyze_single_file():
                             "line": finding.get("location", {}).get("row", 1),
                             "column": finding.get("location", {}).get("column", 1),
                             "rule_id": finding.get("code", "UNKNOWN"),
-                            "severity": "medium"
-                            if finding.get("code", "").startswith("E")
-                            else "low",
+                            "severity": "medium" if finding.get("code", "").startswith("E") else "low",
                             "message": finding.get("message", ""),
                             "tool": "ruff",
                         }
@@ -410,9 +397,7 @@ def quick_stats():
                     "high_severity": total_high,
                     "medium_severity": total_medium,
                     "low_severity": total_low,
-                    "avg_findings_per_run": round(total_findings / len(runs), 1)
-                    if runs
-                    else 0,
+                    "avg_findings_per_run": round(total_findings / len(runs), 1) if runs else 0,
                 },
             }
         )
@@ -468,8 +453,7 @@ def get_pr_summary(run_id):
                 "summary_markdown": summary_md,
                 "stats": {
                     "total": len(findings),
-                    "high": severity_counts.get("high", 0)
-                    + severity_counts.get("critical", 0),
+                    "high": severity_counts.get("high", 0) + severity_counts.get("critical", 0),
                     "medium": severity_counts.get("medium", 0),
                     "low": severity_counts.get("low", 0),
                 },
@@ -508,12 +492,7 @@ def get_fix_confidence(rule_id):
         "DUP-001": 25,  # Duplication - needs judgment
     }
 
-    confidence = (
-        high_confidence.get(rule_id)
-        or medium_confidence.get(rule_id)
-        or low_confidence.get(rule_id)
-        or 50
-    )
+    confidence = high_confidence.get(rule_id) or medium_confidence.get(rule_id) or low_confidence.get(rule_id) or 50
 
     level = "high" if confidence >= 80 else "medium" if confidence >= 60 else "low"
 

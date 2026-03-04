@@ -97,9 +97,7 @@ class MetricsCollector:
                 lines.append(f"# TYPE {name} histogram")
                 seen_hist_names.add(name)
 
-            base_labels = (
-                key[key.index("{") : key.index("}")] + "," if "{" in key else ""
-            )
+            base_labels = key[key.index("{") : key.index("}")] + "," if "{" in key else ""
             prefix = name
 
             cumulative = 0
@@ -184,15 +182,11 @@ def record_analysis_metrics(
 
 def record_finding_metrics(severity: str, category: str):
     """Record per-finding metrics."""
-    metrics.inc_counter(
-        "acrqa_findings_total", {"severity": severity, "category": category}
-    )
+    metrics.inc_counter("acrqa_findings_total", {"severity": severity, "category": category})
 
 
 def record_explanation_metrics(latency_ms: float, model: str, tokens: int = 0):
     """Record LLM explanation metrics."""
-    metrics.observe_histogram(
-        "acrqa_explanation_latency_seconds", latency_ms / 1000.0, {"model": model}
-    )
+    metrics.observe_histogram("acrqa_explanation_latency_seconds", latency_ms / 1000.0, {"model": model})
     if tokens:
         metrics.inc_counter("acrqa_llm_tokens_total", {"model": model}, value=tokens)

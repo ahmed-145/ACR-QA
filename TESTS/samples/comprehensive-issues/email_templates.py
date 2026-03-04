@@ -9,9 +9,7 @@ from typing import Dict
 
 
 # STYLE-001: Line too long (>88 chars)
-def generate_welcome_email_with_user_info_and_personalization_and_marketing_links_and_tracking(
-    username, email, plan
-):
+def generate_welcome_email_with_user_info_and_personalization_and_marketing_links_and_tracking(username, email, plan):
     """
     NAMING-001: Bad parameter names
     PLR0913: Too many parameters (if we add more)

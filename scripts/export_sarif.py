@@ -99,9 +99,7 @@ def generate_sarif(run_id=None, output_file=None):
                 "id": rule_id,
                 "shortDescription": {"text": f.get("message", rule_id)[:200]},
                 "fullDescription": {"text": f.get("message", rule_id)},
-                "defaultConfiguration": {
-                    "level": severity_map.get(severity, "warning")
-                },
+                "defaultConfiguration": {"level": severity_map.get(severity, "warning")},
                 "properties": {"tags": category_to_tag.get(category, ["general"])},
                 "helpUri": f"https://github.com/ACR-QA/rules/{rule_id}",
             }
@@ -133,9 +131,7 @@ def generate_sarif(run_id=None, output_file=None):
                 }
             ],
             "fingerprints": {
-                "primaryLocationLineHash": str(
-                    uuid.uuid5(uuid.NAMESPACE_URL, f"{file_path}:{line}:{rule_id}")
-                )
+                "primaryLocationLineHash": str(uuid.uuid5(uuid.NAMESPACE_URL, f"{file_path}:{line}:{rule_id}"))
             },
             "properties": {
                 "tool": f.get("tool", "unknown"),
@@ -158,9 +154,7 @@ def generate_sarif(run_id=None, output_file=None):
     print(f"✅ SARIF exported: {output_file}")
     print(f"   Rules: {len(seen_rules)}")
     print(f"   Results: {len(results)}")
-    print(
-        f"\n   Upload to GitHub: gh api repos/OWNER/REPO/code-scanning/sarifs --input {output_file}"
-    )
+    print(f"\n   Upload to GitHub: gh api repos/OWNER/REPO/code-scanning/sarifs --input {output_file}")
     return output_file
 
 

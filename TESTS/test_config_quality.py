@@ -60,9 +60,7 @@ class TestConfigLoader:
     def test_is_rule_disabled(self):
         """Disabled rules should return False."""
         tmpdir = tempfile.mkdtemp()
-        (Path(tmpdir) / ".acrqa.yml").write_text(
-            yaml.dump({"rules": {"disabled_rules": ["IMPORT-001"]}})
-        )
+        (Path(tmpdir) / ".acrqa.yml").write_text(yaml.dump({"rules": {"disabled_rules": ["IMPORT-001"]}}))
 
         loader = ConfigLoader(project_dir=tmpdir)
         assert loader.is_rule_enabled("IMPORT-001") is False
@@ -71,9 +69,7 @@ class TestConfigLoader:
     def test_rules_globally_disabled(self):
         """When rules.enabled is False, all rules are disabled."""
         tmpdir = tempfile.mkdtemp()
-        (Path(tmpdir) / ".acrqa.yml").write_text(
-            yaml.dump({"rules": {"enabled": False}})
-        )
+        (Path(tmpdir) / ".acrqa.yml").write_text(yaml.dump({"rules": {"enabled": False}}))
 
         loader = ConfigLoader(project_dir=tmpdir)
         assert loader.is_rule_enabled("IMPORT-001") is False
@@ -82,9 +78,7 @@ class TestConfigLoader:
     def test_severity_override(self):
         """Should return severity override for a rule."""
         tmpdir = tempfile.mkdtemp()
-        (Path(tmpdir) / ".acrqa.yml").write_text(
-            yaml.dump({"rules": {"severity_overrides": {"IMPORT-001": "high"}}})
-        )
+        (Path(tmpdir) / ".acrqa.yml").write_text(yaml.dump({"rules": {"severity_overrides": {"IMPORT-001": "high"}}}))
 
         loader = ConfigLoader(project_dir=tmpdir)
         assert loader.get_severity_override("IMPORT-001") == "high"
@@ -111,9 +105,7 @@ class TestConfigLoader:
     def test_custom_max_explanations(self):
         """Should use custom max_explanations from YAML."""
         tmpdir = tempfile.mkdtemp()
-        (Path(tmpdir) / ".acrqa.yml").write_text(
-            yaml.dump({"ai": {"max_explanations": 10}})
-        )
+        (Path(tmpdir) / ".acrqa.yml").write_text(yaml.dump({"ai": {"max_explanations": 10}}))
 
         loader = ConfigLoader(project_dir=tmpdir)
         assert loader.get_max_explanations() == 10

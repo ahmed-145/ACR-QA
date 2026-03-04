@@ -137,20 +137,8 @@ def generate_compliance_report(run_id=None):
     compliance_score = max(0, 100 - weighted_deductions)
 
     # OWASP and SANS coverage
-    owasp_categories_hit = len(
-        [
-            c
-            for c, r in OWASP_TOP_10.items()
-            if any(rule_counts.get(rule, 0) > 0 for rule in r)
-        ]
-    )
-    sans_categories_hit = len(
-        [
-            c
-            for c, r in SANS_TOP_25.items()
-            if any(rule_counts.get(rule, 0) > 0 for rule in r)
-        ]
-    )
+    owasp_categories_hit = len([c for c, r in OWASP_TOP_10.items() if any(rule_counts.get(rule, 0) > 0 for rule in r)])
+    sans_categories_hit = len([c for c, r in SANS_TOP_25.items() if any(rule_counts.get(rule, 0) > 0 for rule in r)])
     owasp_coverage_pct = round((owasp_categories_hit / 10) * 100, 1)
     sans_coverage_pct = round((sans_categories_hit / 10) * 100, 1)
 
@@ -168,15 +156,11 @@ def generate_compliance_report(run_id=None):
 
     print(f"🎯 Compliance Score: {compliance_score}/100 (Grade: {grade})")
     print("   Scoring: High=-5pts, Medium=-2pts, Low=-1pt per issue")
-    print(
-        f"   High severity:   {severity_counts.get('high', 0)} issues (-{severity_counts.get('high', 0) * 5} pts)"
-    )
+    print(f"   High severity:   {severity_counts.get('high', 0)} issues (-{severity_counts.get('high', 0) * 5} pts)")
     print(
         f"   Medium severity: {severity_counts.get('medium', 0)} issues (-{severity_counts.get('medium', 0) * 2} pts)"
     )
-    print(
-        f"   Low severity:    {severity_counts.get('low', 0)} issues (-{severity_counts.get('low', 0) * 1} pts)"
-    )
+    print(f"   Low severity:    {severity_counts.get('low', 0)} issues (-{severity_counts.get('low', 0) * 1} pts)")
     print(f"   Total Security Issues: {total_security}")
     print(f"   OWASP Coverage: {owasp_categories_hit}/10 ({owasp_coverage_pct}%)")
     print(f"   SANS Coverage:  {sans_categories_hit}/10 ({sans_coverage_pct}%)")

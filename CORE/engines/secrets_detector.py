@@ -200,8 +200,7 @@ class SecretsDetector:
 
     def __init__(self):
         self.compiled_patterns = [
-            (name, re.compile(pattern), severity, desc)
-            for name, pattern, severity, desc in self.PATTERNS
+            (name, re.compile(pattern), severity, desc) for name, pattern, severity, desc in self.PATTERNS
         ]
         self.skip_compiled = [re.compile(p) for p in self.SKIP_PATTERNS]
 
@@ -232,19 +231,13 @@ class SecretsDetector:
                     # Avoid false positives from env var references
                     if re.search(r"os\.(?:getenv|environ)", line):
                         continue
-                    if re.search(
-                        r"(?:\.env|environment|config\.get)", line, re.IGNORECASE
-                    ):
+                    if re.search(r"(?:\.env|environment|config\.get)", line, re.IGNORECASE):
                         continue
 
                     # Mask the actual secret value
                     secret_value = match.group(0)
                     if len(secret_value) > 8:
-                        masked = (
-                            secret_value[:4]
-                            + "*" * (len(secret_value) - 8)
-                            + secret_value[-4:]
-                        )
+                        masked = secret_value[:4] + "*" * (len(secret_value) - 8) + secret_value[-4:]
                     else:
                         masked = "****"
 

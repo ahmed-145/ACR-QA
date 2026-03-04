@@ -35,12 +35,7 @@ def calculate_risk_score(findings: list[dict]) -> dict[str, Any]:
     low_count = sum(1 for f in findings if f.get("severity") == "low")
     security_count = sum(1 for f in findings if f.get("category") == "security")
 
-    score = (
-        min(50, high_count * 10)
-        + min(25, security_count * 5)
-        + min(15, medium_count * 3)
-        + min(10, low_count * 1)
-    )
+    score = min(50, high_count * 10) + min(25, security_count * 5) + min(15, medium_count * 3) + min(10, low_count * 1)
     score = min(100, score)
 
     if score >= 70:
@@ -105,9 +100,7 @@ def generate_pr_summary(run_id: int = None, findings: list[dict] = None) -> str:
     top_files = file_counts.most_common(5)
 
     # Critical findings
-    critical_findings = [
-        f for f in findings if f.get("severity") in ("high", "critical")
-    ]
+    critical_findings = [f for f in findings if f.get("severity") in ("high", "critical")]
 
     # Risk score
     risk = calculate_risk_score(findings)
@@ -180,9 +173,7 @@ def generate_pr_summary(run_id: int = None, findings: list[dict] = None) -> str:
         "TYPE-001",
         "EXCEPT-001",
     }
-    auto_fixable = [
-        f for f in findings if f.get("canonical_rule_id") in auto_fixable_rules
-    ]
+    auto_fixable = [f for f in findings if f.get("canonical_rule_id") in auto_fixable_rules]
 
     summary += f"""
 ---
@@ -221,9 +212,7 @@ def generate_summary_from_findings(findings: list[dict]) -> str:
     summary += f"🔴 {high} high | 🟡 {medium} medium | 🟢 {low} low"
 
     if high > 0:
-        summary += (
-            "\n\n⚠️ **Action Required:** Critical issues must be addressed before merge."
-        )
+        summary += "\n\n⚠️ **Action Required:** Critical issues must be addressed before merge."
 
     return summary
 

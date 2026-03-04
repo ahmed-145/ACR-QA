@@ -63,15 +63,11 @@ class SeverityScorer:
         base_severity = self.RULE_SEVERITY.get(canonical_rule_id, "low")
 
         # Apply context-based adjustments
-        severity = self._apply_context_adjustments(
-            base_severity, canonical_rule_id, finding_dict
-        )
+        severity = self._apply_context_adjustments(base_severity, canonical_rule_id, finding_dict)
 
         return severity
 
-    def _apply_context_adjustments(
-        self, base_severity: str, canonical_rule_id: str, finding: dict[str, Any]
-    ) -> str:
+    def _apply_context_adjustments(self, base_severity: str, canonical_rule_id: str, finding: dict[str, Any]) -> str:
         """Apply context-specific severity adjustments"""
 
         # COMPLEXITY-001: Adjust based on actual complexity value
@@ -92,10 +88,7 @@ class SeverityScorer:
             # Check if it's a large unused class or function
             if "class" in message:
                 return "medium"  # Unused classes = medium
-            elif (
-                "function" in message
-                and len(finding.get("evidence", {}).get("snippet", "")) > 100
-            ):
+            elif "function" in message and len(finding.get("evidence", {}).get("snippet", "")) > 100:
                 return "medium"  # Large unused functions = medium
 
         # DUP-001: Large duplications are higher priority

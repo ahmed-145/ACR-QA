@@ -161,9 +161,7 @@ class CanonicalFinding(BaseModel):
         valid_severities = {"high", "medium", "low"}
         v_lower = v.lower()
         if v_lower not in valid_severities:
-            raise ValueError(
-                f"Invalid severity '{v}'. Must be one of: {', '.join(valid_severities)}"
-            )
+            raise ValueError(f"Invalid severity '{v}'. Must be one of: {', '.join(valid_severities)}")
         return v_lower
 
     @field_validator("category")
@@ -180,9 +178,7 @@ class CanonicalFinding(BaseModel):
         }
         if v not in valid_categories:
             # Log warning but allow custom categories
-            print(
-                f"Warning: Unknown category '{v}'. Valid categories: {', '.join(valid_categories)}"
-            )
+            print(f"Warning: Unknown category '{v}'. Valid categories: {', '.join(valid_categories)}")
         return v
 
     @classmethod
@@ -306,9 +302,7 @@ class CanonicalFinding(BaseModel):
 
             self.evidence = {
                 "snippet": snippet,
-                "context_before": context_before[-3:]
-                if context_before
-                else [],  # Last 3
+                "context_before": context_before[-3:] if context_before else [],  # Last 3
                 "context_after": context_after[:3] if context_after else [],  # First 3
             }
 
@@ -364,9 +358,7 @@ def normalize_semgrep(semgrep_json: dict) -> list[CanonicalFinding]:
             line=item.get("start", {}).get("line", 0),
             column=item.get("start", {}).get("col", 0),
             severity=item.get("extra", {}).get("severity", "WARNING"),
-            category=item.get("extra", {})
-            .get("metadata", {})
-            .get("category", "security"),
+            category=item.get("extra", {}).get("metadata", {}).get("category", "security"),
             message=item.get("extra", {}).get("message", ""),
             tool_name="semgrep",
             tool_output=item,
@@ -527,9 +519,7 @@ def normalize_all(outputs_dir: str = "outputs") -> list[CanonicalFinding]:
                 if content:  # Only parse if not empty
                     ruff_data = json.loads(content)
                     all_findings.extend(normalize_ruff(ruff_data))
-                    print(
-                        f"  Normalized {len(normalize_ruff(ruff_data))} Ruff findings"
-                    )
+                    print(f"  Normalized {len(normalize_ruff(ruff_data))} Ruff findings")
         except json.JSONDecodeError:
             print(f"  Warning: Could not parse {ruff_file}")
         except Exception as e:
@@ -607,16 +597,9 @@ def normalize_all(outputs_dir: str = "outputs") -> list[CanonicalFinding]:
                     lines = src.readlines()
                     if 0 < line_num <= len(lines):
                         source_line = lines[line_num - 1]
-                        rule_id = (
-                            finding.canonical_rule_id
-                            if hasattr(finding, "canonical_rule_id")
-                            else ""
-                        )
+                        rule_id = finding.canonical_rule_id if hasattr(finding, "canonical_rule_id") else ""
                         # Check for blanket ignore
-                        if (
-                            "# acr-qa:ignore" in source_line
-                            or "# acrqa:ignore" in source_line
-                        ):
+                        if "# acr-qa:ignore" in source_line or "# acrqa:ignore" in source_line:
                             suppressed += 1
                             continue
                         # Check for rule-specific disable

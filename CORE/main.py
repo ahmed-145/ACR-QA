@@ -81,9 +81,7 @@ class AnalysisPipeline:
                     if src.exists():
                         dest = Path(analysis_dir) / src.name
                         shutil.copy2(str(src), str(dest))
-                subprocess.run(
-                    ["bash", "TOOLS/run_checks.sh", analysis_dir], check=True
-                )
+                subprocess.run(["bash", "TOOLS/run_checks.sh", analysis_dir], check=True)
             finally:
                 shutil.rmtree(analysis_dir, ignore_errors=True)
         else:
@@ -113,17 +111,13 @@ class AnalysisPipeline:
         # Step 4: Generate AI explanations (with caching)
         print("[4/5] Generating AI explanations (Cerebras API)...")
 
-        redis_client = (
-            rate_limiter.redis if rate_limiter and rate_limiter.redis else None
-        )
+        redis_client = rate_limiter.redis if rate_limiter and rate_limiter.redis else None
         ExplanationEngine(redis_client=redis_client)
 
         # Cap explanations using config
         max_explanations = self.config.get("ai", {}).get("max_explanations", 50)
         effective_limit = min(limit, max_explanations) if limit else max_explanations
-        findings_to_process = (
-            findings[:effective_limit] if effective_limit else findings
-        )
+        findings_to_process = findings[:effective_limit] if effective_limit else findings
 
         for i, finding in enumerate(findings_to_process, 1):
             print(
@@ -133,9 +127,7 @@ class AnalysisPipeline:
 
             try:
                 finding_id = self.db.insert_finding(run_id, finding)
-                snippet = extract_code_snippet(
-                    finding["file"], finding["line"], context_lines=3
-                )
+                snippet = extract_code_snippet(finding["file"], finding["line"], context_lines=3)
                 explanation = self.explainer.generate_explanation(finding, snippet)
                 self.db.insert_explanation(finding_id, explanation)
                 print(f"✓ ({explanation['latency_ms']}ms)")
@@ -261,9 +253,7 @@ class AnalysisPipeline:
         from CORE.engines.autofix import AutoFixEngine
 
         engine = AutoFixEngine()
-        fixable = [
-            f for f in findings if engine.can_fix(f.get("canonical_rule_id", ""))
-        ]
+        fixable = [f for f in findings if engine.can_fix(f.get("canonical_rule_id", ""))]
         if not fixable:
             print("\n⚙️  No auto-fixable issues found.")
             return []
@@ -295,9 +285,7 @@ class AnalysisPipeline:
                             "fixed": fix.get("fixed", ""),
                         }
                     )
-                    print(
-                        f"   ✓ {rule_id} @ {filepath}:{line} (confidence: {confidence})"
-                    )
+                    print(f"   ✓ {rule_id} @ {filepath}:{line} (confidence: {confidence})")
             except Exception as e:
                 print(f"   ✗ {rule_id} @ {filepath}:{line} — {e}")
 
@@ -332,9 +320,7 @@ class AnalysisPipeline:
             results = scanner.scan()
             if results.get("vulnerabilities"):
                 extra_findings.extend(results.get("findings", []))
-                print(
-                    f"        → {len(results['vulnerabilities'])} vulnerabilities found"
-                )
+                print(f"        → {len(results['vulnerabilities'])} vulnerabilities found")
             else:
                 print("        → Clean (no known vulnerabilities)")
         except Exception as e:
@@ -373,14 +359,10 @@ def get_diff_files(base_branch: str = "main") -> list:
 
 def main():
     parser = argparse.ArgumentParser(description="ACR-QA v2.4 Analysis Pipeline")
-    parser.add_argument(
-        "--target-dir", default="samples/realistic-issues", help="Directory to analyze"
-    )
+    parser.add_argument("--target-dir", default="samples/realistic-issues", help="Directory to analyze")
     parser.add_argument("--repo-name", default="local", help="Repository name")
     parser.add_argument("--pr-number", type=int, help="Pull request number")
-    parser.add_argument(
-        "--limit", type=int, default=None, help="Limit explanations (for speed)"
-    )
+    parser.add_argument("--limit", type=int, default=None, help="Limit explanations (for speed)")
     parser.add_argument(
         "--diff-only",
         action="store_true",

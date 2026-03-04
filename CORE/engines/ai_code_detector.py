@@ -161,9 +161,7 @@ class AICodeDetector:
                 "uniform_functions": 0.15,
             }
             total_weight = sum(weights.get(s["type"], 0.1) for s in signals)
-            overall_score = sum(
-                s["score"] * weights.get(s["type"], 0.1) for s in signals
-            ) / max(total_weight, 0.01)
+            overall_score = sum(s["score"] * weights.get(s["type"], 0.1) for s in signals) / max(total_weight, 0.01)
         else:
             overall_score = 0
 
@@ -209,18 +207,13 @@ class AICodeDetector:
 
     def _check_comment_uniformity(self, lines: list[str]) -> float:
         """Check if comments are suspiciously uniform in density."""
-        comment_lines = [
-            i for i, line in enumerate(lines) if line.strip().startswith("#")
-        ]
+        comment_lines = [i for i, line in enumerate(lines) if line.strip().startswith("#")]
 
         if len(comment_lines) < 5:
             return 0
 
         # Calculate gaps between comments
-        gaps = [
-            comment_lines[i + 1] - comment_lines[i]
-            for i in range(len(comment_lines) - 1)
-        ]
+        gaps = [comment_lines[i + 1] - comment_lines[i] for i in range(len(comment_lines) - 1)]
 
         if not gaps:
             return 0
@@ -295,9 +288,7 @@ class AICodeDetector:
             return 0.2
         return 0
 
-    def analyze_directory(
-        self, directory: str, extensions: list[str] = None
-    ) -> dict[str, Any]:
+    def analyze_directory(self, directory: str, extensions: list[str] = None) -> dict[str, Any]:
         """
         Analyze all files in a directory.
 
@@ -353,9 +344,7 @@ if __name__ == "__main__":
         results = detector.analyze_directory(target)
         print(f"\n📊 AI Code Analysis: {target}")
         print(f"   Files analyzed: {results['total_files']}")
-        print(
-            f"   Flagged: {results['flagged_files']} ({results['flagged_percentage']}%)"
-        )
+        print(f"   Flagged: {results['flagged_files']} ({results['flagged_percentage']}%)")
         for r in results["files"]:
             if r.get("is_ai_generated"):
                 print(f"   ⚠️  {r['file']} — score: {r['score']:.1%}")

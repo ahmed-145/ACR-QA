@@ -88,9 +88,7 @@ def create_fix_pr(run_id: int, github_token: str, repo_name: str):
             if len(changes) > 3:
                 commit_message += f" (+{len(changes) - 3} more)"
 
-            repo.update_file(
-                file_path, commit_message, content, file_obj.sha, branch=branch_name
-            )
+            repo.update_file(file_path, commit_message, content, file_obj.sha, branch=branch_name)
             print(f"   ✓ Committed {file_path}")
         except Exception as e:
             print(f"   ✗ Error committing {file_path}: {e}")
@@ -125,9 +123,7 @@ This PR contains automatic fixes for issues detected by ACR-QA.
 """
 
     try:
-        pr = repo.create_pull(
-            title=pr_title, body=pr_body, head=branch_name, base=base_branch
-        )
+        pr = repo.create_pull(title=pr_title, body=pr_body, head=branch_name, base=base_branch)
 
         print("\n✅ PR Created!")
         print(f"   URL: {pr.html_url}")

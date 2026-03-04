@@ -69,9 +69,7 @@ def transform(input_data):
         f = tmp_path / "generic.py"
         f.write_text(code)
         result = self.detector.analyze_file(str(f))
-        has_generic_signal = any(
-            s["type"] == "generic_names" for s in result["signals"]
-        )
+        has_generic_signal = any(s["type"] == "generic_names" for s in result["signals"])
         assert has_generic_signal, "Should detect generic variable names"
 
     def test_ai_template_patterns(self, tmp_path):
@@ -91,9 +89,7 @@ def feature_three():
         f = tmp_path / "templates.py"
         f.write_text(code)
         result = self.detector.analyze_file(str(f))
-        has_template_signal = any(
-            s["type"] == "ai_templates" for s in result["signals"]
-        )
+        has_template_signal = any(s["type"] == "ai_templates" for s in result["signals"])
         assert has_template_signal, "Should detect AI template patterns"
 
     def test_empty_file_safe(self, tmp_path):

@@ -141,11 +141,7 @@ class TestAcceptance:
 
                 mock_response = Mock()
                 mock_response.choices = [
-                    Mock(
-                        message=Mock(
-                            content="This code violates SECURITY-001 because eval() is dangerous."
-                        )
-                    )
+                    Mock(message=Mock(content="This code violates SECURITY-001 because eval() is dangerous."))
                 ]
                 mock_response.usage = Mock(total_tokens=100)
                 mock_client.chat.completions.create.return_value = mock_response
@@ -170,10 +166,7 @@ class TestAcceptance:
                 assert len(explanation["response_text"]) > 0
 
                 # Should cite rule ID
-                assert (
-                    "SECURITY-001" in explanation["response_text"]
-                    or "eval" in explanation["response_text"].lower()
-                )
+                assert "SECURITY-001" in explanation["response_text"] or "eval" in explanation["response_text"].lower()
 
                 # Should have metadata
                 assert "latency_ms" in explanation

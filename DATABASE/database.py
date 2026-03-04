@@ -78,18 +78,14 @@ class Database:
 
     # ===== ANALYSIS RUNS =====
 
-    def create_analysis_run(
-        self, repo_name, pr_number=None, commit_sha=None, branch=None
-    ):
+    def create_analysis_run(self, repo_name, pr_number=None, commit_sha=None, branch=None):
         """Create a new analysis run"""
         query = """
             INSERT INTO analysis_runs (repo_name, pr_number, commit_sha, branch, status)
             VALUES (%s, %s, %s, %s, 'running')
             RETURNING id
         """
-        result = self.execute(
-            query, (repo_name, pr_number, commit_sha, branch), fetch=True
-        )
+        result = self.execute(query, (repo_name, pr_number, commit_sha, branch), fetch=True)
         return result[0]["id"] if result else None
 
     def complete_analysis_run(self, run_id, total_findings):

@@ -219,12 +219,7 @@ def generate_comparison_report(run_id: int = None, output_dir: str = "DATA/outpu
     style = [f for f in findings if f.get("category") == "style"]
     design = [f for f in findings if f.get("category") in ("design", "complexity")]
     dead_code = [f for f in findings if f.get("category") == "dead-code"]
-    [
-        f
-        for f in findings
-        if f.get("category")
-        not in ("security", "style", "design", "complexity", "dead-code")
-    ]
+    [f for f in findings if f.get("category") not in ("security", "style", "design", "complexity", "dead-code")]
 
     high = [f for f in findings if f.get("canonical_severity") == "high"]
     medium = [f for f in findings if f.get("canonical_severity") == "medium"]
@@ -334,15 +329,9 @@ if __name__ == "__main__":
     import argparse
 
     parser = argparse.ArgumentParser(description="ACR-QA User Study Tools")
-    parser.add_argument(
-        "--generate-survey", action="store_true", help="Generate survey questionnaire"
-    )
-    parser.add_argument(
-        "--comparison", action="store_true", help="Generate A/B comparison report"
-    )
-    parser.add_argument(
-        "--analyze", action="store_true", help="Analyze survey responses"
-    )
+    parser.add_argument("--generate-survey", action="store_true", help="Generate survey questionnaire")
+    parser.add_argument("--comparison", action="store_true", help="Generate A/B comparison report")
+    parser.add_argument("--analyze", action="store_true", help="Analyze survey responses")
     parser.add_argument("--run-id", type=int, help="Analysis run ID")
     parser.add_argument("--all", action="store_true", help="Generate everything")
 

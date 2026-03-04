@@ -89,11 +89,7 @@ class ConfigLoader:
         """Deep merge override into base dict."""
         result = base.copy()
         for key, value in override.items():
-            if (
-                key in result
-                and isinstance(result[key], dict)
-                and isinstance(value, dict)
-            ):
+            if key in result and isinstance(result[key], dict) and isinstance(value, dict):
                 result[key] = self._deep_merge(result[key], value)
             else:
                 result[key] = value

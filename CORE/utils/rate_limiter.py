@@ -103,9 +103,7 @@ class RateLimiter:
             return f"rate_limit:{repo_name}:pr_{pr_number}"
         return f"rate_limit:{repo_name}"
 
-    def check_rate_limit(
-        self, repo_name: str, pr_number: int | None = None
-    ) -> tuple[bool, float | None]:
+    def check_rate_limit(self, repo_name: str, pr_number: int | None = None) -> tuple[bool, float | None]:
         """
         Check if request is allowed under rate limit (Token Bucket algorithm).
 
@@ -120,9 +118,7 @@ class RateLimiter:
         """
         # If Redis is unavailable, allow request (graceful degradation)
         if self.redis is None:
-            logger.warning(
-                "⚠ Redis unavailable, allowing request without rate limiting"
-            )
+            logger.warning("⚠ Redis unavailable, allowing request without rate limiting")
             return True, None
 
         bucket_key = self._get_bucket_key(repo_name, pr_number)
@@ -137,9 +133,7 @@ class RateLimiter:
                 tokens = self.bucket_size - 1  # Consume 1 token
                 last_refill = current_time
 
-                self.redis.hset(
-                    bucket_key, mapping={"tokens": tokens, "last_refill": last_refill}
-                )
+                self.redis.hset(bucket_key, mapping={"tokens": tokens, "last_refill": last_refill})
                 self.redis.expire(bucket_key, 120)  # Expire after 2 minutes
 
                 logger.info(f"✓ Rate limit OK: {bucket_key} (first request)")
@@ -160,14 +154,10 @@ class RateLimiter:
                 tokens -= 1.0
 
                 # Update bucket
-                self.redis.hset(
-                    bucket_key, mapping={"tokens": tokens, "last_refill": current_time}
-                )
+                self.redis.hset(bucket_key, mapping={"tokens": tokens, "last_refill": current_time})
                 self.redis.expire(bucket_key, 120)
 
-                logger.info(
-                    f"✓ Rate limit OK: {bucket_key} (tokens remaining: {tokens:.2f})"
-                )
+                logger.info(f"✓ Rate limit OK: {bucket_key} (tokens remaining: {tokens:.2f})")
                 return True, None
             else:
                 # Rate limited - calculate retry time
@@ -175,8 +165,7 @@ class RateLimiter:
                 retry_after = tokens_needed * self.refill_rate
 
                 logger.warning(
-                    f"✗ RATE LIMITED: {bucket_key} "
-                    f"(tokens: {tokens:.2f}, retry after {retry_after:.1f}s)"
+                    f"✗ RATE LIMITED: {bucket_key} " f"(tokens: {tokens:.2f}, retry after {retry_after:.1f}s)"
                 )
 
                 # Log rate limit event
@@ -193,9 +182,7 @@ class RateLimiter:
             # Graceful degradation - allow request
             return True, None
 
-    def _log_rate_limit_event(
-        self, repo_name: str, pr_number: int | None, retry_after: float
-    ) -> None:
+    def _log_rate_limit_event(self, repo_name: str, pr_number: int | None, retry_after: float) -> None:
         """
         Log rate limit event for monitoring.
 
@@ -254,9 +241,7 @@ class RateLimiter:
 _rate_limiter_instance: RateLimiter | None = None
 
 
-def get_rate_limiter(
-    redis_host: str = "localhost", redis_port: int = 6379
-) -> RateLimiter:
+def get_rate_limiter(redis_host: str = "localhost", redis_port: int = 6379) -> RateLimiter:
     """
     Get singleton rate limiter instance.
 
@@ -270,9 +255,7 @@ def get_rate_limiter(
     global _rate_limiter_instance
 
     if _rate_limiter_instance is None:
-        _rate_limiter_instance = RateLimiter(
-            redis_host=redis_host, redis_port=redis_port
-        )
+        _rate_limiter_instance = RateLimiter(redis_host=redis_host, redis_port=redis_port)
 
     return _rate_limiter_instance
 

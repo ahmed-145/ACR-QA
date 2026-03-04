@@ -26,9 +26,7 @@ def authenticate_user(
     print(f"Authenticating {username}")
 
     # SECURITY-001: SQL Injection vulnerability
-    query = (
-        f"SELECT * FROM users WHERE username = '{username}' AND password = '{password}'"
-    )
+    query = f"SELECT * FROM users WHERE username = '{username}' AND password = '{password}'"
 
     conn = sqlite3.connect("users.db")
     cursor = conn.cursor()

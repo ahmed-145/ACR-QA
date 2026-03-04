@@ -127,19 +127,13 @@ def export_provenance(run_id=None, output_dir="DATA/outputs/provenance"):
 
         # Update statistics
         sev = f.get("canonical_severity", f.get("severity", "low"))  # ✅ NEW
-        provenance["statistics"]["by_severity"][sev] = (
-            provenance["statistics"]["by_severity"].get(sev, 0) + 1
-        )
+        provenance["statistics"]["by_severity"][sev] = provenance["statistics"]["by_severity"].get(sev, 0) + 1
 
         cat = f["category"]
-        provenance["statistics"]["by_category"][cat] = (
-            provenance["statistics"]["by_category"].get(cat, 0) + 1
-        )
+        provenance["statistics"]["by_category"][cat] = provenance["statistics"]["by_category"].get(cat, 0) + 1
 
         tool = f["tool"]
-        provenance["statistics"]["by_tool"][tool] = (
-            provenance["statistics"]["by_tool"].get(tool, 0) + 1
-        )
+        provenance["statistics"]["by_tool"][tool] = provenance["statistics"]["by_tool"].get(tool, 0) + 1
 
     # Calculate latency stats
     if latencies:
@@ -198,18 +192,14 @@ def export_provenance(run_id=None, output_dir="DATA/outputs/provenance"):
         f.write("AI EXPLANATION METRICS\n")
         f.write("-" * 60 + "\n\n")
 
-        f.write(
-            f"Explanations Generated: {provenance['statistics']['with_explanations']}\n"
-        )
+        f.write(f"Explanations Generated: {provenance['statistics']['with_explanations']}\n")
 
         if latencies:
             stats = provenance["statistics"]["explanation_latency"]
             f.write(f"Min Latency: {stats['min_ms']}ms\n")
             f.write(f"Max Latency: {stats['max_ms']}ms\n")
             f.write(f"Avg Latency: {stats['avg_ms']}ms\n")
-            f.write(
-                f"Total Time: {stats['total_ms']}ms ({stats['total_ms'] / 1000:.2f}s)\n"
-            )
+            f.write(f"Total Time: {stats['total_ms']}ms ({stats['total_ms'] / 1000:.2f}s)\n")
 
         f.write("\n")
         f.write("-" * 60 + "\n")
@@ -218,15 +208,9 @@ def export_provenance(run_id=None, output_dir="DATA/outputs/provenance"):
 
         if feedback_stats:
             f.write(f"Total Feedback: {feedback_stats.get('total_feedback', 0)}\n")
-            f.write(
-                f"False Positive Rate: {feedback_stats.get('fp_rate', 0) * 100:.1f}%\n"
-            )
-            f.write(
-                f"Helpful Rate: {feedback_stats.get('helpful_rate', 0) * 100:.1f}%\n"
-            )
-            f.write(
-                f"Avg Clarity Rating: {feedback_stats.get('avg_clarity', 0):.2f}/5.0\n"
-            )
+            f.write(f"False Positive Rate: {feedback_stats.get('fp_rate', 0) * 100:.1f}%\n")
+            f.write(f"Helpful Rate: {feedback_stats.get('helpful_rate', 0) * 100:.1f}%\n")
+            f.write(f"Avg Clarity Rating: {feedback_stats.get('avg_clarity', 0):.2f}/5.0\n")
         else:
             f.write("No feedback data available\n")
 
@@ -242,9 +226,7 @@ def export_provenance(run_id=None, output_dir="DATA/outputs/provenance"):
     print(f"   Findings: {len(findings)}")
     print(f"   With Explanations: {provenance['statistics']['with_explanations']}")
     if latencies:
-        print(
-            f"   Avg Explanation Time: {provenance['statistics']['explanation_latency']['avg_ms']}ms"
-        )
+        print(f"   Avg Explanation Time: {provenance['statistics']['explanation_latency']['avg_ms']}ms")
 
     return json_file
 
@@ -264,13 +246,9 @@ def export_all_runs(output_dir="outputs/provenance_all"):
 
 def main():
     parser = argparse.ArgumentParser(description="Export ACR-QA Provenance Data")
-    parser.add_argument(
-        "run_id", type=int, nargs="?", help="Analysis run ID (optional)"
-    )
+    parser.add_argument("run_id", type=int, nargs="?", help="Analysis run ID (optional)")
     parser.add_argument("--all", action="store_true", help="Export all runs")
-    parser.add_argument(
-        "-o", "--output", default="DATA/outputs/provenance", help="Output directory"
-    )
+    parser.add_argument("-o", "--output", default="DATA/outputs/provenance", help="Output directory")
 
     args = parser.parse_args()
 

@@ -68,11 +68,7 @@ def compute_metrics(run_id=None, by_severity=False, by_category=False):
     # Calculate overall metrics
     precision = tp / (tp + fp) if (tp + fp) > 0 else 0
     recall = tp / (tp + fn) if (tp + fn) > 0 else 0
-    f1 = (
-        2 * (precision * recall) / (precision + recall)
-        if (precision + recall) > 0
-        else 0
-    )
+    f1 = 2 * (precision * recall) / (precision + recall) if (precision + recall) > 0 else 0
 
     # Print overall results
     print("\n" + "=" * 60)
@@ -103,9 +99,7 @@ def compute_metrics(run_id=None, by_severity=False, by_category=False):
     if recall >= recall_target:
         print(f"✅ Recall {recall:.2%} >= {recall_target:.0%} target")
     else:
-        print(
-            f"⚠️  Recall {recall:.2%} < {recall_target:.0%} target (gap: {(recall_target - recall):.2%})"
-        )
+        print(f"⚠️  Recall {recall:.2%} < {recall_target:.0%} target (gap: {(recall_target - recall):.2%})")
 
     # By severity breakdown
     if by_severity:
@@ -134,17 +128,11 @@ def compute_metrics(run_id=None, by_severity=False, by_category=False):
 
                 prec_s = tp_s / (tp_s + fp_s) if (tp_s + fp_s) > 0 else 0
                 rec_s = tp_s / (tp_s + fn_s) if (tp_s + fn_s) > 0 else 0
-                f1_s = (
-                    2 * (prec_s * rec_s) / (prec_s + rec_s)
-                    if (prec_s + rec_s) > 0
-                    else 0
-                )
+                f1_s = 2 * (prec_s * rec_s) / (prec_s + rec_s) if (prec_s + rec_s) > 0 else 0
 
                 print(f"\n{sev.upper()}:")
                 print(f"  TP: {tp_s:3d} | FP: {fp_s:3d} | FN: {fn_s:3d}")
-                print(
-                    f"  Precision: {prec_s:6.2%} | Recall: {rec_s:6.2%} | F1: {f1_s:6.2%}"
-                )
+                print(f"  Precision: {prec_s:6.2%} | Recall: {rec_s:6.2%} | F1: {f1_s:6.2%}")
 
     # By category breakdown
     if by_category:
@@ -171,15 +159,11 @@ def compute_metrics(run_id=None, by_severity=False, by_category=False):
 
             prec_c = tp_c / (tp_c + fp_c) if (tp_c + fp_c) > 0 else 0
             rec_c = tp_c / (tp_c + fn_c) if (tp_c + fn_c) > 0 else 0
-            f1_c = (
-                2 * (prec_c * rec_c) / (prec_c + rec_c) if (prec_c + rec_c) > 0 else 0
-            )
+            f1_c = 2 * (prec_c * rec_c) / (prec_c + rec_c) if (prec_c + rec_c) > 0 else 0
 
             print(f"\n{cat.upper()}:")
             print(f"  TP: {tp_c:3d} | FP: {fp_c:3d} | FN: {fn_c:3d}")
-            print(
-                f"  Precision: {prec_c:6.2%} | Recall: {rec_c:6.2%} | F1: {f1_c:6.2%}"
-            )
+            print(f"  Precision: {prec_c:6.2%} | Recall: {rec_c:6.2%} | F1: {f1_c:6.2%}")
 
     # Save results
     results = {
@@ -228,10 +212,7 @@ def label_seeded_dataset():
 
             for f in findings:
                 # Label as TP if from seeded files
-                if (
-                    "seeded-repo" in f["file_path"]
-                    or "comprehensive-issues" in f["file_path"]
-                ):
+                if "seeded-repo" in f["file_path"] or "comprehensive-issues" in f["file_path"]:
                     # Update ground truth using db.execute
                     db.execute(
                         """
@@ -250,15 +231,9 @@ def label_seeded_dataset():
 def main():
     parser = argparse.ArgumentParser(description="Compute ACR-QA Evaluation Metrics")
     parser.add_argument("run_id", type=int, nargs="?", help="Specific run to evaluate")
-    parser.add_argument(
-        "--by-severity", action="store_true", help="Break down by severity"
-    )
-    parser.add_argument(
-        "--by-category", action="store_true", help="Break down by category"
-    )
-    parser.add_argument(
-        "--label-seeded", action="store_true", help="Auto-label seeded dataset as TP"
-    )
+    parser.add_argument("--by-severity", action="store_true", help="Break down by severity")
+    parser.add_argument("--by-category", action="store_true", help="Break down by category")
+    parser.add_argument("--label-seeded", action="store_true", help="Auto-label seeded dataset as TP")
 
     args = parser.parse_args()
 

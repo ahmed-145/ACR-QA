@@ -155,8 +155,7 @@ class JavaScriptAdapter(LanguageAdapter):
     def run_tools(self, output_dir: str = "DATA/outputs") -> dict[str, Any]:
         # Phase 2: Will implement JS tool orchestration
         raise NotImplementedError(
-            "JavaScript adapter is a Phase 2 feature. "
-            "See CORE/adapters/base.py for the interface to implement."
+            "JavaScript adapter is a Phase 2 feature. " "See CORE/adapters/base.py for the interface to implement."
         )
 
     def get_rule_mappings(self) -> dict[str, str]:

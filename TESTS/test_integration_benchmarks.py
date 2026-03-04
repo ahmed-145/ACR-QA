@@ -174,9 +174,7 @@ class TestPerformanceBenchmarks:
         except ImportError:
             pytest.skip("CORE.detection.tool_runner module not yet implemented")
 
-        runner = ToolRunner(
-            target_dir="TESTS/samples/comprehensive-issues", output_dir="DATA/outputs"
-        )
+        runner = ToolRunner(target_dir="TESTS/samples/comprehensive-issues", output_dir="DATA/outputs")
 
         start = time.time()
         runner.run_all()
@@ -196,9 +194,7 @@ class TestPerformanceBenchmarks:
 
         # Normalization should complete within 5 seconds
         assert elapsed < 5, f"Normalization took {elapsed:.2f}s, expected <5s"
-        print(
-            f"\n⏱️ Normalization benchmark: {elapsed:.2f}s for {len(findings)} findings"
-        )
+        print(f"\n⏱️ Normalization benchmark: {elapsed:.2f}s for {len(findings)} findings")
 
     def test_database_query_performance(self):
         """Benchmark database query speed"""
@@ -266,9 +262,7 @@ class TestRulesCoverage:
         with open("config/rules.yml") as f:
             rules = yaml.safe_load(f)
 
-        security_rules = [
-            r for r, d in rules.items() if d.get("category") == "security"
-        ]
+        security_rules = [r for r, d in rules.items() if d.get("category") == "security"]
 
         # Should have at least 8 security rules
         assert len(security_rules) >= 8, f"Only {len(security_rules)} security rules"

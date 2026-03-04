@@ -73,9 +73,7 @@ class TestExplanationEngine:
         with patch.object(engine.client.chat.completions, "create") as mock_create:
             mock_response = Mock()
             # Response that cites the rule
-            mock_response.choices = [
-                Mock(message=Mock(content="This violates SECURITY-001 because..."))
-            ]
+            mock_response.choices = [Mock(message=Mock(content="This violates SECURITY-001 because..."))]
             mock_response.usage = Mock(total_tokens=100)
             mock_create.return_value = mock_response
 

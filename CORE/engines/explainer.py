@@ -59,9 +59,7 @@ class ExplanationEngine:
         This is the RAG approach that reduces hallucinations
         """
         # Get canonical rule definition
-        canonical_id = finding.get(
-            "canonical_rule_id", finding.get("rule_id", "UNKNOWN")
-        )
+        canonical_id = finding.get("canonical_rule_id", finding.get("rule_id", "UNKNOWN"))
         rule_def = self.rules_catalog.get(canonical_id, {})
 
         # Build structured prompt with evidence
@@ -103,9 +101,7 @@ Start with: "This code violates {canonical_id}..."
 """
         return prompt
 
-    @retry(
-        stop=stop_after_attempt(3), wait=wait_exponential(multiplier=1, min=2, max=10)
-    )
+    @retry(stop=stop_after_attempt(3), wait=wait_exponential(multiplier=1, min=2, max=10))
     def generate_explanation(self, finding, code_snippet=""):
         """
         Generate RAG-enhanced explanation for a finding
@@ -156,9 +152,7 @@ Start with: "This code violates {canonical_id}..."
                 tokens_used = completion.usage.total_tokens
 
             # Validate: Check if response cites the rule_id
-            canonical_id = finding.get(
-                "canonical_rule_id", finding.get("rule_id", "UNKNOWN")
-            )
+            canonical_id = finding.get("canonical_rule_id", finding.get("rule_id", "UNKNOWN"))
             cites_rule = canonical_id in response_text
 
             result = {
@@ -292,9 +286,7 @@ Start with: "This code violates {canonical_id}..."
         Returns:
             Dict with scores and overall average
         """
-        canonical_id = finding.get(
-            "canonical_rule_id", finding.get("rule_id", "UNKNOWN")
-        )
+        canonical_id = finding.get("canonical_rule_id", finding.get("rule_id", "UNKNOWN"))
 
         eval_prompt = f"""Rate this code review explanation on a scale of 1-5 for each criterion.
 
@@ -328,11 +320,7 @@ Clarity: X"""
                 for key in ["Relevance", "Accuracy", "Clarity"]:
                     if key.lower() in line.lower():
                         try:
-                            val = int(
-                                "".join(c for c in line.split(":")[-1] if c.isdigit())[
-                                    :1
-                                ]
-                            )
+                            val = int("".join(c for c in line.split(":")[-1] if c.isdigit())[:1])
                             scores[key.lower()] = min(max(val, 1), 5)
                         except (ValueError, IndexError):
                             scores[key.lower()] = 3  # Default
@@ -364,9 +352,7 @@ Clarity: X"""
         Template-based fallback when LLM fails
         Uses rule catalog if available
         """
-        canonical_id = finding.get(
-            "canonical_rule_id", finding.get("rule_id", "UNKNOWN")
-        )
+        canonical_id = finding.get("canonical_rule_id", finding.get("rule_id", "UNKNOWN"))
         rule_def = self.rules_catalog.get(canonical_id, {})
 
         if rule_def:

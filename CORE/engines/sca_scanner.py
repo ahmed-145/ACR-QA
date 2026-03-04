@@ -13,7 +13,6 @@ from typing import Any
 sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 
 
-
 class SCAScanner:
     """
     Software Composition Analysis scanner for dependency vulnerabilities.
@@ -63,17 +62,13 @@ class SCAScanner:
             "severity_breakdown": severity_counts,
             "vulnerabilities": vulnerabilities,
             "findings": findings,
-            "scanner": "pip-audit"
-            if self._pip_audit_available()
-            else "requirements-check",
+            "scanner": "pip-audit" if self._pip_audit_available() else "requirements-check",
         }
 
     def _pip_audit_available(self) -> bool:
         """Check if pip-audit is available."""
         try:
-            result = subprocess.run(
-                ["pip-audit", "--version"], capture_output=True, text=True, timeout=10
-            )
+            result = subprocess.run(["pip-audit", "--version"], capture_output=True, text=True, timeout=10)
             return result.returncode == 0
         except (FileNotFoundError, subprocess.TimeoutExpired):
             return False
@@ -205,9 +200,7 @@ class SCAScanner:
                         if sep in line:
                             pkg, version = line.split(sep, 1)
                             pkg = pkg.strip().lower()
-                            version = (
-                                version.strip().split(",")[0].split(";")[0].strip()
-                            )
+                            version = version.strip().split(",")[0].split(";")[0].strip()
 
                             if pkg in KNOWN_VULNERABLE:
                                 vuln_info = KNOWN_VULNERABLE[pkg]
@@ -276,7 +269,5 @@ if __name__ == "__main__":
 
     for vuln in results["vulnerabilities"]:
         emoji = "🔴" if vuln.get("severity") in ("HIGH", "CRITICAL") else "🟡"
-        print(
-            f"   {emoji} {vuln['package']}=={vuln['installed_version']}: {vuln['vulnerability_id']}"
-        )
+        print(f"   {emoji} {vuln['package']}=={vuln['installed_version']}: {vuln['vulnerability_id']}")
         print(f"      {vuln.get('description', 'N/A')}")

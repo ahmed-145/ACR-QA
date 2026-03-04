@@ -136,9 +136,7 @@ class TestRateLimiting:
         with patch("CORE.utils.rate_limiter.redis.Redis") as MockRedisClass:
             import redis
 
-            MockRedisClass.return_value.ping.side_effect = redis.ConnectionError(
-                "mocked"
-            )
+            MockRedisClass.return_value.ping.side_effect = redis.ConnectionError("mocked")
 
             limiter = RateLimiter(redis_host="invalid-host", redis_port=9999)
 
