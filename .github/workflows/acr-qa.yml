@@ -79,6 +79,8 @@ jobs:
       
       - name: Run ACR-QA Analysis
         if: steps.changed-files.outputs.any_changed == 'true'
+        id: analysis
+        continue-on-error: true
         env:
           CEREBRAS_API_KEY: ${{ secrets.CEREBRAS_API_KEY }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -88,6 +90,8 @@ jobs:
           DB_USER: postgres
           DB_PASSWORD: postgres
         run: |
+          set -o pipefail
+          
           # Create temp directory for changed files
           mkdir -p /tmp/pr-files
           
@@ -101,6 +105,7 @@ jobs:
           done < /tmp/changed_files.txt
           
           # Run analysis on changed files only
+          # Quality gate may exit 1 — we capture it and post comments first
           python3 CORE/main.py \
             --target-dir /tmp/pr-files \
             --repo-name "${{ github.repository }}" \
@@ -124,6 +129,13 @@ jobs:
             --repo "${{ github.repository }}" \
             --pr-number ${{ github.event.pull_request.number }} \
             --run-id-file /tmp/acr_run_id.txt
+      
+      - name: Enforce Quality Gate
+        if: steps.analysis.outcome == 'failure'
+        run: |
+          echo "❌ Quality Gate failed — blocking merge"
+          echo "Review findings in the PR comments above"
+          exit 1
   
   # Job 2: Manual trigger via comment
   manual-trigger:

@@ -12,12 +12,12 @@ env/
 .git/
 .gitignore
 
-# Docker
+# Docker (don't copy Docker files into image)
 Dockerfile
 docker-compose.yml
 .dockerignore
 
-# Documentation
+# Documentation (not needed in container)
 docs/
 *.md
 !README.md
@@ -28,9 +28,17 @@ DATA/outputs/*
 DATA/provenance/*
 DATA/reports/*
 
+# Tests (not needed in production image)
+TESTS/
+htmlcov/
+.coverage
+.pytest_cache/
+.ruff_cache/
+
 # Environment
 .env
 .env.local
+.env.example
 
 # IDE
 .vscode/
@@ -42,9 +50,18 @@ DATA/reports/*
 .DS_Store
 Thumbs.db
 
+# Node (VSCode extension)
+vscode-extension/
+node_modules/
+
 # Temporary files
 *.log
 *.tmp
 
-# Sensitive
-.env
+# Build artifacts
+*.egg-info/
+dist/
+build/
+
+# Gemini/AI artifacts
+.gemini/
