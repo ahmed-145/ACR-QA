@@ -2,6 +2,22 @@
 
 All notable changes to ACR-QA are documented here.
 
+## [v2.5] — 2026-03-04 (Strategic Audit Fixes)
+
+### Added
+- **Rich terminal UI** — `--rich` flag for beautiful color-coded findings tables and quality gate panels
+- **27 security rules** — SECURITY-003 through SECURITY-033 added to `rules.yml` (Bandit-mapped)
+- **Prometheus `/metrics` endpoint** — now registered in Flask dashboard (was built but never activated)
+
+### Changed
+- **RAG rule coverage** — 43% → 100% (all 47 normalizer rules now have rules.yml entries)
+- **Pipeline version** — v2.4 → v2.5
+- **README** — updated CLI docs (--rich), test count (97), RAG coverage (66 rules)
+
+### Fixed
+- Duplicate `/metrics` endpoint registration that caused test failures
+- `.vulture_whitelist.py` moved from project root to `config/` for cleanliness
+
 ## [v1.0] — 2026-03-04 (Python Stage Complete)
 
 ### Tag: `v1.0-python-complete`

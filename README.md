@@ -41,6 +41,7 @@ Designed as an academic thesis project at KSIU, it covers the full code-review l
 | **SCA Scanner** | Known-vulnerable dependency versions |
 
 ### 🧠 AI Explanations (RAG-Enhanced)
+- **66-rule knowledge base** — every normalizer rule has a full rules.yml entry (100% RAG coverage)
 - **Evidence-grounded prompts** — never explains a rule it can't cite
 - **Semantic entropy scoring** — runs LLM 3× to measure consistency (hallucination detection)
 - **Self-evaluation** — LLM rates its own output on relevance / accuracy / clarity (1–5)
@@ -187,7 +188,7 @@ acr-qa/
 ├── .gitlab-ci.yml               # GitLab CI pipeline
 ├── docker-compose.yml           # Full stack (App + DB + Monitoring)
 ├── Makefile                     # One-command operations
-└── TESTS/                       # 77-test pytest suite
+└── TESTS/                       # 97-test pytest suite
 ```
 
 ---
@@ -272,6 +273,7 @@ Options:
   --diff-only          Analyze changed files only (uses git diff)
   --diff-base BRANCH   Base branch for diff (default: main)
   --auto-fix           Generate auto-fix suggestions for fixable rules
+  --rich               Beautiful terminal output with Rich tables & panels
 ```
 
 ```bash
@@ -279,6 +281,7 @@ Options:
 python3 CORE/main.py --target-dir ./myproject --limit 100
 python3 CORE/main.py --target-dir . --diff-only --diff-base main
 python3 CORE/main.py --target-dir . --auto-fix
+python3 CORE/main.py --target-dir . --rich --limit 10   # Rich terminal UI
 
 # Export SARIF for GitHub Security tab
 python3 scripts/export_sarif.py --run-id <RUN_ID> --output findings.sarif
@@ -295,7 +298,7 @@ python3 scripts/export_provenance.py <RUN_ID>
 ## 🧪 Testing
 
 ```bash
-# Full pytest suite (77 tests)
+# Full pytest suite (97 tests)
 make test-all
 
 # Acceptance tests only
