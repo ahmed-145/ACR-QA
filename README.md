@@ -6,10 +6,11 @@
 *Intelligent, context-aware code analysis with RAG-enhanced AI explanations*
 
 [![Python 3.11+](https://img.shields.io/badge/Python-3.11+-3776ab?logo=python&logoColor=white)](https://www.python.org/)
-[![PostgreSQL 15](https://img.shields.io/badge/PostgreSQL-15+-336791?logo=postgresql&logoColor=white)](https://postgresql.org/)
-[![Flask](https://img.shields.io/badge/Flask-3.x-000000?logo=flask&logoColor=white)](https://flask.palletsprojects.com/)
-[![Prometheus](https://img.shields.io/badge/Prometheus-monitored-e6522c?logo=prometheus&logoColor=white)](https://prometheus.io/)
+[![CI Tests](https://github.com/ahmed-145/ACR-QA/actions/workflows/tests.yml/badge.svg)](https://github.com/ahmed-145/ACR-QA/actions/workflows/tests.yml)
 [![Tests](https://img.shields.io/badge/Tests-97%20passing-22c55e?logo=pytest&logoColor=white)](./TESTS/)
+[![Version](https://img.shields.io/badge/Version-2.5.0-blue)](CHANGELOG.md)
+[![PostgreSQL 15](https://img.shields.io/badge/PostgreSQL-15+-336791?logo=postgresql&logoColor=white)](https://postgresql.org/)
+[![Prometheus](https://img.shields.io/badge/Prometheus-monitored-e6522c?logo=prometheus&logoColor=white)](https://prometheus.io/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
 [Quick Start](#-quick-start) · [Architecture](#-architecture) · [Dashboard](#-dashboard) · [Monitoring](#-monitoring) · [GitHub Integration](#-github-pr-integration) · [Docs](#-documentation)

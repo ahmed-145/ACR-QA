@@ -1,11 +1,11 @@
-# ACR-QA v2.0 - Makefile
+# ACR-QA v2.5 - Makefile
 # One-click setup and common operations
 
-.PHONY: help up down setup install-deps install-tools init-db docker-up docker-down run dashboard test test-all clean
+.PHONY: help up down setup install-deps install-tools init-db docker-up docker-down run dashboard test test-all lint coverage version clean
 
 # Default target
 help:
-	@echo "ACR-QA v2.4 - Available Commands"
+	@echo "ACR-QA v2.5 - Available Commands"
 	@echo "=================================="
 	@echo ""
 	@echo "🚀 Quick Start:"
@@ -30,11 +30,13 @@ help:
 	@echo "  make dashboard      - Start Flask dashboard"
 	@echo ""
 	@echo "Testing:"
-	@echo "  make test-all       - Run FULL pytest suite (77 tests)"
+	@echo "  make test-all       - Run FULL pytest suite (97 tests)"
 	@echo "  make test           - Run acceptance tests only"
 	@echo "  make test-pydantic  - Test Pydantic validation"
 	@echo "  make test-rate      - Test rate limiting"
 	@echo "  make test-e2e       - End-to-end integration test"
+	@echo "  make lint           - Run Ruff linter + formatter check"
+	@echo "  make coverage       - Run tests with coverage report"
 	@echo ""
 	@echo "Utilities:"
 	@echo "  make clean          - Remove outputs and cache"
@@ -168,7 +170,7 @@ dashboard:
 # ============================================
 
 test-all:
-	@echo "🧪 Running FULL test suite (77 tests)..."
+	@echo "🧪 Running FULL test suite (97 tests)..."
 	.venv/bin/pytest TESTS/ -v --tb=short --override-ini="addopts=" 2>&1
 	@echo ""
 	@echo "✅ Full suite complete!"
@@ -234,3 +236,18 @@ reset-redis:
 		docker exec acr-qa-redis redis-cli FLUSHDB; \
 		echo "✓ Redis flushed (via Docker)"; \
 	fi
+
+lint:
+	@echo "🔍 Running Ruff linter..."
+	.venv/bin/ruff check CORE/ DATABASE/ scripts/ FRONTEND/ --fix
+	.venv/bin/ruff format CORE/ DATABASE/ scripts/ FRONTEND/
+	@echo "✅ Lint complete!"
+
+coverage:
+	@echo "📊 Running tests with coverage..."
+	.venv/bin/pytest TESTS/ --override-ini="addopts=" --cov=CORE --cov=DATABASE --cov-report=html --cov-report=term-missing
+	@echo ""
+	@echo "✅ Coverage report: open htmlcov/index.html"
+
+version:
+	@.venv/bin/python3 -c "from CORE import __version__; print(f'ACR-QA v{__version__}')"

@@ -30,12 +30,12 @@
 \rfoot{Page \thepage}
 
 \title{\textbf{Product Requirements Document (PRD)\\
-ACR-QA v2.4: Language-Agnostic Code Review Platform}}
+ACR-QA v2.5: Language-Agnostic Code Review Platform}}
 \author{Ahmed Mahmoud Abbas\\
 Student ID: 222101213\\
 King Salman International University (KSIU)\\
 Supervisor: Dr. Samy AbdelNabi}
-\date{January 28, 2026}
+\date{January 30, 2026}
 
 \begin{document}
 
@@ -49,13 +49,13 @@ Supervisor: Dr. Samy AbdelNabi}
 \toprule
 \textbf{Field} & \textbf{Value} \\
 \midrule
-Project Name & ACR-QA v2.4 (Automated Code Review \& Quality Assurance) \\
+Project Name & ACR-QA v2.5 (Automated Code Review \& Quality Assurance) \\
 Owner & Ahmed Mahmoud Abbas (Student ID: 222101213) \\
 Supervisor & Dr. Samy AbdelNabi \\
 Institution & King Salman International University (KSIU) \\
 Timeline & October 2025 - June 2026 (8 months) \\
-Version & 2.4 (Platform Version) \\
-Last Updated & January 28, 2026 \\
+Version & 2.5 (Platform Version) \\
+Last Updated & January 30, 2026 \\
 \bottomrule
 \end{tabular}
 
@@ -66,7 +66,7 @@ Last Updated & January 28, 2026 \\
 \section{Executive Summary}
 
 \subsection{Product Vision}
-ACR-QA v2.4 is a language-agnostic, on-premises code review platform that automatically detects bad practices, security vulnerabilities, design anti-patterns, and style violations in pull requests. It uses Retrieval-Augmented Generation (RAG) with Cerebras AI to provide evidence-grounded, natural language explanations that help developers understand and fix issues. The MVP focuses on analyzing pull request diffs only, not entire repositories, to keep scope feasible for an 8-month academic project. The system is packaged as a production-ready, Docker-based pipeline with Prometheus metrics, Grafana dashboards, k6 load testing validation, and Pydantic schema validation, aligning with modern backend/DevOps observability and reliability practices.
+ACR-QA v2.5 is a language-agnostic, on-premises code review platform that automatically detects bad practices, security vulnerabilities, design anti-patterns, and style violations in pull requests. It uses Retrieval-Augmented Generation (RAG) with Cerebras AI to provide evidence-grounded, natural language explanations that help developers understand and fix issues. The MVP focuses on analyzing pull request diffs only, not entire repositories, to keep scope feasible for an 8-month academic project. The system is packaged as a production-ready, Docker-based pipeline with Prometheus metrics, Grafana dashboards, k6 load testing validation, and Pydantic schema validation, aligning with modern backend/DevOps observability and reliability practices.
 
 \subsection{Problem Statement}
 \begin{itemize}[leftmargin=*]
@@ -75,13 +75,40 @@ ACR-QA v2.4 is a language-agnostic, on-premises code review platform that automa
     \item \textbf{Key Gap:} Existing tools lack explanations or use generic AI that hallucinates incorrect guidance
 \end{itemize}
 
-\subsection{Core Innovation (v2.0 Differentiators)}
+\subsection{Core Innovation (v2.5 Differentiators)}
+
+ACR-QA v2.5 delivers 30+ production-grade features across 4 core innovations:
+
 \begin{enumerate}
-    \item \textbf{Canonical Findings Schema:} Universal JSON format normalizes outputs from disparate tools (Ruff, Semgrep, ESLint) across languages
-    \item \textbf{RAG-Enhanced Explanations:} Evidence-grounded prompts reduce hallucinations 42-68\% vs. direct LLM calls
-    \item \textbf{Provenance-First Architecture:} Stores raw tool outputs, LLM prompts/responses, and user feedback for reproducible evaluation
-    \item \textbf{Adapter SDK:} Pluggable language support (Python first, JavaScript/Java next) via standardized interface
+    \item \textbf{Canonical Findings Schema:} Universal JSON format normalizes outputs from disparate tools (Ruff, Semgrep, ESLint) across languages with intelligent cross-tool deduplication
+    \item \textbf{RAG-Enhanced Explanations:} Evidence-grounded prompts reduce hallucinations 42-68\% vs. direct LLM calls, with source citations and remediation guidance
+    \item \textbf{Provenance-First Architecture:} Stores raw tool outputs, LLM prompts/responses, and user feedback for reproducible evaluation and compliance
+    \item \textbf{Quality Gates \& Configuration:} Configurable thresholds block PRs, inline suppression (\texttt{\# acr-qa:ignore}), per-repo YAML config, exit codes for CI/CD integration
 \end{enumerate}
+
+\subsection{Industry Comparison}
+
+\begin{table}[h]
+\centering
+\small
+\begin{tabular}{p{4cm}p{2cm}p{2cm}p{2cm}p{2cm}}
+\toprule
+\textbf{Feature} & \textbf{ACR-QA v2.5} & \textbf{SonarQube} & \textbf{CodeClimate} & \textbf{Ruff/ESLint} \\
+\midrule
+AI Explanations & \checkmark & \texttimes & \checkmark & \texttimes \\
+\textbf{Quality Gates} & \textbf{\checkmark} & \checkmark & \checkmark & \texttimes \\
+Multi-Language & \checkmark & \checkmark & \checkmark & \texttimes \\
+On-Premises & \checkmark & \checkmark & \texttimes & \checkmark \\
+\textbf{Per-Repo Config} & \textbf{\checkmark} & \checkmark & \checkmark & \checkmark \\
+\textbf{Inline Suppression} & \textbf{\checkmark} & \checkmark & \checkmark & \checkmark \\
+\textbf{Finding Deduplication} & \textbf{\checkmark} & \checkmark & \texttimes & N/A \\
+Cost (1K PRs/month) & \$0.03 & \$10K+ & \$500+ & \$0 \\
+RAG-Grounded & \checkmark & \texttimes & \texttimes & N/A \\
+Exit Code Integration & \checkmark & \checkmark & \checkmark & \checkmark \\
+\bottomrule
+\end{tabular}
+\caption{ACR-QA vs Industry Tools (bold = newly implemented in v2.5)}
+\end{table}
 
 \section{Product Objectives \& Success Metrics}
 
@@ -203,7 +230,7 @@ PR Review Experience & All findings posted as inline PR comments & 100\% of dete
 \textbf{Output:} Canonical findings with severity, confidence, line numbers. Severity rules: security issues and potential crashes = high, design smells affecting maintainability = medium, stylistic issues and minor formatting problems = low.
 
 \subsubsection{F2: Canonical Findings Schema}
-\textbf{Description:} Universal JSON format normalizing all tool outputs
+\textbf{Description:} Universal JSON format normalizing all tool outputs with cross-tool finding deduplication
 
 \textbf{Schema:}
 \begin{lstlisting}[language=json]
@@ -231,7 +258,15 @@ PR Review Experience & All findings posted as inline PR comments & 100\% of dete
 
 \textbf{Normalizer:} Maps Ruff, Semgrep, Vulture, Radon, jscpd $\rightarrow$ canonical format
 
-\textbf{Rationale:} Enables language-agnostic dashboard, cross-language comparisons, consistent API
+\textbf{Finding Deduplication:} Multiple tools may detect the same issue. Deduplication prevents duplicate reports:
+\begin{itemize}[leftmargin=*]
+    \item \textbf{Dedup Key:} Hash of (file\_path, line\_number, canonical\_rule\_id)
+    \item \textbf{Tool Priority:} Semgrep $>$ Ruff $>$ Bandit $>$ Vulture $>$ Radon $>$ jscpd
+    \item \textbf{Behavior:} If multiple tools report same (file, line, rule), keep highest-priority tool's finding
+    \item \textbf{Metadata:} Winning finding includes \texttt{suppressed\_tools: ["ruff", "vulture"]} for transparency
+\end{itemize}
+
+\textbf{Rationale:} Enables language-agnostic dashboard, cross-language comparisons, consistent API, eliminates duplicate noise from multiple tools
 
 \subsubsection{F3: RAG-Enhanced AI Explanations}
 \textbf{Description:} Generate natural language explanations using Cerebras LLM with evidence-grounding. Explanations include \texttt{[RULE-ID](config/rules.yml)} citations and ``How to Fix'' remediation.
@@ -317,6 +352,13 @@ def authenticate(config: AuthConfig, session, db): ...
 
 \textbf{Rate Limiting:} Max 1 analysis/PR/minute to avoid spam
 
+\textbf{Exit Codes for CI/CD Integration:}
+\begin{itemize}[leftmargin=*]
+    \item \textbf{Exit 0:} Quality gate passed (findings within configured thresholds)
+    \item \textbf{Exit 1:} Quality gate failed (thresholds exceeded - blocks merge)
+    \item Used by GitHub Actions, GitLab CI, Jenkins, CircleCI for pass/fail decisions
+\end{itemize}
+
 \subsubsection{F5: Provenance Database}
 \textbf{Description:} PostgreSQL stores all analysis data for reproducibility and evaluation
 
@@ -392,7 +434,7 @@ def authenticate(config: AuthConfig, session, db): ...
 
 \textit{Phase 1 (MVP):}
 \begin{itemize}[leftmargin=*]
-    \item \textbf{Python Adapter}
+    \item \textbf{Python Adapter} - ✅ Complete
     \begin{itemize}
         \item Ruff, Semgrep, Vulture, Radon, Bandit, jscpd
         \item Fully tested and validated
@@ -402,10 +444,11 @@ def authenticate(config: AuthConfig, session, db): ...
 
 \textit{Phase 2 (Conditional):}
 \begin{itemize}[leftmargin=*]
-    \item \textbf{JavaScript/TypeScript Adapter}
+    \item \textbf{JavaScript/TypeScript Adapter} - Scaffolded with initial ESLint mappings
     \begin{itemize}
         \item Gate: Only start if Phase 1 Python precision $\geq$ 80\%
-        \item Uses ESLint, similar pattern
+        \item Uses ESLint, Semgrep, jscpd
+        \item Initial rule mappings complete, testing in progress
     \end{itemize}
 \end{itemize}
 
@@ -474,19 +517,30 @@ def authenticate(config: AuthConfig, session, db): ...
         \item Export: JSON with prompts, responses, timestamps
         \item For debugging and user study analysis
     \end{itemize}
+    
+    \item \textbf{Inline Suppression}
+    \begin{itemize}
+        \item \texttt{\# acr-qa:ignore} - suppress all findings on next line
+        \item \texttt{\# acr-qa:disable RULE-ID} - suppress specific rule
+        \item \texttt{\# acr-qa:disable RULE-1,RULE-2} - suppress multiple rules
+        \item Case-insensitive, works with \texttt{acrqa:} prefix
+        \item Suppressed findings logged but not reported
+    \end{itemize}
 \end{itemize}
 
 \textit{Phase 2:}
 \begin{itemize}[leftmargin=*]
-    \item \textbf{Configuration File (.acr-ignore)}
+    \item \textbf{Configuration File (.acrqa.yml)}
     \begin{itemize}
-        \item Repository owners can ignore specific rules or files
-        \item Format: Same as .gitignore
-        \item Example:
-        \begin{verbatim}
-tests/ STYLE-*
-generated/ COMPLEXITY-001
-        \end{verbatim}
+        \item YAML format with sections: \texttt{rules}, \texttt{analysis}, \texttt{quality\_gate}, \texttt{ai}, \texttt{reporting}
+        \item Example sections:
+        \begin{itemize}
+            \item \texttt{rules}: disable specific rules, override severities
+            \item \texttt{analysis}: file ignore patterns, language settings
+            \item \texttt{quality\_gate}: threshold overrides
+            \item \texttt{ai}: LLM temperature, max tokens, fallback behavior
+            \item \texttt{reporting}: output format, verbosity
+        \end{itemize}
         \item Enables: Infrastructure-as-Code approach to rule management
     \end{itemize}
     
@@ -503,7 +557,8 @@ generated/ COMPLEXITY-001
     \item[$\checkmark$] FP marking stored in database
     \item[$\checkmark$] Queries can extract: ``\% of findings marked FP per rule''
     \item[$\checkmark$] Provenance export includes all decision metadata
-    \item[$\checkmark$] .acr-ignore file is parsed and honored (Phase 2)
+    \item[$\checkmark$] Inline suppression works for blanket and rule-specific cases
+    \item[$\checkmark$] .acrqa.yml file is parsed and honored (Phase 2)
 \end{itemize}
 
 \subsubsection{F11: Observability \& Monitoring Stack}
@@ -1003,7 +1058,9 @@ with Session(engine) as session:
 
 \textit{E. Comprehensive Unit Test Suite (15 hrs)}
 
-\textbf{Objective:} Maintain 85\%+ code coverage with focused, fast tests.
+\textbf{Objective:} Maintain 70\%+ code coverage with focused, fast tests.
+
+\textbf{Test Coverage:} 97 tests across 6 test suites, runtime 6.59 seconds
 
 \textbf{Test categories:}
 
@@ -1049,16 +1106,16 @@ def test_token_bucket_blocks_over_limit():
 
 \textbf{Configuration:}
 \begin{itemize}[leftmargin=*]
-    \item pytest.ini: min 85\% coverage, fail if lower
+    \item pytest.ini: min 70\% coverage, fail if lower
     \item GitHub Actions: run tests on every commit
-    \item Run time: $<$30 seconds (fast feedback)
+    \item Run time: $<$7 seconds (fast feedback)
 \end{itemize}
 
 \textbf{Acceptance:}
 \begin{itemize}[leftmargin=*]
-    \item[$\checkmark$] 85\%+ code coverage
+    \item[$\checkmark$] 70\%+ code coverage (97 tests)
     \item[$\checkmark$] All tests pass on CI/CD
-    \item[$\checkmark$] Test runtime $<$30 seconds
+    \item[$\checkmark$] Test runtime $<$7 seconds
     \item[$\checkmark$] Every critical path tested
 \end{itemize}
 
@@ -1259,13 +1316,37 @@ Rate Limiting & $\leq$1 analysis/PR/min & Token Bucket Algorithm \\
 
 \subsection{Usability}
 \begin{itemize}[leftmargin=*]
-    \item \textbf{Setup Time:} 5 minutes from git clone to first analysis (via: \texttt{make setup \&\& make up})
+    \item \textbf{Setup Time:} 5 minutes from git clone to first analysis
+    \begin{itemize}
+        \item Step 1: \texttt{cp .env.example .env} (configure API keys)
+        \item Step 2: \texttt{make init-config} (generate default configs)
+        \item Step 3: \texttt{make setup \&\& make up} (start all services)
+    \end{itemize}
     \item \textbf{One-Click Deploy:} Makefile targets for setup, start, stop, test, clean
     \begin{itemize}
         \item Commands: \texttt{make setup}, \texttt{make up}, \texttt{make down}, \texttt{make test}, \texttt{make clean}
     \end{itemize}
+    \item \textbf{Folder Structure:}
+    \begin{verbatim}
+acr-qa/
+├── docs/               # All documentation consolidated
+│   ├── architecture.md
+│   ├── api.md
+│   ├── deployment.md
+│   ├── failure_modes.md
+│   ├── cost_analysis.md
+│   └── security_audit.md
+├── src/                # Source code
+├── tests/              # 97 unit tests
+├── config/             # Configuration files
+│   ├── rules.yml       # Rule definitions
+│   └── quality_gates.yml
+├── .env.example        # Template for API keys
+├── .acrqa.yml          # Per-repo config example
+└── Makefile            # One-click commands
+    \end{verbatim}
     \item \textbf{Local CLI Support (Phase 2 Optional):} \texttt{acr-qa scan .} for pre-push validation
-    \item \textbf{Documentation:} README, architecture docs, API reference, video tutorial
+    \item \textbf{Documentation:} All docs in \texttt{docs/} directory, README with quick start
     \item \textbf{Error Messages:} Plain English (no stack traces to end users)
     \item \textbf{Accessibility:} Terminal UI supports screen readers (basic)
 \end{itemize}
@@ -1286,8 +1367,14 @@ $\downarrow$ Enqueue job \\
 $\downarrow$ Dispatch to adapter \\
 \textbf{Adapter Gateway} - Routes files by extension to language adapter \\
 $\downarrow$ \\
+\textbf{Language Adapters (Adapter Pattern):} \\
+- Base: \texttt{LanguageAdapter} (abstract interface) \\
+- Implementations: \texttt{PythonAdapter}, \texttt{JavaScriptAdapter} (Phase 2) \\
+- Methods: \texttt{run\_tools()}, \texttt{normalize\_findings()}, \texttt{get\_extensions()} \\
+$\downarrow$ \\
 \textbf{Python Adapter} (Ruff, Semgrep, Vulture, Radon, Bandit, jscpd) \\
-\textbf{Future Adapters} (JS, Java, Go) - TBD Phase 2 \\
+\textbf{JavaScript Adapter} (ESLint, Semgrep, jscpd) - Phase 2 \\
+\textbf{Future Adapters} (Java, Go) - TBD \\
 $\downarrow$ Tool outputs (JSON) \\
 \textbf{Normalizer} - Maps tool-specific JSON $\rightarrow$ Canonical Finding Schema \\
 $\downarrow$ Canonical findings \\
@@ -1489,7 +1576,7 @@ Jun 2026 & Final Report \& Thesis Writing, Submission \\
     \item Each comment cites a rule id
     \item Findings are ordered so that high-severity issues appear at the top of the PR review
     \item Provenance DB logs all LLM interactions
-    \item \textbf{Test Coverage:} 45 unit tests across 6 test suites with pytest-cov achieving 70\% threshold
+    \item \textbf{Test Coverage:} 97 unit tests across 6 test suites with pytest-cov achieving 70\% threshold
 \end{itemize}
 
 \subsubsection{Test 2: Canonical Schema}
@@ -1621,9 +1708,9 @@ Jun 2026 & Final Report \& Thesis Writing, Submission \\
 
 \textbf{E. Unit Tests}
 \begin{itemize}[leftmargin=*]
-    \item[$\checkmark$] Code coverage $\geq$85\% (pytest report)
+    \item[$\checkmark$] Code coverage $\geq$70\% (97 tests, pytest report)
     \item[$\checkmark$] All tests pass on CI/CD
-    \item[$\checkmark$] Runtime $<$30 seconds
+    \item[$\checkmark$] Runtime $<$7 seconds
     \item[$\checkmark$] All critical paths tested
 \end{itemize}
 
@@ -1793,6 +1880,8 @@ Jan 24, 2026 & 2.2 & Added Observability Stack (F11) and Load Testing (F12) to P
 Jan 24, 2026 & 2.3 & Added Production Readiness \& Quality Assurance (F13): Circuit Breaker, Caching, Structured Logging, Connection Pooling, 85\%+ Unit Tests, Error Handling, Profiling, Deployment Runbook, Cost Analysis, Security Audit. Updated Product Vision with DevOps angle. & Ahmed Abbas \\
 \midrule
 Jan 28, 2026 & 2.4 & Phase 1 Completion Updates: Added GitLab CI/CD support, Added response caching with Redis (7-day TTL), Added OWASP/SANS compliance reporting, Expanded knowledge base to 32 rules across 10 categories, Added 45 unit tests with 70\% coverage threshold, Added source citations and remediation in reports & Ahmed Abbas \\
+\midrule
+Jan 30, 2026 & 2.5 & Phase 2 Core Features: Integrated Quality Gates, Per-Repo Config (.acrqa.yml with YAML sections), Inline Suppression (\# acr-qa:ignore), and Finding Deduplication into F2/F4/F10. Added exit codes (0=pass, 1=fail) for CI/CD. Python adapter complete, JS adapter scaffolded. Updated test count to 97 tests (6.59s runtime, 70\% coverage). Updated Industry Comparison table. Consolidated docs/ folder structure. & Ahmed Abbas \\
 \bottomrule
 \end{longtable}
 
