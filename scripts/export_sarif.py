@@ -15,6 +15,7 @@ sys.path.insert(0, str(Path(__file__).parent.parent))
 
 import argparse
 
+from CORE import __version__
 from DATABASE.database import Database
 
 
@@ -50,9 +51,9 @@ def generate_sarif(run_id=None, output_file=None):
                 "tool": {
                     "driver": {
                         "name": "ACR-QA",
-                        "version": "2.4.0",
-                        "informationUri": "https://github.com/ACR-QA",
-                        "semanticVersion": "2.4.0",
+                        "version": __version__,
+                        "informationUri": "https://github.com/ahmed-145/ACR-QA",
+                        "semanticVersion": __version__,
                         "rules": [],
                     }
                 },

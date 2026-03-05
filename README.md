@@ -7,8 +7,8 @@
 
 [![Python 3.11+](https://img.shields.io/badge/Python-3.11+-3776ab?logo=python&logoColor=white)](https://www.python.org/)
 [![CI Tests](https://github.com/ahmed-145/ACR-QA/actions/workflows/tests.yml/badge.svg)](https://github.com/ahmed-145/ACR-QA/actions/workflows/tests.yml)
-[![Tests](https://img.shields.io/badge/Tests-97%20passing-22c55e?logo=pytest&logoColor=white)](./TESTS/)
-[![Version](https://img.shields.io/badge/Version-2.5.0-blue)](CHANGELOG.md)
+[![Tests](https://img.shields.io/badge/Tests-273%20passing-22c55e?logo=pytest&logoColor=white)](./TESTS/)
+[![Version](https://img.shields.io/badge/Version-2.7.0-blue)](CHANGELOG.md)
 [![PostgreSQL 15](https://img.shields.io/badge/PostgreSQL-15+-336791?logo=postgresql&logoColor=white)](https://postgresql.org/)
 [![Prometheus](https://img.shields.io/badge/Prometheus-monitored-e6522c?logo=prometheus&logoColor=white)](https://prometheus.io/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
@@ -29,6 +29,10 @@ ACR-QA is a **provenance-first, AI-augmented code review platform**. It runs **7
 - 💰 **Cost-benefit analysis** — calculates ROI per finding (no competitor does this)
 - 🔐 **Full provenance** — every LLM prompt and response is stored and auditable
 - 💵 **$0 recurring cost** — uses free-tier APIs only
+- 🧪 **Test Gap Analyzer** — AST-based detection of untested functions/classes (no competitor does this)
+- 📋 **OWASP Compliance Reports** — maps findings to OWASP Top 10 + CWE IDs
+- 🔇 **Confidence-based noise control** — filter low-confidence findings (`?min_confidence=0.7`)
+- 📜 **Policy-as-Code Engine** — `.acrqa.yml` with schema validation, programmatic inspection, and documented templates
 
 ---
 
@@ -120,11 +124,44 @@ Displays severity-colored findings table + quality gate panel with Rich library.
 
 ### 🔒 Security & Compliance
 
-- **OWASP / SANS** compliance tagging on findings
+- **OWASP Top 10 Compliance Report** — maps all security findings to OWASP (2021) categories with CWE IDs (`/api/runs/{id}/compliance`)
 - **SARIF v2.1.0** export → GitHub Security tab integration
 - **Full provenance** — every LLM call stored with prompt, response, latency, model
 - **Non-root Docker** — container runs as `acrqa` user with health checks
 - **Rate limiting** — Redis-backed, 1 analysis per repo per minute
+- **Confidence-based noise control** — `?min_confidence=0.7` filter suppresses low-quality findings
+- **Feedback-driven severity tuner** — auto-generates severity overrides from false-positive feedback
+
+### 🧪 Test Gap Analyzer
+
+AST-based detection of untested functions and classes — **no competitor offers this**:
+
+```bash
+python3 scripts/test_gap_analyzer.py --target CORE/ --format text
+```
+
+- Parses source files with Python AST to extract all public functions/classes
+- Discovers test files and maps tested symbols via naming conventions + import analysis
+- Priority-ranks untested symbols by cyclomatic complexity
+- Integrates with quality gate (fails CI if too many complex symbols are untested)
+- API endpoint: `GET /api/test-gaps`
+
+### 📜 Policy-as-Code Engine
+
+`.acrqa.yml` is a full policy definition — not just config:
+
+```bash
+# Validate your policy
+python3 scripts/validate_config.py --validate
+
+# Generate documented template
+python3 scripts/validate_config.py --generate-template > .acrqa.yml
+
+# Inspect active policy via API
+curl http://localhost:5000/api/policy
+```
+
+See [Policy Engine Documentation](docs/POLICY_ENGINE.md) for full reference.
 
 ---
 
@@ -173,7 +210,7 @@ python3 FRONTEND/app.py   # → http://localhost:5000
 
 ```
 ┌──────────────────────────────────────────────────────────────────────┐
-│                        ACR-QA v2.5 Pipeline                         │
+│                        ACR-QA v2.7 Pipeline                         │
 │                                                                      │
 │  GitHub PR ──► Detection Layer ──► Normalizer ──► Severity Scorer   │
 │                ┌─────────────┐     ┌──────────┐   ┌──────────────┐  │
@@ -236,7 +273,11 @@ acr-qa/
 │   ├── export_provenance.py     # Full audit trail export
 │   ├── generate_report.py       # Markdown report generator
 │   ├── generate_pr_summary.py   # PR summary generator
-│   ├── compliance_report.py     # OWASP/SANS compliance report
+│   ├── generate_compliance_report.py  # OWASP Top 10 compliance (v2.7)
+│   ├── test_gap_analyzer.py     # AST-based test gap analysis (v2.7)
+│   ├── feedback_tuner.py        # Feedback-driven severity tuner (v2.7)
+│   ├── validate_config.py       # Policy validator + template generator (v2.7)
+│   ├── compliance_report.py     # Legacy compliance report
 │   ├── compute_metrics.py       # Precision/recall evaluation
 │   ├── create_fix_pr.py         # Auto-fix PR creation via GitHub API
 │   └── user_study.py            # User study tooling
@@ -246,7 +287,7 @@ acr-qa/
 │   └── grafana/                 # Grafana auto-provisioning
 │       ├── provisioning/        # Datasource + dashboard providers
 │       └── dashboards/          # Pre-built dashboard (6 panels)
-├── TESTS/                       # 97-test pytest suite
+├── TESTS/                       # 273-test pytest suite
 │   ├── test_acceptance.py       # Pipeline E2E tests
 │   ├── test_api.py              # All Flask API endpoints
 │   ├── test_explainer.py        # RAG + LLM integration
@@ -255,6 +296,8 @@ acr-qa/
 │   ├── test_config_quality.py   # ConfigLoader + QualityGate
 │   ├── test_pydantic_validation.py  # Schema validation
 │   ├── test_rate_limiting.py    # Redis rate limiter
+│   ├── test_deep_coverage.py    # 98 deep-coverage tests (v2.6)
+│   ├── test_god_mode.py         # 78 god-mode tests — all features (v2.7)
 │   └── test_integration_benchmarks.py  # Performance
 ├── .github/workflows/
 │   ├── acr-qa.yml               # PR analysis workflow
@@ -373,25 +416,27 @@ Pre-built dashboard with **6 panels** at **http://localhost:3000** (admin/admin)
 ## 🧪 Testing
 
 ```bash
-make test-all          # Full pytest suite (97 tests)
+make test-all          # Full pytest suite (273 tests)
 make test              # Acceptance tests only
 make run               # Run analysis on sample files
 make test-e2e          # End-to-end with Docker
 ```
 
-**97 tests passing**, 4 skipped (infrastructure-dependent):
+**273 tests passing** in 5.97s, 4 skipped (infrastructure-dependent):
 
-| Test File | Coverage |
-|-----------|----------|
-| `test_acceptance.py` | Pipeline E2E with mocked LLM |
-| `test_api.py` | All Flask API endpoints |
-| `test_explainer.py` | RAG + entropy + self-eval |
-| `test_normalizer.py` | Ruff / Bandit / Semgrep normalization |
-| `test_new_engines.py` | Secrets detector, SCA, autofix |
-| `test_config_quality.py` | ConfigLoader + QualityGate |
-| `test_pydantic_validation.py` | Canonical schema validation |
-| `test_rate_limiting.py` | Redis rate limiter (token bucket) |
-| `test_integration_benchmarks.py` | Performance benchmarks |
+| Test File | # | Coverage |
+|-----------|:-:|----------|
+| `test_acceptance.py` | 4 | Pipeline E2E with mocked LLM |
+| `test_api.py` | 9 | All Flask API endpoints |
+| `test_explainer.py` | 5 | RAG + entropy + self-eval |
+| `test_normalizer.py` | 7 | Ruff / Bandit / Semgrep normalization |
+| `test_new_engines.py` | 18 | Secrets detector, SCA, autofix |
+| `test_config_quality.py` | 24 | ConfigLoader + QualityGate |
+| `test_pydantic_validation.py` | 8 | Canonical schema validation |
+| `test_rate_limiting.py` | 8 | Redis rate limiter (token bucket) |
+| `test_deep_coverage.py` | 98 | 12-module deep coverage (v2.6) |
+| `test_god_mode.py` | 78 | All new features + regression + edge cases (v2.7) |
+| `test_integration_benchmarks.py` | 14 | Performance benchmarks |
 
 ---
 
@@ -421,12 +466,17 @@ make test-e2e          # End-to-end with Docker
 | GitHub CI/CD | ✅ | ✅ | ✅ |
 | GitLab CI/CD | ✅ | ✅ | ✅ |
 | SARIF export | ✅ | ✅ | ✅ v2.1.0 |
-| OWASP compliance | ⚠️ | ✅ | ✅ |
+| OWASP compliance report | ✅ | ✅ | ✅ with CWE mapping |
 | Secrets detection | ✅ | ✅ | ✅ |
 | SCA scanning | ✅ | ✅ | ✅ |
 | Rich terminal UI | ❌ | ❌ | ✅ |
 | Cost-benefit analysis | ❌ | ❌ | ✅ |
 | Hallucination detection | ❌ | ❌ | ✅ entropy |
+| **Test gap analysis** | ❌ | ❌ | ✅ AST-based |
+| **Confidence-based filtering** | ❌ | ❌ | ✅ per-finding |
+| **Feedback-driven tuning** | ❌ | ❌ | ✅ auto-overrides |
+| **Policy-as-code engine** | ❌ | ✅ | ✅ with validator |
+| **Config validator** | ❌ | ❌ | ✅ schema + templates |
 | Recurring cost | $$$ | $$$ | **$0** |
 
 ---
@@ -457,6 +507,9 @@ make test-e2e          # End-to-end with Docker
 | [Architecture](docs/architecture/ARCHITECTURE.md) | System design and component details |
 | [Canonical Schema](docs/architecture/CANONICAL_SCHEMA.md) | Finding data model specification |
 | [API Reference](docs/setup/API-Documentation.md) | All REST API endpoints |
+| [Policy Engine](docs/POLICY_ENGINE.md) | Policy-as-code configuration reference |
+| [Competitive Analysis](docs/COMPETITIVE_ANALYSIS.md) | Market positioning and feature comparison |
+| [Testing Report](docs/TESTING_REPORT.md) | Deep-code audit and coverage analysis |
 | [Cloud Deployment](docs/setup/Cloud-Deployment.md) | AWS / GCP / Azure deployment guide |
 | [Token Setup](docs/setup/TOKEN_SETUP.md) | GitHub & GitLab token configuration |
 | [Changelog](CHANGELOG.md) | Version history and release notes |
@@ -476,9 +529,15 @@ make test-e2e          # End-to-end with Docker
 
 ### Phase 2 Roadmap (Feb–Jun 2026)
 
+- [x] ~~Quality gates, per-repo config, inline suppression, dedup~~ (v1.0)
+- [x] ~~Deep-code audit + 98 tests + bug fixes~~ (v2.6)
+- [x] ~~Competitive features: test gap analyzer, OWASP compliance, policy engine, feedback tuner, confidence filtering~~ (v2.7)
+- [x] ~~God-mode testing: 273 tests across 11 test suites~~ (v2.7)
 - [ ] JavaScript / TypeScript language adapter
 - [ ] User study (8–10 participants)
 - [ ] Precision / recall evaluation against ground-truth labels
+- [ ] Inline PR fix suggestions (deployment phase)
+- [ ] Historical trend comparison (deployment phase)
 - [ ] Production deployment on cloud infrastructure
 - [ ] 5-minute demo video
 

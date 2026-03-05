@@ -98,17 +98,6 @@ RULE_MAPPING = {
     "B703": "SECURITY-033",  # django_mark_safe
 }
 
-# Severity Mapping: Tool-specific → Canonical (high/medium/low)
-SEVERITY_MAPPING = {
-    "error": "high",
-    "warning": "medium",
-    "info": "low",
-    # Semgrep
-    "ERROR": "high",
-    "WARNING": "medium",
-    "INFO": "low",
-}
-
 # Category Mapping
 CATEGORY_MAPPING = {
     "security": "security",
@@ -518,8 +507,9 @@ def normalize_all(outputs_dir: str = "outputs") -> list[CanonicalFinding]:
                 content = f.read().strip()
                 if content:  # Only parse if not empty
                     ruff_data = json.loads(content)
-                    all_findings.extend(normalize_ruff(ruff_data))
-                    print(f"  Normalized {len(normalize_ruff(ruff_data))} Ruff findings")
+                    ruff_findings = normalize_ruff(ruff_data)
+                    all_findings.extend(ruff_findings)
+                    print(f"  Normalized {len(ruff_findings)} Ruff findings")
         except json.JSONDecodeError:
             print(f"  Warning: Could not parse {ruff_file}")
         except Exception as e:
@@ -590,8 +580,8 @@ def normalize_all(outputs_dir: str = "outputs") -> list[CanonicalFinding]:
     filtered_findings = []
     for finding in all_findings:
         try:
-            file_path = finding.file_path if hasattr(finding, "file_path") else ""
-            line_num = finding.line_number if hasattr(finding, "line_number") else 0
+            file_path = finding.file if hasattr(finding, "file") else ""
+            line_num = finding.line if hasattr(finding, "line") else 0
             if file_path and line_num and Path(file_path).exists():
                 with open(file_path) as src:
                     lines = src.readlines()

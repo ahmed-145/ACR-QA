@@ -108,7 +108,7 @@ class SeverityScorer:
         try:
             raw_output = finding.get("tool_raw", {}).get("original_output", {})
             return raw_output.get("complexity", 0)
-        except:
+        except Exception:
             # Fallback: parse from message
             message = finding.get("message", "")
             if "complexity of " in message:
@@ -118,7 +118,7 @@ class SeverityScorer:
                     if len(parts) > 1:
                         complexity_str = parts[1].split(".")[0].split()[0]
                         return int(complexity_str)
-                except:
+                except Exception:
                     pass
             return 0
 
@@ -127,7 +127,7 @@ class SeverityScorer:
         try:
             raw_output = finding.get("tool_raw", {}).get("original_output", {})
             return raw_output.get("tokens", 0)
-        except:
+        except Exception:
             # Fallback: parse from message
             message = finding.get("message", "")
             if "tokens" in message:
@@ -137,7 +137,7 @@ class SeverityScorer:
                     if len(parts) > 0:
                         token_str = parts[0].split()[-1]
                         return int(token_str)
-                except:
+                except Exception:
                     pass
             return 0
 

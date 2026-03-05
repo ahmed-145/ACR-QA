@@ -123,7 +123,7 @@ class Database:
     def list_analysis_runs(self, limit=50):
         """List recent analysis runs"""
         query = """
-            SELECT id, repo_name, pr_number, status, 
+            SELECT id, repo_name, pr_number, status,
                    started_at, completed_at, total_findings
             FROM analysis_runs
             ORDER BY started_at DESC
@@ -158,8 +158,8 @@ class Database:
         params = (
             run_id,
             finding_dict.get("tool_raw", {}).get("tool_name", "unknown"),
-            finding_dict.get("original_rule_id", finding_dict.get("rule_id")),
-            finding_dict.get("canonical_rule_id", finding_dict.get("rule_id")),
+            finding_dict.get("original_rule_id") or finding_dict.get("rule_id") or finding_dict.get("canonical_rule_id", "UNKNOWN"),
+            finding_dict.get("canonical_rule_id") or finding_dict.get("rule_id", "UNKNOWN"),
             finding_dict.get("severity", "low"),
             finding_dict.get("file", "unknown"),
             finding_dict.get("line", 0),
@@ -196,7 +196,7 @@ class Database:
         query = f"""
             SELECT * FROM findings
             {where_clause}
-            ORDER BY 
+            ORDER BY
                 CASE canonical_severity
                     WHEN 'high' THEN 1
                     WHEN 'medium' THEN 2
@@ -212,7 +212,7 @@ class Database:
     def get_findings_with_explanations(self, run_id):
         """Get all findings with their explanations for a run"""
         query = """
-            SELECT 
+            SELECT
                 f.id,
                 f.rule_id,
                 f.canonical_rule_id,
@@ -229,7 +229,7 @@ class Database:
             FROM findings f
             LEFT JOIN llm_explanations e ON f.id = e.finding_id
             WHERE f.run_id = %s
-            ORDER BY 
+            ORDER BY
                 CASE f.severity
                     WHEN 'error' THEN 1
                     WHEN 'warning' THEN 2
@@ -343,7 +343,7 @@ class Database:
         """Get aggregated feedback statistics"""
         if run_id:
             query = """
-                SELECT 
+                SELECT
                     COUNT(*) as total_feedback,
                     SUM(CASE WHEN is_false_positive THEN 1 ELSE 0 END) as false_positives,
                     AVG(clarity_rating) as avg_clarity_rating,
@@ -355,7 +355,7 @@ class Database:
             results = self.execute(query, (run_id,), fetch=True)
         else:
             query = """
-                SELECT 
+                SELECT
                     COUNT(*) as total_feedback,
                     SUM(CASE WHEN is_false_positive THEN 1 ELSE 0 END) as false_positives,
                     AVG(clarity_rating) as avg_clarity_rating,
@@ -371,7 +371,7 @@ class Database:
     def get_run_summary(self, run_id):
         """Get comprehensive summary for a run"""
         query = """
-            SELECT 
+            SELECT
                 r.*,
                 COUNT(f.id) as findings_count,
                 COUNT(CASE WHEN f.canonical_severity = 'high' THEN 1 END) as high_severity_count,
@@ -401,7 +401,7 @@ class Database:
             List of dicts with per-run aggregated data
         """
         query = """
-            SELECT 
+            SELECT
                 ar.id as run_id,
                 ar.repo_name,
                 ar.started_at,

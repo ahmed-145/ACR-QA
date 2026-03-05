@@ -229,8 +229,8 @@ def generate_comparison_report(run_id: int = None, output_dir: str = "DATA/outpu
 
     report = f"""# ACR-QA vs Manual Review — Comparison Report
 
-**Run ID:** {run_id}  
-**Generated:** {datetime.now().strftime('%Y-%m-%d %H:%M')}  
+**Run ID:** {run_id}
+**Generated:** {datetime.now().strftime('%Y-%m-%d %H:%M')}
 **Total Findings:** {len(findings)}
 
 ---

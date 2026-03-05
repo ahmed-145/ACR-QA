@@ -18,13 +18,50 @@ from DATABASE.database import Database
 
 app = Flask(__name__)
 CORS(app)
-# Security: Use environment variable for SECRET_KEY
-app.config["SECRET_KEY"] = os.getenv("FLASK_SECRET_KEY", "dev-secret-key-change-in-production")
+# Security: Use environment variable for SECRET_KEY, fallback to random per-instance key
+app.config["SECRET_KEY"] = os.getenv("FLASK_SECRET_KEY", os.urandom(32).hex())
 
 # Register Prometheus /metrics endpoint for observability
 register_metrics_endpoint(app)
 
 db = Database()
+
+
+def _calculate_confidence(finding):
+    """
+    Calculate a confidence score (0.0-1.0) for a finding.
+
+    Factors:
+    - Rule citation in explanation: +0.2
+    - High severity: +0.1
+    - Security category: +0.1
+    - Has explanation: +0.1
+    - Default baseline: 0.5
+    """
+    score = 0.5
+
+    explanation = finding.get("explanation_text", "") or ""
+    rule_id = finding.get("canonical_rule_id", "") or ""
+    severity = finding.get("canonical_severity", "low")
+    category = finding.get("category", "")
+
+    # Rule is cited in explanation → high confidence
+    if rule_id and rule_id in explanation:
+        score += 0.2
+
+    # Has an explanation at all → some confidence
+    if explanation:
+        score += 0.1
+
+    # High severity findings are more likely to be real
+    if severity == "high":
+        score += 0.1
+
+    # Security findings are more likely to be real
+    if category == "security":
+        score += 0.1
+
+    return min(1.0, round(score, 2))
 
 
 @app.route("/")
@@ -75,6 +112,7 @@ def get_run_findings(run_id):
         category = request.args.get("category")
         search = request.args.get("search", "").lower()
         group_by = request.args.get("group_by")  # New: 'rule' for grouping
+        min_confidence = request.args.get("min_confidence", type=float)
 
         # Get findings
         findings = db.get_findings_with_explanations(run_id)
@@ -95,6 +133,13 @@ def get_run_findings(run_id):
                 searchable = f"{f.get('file_path', '')} {f.get('message', '')} {f.get('canonical_rule_id', '')}".lower()
                 if search not in searchable:
                     continue
+
+            # Calculate confidence score
+            confidence = _calculate_confidence(f)
+
+            # Confidence filter (noise control)
+            if min_confidence is not None and confidence < min_confidence:
+                continue
 
             filtered.append(
                 {
@@ -433,9 +478,9 @@ def get_pr_summary(run_id):
 
         summary_md = f"""## 📊 ACR-QA Analysis Summary
 
-**Total Issues:** {len(findings)}  
-**Critical/High:** {severity_counts.get('high', 0) + severity_counts.get('critical', 0)}  
-**Medium:** {severity_counts.get('medium', 0)}  
+**Total Issues:** {len(findings)}
+**Critical/High:** {severity_counts.get('high', 0) + severity_counts.get('critical', 0)}
+**Medium:** {severity_counts.get('medium', 0)}
 **Low:** {severity_counts.get('low', 0)}
 
 ### Top Categories
@@ -563,6 +608,107 @@ def get_trends():
         )
     except Exception as e:
         print(f"Error in /api/trends: {e}")
+        return jsonify({"success": False, "error": str(e)}), 500
+
+
+@app.route("/api/runs/<int:run_id>/compliance")
+def get_compliance_report(run_id):
+    """
+    OWASP Top 10 compliance report for an analysis run.
+    Maps security findings to OWASP categories and CWE IDs.
+    Returns JSON with pass/fail per category.
+    """
+    try:
+        from scripts.generate_compliance_report import get_compliance_data
+
+        data = get_compliance_data(run_id=run_id)
+        if isinstance(data, str):
+            return jsonify({"success": False, "error": data}), 404
+
+        return jsonify({"success": True, **data})
+    except Exception as e:
+        import traceback
+
+        traceback.print_exc()
+        return jsonify({"success": False, "error": str(e)}), 500
+
+
+@app.route("/api/test-gaps")
+def get_test_gaps():
+    """
+    Test gap analysis — find untested functions/classes.
+    No competitor does this. Market differentiator.
+    """
+    try:
+        from scripts.test_gap_analyzer import get_test_gap_data
+
+        target = request.args.get("target", "CORE/")
+        test_dir = request.args.get("test_dir", "TESTS/")
+
+        data = get_test_gap_data(target_dir=target, test_dir=test_dir)
+        return jsonify({"success": True, **data})
+    except Exception as e:
+        import traceback
+
+        traceback.print_exc()
+        return jsonify({"success": False, "error": str(e)}), 500
+
+
+@app.route("/api/policy")
+def get_policy_config():
+    """
+    Returns the active policy configuration from .acrqa.yml.
+    Shows what rules are enforced, quality gates, severity overrides, etc.
+    This IS the policy-as-code engine — the config file defines the policy.
+    """
+    try:
+        from scripts.validate_config import SCHEMA, validate_config
+
+        config_path = ".acrqa.yml"
+        is_valid, errors, warnings = validate_config(config_path)
+
+        # Read active config
+        import yaml
+        config = {}
+        config_file = Path(config_path)
+        if config_file.exists():
+            with open(config_file) as f:
+                config = yaml.safe_load(f) or {}
+
+        # Build policy summary
+        policy = {
+            "config_file": config_path,
+            "is_valid": is_valid,
+            "errors": errors,
+            "warnings": warnings,
+            "active_policy": {
+                "disabled_rules": config.get("rules", {}).get("disabled_rules", []),
+                "severity_overrides": config.get("rules", {}).get("severity_overrides", {}),
+                "ignored_paths": config.get("analysis", {}).get("ignore_paths", []),
+                "min_severity": config.get("reporting", {}).get("min_severity", "low"),
+                "quality_gate": config.get("quality_gate", {
+                    "max_high": 0,
+                    "max_medium": 10,
+                    "max_total": 100,
+                    "max_security": 0,
+                }),
+                "autofix": {
+                    "enabled": config.get("autofix", {}).get("enabled", False),
+                    "min_confidence": config.get("autofix", {}).get("auto_apply_confidence", 80),
+                },
+                "ai_explanations": {
+                    "enabled": config.get("ai", {}).get("enabled", True),
+                    "max_explanations": config.get("ai", {}).get("max_explanations", 50),
+                },
+            },
+            "schema_keys": list(SCHEMA.keys()),
+        }
+
+        return jsonify({"success": True, **policy})
+    except Exception as e:
+        import traceback
+
+        traceback.print_exc()
         return jsonify({"success": False, "error": str(e)}), 500
 
 
@@ -700,6 +846,13 @@ def cost_benefit(run_id):
 def mark_false_positive(finding_id):
     """Mark a finding as a false positive via user feedback."""
     try:
+        # Check if finding exists before inserting feedback
+        existing = db.execute(
+            "SELECT id FROM findings WHERE id = %s", (finding_id,), fetch=True
+        )
+        if not existing:
+            return jsonify({"success": False, "error": f"Finding {finding_id} not found"}), 404
+
         data = request.get_json() or {}
         reason = data.get("reason", "")
         user_id = data.get("user_id", "dashboard-user")
@@ -731,6 +884,13 @@ def mark_false_positive(finding_id):
 def submit_feedback(finding_id):
     """Submit general feedback (helpful/not helpful) for a finding."""
     try:
+        # Check if finding exists before inserting feedback
+        existing = db.execute(
+            "SELECT id FROM findings WHERE id = %s", (finding_id,), fetch=True
+        )
+        if not existing:
+            return jsonify({"success": False, "error": f"Finding {finding_id} not found"}), 404
+
         data = request.get_json() or {}
         is_helpful = data.get("is_helpful", True)
         clarity_rating = data.get("clarity_rating")

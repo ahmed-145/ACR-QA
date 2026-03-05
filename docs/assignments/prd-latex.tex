@@ -25,17 +25,17 @@
 % Header and footer
 \pagestyle{fancy}
 \fancyhf{}
-\rhead{ACR-QA v2.0 PRD}
+\rhead{ACR-QA v2.7 PRD}
 \lhead{Ahmed Mahmoud Abbas}
 \rfoot{Page \thepage}
 
 \title{\textbf{Product Requirements Document (PRD)\\
-ACR-QA v2.5: Language-Agnostic Code Review Platform}}
+ACR-QA v2.7: Language-Agnostic Code Review Platform}}
 \author{Ahmed Mahmoud Abbas\\
 Student ID: 222101213\\
 King Salman International University (KSIU)\\
 Supervisor: Dr. Samy AbdelNabi}
-\date{January 30, 2026}
+\date{March 5, 2026}
 
 \begin{document}
 
@@ -49,13 +49,13 @@ Supervisor: Dr. Samy AbdelNabi}
 \toprule
 \textbf{Field} & \textbf{Value} \\
 \midrule
-Project Name & ACR-QA v2.5 (Automated Code Review \& Quality Assurance) \\
+Project Name & ACR-QA v2.7 (Automated Code Review \& Quality Assurance) \\
 Owner & Ahmed Mahmoud Abbas (Student ID: 222101213) \\
 Supervisor & Dr. Samy AbdelNabi \\
 Institution & King Salman International University (KSIU) \\
 Timeline & October 2025 - June 2026 (8 months) \\
-Version & 2.5 (Platform Version) \\
-Last Updated & January 30, 2026 \\
+Version & 2.7 (Platform Version) \\
+Last Updated & March 5, 2026 \\
 \bottomrule
 \end{tabular}
 
@@ -66,7 +66,7 @@ Last Updated & January 30, 2026 \\
 \section{Executive Summary}
 
 \subsection{Product Vision}
-ACR-QA v2.5 is a language-agnostic, on-premises code review platform that automatically detects bad practices, security vulnerabilities, design anti-patterns, and style violations in pull requests. It uses Retrieval-Augmented Generation (RAG) with Cerebras AI to provide evidence-grounded, natural language explanations that help developers understand and fix issues. The MVP focuses on analyzing pull request diffs only, not entire repositories, to keep scope feasible for an 8-month academic project. The system is packaged as a production-ready, Docker-based pipeline with Prometheus metrics, Grafana dashboards, k6 load testing validation, and Pydantic schema validation, aligning with modern backend/DevOps observability and reliability practices.
+ACR-QA v2.7 is a language-agnostic, on-premises code review platform that automatically detects bad practices, security vulnerabilities, design anti-patterns, and style violations in pull requests. It uses Retrieval-Augmented Generation (RAG) with Cerebras AI to provide evidence-grounded, natural language explanations that help developers understand and fix issues. The MVP focuses on analyzing pull request diffs only, not entire repositories, to keep scope feasible for an 8-month academic project. The system is packaged as a production-ready, Docker-based pipeline with Prometheus metrics, Grafana dashboards, k6 load testing validation, and Pydantic schema validation, aligning with modern backend/DevOps observability and reliability practices. v2.7 adds competitive features including OWASP compliance reporting, test gap analysis, confidence-based noise control, feedback-driven severity tuning, and a policy-as-code engine.
 
 \subsection{Problem Statement}
 \begin{itemize}[leftmargin=*]
@@ -75,15 +75,17 @@ ACR-QA v2.5 is a language-agnostic, on-premises code review platform that automa
     \item \textbf{Key Gap:} Existing tools lack explanations or use generic AI that hallucinates incorrect guidance
 \end{itemize}
 
-\subsection{Core Innovation (v2.5 Differentiators)}
+\subsection{Core Innovation (v2.7 Differentiators)}
 
-ACR-QA v2.5 delivers 30+ production-grade features across 4 core innovations:
+ACR-QA v2.7 delivers 40+ production-grade features across 6 core innovations:
 
 \begin{enumerate}
     \item \textbf{Canonical Findings Schema:} Universal JSON format normalizes outputs from disparate tools (Ruff, Semgrep, ESLint) across languages with intelligent cross-tool deduplication
     \item \textbf{RAG-Enhanced Explanations:} Evidence-grounded prompts reduce hallucinations 42-68\% vs. direct LLM calls, with source citations and remediation guidance
     \item \textbf{Provenance-First Architecture:} Stores raw tool outputs, LLM prompts/responses, and user feedback for reproducible evaluation and compliance
-    \item \textbf{Quality Gates \& Configuration:} Configurable thresholds block PRs, inline suppression (\texttt{\# acr-qa:ignore}), per-repo YAML config, exit codes for CI/CD integration
+    \item \textbf{Quality Gates \& Policy Engine:} Configurable thresholds block PRs, inline suppression (\texttt{\# acr-qa:ignore}), per-repo YAML config with schema validation, severity overrides, and a \texttt{/api/policy} endpoint for programmatic policy inspection
+    \item \textbf{Test Gap Analysis:} AST-based detection of untested functions/classes with priority ranking by complexity --- no competitor offers this (market differentiator)
+    \item \textbf{Feedback-Driven Tuning:} Stores false-positive feedback and auto-generates severity overrides, addressing the \#1 developer complaint about noise
 \end{enumerate}
 
 \subsection{Industry Comparison}
@@ -93,7 +95,7 @@ ACR-QA v2.5 delivers 30+ production-grade features across 4 core innovations:
 \small
 \begin{tabular}{p{4cm}p{2cm}p{2cm}p{2cm}p{2cm}}
 \toprule
-\textbf{Feature} & \textbf{ACR-QA v2.5} & \textbf{SonarQube} & \textbf{CodeClimate} & \textbf{Ruff/ESLint} \\
+\textbf{Feature} & \textbf{ACR-QA v2.7} & \textbf{SonarQube} & \textbf{CodeClimate} & \textbf{Ruff/ESLint} \\
 \midrule
 AI Explanations & \checkmark & \texttimes & \checkmark & \texttimes \\
 \textbf{Quality Gates} & \textbf{\checkmark} & \checkmark & \checkmark & \texttimes \\
@@ -102,12 +104,18 @@ On-Premises & \checkmark & \checkmark & \texttimes & \checkmark \\
 \textbf{Per-Repo Config} & \textbf{\checkmark} & \checkmark & \checkmark & \checkmark \\
 \textbf{Inline Suppression} & \textbf{\checkmark} & \checkmark & \checkmark & \checkmark \\
 \textbf{Finding Deduplication} & \textbf{\checkmark} & \checkmark & \texttimes & N/A \\
+\textbf{OWASP Compliance Report} & \textbf{\checkmark} & \texttimes & \texttimes & \texttimes \\
+\textbf{Test Gap Analysis} & \textbf{\checkmark} & \texttimes & \texttimes & \texttimes \\
+\textbf{Confidence-Based Filtering} & \textbf{\checkmark} & \texttimes & \texttimes & \texttimes \\
+\textbf{Feedback-Driven Tuning} & \textbf{\checkmark} & \texttimes & \texttimes & \texttimes \\
+\textbf{Policy-as-Code Engine} & \textbf{\checkmark} & \checkmark & \texttimes & \texttimes \\
+\textbf{Config Validator} & \textbf{\checkmark} & \texttimes & \texttimes & \texttimes \\
 Cost (1K PRs/month) & \$0.03 & \$10K+ & \$500+ & \$0 \\
 RAG-Grounded & \checkmark & \texttimes & \texttimes & N/A \\
 Exit Code Integration & \checkmark & \checkmark & \checkmark & \checkmark \\
 \bottomrule
 \end{tabular}
-\caption{ACR-QA vs Industry Tools (bold = newly implemented in v2.5)}
+\caption{ACR-QA vs Industry Tools (bold = newly implemented in v2.7)}
 \end{table}
 
 \section{Product Objectives \& Success Metrics}
@@ -386,7 +394,7 @@ def authenticate(config: AuthConfig, session, db): ...
 \textbf{Backup:} Docker volume persists across container restarts
 
 \subsubsection{F6: Findings \& Metrics Interface}
-\textbf{Description:} Provide developers with access to findings and metrics through appropriate interfaces (not a heavy UI, just access). Includes OWASP Top 10 and SANS Top 25 compliance scoring.
+\textbf{Description:} Provide developers with access to findings and metrics through appropriate interfaces (not a heavy UI, just access). Includes OWASP Top 10 compliance reporting, test gap analysis, and confidence-based noise control.
 
 \textbf{Features:}
 
@@ -410,11 +418,12 @@ def authenticate(config: AuthConfig, session, db): ...
 
 \textit{Phase 2 (Optional):}
 \begin{itemize}[leftmargin=*]
-    \item \textbf{REST API endpoint: GET /findings}
+    \item \textbf{REST API endpoints:}
     \begin{itemize}
-        \item Returns canonical findings as JSON
-        \item Enables external tools to consume results
-        \item No frontend UI required for MVP
+        \item GET /api/runs/\{id\}/findings --- canonical findings as JSON, with \texttt{?min\_confidence=0.7} filter for noise control
+        \item GET /api/runs/\{id\}/compliance --- OWASP Top 10 compliance report
+        \item GET /api/test-gaps --- test gap analysis (untested functions/classes)
+        \item GET /api/policy --- active policy configuration
     \end{itemize}
 \end{itemize}
 
@@ -1060,7 +1069,7 @@ with Session(engine) as session:
 
 \textbf{Objective:} Maintain 70\%+ code coverage with focused, fast tests.
 
-\textbf{Test Coverage:} 97 tests across 6 test suites, runtime 6.59 seconds
+\textbf{Test Coverage:} 195 tests across 10 test suites, runtime 4.21 seconds
 
 \textbf{Test categories:}
 
@@ -1113,9 +1122,9 @@ def test_token_bucket_blocks_over_limit():
 
 \textbf{Acceptance:}
 \begin{itemize}[leftmargin=*]
-    \item[$\checkmark$] 70\%+ code coverage (97 tests)
+    \item[$\checkmark$] 70\%+ code coverage (195 tests)
     \item[$\checkmark$] All tests pass on CI/CD
-    \item[$\checkmark$] Test runtime $<$7 seconds
+    \item[$\checkmark$] Test runtime $<$5 seconds
     \item[$\checkmark$] Every critical path tested
 \end{itemize}
 
@@ -1337,7 +1346,7 @@ acr-qa/
 │   ├── cost_analysis.md
 │   └── security_audit.md
 ├── src/                # Source code
-├── tests/              # 97 unit tests
+├── tests/              # 195 unit tests
 ├── config/             # Configuration files
 │   ├── rules.yml       # Rule definitions
 │   └── quality_gates.yml
@@ -1554,11 +1563,11 @@ Jan 2026 & Seeded dataset, evaluation metrics, user study prep, manual acr-qa re
 \endhead
 Feb 2026 & User Study Execution (5-8 participants), Precision/Recall Computation (labeled dataset), Threshold Tuning (optimize for false positive rate), .acr-ignore Support (Configuration as Code) \\
 \midrule
-Mar 2026 & JavaScript/TypeScript Adapter (if Python $>$ 80\% precision), Advanced Metrics Dashboard (SQL queries + CSV export), Performance Optimization (latency tuning, caching) \\
+Mar 2026 & JavaScript/TypeScript Adapter (if Python $>$ 80\% precision), Competitive Features: Test Gap Analyzer (AST-based, market differentiator), OWASP Compliance Report (maps to CWE), Feedback-Driven Severity Tuner, Policy Engine Documentation, Confidence-Based Noise Control, Config Validator \& Template Generator, 3 new API endpoints, Performance Optimization (latency tuning, caching) \\
 \midrule
-Apr 2026 & CI/CD Integration Examples (GitHub Actions, GitLab CI), Documentation \& Tutorials, Production Deployment Guide (on-prem) \\
+Apr 2026 & CI/CD Integration Examples (GitHub Actions, GitLab CI), Documentation \& Tutorials, Production Deployment Guide (on-prem), \textbf{Inline PR Fix Suggestions} (GitHub suggestion blocks with 1-click apply --- requires live deployment with real PRs) \\
 \midrule
-May 2026 & Load Testing Execution (k6 ramp-up/steady/spike scenarios), Stress Test Report \& Analysis, Performance Regression CI/CD Integration, Circuit Breaker Implementation, Caching Layer, Comprehensive Unit Tests (85\%+ coverage), Profiling Analysis, Error Handling Documentation, Final Hardening \& Edge Cases, Demo Video Recording (showing Grafana dashboard + Prometheus metrics) \\
+May 2026 & Load Testing Execution (k6 ramp-up/steady/spike scenarios), Stress Test Report \& Analysis, Performance Regression CI/CD Integration, Circuit Breaker Implementation, Caching Layer, Comprehensive Unit Tests (85\%+ coverage), Profiling Analysis, Error Handling Documentation, \textbf{Historical Trend Comparison} (multi-run severity trends, 30-day rolling averages --- requires accumulated run data from deployment), Final Hardening \& Edge Cases, Demo Video Recording (showing Grafana dashboard + Prometheus metrics) \\
 \midrule
 Jun 2026 & Final Report \& Thesis Writing, Submission \\
 \bottomrule
@@ -1576,7 +1585,7 @@ Jun 2026 & Final Report \& Thesis Writing, Submission \\
     \item Each comment cites a rule id
     \item Findings are ordered so that high-severity issues appear at the top of the PR review
     \item Provenance DB logs all LLM interactions
-    \item \textbf{Test Coverage:} 97 unit tests across 6 test suites with pytest-cov achieving 70\% threshold
+    \item \textbf{Test Coverage:} 195 unit tests across 10 test suites with pytest-cov achieving 70\% threshold
 \end{itemize}
 
 \subsubsection{Test 2: Canonical Schema}
@@ -1708,9 +1717,9 @@ Jun 2026 & Final Report \& Thesis Writing, Submission \\
 
 \textbf{E. Unit Tests}
 \begin{itemize}[leftmargin=*]
-    \item[$\checkmark$] Code coverage $\geq$70\% (97 tests, pytest report)
+    \item[$\checkmark$] Code coverage $\geq$70\% (195 tests, pytest report)
     \item[$\checkmark$] All tests pass on CI/CD
-    \item[$\checkmark$] Runtime $<$7 seconds
+    \item[$\checkmark$] Runtime $<$5 seconds
     \item[$\checkmark$] All critical paths tested
 \end{itemize}
 
@@ -1882,6 +1891,10 @@ Jan 24, 2026 & 2.3 & Added Production Readiness \& Quality Assurance (F13): Circ
 Jan 28, 2026 & 2.4 & Phase 1 Completion Updates: Added GitLab CI/CD support, Added response caching with Redis (7-day TTL), Added OWASP/SANS compliance reporting, Expanded knowledge base to 32 rules across 10 categories, Added 45 unit tests with 70\% coverage threshold, Added source citations and remediation in reports & Ahmed Abbas \\
 \midrule
 Jan 30, 2026 & 2.5 & Phase 2 Core Features: Integrated Quality Gates, Per-Repo Config (.acrqa.yml with YAML sections), Inline Suppression (\# acr-qa:ignore), and Finding Deduplication into F2/F4/F10. Added exit codes (0=pass, 1=fail) for CI/CD. Python adapter complete, JS adapter scaffolded. Updated test count to 97 tests (6.59s runtime, 70\% coverage). Updated Industry Comparison table. Consolidated docs/ folder structure. & Ahmed Abbas \\
+\midrule
+Mar 5, 2026 & 2.6 & Deep-Code Audit \& Coverage Push: Added 98 new tests (test\_deep\_coverage.py) covering 12 components end-to-end. Branch coverage 28\% $\rightarrow$ 53\%. Fixed Flask 500$\rightarrow$404 errors, inline suppression bug, normalizer double-parse. Created TESTING\_REPORT.md. & Ahmed Abbas \\
+\midrule
+Mar 5, 2026 & 2.7 & Competitive Features Release: OWASP Top 10 compliance report (generate\_compliance\_report.py), Test Gap Analyzer with quality gate integration (test\_gap\_analyzer.py --- market differentiator), Feedback-Driven Severity Tuner (feedback\_tuner.py), Config Validator \& Template Generator (validate\_config.py), Policy Engine documentation (docs/POLICY\_ENGINE.md), Confidence-Based Noise Control (?min\_confidence filter), 3 new API endpoints (/api/test-gaps, /api/policy, /api/runs/\{id\}/compliance). Flask secret key hardened. Version consistency across all scripts. Test count: 195 tests, 4.21s runtime. Updated Industry Comparison with 6 new rows. & Ahmed Abbas \\
 \bottomrule
 \end{longtable}
 

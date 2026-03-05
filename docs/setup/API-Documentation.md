@@ -1,8 +1,8 @@
 # ACR-QA API Documentation
 
-**Version:** 2.5  
+**Version:** 2.7  
 **Base URL:** `http://localhost:5000`  
-**Last Updated:** March 4, 2026
+**Last Updated:** March 5, 2026
 
 ---
 
@@ -85,6 +85,7 @@ Retrieve all findings for a specific analysis run with optional filters.
 | `category` | string | Filter by category: `security`, `design`, `style`, etc. |
 | `search` | string | Search in file path, message, or rule ID |
 | `group_by` | string | Group results: `rule` for grouping by rule ID |
+| `min_confidence` | float | Filter findings by minimum confidence score (0.0–1.0) |
 
 **Response (Normal):**
 ```json
@@ -553,7 +554,96 @@ CORS is enabled for all origins in development mode.
 
 ---
 
+## v2.7 Endpoints
+
+### 12. Test Gap Analysis
+
+**GET** `/api/test-gaps`
+
+Run AST-based test gap analysis on the project.
+
+**Response:**
+```json
+{
+  "success": true,
+  "total_symbols": 85,
+  "tested": 52,
+  "untested": 33,
+  "coverage_pct": 61.2,
+  "gaps": [
+    {
+      "name": "AnalysisPipeline.run_autofix",
+      "file": "CORE/main.py",
+      "line": 346,
+      "kind": "function",
+      "complexity": "complex"
+    }
+  ],
+  "priority_gaps": [...]
+}
+```
+
+---
+
+### 13. Policy Inspection
+
+**GET** `/api/policy`
+
+Get the active policy-as-code configuration.
+
+**Response:**
+```json
+{
+  "success": true,
+  "config_file": ".acrqa.yml",
+  "is_valid": true,
+  "errors": [],
+  "active_policy": {
+    "enabled_tools": {"ruff": true, "semgrep": true},
+    "min_severity": "low",
+    "quality_gate": {"max_high": 0, "max_medium": 5},
+    "disabled_rules": [],
+    "ignored_paths": ["__pycache__", ".venv"]
+  }
+}
+```
+
+---
+
+### 14. OWASP Compliance Report
+
+**GET** `/api/runs/{run_id}/compliance`
+
+Get OWASP Top 10 compliance report for a run.
+
+**Path Parameters:**
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `run_id` | integer | Analysis run ID |
+
+**Response:**
+```json
+{
+  "success": true,
+  "run_id": 42,
+  "owasp_results": {
+    "A01": {"name": "Broken Access Control", "status": "PASS", "finding_count": 0},
+    "A03": {"name": "Injection", "status": "FAIL", "finding_count": 2}
+  },
+  "total_findings": 15,
+  "security_findings": 5
+}
+```
+
+---
+
 ## Changelog
+
+### v2.7 (March 2026)
+- Added test gap analysis endpoint (`/api/test-gaps`)
+- Added policy inspection endpoint (`/api/policy`)
+- Added OWASP compliance report endpoint (`/api/runs/{id}/compliance`)
+- Added `min_confidence` filter on findings endpoint
 
 ### v2.4 (February 2026)
 - Added trend analytics endpoint

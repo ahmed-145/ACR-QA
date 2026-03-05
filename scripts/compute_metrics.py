@@ -216,7 +216,7 @@ def label_seeded_dataset():
                     # Update ground truth using db.execute
                     db.execute(
                         """
-                        UPDATE findings 
+                        UPDATE findings
                         SET ground_truth = 'TP'
                         WHERE id = %s
                     """,

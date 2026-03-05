@@ -325,7 +325,7 @@ def verify_fix(fix_result: dict) -> dict:
 
     filepath = fix_result.get("file", "")
     line = fix_result.get("line", 0)
-    fix_result.get("original", "")
+    original = fix_result.get("original", "")  # noqa: F841 — kept for audit trail
     fixed = fix_result.get("fixed", "")
 
     if not filepath or not os.path.exists(filepath):

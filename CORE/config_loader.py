@@ -157,7 +157,7 @@ rules:
   disabled_rules: []
   #   - IMPORT-001
   #   - VAR-001
-  
+
   # Override severity for specific rules:
   severity_overrides: {}
   #   SECURITY-001: high
