@@ -80,7 +80,7 @@ OWASP_TOP_10 = {
 
 # ─── CWE Mapping for ACR-QA Rules ─────────────────────────────────────────
 RULE_TO_CWE = {
-    "SECURITY-001": "CWE-94",   # Code Injection (eval)
+    "SECURITY-001": "CWE-94",  # Code Injection (eval)
     "SECURITY-002": "CWE-617",  # Assert (reachable assertion)
     "SECURITY-003": "CWE-732",  # Incorrect Permission Assignment
     "SECURITY-004": "CWE-200",  # Exposure of Sensitive Information
@@ -88,17 +88,17 @@ RULE_TO_CWE = {
     "SECURITY-006": "CWE-377",  # Insecure Temporary File
     "SECURITY-007": "CWE-390",  # Detection of Error without Action
     "SECURITY-008": "CWE-502",  # Deserialization of Untrusted Data
-    "SECURITY-021": "CWE-78",   # OS Command Injection
-    "SECURITY-027": "CWE-89",   # SQL Injection
+    "SECURITY-021": "CWE-78",  # OS Command Injection
+    "SECURITY-027": "CWE-89",  # SQL Injection
     "HARDCODE-001": "CWE-798",  # Use of Hard-coded Credentials
-    "PATH-001": "CWE-22",       # Path Traversal
-    "REGEX-001": "CWE-1333",    # ReDoS
-    "INPUT-001": "CWE-20",      # Improper Input Validation
-    "LOG-001": "CWE-532",       # Information Exposure Through Logs
-    "THREAD-001": "CWE-362",    # Race Condition
-    "EXCEPT-001": "CWE-396",    # Catching Overly Broad Exceptions
-    "ERROR-001": "CWE-390",     # Detection of Error without Action
-    "ASSERT-001": "CWE-617",    # Reachable Assertion
+    "PATH-001": "CWE-22",  # Path Traversal
+    "REGEX-001": "CWE-1333",  # ReDoS
+    "INPUT-001": "CWE-20",  # Improper Input Validation
+    "LOG-001": "CWE-532",  # Information Exposure Through Logs
+    "THREAD-001": "CWE-362",  # Race Condition
+    "EXCEPT-001": "CWE-396",  # Catching Overly Broad Exceptions
+    "ERROR-001": "CWE-390",  # Detection of Error without Action
+    "ASSERT-001": "CWE-617",  # Reachable Assertion
 }
 
 
@@ -128,9 +128,7 @@ def generate_compliance_report(run_id=None, output_format="md"):
 
     # Filter to security-relevant findings
     security_findings = [
-        f for f in findings
-        if f.get("category") == "security"
-        or f.get("canonical_rule_id", "") in RULE_TO_CWE
+        f for f in findings if f.get("category") == "security" or f.get("canonical_rule_id", "") in RULE_TO_CWE
     ]
 
     # Map findings to OWASP categories
@@ -139,9 +137,9 @@ def generate_compliance_report(run_id=None, output_format="md"):
 
     for owasp_id, owasp_info in OWASP_TOP_10.items():
         matched = [
-            f for f in security_findings
-            if f.get("canonical_rule_id") in owasp_info["rule_ids"]
-            or f.get("rule_id") in owasp_info["rule_ids"]
+            f
+            for f in security_findings
+            if f.get("canonical_rule_id") in owasp_info["rule_ids"] or f.get("rule_id") in owasp_info["rule_ids"]
         ]
         owasp_results[owasp_id] = {
             "name": owasp_info["name"],
@@ -158,37 +156,39 @@ def generate_compliance_report(run_id=None, output_format="md"):
         mapped_rule_ids.update(info["rule_ids"])
 
     unmapped_findings = [
-        f for f in security_findings
-        if f.get("canonical_rule_id") not in mapped_rule_ids
-        and f.get("rule_id") not in mapped_rule_ids
+        f
+        for f in security_findings
+        if f.get("canonical_rule_id") not in mapped_rule_ids and f.get("rule_id") not in mapped_rule_ids
     ]
 
     if output_format == "json":
         import json
-        return json.dumps({
-            "run_id": run_id,
-            "version": __version__,
-            "total_findings": len(findings),
-            "security_findings": len(security_findings),
-            "owasp_results": {
-                k: {
-                    "name": v["name"],
-                    "status": v["status"],
-                    "finding_count": v["finding_count"],
-                    "cwe_ids": v["cwe_ids"],
-                }
-                for k, v in owasp_results.items()
+
+        return json.dumps(
+            {
+                "run_id": run_id,
+                "version": __version__,
+                "total_findings": len(findings),
+                "security_findings": len(security_findings),
+                "owasp_results": {
+                    k: {
+                        "name": v["name"],
+                        "status": v["status"],
+                        "finding_count": v["finding_count"],
+                        "cwe_ids": v["cwe_ids"],
+                    }
+                    for k, v in owasp_results.items()
+                },
+                "unmapped_security_findings": len(unmapped_findings),
             },
-            "unmapped_security_findings": len(unmapped_findings),
-        }, indent=2)
+            indent=2,
+        )
 
     # Generate markdown report
-    return _build_markdown_report(run_id, findings, security_findings,
-                                  owasp_results, unmapped_findings)
+    return _build_markdown_report(run_id, findings, security_findings, owasp_results, unmapped_findings)
 
 
-def _build_markdown_report(run_id, findings, security_findings,
-                           owasp_results, unmapped_findings):
+def _build_markdown_report(run_id, findings, security_findings, owasp_results, unmapped_findings):
     """Build the markdown compliance report."""
     total = len(findings)
     sec_total = len(security_findings)
@@ -275,31 +275,19 @@ def get_compliance_data(run_id=None):
         Dict with OWASP mapping, pass/fail status, and finding counts.
     """
     import json
+
     report_json = generate_compliance_report(run_id=run_id, output_format="json")
     return json.loads(report_json)
 
 
 def main():
-    parser = argparse.ArgumentParser(
-        description="ACR-QA OWASP Top 10 Compliance Report"
-    )
+    parser = argparse.ArgumentParser(description="ACR-QA OWASP Top 10 Compliance Report")
     parser.add_argument("--run-id", type=int, help="Analysis run ID (default: latest)")
-    parser.add_argument(
-        "--format", "-f",
-        choices=["md", "json"],
-        default="md",
-        help="Output format (default: md)"
-    )
-    parser.add_argument(
-        "--output", "-o",
-        help="Output file path (default: stdout)"
-    )
+    parser.add_argument("--format", "-f", choices=["md", "json"], default="md", help="Output format (default: md)")
+    parser.add_argument("--output", "-o", help="Output file path (default: stdout)")
     args = parser.parse_args()
 
-    report = generate_compliance_report(
-        run_id=args.run_id,
-        output_format=args.format
-    )
+    report = generate_compliance_report(run_id=args.run_id, output_format=args.format)
 
     if args.output:
         Path(args.output).parent.mkdir(parents=True, exist_ok=True)

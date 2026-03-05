@@ -158,7 +158,9 @@ class Database:
         params = (
             run_id,
             finding_dict.get("tool_raw", {}).get("tool_name", "unknown"),
-            finding_dict.get("original_rule_id") or finding_dict.get("rule_id") or finding_dict.get("canonical_rule_id", "UNKNOWN"),
+            finding_dict.get("original_rule_id")
+            or finding_dict.get("rule_id")
+            or finding_dict.get("canonical_rule_id", "UNKNOWN"),
             finding_dict.get("canonical_rule_id") or finding_dict.get("rule_id", "UNKNOWN"),
             finding_dict.get("severity", "low"),
             finding_dict.get("file", "unknown"),

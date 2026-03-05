@@ -173,9 +173,7 @@ def validate_config(config_path):
             if not isinstance(value, str):
                 errors.append(f"'{key}' must be a string, got {type(value).__name__}")
             elif "choices" in schema and value not in schema["choices"]:
-                errors.append(
-                    f"'{key}' must be one of {schema['choices']}, got '{value}'"
-                )
+                errors.append(f"'{key}' must be one of {schema['choices']}, got '{value}'")
 
     return len(errors) == 0, errors, warnings
 
@@ -194,15 +192,11 @@ def _validate_value(path, value, schema, errors, warnings):
     if expected_type in type_map:
         expected = type_map[expected_type]
         if not isinstance(value, expected):
-            errors.append(
-                f"'{path}' must be {expected_type}, got {type(value).__name__}"
-            )
+            errors.append(f"'{path}' must be {expected_type}, got {type(value).__name__}")
             return
 
     if "choices" in schema and value not in schema["choices"]:
-        errors.append(
-            f"'{path}' must be one of {schema['choices']}, got '{value}'"
-        )
+        errors.append(f"'{path}' must be one of {schema['choices']}, got '{value}'")
 
 
 def generate_template(commented=True):
@@ -260,31 +254,19 @@ def generate_template(commented=True):
 
 
 def main():
-    parser = argparse.ArgumentParser(
-        description="ACR-QA Configuration Validator & Template Generator"
-    )
+    parser = argparse.ArgumentParser(description="ACR-QA Configuration Validator & Template Generator")
     sub = parser.add_subparsers(dest="command", help="Command to run")
 
     # validate command
     validate_parser = sub.add_parser("validate", help="Validate a config file")
     validate_parser.add_argument(
-        "config_file",
-        nargs="?",
-        default=".acrqa.yml",
-        help="Path to config file (default: .acrqa.yml)"
+        "config_file", nargs="?", default=".acrqa.yml", help="Path to config file (default: .acrqa.yml)"
     )
 
     # template command
     template_parser = sub.add_parser("template", help="Generate a documented template")
-    template_parser.add_argument(
-        "--output", "-o",
-        help="Output file (default: stdout)"
-    )
-    template_parser.add_argument(
-        "--no-comments",
-        action="store_true",
-        help="Generate without explanatory comments"
-    )
+    template_parser.add_argument("--output", "-o", help="Output file (default: stdout)")
+    template_parser.add_argument("--no-comments", action="store_true", help="Generate without explanatory comments")
 
     args = parser.parse_args()
 

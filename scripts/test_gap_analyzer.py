@@ -25,9 +25,11 @@ from CORE import __version__
 
 # ─── Data Models ──────────────────────────────────────────────────────────
 
+
 @dataclass
 class SourceSymbol:
     """A function or class defined in source code."""
+
     name: str
     qualified_name: str  # e.g., "QualityGate.evaluate"
     file_path: str
@@ -41,6 +43,7 @@ class SourceSymbol:
 @dataclass
 class TestMapping:
     """Maps a source symbol to its test coverage status."""
+
     symbol: SourceSymbol
     is_tested: bool = False
     test_file: str = ""
@@ -48,6 +51,7 @@ class TestMapping:
 
 
 # ─── AST Extraction ──────────────────────────────────────────────────────
+
 
 def extract_symbols(file_path: str) -> list[SourceSymbol]:
     """
@@ -87,28 +91,32 @@ def extract_symbols(file_path: str) -> list[SourceSymbol]:
             else:
                 complexity = "complex"
 
-            symbols.append(SourceSymbol(
-                name=node.name,
-                qualified_name=qualified,
-                file_path=str(file_path),
-                line=node.lineno,
-                kind="function",
-                is_private=node.name.startswith("_") and not node.name.startswith("__"),
-                is_dunder=node.name.startswith("__") and node.name.endswith("__"),
-                complexity=complexity,
-            ))
+            symbols.append(
+                SourceSymbol(
+                    name=node.name,
+                    qualified_name=qualified,
+                    file_path=str(file_path),
+                    line=node.lineno,
+                    kind="function",
+                    is_private=node.name.startswith("_") and not node.name.startswith("__"),
+                    is_dunder=node.name.startswith("__") and node.name.endswith("__"),
+                    complexity=complexity,
+                )
+            )
 
         elif isinstance(node, ast.ClassDef):
-            symbols.append(SourceSymbol(
-                name=node.name,
-                qualified_name=node.name,
-                file_path=str(file_path),
-                line=node.lineno,
-                kind="class",
-                is_private=node.name.startswith("_"),
-                is_dunder=False,
-                complexity="complex",
-            ))
+            symbols.append(
+                SourceSymbol(
+                    name=node.name,
+                    qualified_name=node.name,
+                    file_path=str(file_path),
+                    line=node.lineno,
+                    kind="class",
+                    is_private=node.name.startswith("_"),
+                    is_dunder=False,
+                    complexity="complex",
+                )
+            )
 
     return symbols
 
@@ -124,6 +132,7 @@ def _find_parent_class(tree: ast.Module, target_node: ast.AST) -> str | None:
 
 
 # ─── Test Discovery ──────────────────────────────────────────────────────
+
 
 def discover_test_symbols(test_dir: str) -> dict[str, set[str]]:
     """
@@ -191,7 +200,7 @@ def discover_test_symbols(test_dir: str) -> dict[str, set[str]]:
 
         # Also do a simple text search for function/class names
         # This catches references in strings, comments, and fixtures
-        words = set(re.findall(r'\b([A-Za-z_][A-Za-z0-9_]*)\b', source))
+        words = set(re.findall(r"\b([A-Za-z_][A-Za-z0-9_]*)\b", source))
         referenced.update(words)
 
         test_map[str(test_file)] = referenced
@@ -200,6 +209,7 @@ def discover_test_symbols(test_dir: str) -> dict[str, set[str]]:
 
 
 # ─── Gap Analysis ─────────────────────────────────────────────────────────
+
 
 def analyze_gaps(
     target_dir: str,
@@ -232,11 +242,7 @@ def analyze_gaps(
     for source_file in target_path.rglob("*.py"):
         # Skip test files, __init__, __pycache__
         rel = str(source_file.relative_to(target_path))
-        if (
-            rel.startswith("test_")
-            or "/__pycache__/" in str(source_file)
-            or "__pycache__" in rel
-        ):
+        if rel.startswith("test_") or "/__pycache__/" in str(source_file) or "__pycache__" in rel:
             continue
 
         symbols = extract_symbols(str(source_file))
@@ -275,17 +281,20 @@ def analyze_gaps(
                         matching_tests.append(test_file)
                         break
 
-            mappings.append(TestMapping(
-                symbol=sym,
-                is_tested=is_tested,
-                test_file=matching_tests[0] if matching_tests else "",
-                test_functions=matching_tests,
-            ))
+            mappings.append(
+                TestMapping(
+                    symbol=sym,
+                    is_tested=is_tested,
+                    test_file=matching_tests[0] if matching_tests else "",
+                    test_functions=matching_tests,
+                )
+            )
 
     return mappings
 
 
 # ─── Report Generation ────────────────────────────────────────────────────
+
 
 def generate_report(mappings: list[TestMapping], format: str = "text") -> str:
     """Generate a test gap report."""
@@ -294,31 +303,34 @@ def generate_report(mappings: list[TestMapping], format: str = "text") -> str:
     total = len(mappings)
 
     if format == "json":
-        return json.dumps({
-            "version": __version__,
-            "total_symbols": total,
-            "tested": len(tested),
-            "untested": len(untested),
-            "coverage_pct": round(len(tested) / total * 100, 1) if total > 0 else 0,
-            "gaps": [
-                {
-                    "name": m.symbol.qualified_name,
-                    "file": m.symbol.file_path,
-                    "line": m.symbol.line,
-                    "kind": m.symbol.kind,
-                    "complexity": m.symbol.complexity,
-                }
-                for m in untested
-            ],
-            "tested_symbols": [
-                {
-                    "name": m.symbol.qualified_name,
-                    "file": m.symbol.file_path,
-                    "test_file": m.test_file,
-                }
-                for m in tested
-            ],
-        }, indent=2)
+        return json.dumps(
+            {
+                "version": __version__,
+                "total_symbols": total,
+                "tested": len(tested),
+                "untested": len(untested),
+                "coverage_pct": round(len(tested) / total * 100, 1) if total > 0 else 0,
+                "gaps": [
+                    {
+                        "name": m.symbol.qualified_name,
+                        "file": m.symbol.file_path,
+                        "line": m.symbol.line,
+                        "kind": m.symbol.kind,
+                        "complexity": m.symbol.complexity,
+                    }
+                    for m in untested
+                ],
+                "tested_symbols": [
+                    {
+                        "name": m.symbol.qualified_name,
+                        "file": m.symbol.file_path,
+                        "test_file": m.test_file,
+                    }
+                    for m in tested
+                ],
+            },
+            indent=2,
+        )
 
     # Text report
     lines = []
@@ -372,6 +384,7 @@ def generate_report(mappings: list[TestMapping], format: str = "text") -> str:
 
 # ─── API Data (for Flask endpoint) ────────────────────────────────────────
 
+
 def get_test_gap_data(target_dir: str = ".", test_dir: str = "TESTS") -> dict:
     """
     Get test gap data for the Flask API endpoint.
@@ -405,12 +418,14 @@ def get_test_gap_data(target_dir: str = ".", test_dir: str = "TESTS") -> dict:
                 "file": m.symbol.file_path,
                 "line": m.symbol.line,
             }
-            for m in untested if m.symbol.complexity == "complex"
+            for m in untested
+            if m.symbol.complexity == "complex"
         ][:10],
     }
 
 
 # ─── Quality Gate Integration ─────────────────────────────────────────────
+
 
 def check_test_gap_gate(
     target_dir: str,
@@ -432,22 +447,26 @@ def check_test_gap_gate(
     checks = []
 
     untested_ok = len(untested) <= max_untested
-    checks.append({
-        "name": "Untested Symbols",
-        "passed": untested_ok,
-        "actual": len(untested),
-        "threshold": max_untested,
-        "message": f"{len(untested)} untested symbols (max: {max_untested})",
-    })
+    checks.append(
+        {
+            "name": "Untested Symbols",
+            "passed": untested_ok,
+            "actual": len(untested),
+            "threshold": max_untested,
+            "message": f"{len(untested)} untested symbols (max: {max_untested})",
+        }
+    )
 
     complex_ok = len(complex_untested) <= max_complex_untested
-    checks.append({
-        "name": "Complex Untested",
-        "passed": complex_ok,
-        "actual": len(complex_untested),
-        "threshold": max_complex_untested,
-        "message": f"{len(complex_untested)} complex untested symbols (max: {max_complex_untested})",
-    })
+    checks.append(
+        {
+            "name": "Complex Untested",
+            "passed": complex_ok,
+            "actual": len(complex_untested),
+            "threshold": max_complex_untested,
+            "message": f"{len(complex_untested)} complex untested symbols (max: {max_complex_untested})",
+        }
+    )
 
     passed = all(c["passed"] for c in checks)
 
@@ -460,58 +479,25 @@ def check_test_gap_gate(
 
 # ─── Main CLI ─────────────────────────────────────────────────────────────
 
+
 def main():
-    parser = argparse.ArgumentParser(
-        description="ACR-QA Test Gap Analyzer — find untested code"
-    )
+    parser = argparse.ArgumentParser(description="ACR-QA Test Gap Analyzer — find untested code")
+    parser.add_argument("--target", "-t", default="CORE/", help="Target source directory to analyze (default: CORE/)")
+    parser.add_argument("--test-dir", "-d", default="TESTS/", help="Test directory to search (default: TESTS/)")
+    parser.add_argument("--format", "-f", choices=["text", "json"], default="text", help="Output format")
+    parser.add_argument("--include-private", action="store_true", help="Include _private functions in analysis")
+    parser.add_argument("--include-dunder", action="store_true", help="Include __dunder__ methods in analysis")
+    parser.add_argument("--gate", action="store_true", help="Run as quality gate check (exit 1 if failed)")
+    parser.add_argument("--max-untested", type=int, default=10, help="Quality gate: max untested symbols (default: 10)")
     parser.add_argument(
-        "--target", "-t",
-        default="CORE/",
-        help="Target source directory to analyze (default: CORE/)"
-    )
-    parser.add_argument(
-        "--test-dir", "-d",
-        default="TESTS/",
-        help="Test directory to search (default: TESTS/)"
-    )
-    parser.add_argument(
-        "--format", "-f",
-        choices=["text", "json"],
-        default="text",
-        help="Output format"
-    )
-    parser.add_argument(
-        "--include-private",
-        action="store_true",
-        help="Include _private functions in analysis"
-    )
-    parser.add_argument(
-        "--include-dunder",
-        action="store_true",
-        help="Include __dunder__ methods in analysis"
-    )
-    parser.add_argument(
-        "--gate",
-        action="store_true",
-        help="Run as quality gate check (exit 1 if failed)"
-    )
-    parser.add_argument(
-        "--max-untested",
-        type=int,
-        default=10,
-        help="Quality gate: max untested symbols (default: 10)"
-    )
-    parser.add_argument(
-        "--max-complex-untested",
-        type=int,
-        default=0,
-        help="Quality gate: max complex untested symbols (default: 0)"
+        "--max-complex-untested", type=int, default=0, help="Quality gate: max complex untested symbols (default: 0)"
     )
     args = parser.parse_args()
 
     if args.gate:
         result = check_test_gap_gate(
-            args.target, args.test_dir,
+            args.target,
+            args.test_dir,
             max_untested=args.max_untested,
             max_complex_untested=args.max_complex_untested,
         )
@@ -524,7 +510,8 @@ def main():
             sys.exit(1)
     else:
         mappings = analyze_gaps(
-            args.target, args.test_dir,
+            args.target,
+            args.test_dir,
             include_private=args.include_private,
             include_dunder=args.include_dunder,
         )

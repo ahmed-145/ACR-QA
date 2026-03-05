@@ -669,6 +669,7 @@ def get_policy_config():
 
         # Read active config
         import yaml
+
         config = {}
         config_file = Path(config_path)
         if config_file.exists():
@@ -686,12 +687,15 @@ def get_policy_config():
                 "severity_overrides": config.get("rules", {}).get("severity_overrides", {}),
                 "ignored_paths": config.get("analysis", {}).get("ignore_paths", []),
                 "min_severity": config.get("reporting", {}).get("min_severity", "low"),
-                "quality_gate": config.get("quality_gate", {
-                    "max_high": 0,
-                    "max_medium": 10,
-                    "max_total": 100,
-                    "max_security": 0,
-                }),
+                "quality_gate": config.get(
+                    "quality_gate",
+                    {
+                        "max_high": 0,
+                        "max_medium": 10,
+                        "max_total": 100,
+                        "max_security": 0,
+                    },
+                ),
                 "autofix": {
                     "enabled": config.get("autofix", {}).get("enabled", False),
                     "min_confidence": config.get("autofix", {}).get("auto_apply_confidence", 80),
@@ -847,9 +851,7 @@ def mark_false_positive(finding_id):
     """Mark a finding as a false positive via user feedback."""
     try:
         # Check if finding exists before inserting feedback
-        existing = db.execute(
-            "SELECT id FROM findings WHERE id = %s", (finding_id,), fetch=True
-        )
+        existing = db.execute("SELECT id FROM findings WHERE id = %s", (finding_id,), fetch=True)
         if not existing:
             return jsonify({"success": False, "error": f"Finding {finding_id} not found"}), 404
 
@@ -885,9 +887,7 @@ def submit_feedback(finding_id):
     """Submit general feedback (helpful/not helpful) for a finding."""
     try:
         # Check if finding exists before inserting feedback
-        existing = db.execute(
-            "SELECT id FROM findings WHERE id = %s", (finding_id,), fetch=True
-        )
+        existing = db.execute("SELECT id FROM findings WHERE id = %s", (finding_id,), fetch=True)
         if not existing:
             return jsonify({"success": False, "error": f"Finding {finding_id} not found"}), 404
 

@@ -17,12 +17,10 @@ Comprehensive tests targeting previously uncovered code paths:
 - Metrics module registration
 """
 
-import json
 import os
 import sys
 import tempfile
 from pathlib import Path
-from unittest.mock import MagicMock, patch
 
 import pytest
 import yaml
@@ -254,9 +252,7 @@ class TestSecretsDetectorDeep:
 
     def test_detect_jwt(self):
         with tempfile.NamedTemporaryFile(mode="w", suffix=".py", delete=False) as f:
-            f.write(
-                'token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIn0.dozjg"\n'
-            )
+            f.write('token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIn0.dozjg"\n')
             path = f.name
         try:
             results = self.detector.scan_file(path)
@@ -293,7 +289,7 @@ class TestSecretsDetectorDeep:
                 f.write('secret = "password123"\n')
             results = self.detector.scan_directory(td)
             # scan_directory returns a dict with findings key
-            assert isinstance(results, (list, dict))
+            assert isinstance(results, list | dict)
 
 
 # ═════════════════════════════════════════════════════════════
@@ -385,7 +381,7 @@ class TestCodeExtractorDeep:
         try:
             snippet = extract_code_snippet(path, 999)
             # Should return something or empty, not crash
-            assert isinstance(snippet, (str, type(None)))
+            assert isinstance(snippet, str | type(None))
         finally:
             os.unlink(path)
 
@@ -393,7 +389,7 @@ class TestCodeExtractorDeep:
         from CORE.utils.code_extractor import extract_code_snippet
 
         snippet = extract_code_snippet("/nonexistent/file.py", 1)
-        assert isinstance(snippet, (str, type(None)))
+        assert isinstance(snippet, str | type(None))
 
 
 # ═════════════════════════════════════════════════════════════
@@ -633,9 +629,7 @@ class TestQualityGateDeep:
         assert result["passed"]
 
     def test_custom_thresholds(self):
-        gate = self.QualityGate(
-            {"quality_gate": {"max_high": 2, "max_medium": 10, "max_total": 50}}
-        )
+        gate = self.QualityGate({"quality_gate": {"max_high": 2, "max_medium": 10, "max_total": 50}})
         findings = [{"canonical_severity": "high", "category": "design"}]
         assert gate.evaluate(findings)["passed"]
 
@@ -661,9 +655,7 @@ class TestQualityGateDeep:
 
     def test_result_structure(self):
         gate = self.QualityGate(None)
-        result = gate.evaluate(
-            [{"canonical_severity": "high", "category": "security"}]
-        )
+        result = gate.evaluate([{"canonical_severity": "high", "category": "security"}])
         assert "passed" in result
         assert "checks" in result
         assert "counts" in result
@@ -671,9 +663,7 @@ class TestQualityGateDeep:
 
     def test_print_report_no_crash(self):
         gate = self.QualityGate(None)
-        result = gate.evaluate(
-            [{"canonical_severity": "high", "category": "security"}]
-        )
+        result = gate.evaluate([{"canonical_severity": "high", "category": "security"}])
         gate.print_report(result)  # Should not raise
 
     def test_zero_tolerance(self):
@@ -699,9 +689,7 @@ class TestPythonAdapterDeep:
         from CORE.adapters.python_adapter import PythonAdapter
 
         self.adapter = PythonAdapter(
-            target_dir=str(
-                Path(__file__).parent.parent / "TESTS" / "samples" / "comprehensive-issues"
-            )
+            target_dir=str(Path(__file__).parent.parent / "TESTS" / "samples" / "comprehensive-issues")
         )
 
     def test_language_name(self):
@@ -866,7 +854,7 @@ class TestDatabaseDeep:
 
     def test_get_feedback_stats(self):
         stats = self.db.get_feedback_stats()
-        assert isinstance(stats, (dict, type(None)))
+        assert isinstance(stats, dict | type(None))
 
     def test_get_explanations_all(self):
         explanations = self.db.get_explanations()

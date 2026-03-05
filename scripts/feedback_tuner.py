@@ -49,10 +49,15 @@ def compute_fp_rates(run_id=None):
         return {}
 
     # Aggregate by rule
-    stats = defaultdict(lambda: {
-        "tp": 0, "fp": 0, "total": 0,
-        "severity": None, "category": None,
-    })
+    stats = defaultdict(
+        lambda: {
+            "tp": 0,
+            "fp": 0,
+            "total": 0,
+            "severity": None,
+            "category": None,
+        }
+    )
 
     for row in feedback:
         rule_id = row.get("canonical_rule_id", "UNKNOWN")
@@ -80,10 +85,7 @@ def compute_fp_rates(run_id=None):
         elif fp_rate >= 0.5 and data["total"] >= 5:
             data["recommendation"] = "DOWNGRADE"
             current = data["severity"]
-            data["suggested_severity"] = (
-                "medium" if current == "high" else
-                "low" if current == "medium" else "low"
-            )
+            data["suggested_severity"] = "medium" if current == "high" else "low" if current == "medium" else "low"
         elif fp_rate <= 0.1 and data["total"] >= 3:
             data["recommendation"] = "KEEP"
             data["suggested_severity"] = data["severity"]
@@ -159,31 +161,11 @@ def print_report(fp_rates):
 
 
 def main():
-    parser = argparse.ArgumentParser(
-        description="ACR-QA Feedback-Driven Severity Tuner"
-    )
-    parser.add_argument(
-        "--apply",
-        action="store_true",
-        help="Write severity_overrides.yml to config/"
-    )
-    parser.add_argument(
-        "--min-feedback",
-        type=int,
-        default=3,
-        help="Minimum feedback entries per rule (default: 3)"
-    )
-    parser.add_argument(
-        "--output", "-o",
-        default="config/severity_overrides.yml",
-        help="Output file path"
-    )
-    parser.add_argument(
-        "--format", "-f",
-        choices=["report", "json", "yaml"],
-        default="report",
-        help="Output format"
-    )
+    parser = argparse.ArgumentParser(description="ACR-QA Feedback-Driven Severity Tuner")
+    parser.add_argument("--apply", action="store_true", help="Write severity_overrides.yml to config/")
+    parser.add_argument("--min-feedback", type=int, default=3, help="Minimum feedback entries per rule (default: 3)")
+    parser.add_argument("--output", "-o", default="config/severity_overrides.yml", help="Output file path")
+    parser.add_argument("--format", "-f", choices=["report", "json", "yaml"], default="report", help="Output format")
     args = parser.parse_args()
 
     fp_rates = compute_fp_rates()

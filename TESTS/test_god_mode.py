@@ -15,12 +15,9 @@ Coverage targets:
   - Cross-Feature Integration (combining multiple features end-to-end)
 """
 
-import ast
 import json
 import os
 import sys
-import tempfile
-from dataclasses import dataclass
 from pathlib import Path
 from unittest.mock import MagicMock, patch
 
@@ -30,7 +27,6 @@ import yaml
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
 from CORE import __version__
-
 
 # ═══════════════════════════════════════════════════════════════════════════
 # 1. TEST GAP ANALYZER — DEEP TESTS
@@ -143,10 +139,7 @@ class TestGapAnalyzerDiscovery:
         test_dir.mkdir()
 
         test_file = test_dir / "test_example.py"
-        test_file.write_text(
-            "def test_calculate_total():\n    pass\n"
-            "def test_validate_input():\n    pass\n"
-        )
+        test_file.write_text("def test_calculate_total():\n    pass\n" "def test_validate_input():\n    pass\n")
 
         refs = discover_test_symbols(str(test_dir))
         all_refs = set()
@@ -194,9 +187,7 @@ class TestGapAnalysis:
 
         tests = tmp_path / "tests"
         tests.mkdir()
-        (tests / "test_calc.py").write_text(
-            "def test_add():\n    pass\n"
-        )
+        (tests / "test_calc.py").write_text("def test_add():\n    pass\n")
 
         mappings = analyze_gaps(str(src), str(tests))
         tested = [m for m in mappings if m.is_tested]
@@ -211,10 +202,7 @@ class TestGapAnalysis:
 
         src = tmp_path / "src"
         src.mkdir()
-        (src / "mod.py").write_text(
-            "def public_func():\n    pass\n"
-            "def _private_func():\n    pass\n"
-        )
+        (src / "mod.py").write_text("def public_func():\n    pass\n" "def _private_func():\n    pass\n")
 
         tests = tmp_path / "tests"
         tests.mkdir()
@@ -256,17 +244,26 @@ class TestGapReporting:
         mappings = [
             TestMapping(
                 symbol=SourceSymbol(
-                    name="tested_func", qualified_name="mod.tested_func",
-                    file_path="mod.py", line=1, kind="function",
-                    is_private=False, is_dunder=False,
+                    name="tested_func",
+                    qualified_name="mod.tested_func",
+                    file_path="mod.py",
+                    line=1,
+                    kind="function",
+                    is_private=False,
+                    is_dunder=False,
                 ),
-                is_tested=True, test_file="test_mod.py",
+                is_tested=True,
+                test_file="test_mod.py",
             ),
             TestMapping(
                 symbol=SourceSymbol(
-                    name="untested_func", qualified_name="mod.untested_func",
-                    file_path="mod.py", line=10, kind="function",
-                    is_private=False, is_dunder=False,
+                    name="untested_func",
+                    qualified_name="mod.untested_func",
+                    file_path="mod.py",
+                    line=10,
+                    kind="function",
+                    is_private=False,
+                    is_dunder=False,
                 ),
                 is_tested=False,
             ),
@@ -287,9 +284,13 @@ class TestGapReporting:
         mappings = [
             TestMapping(
                 symbol=SourceSymbol(
-                    name="func_a", qualified_name="mod.func_a",
-                    file_path="mod.py", line=1, kind="function",
-                    is_private=False, is_dunder=False,
+                    name="func_a",
+                    qualified_name="mod.func_a",
+                    file_path="mod.py",
+                    line=1,
+                    kind="function",
+                    is_private=False,
+                    is_dunder=False,
                 ),
                 is_tested=True,
             ),
@@ -312,9 +313,7 @@ class TestGapReporting:
         tests.mkdir()
         (tests / "test_mod.py").write_text("def test_foo():\n    pass\n")
 
-        result = check_test_gap_gate(
-            str(src), str(tests), max_untested=10, max_complex_untested=10
-        )
+        result = check_test_gap_gate(str(src), str(tests), max_untested=10, max_complex_untested=10)
         assert result["passed"] is True
 
     def test_quality_gate_fails(self, tmp_path):
@@ -323,19 +322,13 @@ class TestGapReporting:
 
         src = tmp_path / "src"
         src.mkdir()
-        (src / "mod.py").write_text(
-            "def a():\n    pass\n"
-            "def b():\n    pass\n"
-            "def c():\n    pass\n"
-        )
+        (src / "mod.py").write_text("def a():\n    pass\n" "def b():\n    pass\n" "def c():\n    pass\n")
 
         tests = tmp_path / "tests"
         tests.mkdir()
         (tests / "test_mod.py").write_text("")
 
-        result = check_test_gap_gate(
-            str(src), str(tests), max_untested=1
-        )
+        result = check_test_gap_gate(str(src), str(tests), max_untested=1)
         assert result["passed"] is False
 
     def test_api_data_format(self, tmp_path):
@@ -396,9 +389,10 @@ class TestOWASPMapping:
 
     def test_all_cwe_ids_valid_format(self):
         """All CWE IDs should match CWE-NNN format."""
+        import re
+
         from scripts.generate_compliance_report import RULE_TO_CWE
 
-        import re
         for rule_id, cwe_id in RULE_TO_CWE.items():
             assert re.match(r"CWE-\d+", cwe_id), f"Invalid CWE format for {rule_id}: {cwe_id}"
 
@@ -488,9 +482,14 @@ class TestFeedbackTuner:
 
         fp_rates = {
             "STYLE-001": {
-                "tp": 1, "fp": 4, "total": 5, "fp_rate": 0.8,
-                "severity": "medium", "category": "style",
-                "recommendation": "DOWNGRADE", "suggested_severity": "low",
+                "tp": 1,
+                "fp": 4,
+                "total": 5,
+                "fp_rate": 0.8,
+                "severity": "medium",
+                "category": "style",
+                "recommendation": "DOWNGRADE",
+                "suggested_severity": "low",
             },
         }
 
@@ -504,9 +503,14 @@ class TestFeedbackTuner:
 
         fp_rates = {
             "STYLE-002": {
-                "tp": 0, "fp": 2, "total": 2, "fp_rate": 1.0,
-                "severity": "medium", "category": "style",
-                "recommendation": "DOWNGRADE", "suggested_severity": "low",
+                "tp": 0,
+                "fp": 2,
+                "total": 2,
+                "fp_rate": 1.0,
+                "severity": "medium",
+                "category": "style",
+                "recommendation": "DOWNGRADE",
+                "suggested_severity": "low",
             },
         }
 
@@ -519,9 +523,14 @@ class TestFeedbackTuner:
 
         fp_rates = {
             "SECURITY-001": {
-                "tp": 9, "fp": 1, "total": 10, "fp_rate": 0.1,
-                "severity": "high", "category": "security",
-                "recommendation": "KEEP", "suggested_severity": "high",
+                "tp": 9,
+                "fp": 1,
+                "total": 10,
+                "fp_rate": 0.1,
+                "severity": "high",
+                "category": "security",
+                "recommendation": "KEEP",
+                "suggested_severity": "high",
             },
         }
 
@@ -534,9 +543,14 @@ class TestFeedbackTuner:
 
         fp_rates = {
             "TEST-001": {
-                "tp": 5, "fp": 5, "total": 10, "fp_rate": 0.5,
-                "severity": "medium", "category": "style",
-                "recommendation": "MONITOR", "suggested_severity": "medium",
+                "tp": 5,
+                "fp": 5,
+                "total": 10,
+                "fp_rate": 0.5,
+                "severity": "medium",
+                "category": "style",
+                "recommendation": "MONITOR",
+                "suggested_severity": "medium",
             },
         }
 
@@ -548,6 +562,7 @@ class TestFeedbackTuner:
     def test_print_report_empty_data(self, capsys):
         """print_report should handle empty data gracefully."""
         from scripts.feedback_tuner import print_report
+
         print_report({})
         # Should not crash
 
@@ -660,6 +675,7 @@ class TestNewAPIEndpoints:
     @pytest.fixture
     def client(self):
         from FRONTEND.app import app
+
         app.config["TESTING"] = True
         with app.test_client() as c:
             yield c
@@ -716,6 +732,7 @@ class TestConfidenceScoring:
     def test_confidence_has_function(self):
         """The app module should have _calculate_confidence."""
         from FRONTEND.app import _calculate_confidence
+
         assert callable(_calculate_confidence)
 
     def test_high_severity_security_with_explanation(self):
@@ -751,7 +768,12 @@ class TestConfidenceScoring:
         test_cases = [
             {"canonical_severity": "high", "category": "security", "explanation": "x", "canonical_rule_id": "X"},
             {"canonical_severity": "low", "category": "style", "explanation": None, "canonical_rule_id": "Y"},
-            {"canonical_severity": "medium", "category": "design", "explanation": "long explanation text", "canonical_rule_id": "Z"},
+            {
+                "canonical_severity": "medium",
+                "category": "design",
+                "explanation": "long explanation text",
+                "canonical_rule_id": "Z",
+            },
             {},  # edge case: empty dict
         ]
         for finding in test_cases:
@@ -795,14 +817,17 @@ class TestVersionConsistency:
     def test_version_format(self):
         """Version should follow semver-ish pattern."""
         import re
+
         assert re.match(r"\d+\.\d+\.\d+", __version__), f"Bad format: {__version__}"
 
     def test_scripts_use_core_version(self):
         """Scripts should import from CORE, not hardcode versions."""
         script_dir = Path(__file__).parent.parent / "scripts"
         scripts_to_check = [
-            "export_sarif.py", "generate_pr_summary.py",
-            "post_pr_comments.py", "test_gap_analyzer.py",
+            "export_sarif.py",
+            "generate_pr_summary.py",
+            "post_pr_comments.py",
+            "test_gap_analyzer.py",
         ]
 
         for script_name in scripts_to_check:
@@ -907,15 +932,6 @@ class TestCrossFeatureIntegration:
 
     def test_all_imports_work(self):
         """All core modules should import without errors."""
-        import CORE
-        import CORE.engines.quality_gate
-        import CORE.engines.normalizer
-        import CORE.engines.autofix
-        import CORE.engines.severity_scorer
-        import CORE.engines.explainer
-        import CORE.config_loader
-        import CORE.utils.rate_limiter
-        import CORE.utils.metrics
         # If we get here, all imports work
 
     def test_normalizer_and_quality_gate_pipeline(self):
@@ -982,8 +998,7 @@ class TestExistingFeatureRegression:
         """Ruff normalization should still work."""
         from CORE.engines.normalizer import normalize_ruff
 
-        data = [{"code": "F401", "filename": "t.py",
-                 "location": {"row": 1, "column": 0}, "message": "unused import"}]
+        data = [{"code": "F401", "filename": "t.py", "location": {"row": 1, "column": 0}, "message": "unused import"}]
         findings = normalize_ruff(data)
         assert len(findings) == 1
         assert findings[0].canonical_rule_id == "IMPORT-001"
@@ -992,11 +1007,16 @@ class TestExistingFeatureRegression:
         """Semgrep normalization should still work."""
         from CORE.engines.normalizer import normalize_semgrep
 
-        data = {"results": [
-            {"check_id": "python.lang.security.audit.dangerous-system-call",
-             "path": "t.py", "start": {"line": 1, "col": 0},
-             "extra": {"message": "os.system call", "severity": "WARNING"}}
-        ]}
+        data = {
+            "results": [
+                {
+                    "check_id": "python.lang.security.audit.dangerous-system-call",
+                    "path": "t.py",
+                    "start": {"line": 1, "col": 0},
+                    "extra": {"message": "os.system call", "severity": "WARNING"},
+                }
+            ]
+        }
         findings = normalize_semgrep(data)
         assert len(findings) >= 1
 
@@ -1004,11 +1024,18 @@ class TestExistingFeatureRegression:
         """Bandit normalization should still work."""
         from CORE.engines.normalizer import normalize_bandit
 
-        data = {"results": [
-            {"test_id": "B101", "filename": "t.py",
-             "line_number": 1, "col_offset": 0,
-             "issue_text": "Assert used", "issue_severity": "LOW"}
-        ]}
+        data = {
+            "results": [
+                {
+                    "test_id": "B101",
+                    "filename": "t.py",
+                    "line_number": 1,
+                    "col_offset": 0,
+                    "issue_text": "Assert used",
+                    "issue_severity": "LOW",
+                }
+            ]
+        }
         findings = normalize_bandit(data)
         assert len(findings) >= 1
 
@@ -1113,6 +1140,7 @@ class TestEdgeCases:
     @pytest.fixture
     def client(self):
         from FRONTEND.app import app
+
         app.config["TESTING"] = True
         with app.test_client() as c:
             yield c
