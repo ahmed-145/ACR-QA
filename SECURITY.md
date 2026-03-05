@@ -12,7 +12,7 @@
 If you discover a security vulnerability in ACR-QA, please report it responsibly:
 
 1. **Do NOT** open a public GitHub issue
-2. Email: **222101213@ksiu.edu.eg** with subject: `[SECURITY] ACR-QA vulnerability`
+2. Email: **ahmedabbass871@gmail.com** with subject: `[SECURITY] ACR-QA vulnerability`
 3. Include:
    - Description of the vulnerability
    - Steps to reproduce
