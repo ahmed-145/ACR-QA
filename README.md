@@ -545,6 +545,23 @@ make test-e2e          # End-to-end with Docker
 - [ ] Historical trend comparison (requires accumulated run data)
 - [ ] 5-minute demo video
 
+### Phase 3 — Bonus Features ⭐ (Deployment-Enabled Stretch Goals)
+
+> These are **bonus goals** enabled by the cloud deployment. They expand ACR-QA from a graduation project into a production-ready platform.
+
+**Deployment-Enabled (Apr–Jun 2026):**
+- [ ] 🔌 GitHub App — one-click install on any repo (no YAML copying)
+- [ ] 🌐 Public demo instance — paste a GitHub URL, get instant analysis
+- [ ] 📊 Remote user study — participants evaluate via public URL
+- [ ] 📈 Historical trend dashboard — 30-day rolling quality metrics in Grafana
+- [ ] 🏷️ Code quality badge service — dynamic SVG badges for repo READMEs
+- [ ] 💬 Chat notifications — Telegram/Slack alerts on critical findings
+- [ ] 🌙 Scheduled nightly scans — cron-triggered full-repo analysis + daily reports
+
+**Post-Graduation Vision:**
+- [ ] 🏫 Classroom mode + leaderboard — professor creates class, students ranked by code quality
+- [ ] 🧩 VS Code extension — real-time inline warnings as you type
+
 ---
 
 ## 📄 License

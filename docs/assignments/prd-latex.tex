@@ -1625,6 +1625,39 @@ Jun 2026 & Final Report \& Thesis Writing, Submission \\
 \bottomrule
 \end{longtable}
 
+\subsection{Phase 3: Stretch Goals / Bonus Features (Post-Core, Deployment-Enabled)}
+
+\textbf{Note:} These features are \textbf{bonus goals} enabled by the cloud deployment (F14). They expand ACR-QA from a graduation project into a production-ready platform. Prioritized by impact-to-effort ratio.
+
+\begin{longtable}{p{0.5cm}p{4cm}p{5.5cm}p{2cm}p{1.5cm}}
+\toprule
+\textbf{\#} & \textbf{Feature} & \textbf{Description} & \textbf{Effort} & \textbf{Phase} \\
+\midrule
+\endfirsthead
+\toprule
+\textbf{\#} & \textbf{Feature} & \textbf{Description} & \textbf{Effort} & \textbf{Phase} \\
+\midrule
+\endhead
+B1 & GitHub App (One-Click Install) & Register ACR-QA as a GitHub App. Any repo installs with one button --- no YAML copying. Receives webhooks directly. & 10--15 hrs & Apr--May \\
+\midrule
+B2 & Public Demo Instance & Landing page at \texttt{acrqa.dev}: paste a GitHub URL, get instant analysis. No signup required. Portfolio piece for CV. & 8--12 hrs & Apr--May \\
+\midrule
+B3 & Remote User Study & Participants access ACR-QA via public URL, open PRs on test repo, and complete survey remotely. Enables global recruitment. & 5--8 hrs & Apr--May \\
+\midrule
+B4 & Historical Trend Dashboard & Grafana panels showing 30-day rolling averages: findings per PR, security trend, most common violations. Requires accumulated run data. & 5--8 hrs & May \\
+\midrule
+B5 & Code Quality Badge Service & Dynamic SVG badge endpoint: \texttt{/badge/\{owner\}/\{repo\}} returns live quality score for README embedding. & 3--5 hrs & May \\
+\midrule
+B6 & Chat Notifications (Telegram) & Webhook integration: critical findings trigger Telegram/Slack/Discord alerts with file, rule, and severity info. & 5--8 hrs & May \\
+\midrule
+B7 & Scheduled Nightly Scans & Cron-triggered full-repo analysis (not just PR diffs). Generates ``Daily Code Health Report'' with trend data. & 8--12 hrs & May--Jun \\
+\midrule
+B8 & Classroom Mode / Leaderboard & Professor creates a class, students submit PRs, system ranks by code quality improvement. Addresses university instructor persona. & 20--30 hrs & Post-grad \\
+\midrule
+B9 & VS Code Extension & Real-time inline warnings as you type. Extension communicates with ACR-QA server API. Requires TypeScript codebase. & 25--35 hrs & Post-grad \\
+\bottomrule
+\end{longtable}
+
 \section{Success Criteria \& Acceptance Tests}
 
 \subsection{MVP Acceptance (End of Phase 1)}
