@@ -1,7 +1,8 @@
-import time
-import requests
 import random
 import threading
+import time
+
+import requests
 
 
 def simulate_traffic():
