@@ -4,10 +4,11 @@ from pptx import Presentation
 from pptx.util import Inches, Pt
 from pptx.enum.text import PP_ALIGN
 
+
 def create_presentation():
     # Create presentation
     prs = Presentation()
-    
+
     # Define slide layouts
     title_slide_layout = prs.slide_layouts[0]
     bullet_slide_layout = prs.slide_layouts[1]
@@ -215,6 +216,7 @@ def create_presentation():
     p.level = 1
 
     prs.save("docs/ACR_QA_Phase2_Presentation.pptx")
+
 
 if __name__ == "__main__":
     create_presentation()
