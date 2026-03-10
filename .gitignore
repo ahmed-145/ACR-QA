@@ -19,6 +19,8 @@ ENV/
 # Outputs (generated at runtime)
 DATA/outputs/*.json
 DATA/outputs/*.txt
+DATA/outputs/*.md
+DATA/outputs/*.csv
 DATA/outputs/provenance/
 outputs/
 
@@ -31,6 +33,7 @@ outputs/
 # OS
 .DS_Store
 Thumbs.db
+.~lock.*
 
 # Testing
 .coverage
@@ -44,6 +47,29 @@ node_modules/
 
 # Docker
 *.log
+
+# LaTeX build artifacts
+*.aux
+*.nav
+*.out
+*.snm
+*.toc
+*.vrb
+*.fls
+*.fdb_latexmk
+*.synctex.gz
+*.bbl
+*.blg
+
+# Compiled documents (regenerate from .tex source)
+docs/*.pdf
+docs/assignments/*.pdf
+docs/thesis/*.pdf
+!docs/assignments/assigment1*.pdf
+!docs/assignments/assigment2*.pdf
+
+# PowerPoint files (replaced by LaTeX)
+*.pptx
 
 # Misc
 *.egg-info/

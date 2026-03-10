@@ -1262,6 +1262,58 @@ Semgrep crash & Can't run static analysis & Skip tool, continue with others \\
     \item[$\checkmark$] Enterprise concerns addressed
 \end{itemize}
 
+\subsubsection{F14: Cloud Deployment (DigitalOcean)}
+\textbf{Description:} Deploy ACR-QA to a live cloud server using DigitalOcean credits from the GitHub Student Developer Pack (\$200 free credit, sufficient for 2+ years on a basic droplet). This enables live PR webhook integration, a publicly accessible dashboard, and a professional demonstration environment.
+
+\textbf{Infrastructure:}
+\begin{itemize}[leftmargin=*]
+    \item \textbf{Provider:} DigitalOcean (\$200 credit via GitHub Education)
+    \item \textbf{Droplet:} 2 vCPU, 4GB RAM, 80GB SSD (\$24/month --- funded for 8+ months)
+    \item \textbf{Docker Compose:} Same \texttt{docker-compose.yml} used locally, zero code changes
+    \item \textbf{Reverse Proxy:} Nginx with SSL termination (Let's Encrypt free certificate)
+    \item \textbf{Domain:} Free domain via GitHub Student Pack (Namecheap .me or Name.com)
+\end{itemize}
+
+\textbf{Components:}
+
+\textit{A. Server Provisioning (5 hrs)}
+\begin{itemize}[leftmargin=*]
+    \item Create DigitalOcean droplet with Docker pre-installed
+    \item Configure firewall: allow only ports 80 (HTTP), 443 (HTTPS), 22 (SSH)
+    \item Clone repository, configure \texttt{.env} with production secrets
+    \item Run \texttt{docker compose up -d} to start all services
+\end{itemize}
+
+\textit{B. Nginx Reverse Proxy \& SSL (3 hrs)}
+\begin{itemize}[leftmargin=*]
+    \item Nginx proxies \texttt{https://acrqa.yourdomain.me} → Flask on port 5000
+    \item Let's Encrypt SSL certificate (free, auto-renewal via certbot)
+    \item CORS and security headers configured
+\end{itemize}
+
+\textit{C. Live PR Webhook Integration (5 hrs)}
+\begin{itemize}[leftmargin=*]
+    \item Configure GitHub webhook to send PR events to \texttt{https://acrqa.yourdomain.me/webhook}
+    \item Real-time analysis: developer opens PR → ACR-QA server receives webhook → runs analysis → posts comments back to PR
+    \item Eliminates dependency on GitHub Actions (direct webhook mode)
+\end{itemize}
+
+\textit{D. Monitoring \& Alerting (2 hrs)}
+\begin{itemize}[leftmargin=*]
+    \item Sentry integration for error tracking (free via GitHub Student Pack)
+    \item Prometheus and Grafana accessible via subdomain (\texttt{grafana.acrqa.yourdomain.me})
+    \item Uptime monitoring via DigitalOcean's built-in alerts
+\end{itemize}
+
+\textbf{Acceptance:}
+\begin{itemize}[leftmargin=*]
+    \item[$\checkmark$] Dashboard accessible at public URL (HTTPS)
+    \item[$\checkmark$] PR webhook triggers analysis and posts comments automatically
+    \item[$\checkmark$] Grafana dashboard shows live metrics from production traffic
+    \item[$\checkmark$] SSL certificate valid and auto-renewing
+    \item[$\checkmark$] Total monthly cost \$0 (covered by GitHub Education credits)
+\end{itemize}
+
 \section{Non-Functional Requirements}
 
 \subsection{Performance}
@@ -1565,7 +1617,7 @@ Feb 2026 & User Study Execution (5-8 participants), Precision/Recall Computation
 \midrule
 Mar 2026 & JavaScript/TypeScript Adapter (if Python $>$ 80\% precision), Competitive Features: Test Gap Analyzer (AST-based, market differentiator), OWASP Compliance Report (maps to CWE), Feedback-Driven Severity Tuner, Policy Engine Documentation, Confidence-Based Noise Control, Config Validator \& Template Generator, 3 new API endpoints, Performance Optimization (latency tuning, caching) \\
 \midrule
-Apr 2026 & CI/CD Integration Examples (GitHub Actions, GitLab CI), Documentation \& Tutorials, Production Deployment Guide (on-prem), \textbf{Inline PR Fix Suggestions} (GitHub suggestion blocks with 1-click apply --- requires live deployment with real PRs) \\
+Apr 2026 & CI/CD Integration Examples (GitHub Actions, GitLab CI), Documentation \& Tutorials, Production Deployment Guide (on-prem), \textbf{Cloud Deployment on DigitalOcean} (\$200 free credit via GitHub Student Pack --- Docker Compose on cloud droplet, Nginx + SSL, live PR webhook integration, public dashboard URL), \textbf{Inline PR Fix Suggestions} (GitHub suggestion blocks with 1-click apply --- requires live deployment with real PRs) \\
 \midrule
 May 2026 & Load Testing Execution (k6 ramp-up/steady/spike scenarios), Stress Test Report \& Analysis, Performance Regression CI/CD Integration, Circuit Breaker Implementation, Caching Layer, Comprehensive Unit Tests (85\%+ coverage), Profiling Analysis, Error Handling Documentation, \textbf{Historical Trend Comparison} (multi-run severity trends, 30-day rolling averages --- requires accumulated run data from deployment), Final Hardening \& Edge Cases, Demo Video Recording (showing Grafana dashboard + Prometheus metrics) \\
 \midrule

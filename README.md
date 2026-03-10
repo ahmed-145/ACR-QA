@@ -536,9 +536,13 @@ make test-e2e          # End-to-end with Docker
 - [ ] JavaScript / TypeScript language adapter
 - [ ] User study (8–10 participants)
 - [ ] Precision / recall evaluation against ground-truth labels
-- [ ] Inline PR fix suggestions (deployment phase)
-- [ ] Historical trend comparison (deployment phase)
-- [ ] Production deployment on cloud infrastructure
+- [ ] ☁️ Cloud deployment on DigitalOcean ($200 free credit via GitHub Student Pack)
+  - Docker Compose on cloud droplet (zero code changes)
+  - Nginx reverse proxy + Let's Encrypt SSL
+  - Live PR webhook integration (real-time analysis on PR open)
+  - Sentry error tracking (free via GitHub Student Pack)
+- [ ] Inline PR fix suggestions (requires live deployment)
+- [ ] Historical trend comparison (requires accumulated run data)
 - [ ] 5-minute demo video
 
 ---
