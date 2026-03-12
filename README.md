@@ -277,7 +277,7 @@ acr-qa/
 │   ├── test_gap_analyzer.py     # AST-based test gap analysis (v2.7)
 │   ├── feedback_tuner.py        # Feedback-driven severity tuner (v2.7)
 │   ├── validate_config.py       # Policy validator + template generator (v2.7)
-│   ├── compliance_report.py     # Legacy compliance report
+│   ├── simulate_traffic.py      # Traffic simulator for Grafana metrics
 │   ├── compute_metrics.py       # Precision/recall evaluation
 │   ├── create_fix_pr.py         # Auto-fix PR creation via GitHub API
 │   └── user_study.py            # User study tooling
@@ -287,7 +287,7 @@ acr-qa/
 │   └── grafana/                 # Grafana auto-provisioning
 │       ├── provisioning/        # Datasource + dashboard providers
 │       └── dashboards/          # Pre-built dashboard (6 panels)
-├── TESTS/                       # 273-test pytest suite
+├── TESTS/                       # 275-test pytest suite
 │   ├── test_acceptance.py       # Pipeline E2E tests
 │   ├── test_api.py              # All Flask API endpoints
 │   ├── test_explainer.py        # RAG + LLM integration

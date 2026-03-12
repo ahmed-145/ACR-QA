@@ -39,7 +39,7 @@
 | [CHANGELOG](../CHANGELOG.md) | Version history and release notes |
 | [CONTRIBUTING](../CONTRIBUTING.md) | Development setup and contribution guidelines |
 | [SECURITY](../SECURITY.md) | Security policy and vulnerability reporting |
-| [PERFORMANCE_BASELINE](../PERFORMANCE_BASELINE.md) | Pipeline timing benchmarks |
+| [PERFORMANCE_BASELINE](PERFORMANCE_BASELINE.md) | Pipeline timing benchmarks |
 
 ## 📊 Generated Documentation
 
@@ -47,8 +47,8 @@ During analysis runs, ACR-QA generates:
 - **Reports:** `DATA/outputs/report_run_*.md`
 - **Provenance:** `DATA/outputs/provenance/`
 - **SARIF:** `DATA/outputs/*.sarif`
-- **Compliance:** Via `scripts/compliance_report.py`
+- **Compliance:** Via `scripts/generate_compliance_report.py`
 
 ---
 
-**Last Updated:** March 11, 2026 · **Version:** 2.8.0
+**Last Updated:** March 12, 2026 · **Version:** 2.8.0

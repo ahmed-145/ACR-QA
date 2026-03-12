@@ -80,7 +80,7 @@ Options:
 | `scripts/export_provenance.py` | `python3 scripts/export_provenance.py <RUN_ID>` | Export full audit trail |
 | `scripts/generate_report.py` | `python3 scripts/generate_report.py <RUN_ID>` | Generate Markdown report |
 | `scripts/generate_pr_summary.py` | `python3 scripts/generate_pr_summary.py <RUN_ID>` | Generate PR summary |
-| `scripts/compliance_report.py` | `python3 scripts/compliance_report.py <RUN_ID>` | Generate OWASP/SANS compliance report |
+| `scripts/generate_compliance_report.py` | `python3 scripts/generate_compliance_report.py <RUN_ID>` | Generate OWASP/SANS compliance report |
 | `scripts/compute_metrics.py` | `python3 scripts/compute_metrics.py` | Compute precision/recall evaluation |
 | `scripts/create_fix_pr.py` | `python3 scripts/create_fix_pr.py <RUN_ID>` | Create auto-fix PR via GitHub API |
 | `scripts/user_study.py` | `python3 scripts/user_study.py` | User study tooling |
