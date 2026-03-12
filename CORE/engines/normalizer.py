@@ -96,6 +96,52 @@ RULE_MAPPING = {
     "B701": "SECURITY-031",  # jinja2_autoescape_false
     "B702": "SECURITY-032",  # use_of_mako_templates
     "B703": "SECURITY-033",  # django_mark_safe
+    # ── Ruff: Import sorting ──
+    "I001": "IMPORT-002",  # Import block unsorted
+    "I002": "IMPORT-002",  # Missing required import
+    # ── Ruff: Modernization (UP) ──
+    "UP007": "STYLE-003",  # Use X | Y for type unions
+    "UP031": "STYLE-004",  # Use format specifiers instead of %
+    "UP035": "STYLE-005",  # Deprecated import
+    "UP038": "STYLE-006",  # Use X | Y in isinstance
+    # ── Ruff: Error detection ──
+    "F821": "ERROR-001",  # Undefined name
+    "F811": "ERROR-002",  # Redefined unused name
+    # ── Ruff: Best practices ──
+    "B904": "EXCEPT-002",  # Use raise ... from within except
+    "T201": "STYLE-007",  # print() found
+    "T203": "STYLE-007",  # pprint() found
+    # ── Ruff: Naming ──
+    "N807": "NAMING-002",  # Function name should not start/end with __
+    "N812": "NAMING-003",  # Lowercase imported as non-lowercase
+    "N815": "NAMING-001",  # mixedCase variable
+    "N816": "NAMING-001",  # mixedCase global
+    # ── Ruff: Type checking ──
+    "TCH001": "TYPE-002",  # Move import into TYPE_CHECKING block
+    "TCH002": "TYPE-002",  # Move third-party import into TYPE_CHECKING
+    "TCH003": "TYPE-002",  # Move stdlib import into TYPE_CHECKING
+    # ── Ruff: Modernization (UP) — Round 3 god-mode ──
+    "UP006": "STYLE-008",  # Use builtin type (list, tuple) for annotations
+    "UP017": "STYLE-009",  # Use datetime.UTC alias
+    "UP024": "STYLE-010",  # Use errors instead of aliases in os module
+    "UP032": "STYLE-011",  # Use f-string instead of format call
+    # ── Ruff: Naming — Round 3 ──
+    "N804": "NAMING-004",  # First argument of classmethod should be cls
+    "N818": "NAMING-005",  # Exception name should end in Error
+    # ── Ruff/Bandit: Security — Round 3 ──
+    "B028": "BEST-PRACTICE-001",  # No explicit stacklevel keyword in warnings.warn
+    "B403": "SECURITY-034",  # import_pickle — pickle module imported
+    "B404": "SECURITY-035",  # import_subprocess — subprocess module imported
+    "B905": "BEST-PRACTICE-002",  # zip() without explicit strict parameter
+    # ── Ruff: Wildcard imports ──
+    "F403": "IMPORT-003",  # Wildcard import used
+    # ── Bandit: Additional security — Round 3 deep scan ──
+    "B113": "SECURITY-036",  # TLS certificate verification disabled
+    "B311": "SECURITY-037",  # Standard pseudo-random not suitable for security
+    "B406": "SECURITY-038",  # Unsafe XML parsing (SAX)
+    "B410": "SECURITY-039",  # Unsafe XML parsing (lxml)
+    "B321": "SECURITY-040",  # FTP cleartext protocol
+    "B402": "SECURITY-041",  # import_ftplib — FTP module imported
 }
 
 # Category Mapping

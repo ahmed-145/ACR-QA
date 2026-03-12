@@ -108,3 +108,38 @@ python3 CORE/main.py --target-dir TESTS/samples --rich --limit 5
 
 ### Q: "What's next?"
 > "Three things: JavaScript/TypeScript language support, a user study with 8-10 participants to measure developer satisfaction, and precision/recall evaluation against ground-truth labels to prove the AI explanations are accurate."
+
+---
+
+## ⚡ Quick Command Reference
+
+> Keep this visible during the demo — run these in order.
+
+### Before the Meeting (10 min early)
+```bash
+cd ~/Documents/KSIU/GRAD/SOLO
+source .venv/bin/activate
+docker compose up -d          # Postgres + Redis
+python3 FRONTEND/app.py       # Dashboard → http://localhost:5000
+```
+
+### Demo Commands (Run in Order)
+
+```bash
+# 1 — Run all 275 unit tests (~11 seconds)
+make test-all
+
+# 2 — AST Test Gap Analyzer (untested complex functions)
+python3 scripts/test_gap_analyzer.py --target CORE/ --format text
+
+# 3 — AI Security Engine on sample vulnerable code (Rich output)
+python3 CORE/main.py --target-dir TESTS/samples --rich --limit 5
+
+# 4 — Real repo scan (full pipeline on DVPWA — known SQLi + MD5)
+python3 CORE/main.py --target-dir /tmp/dvpwa --limit 0
+```
+
+### Browser Tabs
+1. `http://localhost:5000` — Flask Dashboard (findings, AI explanations, feedback)
+2. `https://github.com/ahmed-145/ACR-QA/releases/tag/v2.8.0` — Release Page
+3. `https://github.com/ahmed-145/ACR-QA/actions` — CI/CD Green Checkmarks

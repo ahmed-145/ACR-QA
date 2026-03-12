@@ -172,23 +172,23 @@ class TestQualityGate:
         assert "FAILED" in result["status"]
 
     def test_gate_fails_security_findings(self):
-        """Should fail when security findings exceed threshold."""
+        """Should fail when security findings exceed threshold (default max_security=3)."""
         gate = QualityGate()
-        findings = self._make_findings(security=1)
+        findings = self._make_findings(security=4)
         result = gate.evaluate(findings)
         assert result["passed"] is False
 
     def test_gate_fails_too_many_medium(self):
-        """Should fail when medium severity exceeds threshold."""
+        """Should fail when medium severity exceeds threshold (default max_medium=20)."""
         gate = QualityGate()
-        findings = self._make_findings(medium=15)
+        findings = self._make_findings(medium=25)
         result = gate.evaluate(findings)
         assert result["passed"] is False
 
     def test_gate_fails_total_exceeded(self):
-        """Should fail when total findings exceeds threshold."""
+        """Should fail when total findings exceeds threshold (default max_total=200)."""
         gate = QualityGate()
-        findings = self._make_findings(low=150)
+        findings = self._make_findings(low=250)
         result = gate.evaluate(findings)
         assert result["passed"] is False
 

@@ -7,10 +7,10 @@ Enforces configurable thresholds to pass/fail CI pipelines.
 from typing import Any
 
 DEFAULT_THRESHOLDS = {
-    "max_high": 0,  # Zero tolerance for high-severity findings
-    "max_medium": 10,  # Allow up to 10 medium issues
-    "max_total": 100,  # Cap total findings
-    "max_security": 0,  # Zero tolerance for security findings
+    "max_high": 0,  # Zero tolerance for high-severity findings (SQL injection, XSS, etc.)
+    "max_medium": 20,  # Allow up to 20 medium issues (realistic for large codebases)
+    "max_total": 200,  # Realistic cap for medium-sized codebases
+    "max_security": 3,  # Allow up to 3 low-risk security findings (e.g., assert-for-validation)
     "min_confidence": 0,  # No minimum confidence requirement (0 = disabled)
 }
 

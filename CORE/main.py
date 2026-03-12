@@ -105,6 +105,12 @@ class AnalysisPipeline:
         # Deduplicate findings (same file+line+rule from different tools)
         findings = self._deduplicate_findings(findings)
 
+        # Cap findings per rule (max 5 per rule to prevent flooding)
+        findings = self._cap_per_rule(findings, max_per_rule=5)
+
+        # Sort findings: security/high first so they get explained within the limit
+        findings = self._sort_by_priority(findings)
+
         total_findings = len(findings)
         print(f"      ✓ {total_findings} issues after filtering & dedup")
 
@@ -309,9 +315,14 @@ class AnalysisPipeline:
         return filtered
 
     def _deduplicate_findings(self, findings):
-        """Remove duplicate findings (same file + line + canonical rule from different tools)."""
-        seen = {}
-        # Priority: security tools > specialized > general
+        """Remove duplicate findings from multiple tools on the same line.
+
+        Two-pass approach:
+        1. Exact dedup: same file + line + canonical rule → keep higher-priority tool
+        2. Cross-tool dedup: same file + line + same security category → keep higher-priority tool
+           This catches Semgrep CUSTOM-shell-injection + Bandit SECURITY-024 on the same line.
+        """
+        # Tool priority: prefer Bandit/Semgrep over general linters
         tool_priority = {
             "bandit": 3,
             "semgrep": 3,
@@ -322,26 +333,97 @@ class AnalysisPipeline:
             "jscpd": 1,
         }
 
+        # Cross-tool category groups — rules that detect the same class of issue
+        CROSS_TOOL_GROUPS = {
+            "shell-injection": {"SECURITY-020", "SECURITY-021", "SECURITY-024", "SECURITY-025",
+                                "CUSTOM-shell-injection", "CUSTOM-command-injection"},
+            "pickle-unsafe": {"SECURITY-008", "CUSTOM-unsafe-pickle"},
+            "eval-exec": {"SECURITY-001", "CUSTOM-dangerous-eval-usage"},
+            "hardcoded-password": {"SECURITY-005", "CUSTOM-hardcoded-password", "HARDCODE-001"},
+            "sql-injection": {"SECURITY-027", "CUSTOM-sql-injection"},
+            "bare-except": {"EXCEPT-001", "CUSTOM-bare-except"},
+        }
+
+        # Build reverse lookup: rule_id → group_name
+        rule_to_group = {}
+        for group_name, rule_ids in CROSS_TOOL_GROUPS.items():
+            for rid in rule_ids:
+                rule_to_group[rid] = group_name
+
+        def _get_tool_priority(f):
+            return tool_priority.get(f.get("tool", ""), 0)
+
+        # Pass 1: Exact dedup (same file + line + rule)
+        seen_exact = {}
         for f in findings:
             file_path = f.get("file_path", f.get("file", ""))
             line = f.get("line_number", f.get("line", 0))
             rule = f.get("canonical_rule_id", f.get("rule_id", ""))
             key = (file_path, line, rule)
 
-            if key not in seen:
-                seen[key] = f
-            else:
-                # Keep finding from higher-priority tool
-                existing_tool = seen[key].get("tool", "")
-                new_tool = f.get("tool", "")
-                if tool_priority.get(new_tool, 0) > tool_priority.get(existing_tool, 0):
-                    seen[key] = f
+            if key not in seen_exact:
+                seen_exact[key] = f
+            elif _get_tool_priority(f) > _get_tool_priority(seen_exact[key]):
+                seen_exact[key] = f
 
-        deduped = list(seen.values())
-        removed = len(findings) - len(deduped)
+        after_exact = list(seen_exact.values())
+
+        # Pass 2: Cross-tool dedup (same file + line + same category group)
+        seen_cross = {}
+        final = []
+        for f in after_exact:
+            file_path = f.get("file_path", f.get("file", ""))
+            line = f.get("line_number", f.get("line", 0))
+            rule = f.get("canonical_rule_id", f.get("rule_id", ""))
+            group = rule_to_group.get(rule)
+
+            if group:
+                cross_key = (file_path, line, group)
+                if cross_key not in seen_cross:
+                    seen_cross[cross_key] = f
+                elif _get_tool_priority(f) > _get_tool_priority(seen_cross[cross_key]):
+                    seen_cross[cross_key] = f
+                # Skip — will add from seen_cross later
+            else:
+                final.append(f)
+
+        final.extend(seen_cross.values())
+
+        removed = len(findings) - len(final)
         if removed:
             print(f"      - Dedup: removed {removed} duplicate findings")
-        return deduped
+        return final
+
+    def _cap_per_rule(self, findings, max_per_rule=5):
+        """Cap findings per rule ID to prevent a single noisy rule from flooding results."""
+        rule_counts = {}
+        capped = []
+        removed = 0
+
+        for f in findings:
+            rule = f.get("canonical_rule_id", f.get("rule_id", ""))
+            rule_counts[rule] = rule_counts.get(rule, 0) + 1
+            if rule_counts[rule] <= max_per_rule:
+                capped.append(f)
+            else:
+                removed += 1
+
+        if removed:
+            print(f"      - Per-rule cap: removed {removed} excess findings (max {max_per_rule}/rule)")
+        return capped
+
+    def _sort_by_priority(self, findings):
+        """Sort findings so high-severity and security findings come first.
+        This ensures they get AI explanations within the explanation limit."""
+        severity_order = {"high": 0, "medium": 1, "low": 2}
+        category_order = {"security": 0, "design": 1, "best-practice": 2, "dead-code": 3, "style": 4, "duplication": 5}
+
+        def sort_key(f):
+            sev = f.get("canonical_severity", f.get("severity", "low")).lower()
+            cat = f.get("category", "style").lower()
+            return (severity_order.get(sev, 3), category_order.get(cat, 6))
+
+        return sorted(findings, key=sort_key)
 
     def run_autofix(self, findings):
         """Run autofix engine on findings and display diffs."""

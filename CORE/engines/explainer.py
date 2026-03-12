@@ -26,7 +26,7 @@ class ExplanationEngine:
         self.client = Cerebras(api_key=api_key)
         self.model = "llama3.1-8b"
         self.temperature = 0.3
-        self.max_tokens = 150
+        self.max_tokens = 300
 
         # Redis caching (Phase 2 feature)
         self.redis = redis_client
@@ -92,12 +92,12 @@ File: {finding.get("file", "unknown")}:{finding.get("line", 0)}
 {code_snippet}
 ```
 
-Provide a 2-3 sentence explanation:
-1. WHAT is the issue
-2. WHY it matters (cite the rule rationale)
-3. HOW to fix it (cite the remediation)
+Provide a concise explanation in this format:
+1. WHAT: One sentence on what the issue is (cite the rule ID)
+2. WHY: One sentence on why it matters (cite the rule rationale)
+3. FIX: Show a corrected code snippet that fixes the issue
 
-Start with: "This code violates {canonical_id}..."
+Start with: "This code violates {canonical_id}..." and end with a ```python code block showing the fix.
 """
         return prompt
 

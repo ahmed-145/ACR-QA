@@ -8,18 +8,27 @@
 | [Canonical Schema](architecture/CANONICAL_SCHEMA.md) | Universal finding data model with field reference |
 | [Internal API](architecture/API.md) | Python class/function API reference for all components |
 
-## 🔧 Setup
+## 🔧 Setup & Configuration
 
 | Document | Description |
 |----------|-------------|
 | [REST API](setup/API-Documentation.md) | All 11 HTTP endpoints with request/response examples |
 | [Cloud Deployment](setup/Cloud-Deployment.md) | PythonAnywhere, Replit, ngrok deployment guides |
 | [Token Setup](setup/TOKEN_SETUP.md) | GitHub, GitLab, and Cerebras API key configuration |
+| [Policy Engine](POLICY_ENGINE.md) | `.acrqa.yml` config reference — rules, thresholds, autofix, AI |
 
-## 🎓 Thesis
+## 🧪 Testing & Quality
 
 | Document | Description |
 |----------|-------------|
+| [Testing & Calibration](TESTING_AND_CALIBRATION.md) | Full test suite breakdown, code audit bugs, mass repo testing across 9 repos, all calibration fixes with root-cause analysis |
+
+## 🎓 Presentation
+
+| Document | Description |
+|----------|-------------|
+| [Presentation Script](PRESENTATION_SCRIPT.md) | 7-min presentation script, Q&A cheat sheet, demo commands (all in one) |
+| [LaTeX Slides](acr_qa_presentation.tex) | Formal presentation slide source |
 | [Phase 1 Extras](thesis/Phase1-extras.md) | Additional Phase 1 implementation details |
 
 ## 📁 Project Root Docs
@@ -42,4 +51,4 @@ During analysis runs, ACR-QA generates:
 
 ---
 
-**Last Updated:** March 4, 2026 · **Version:** 2.5.0
+**Last Updated:** March 11, 2026 · **Version:** 2.8.0
