@@ -49,14 +49,18 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements.txt
+          pip install pytest-cov
 
       - name: Initialize database
         env:
           PGPASSWORD: postgres
         run: |
-          psql -h localhost -U postgres -d acrqa_test -f DATABASE/schema.sql
+          psql -h localhost -U postgres -d acrqa_test -f DATABASE/schema.sql || {
+            echo "❌ Database initialization failed"
+            exit 1
+          }
 
-      - name: Run tests
+      - name: Run tests with coverage
         env:
           DB_HOST: localhost
           DB_PORT: 5432
@@ -66,6 +70,8 @@ jobs:
           CEREBRAS_API_KEY: ${{ secrets.CEREBRAS_API_KEY }}
         run: |
           pytest TESTS/ -v --override-ini="addopts=" --tb=short \
+            --cov=CORE --cov=DATABASE --cov-report=xml:coverage.xml \
+            --cov-report=term-missing \
             --junitxml=test-results.xml 2>&1
 
       - name: Upload test results
@@ -73,7 +79,31 @@ jobs:
         if: always()
         with:
           name: test-results
-          path: test-results.xml
+          path: |
+            test-results.xml
+            coverage.xml
+
+      - name: Post coverage summary
+        if: always()
+        run: |
+          if [ -f coverage.xml ]; then
+            echo "### 📊 Test Coverage" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            python3 -c "
+          import xml.etree.ElementTree as ET
+          tree = ET.parse('coverage.xml')
+          root = tree.getroot()
+          rate = float(root.attrib.get('line-rate', 0)) * 100
+          print(f'**Overall: {rate:.1f}%**')
+          print()
+          print('| Module | Coverage |')
+          print('|--------|:--------:|')
+          for pkg in root.findall('.//package'):
+              name = pkg.attrib.get('name', '?')
+              lr = float(pkg.attrib.get('line-rate', 0)) * 100
+              print(f'| {name} | {lr:.1f}% |')
+          " >> $GITHUB_STEP_SUMMARY
+          fi
 
   lint:
     name: Lint & Format Check
