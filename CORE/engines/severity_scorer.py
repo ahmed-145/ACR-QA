@@ -38,7 +38,6 @@ class SeverityScorer:
         # ══════════════════════════════════════════════
         # MEDIUM: Risky patterns, weak crypto, design smells
         # ══════════════════════════════════════════════
-
         "SECURITY-008": "medium",  # pickle / marshal usage
         "SECURITY-009": "medium",  # ⚠️ MD5 / weak hash
         "SECURITY-010": "medium",  # DES / weak cipher

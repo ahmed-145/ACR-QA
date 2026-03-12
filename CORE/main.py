@@ -335,8 +335,14 @@ class AnalysisPipeline:
 
         # Cross-tool category groups — rules that detect the same class of issue
         CROSS_TOOL_GROUPS = {
-            "shell-injection": {"SECURITY-020", "SECURITY-021", "SECURITY-024", "SECURITY-025",
-                                "CUSTOM-shell-injection", "CUSTOM-command-injection"},
+            "shell-injection": {
+                "SECURITY-020",
+                "SECURITY-021",
+                "SECURITY-024",
+                "SECURITY-025",
+                "CUSTOM-shell-injection",
+                "CUSTOM-command-injection",
+            },
             "pickle-unsafe": {"SECURITY-008", "CUSTOM-unsafe-pickle"},
             "eval-exec": {"SECURITY-001", "CUSTOM-dangerous-eval-usage"},
             "hardcoded-password": {"SECURITY-005", "CUSTOM-hardcoded-password", "HARDCODE-001"},
