@@ -128,6 +128,8 @@ RULE_MAPPING = {
     # ── Ruff: Additional style rules ──
     "E401": "IMPORT-002",  # Multiple imports on one line
     "E713": "STYLE-012",  # Test for membership should be 'not in x'
+    "E703": "STYLE-013",  # Statement ends with semicolon
+    "B007": "VAR-001",  # Loop control variable not used
     # ── Ruff: Naming — Round 3 ──
     "N804": "NAMING-004",  # First argument of classmethod should be cls
     "N818": "NAMING-005",  # Exception name should end in Error
