@@ -409,7 +409,9 @@ def compute_ground_truth_recall(findings, ground_truth):
     for vuln_name, vuln_info in ground_truth.items():
         for finding in findings:
             # Only count actual security findings towards detecting a vulnerability
-            is_security_finding = "SECURITY" in finding.get("canonical_rule_id", "").upper() or finding.get("category") == "security"
+            is_security_finding = (
+                "SECURITY" in finding.get("canonical_rule_id", "").upper() or finding.get("category") == "security"
+            )
             if not is_security_finding:
                 continue
 
@@ -759,9 +761,7 @@ def main():
         ground_truth = GROUND_TRUTH_BY_REPO.get(repo_name)
         if ground_truth:
             detected_vulns, gt_recall = compute_ground_truth_recall(findings, ground_truth)
-            print(
-                f"  Ground truth recall: {gt_recall:.2%} ({len(detected_vulns)}/{len(ground_truth)} known vulns)"
-            )
+            print(f"  Ground truth recall: {gt_recall:.2%} ({len(detected_vulns)}/{len(ground_truth)} known vulns)")
 
         # Compute metrics — pass real recall if available, None otherwise (no fake 100%)
         labeled = [{"label": f["label"], "category": f.get("category", "")} for f in findings]
