@@ -84,6 +84,8 @@ FP_RULES = {
     "STYLE-009",  # datetime.UTC (style)
     "STYLE-010",  # os module aliases (style)
     "STYLE-011",  # f-string format (style)
+    "STYLE-012",  # not-in membership test (style)
+    "STYLE-013",  # trailing semicolon (style)
 }
 
 # Rules that are TRUE POSITIVE for security-focused analysis
@@ -129,6 +131,9 @@ TP_SECURITY_RULES = {
     "SECURITY-039",
     "SECURITY-040",
     "SECURITY-041",
+    "SECURITY-042",
+    "SECURITY-043",
+    "SECURITY-044",
     "HARDCODE-001",
 }
 
@@ -820,14 +825,14 @@ DVPWA (Damn Vulnerable Python Web App) contains {len(DVPWA_GROUND_TRUTH)} known 
 
 | Metric | Value |
 |--------|:-----:|
-| Test Suite | 275 tests, 4 skipped |
-| Code Coverage | ~39% overall, 53-92% on core modules |
+| Test Suite | 293 tests, 4 skipped |
+| Code Coverage | ~37% overall, 53-92% on core modules |
 | CI/CD | GitHub Actions (test + lint + coverage) |
 | Docker | Dockerfile + docker-compose.yml |
 | API Endpoints | 20+ REST endpoints |
 | AI Quality | 320/320 explanations perfect |
 | Deduplication | 307 cross-tool duplicates removed |
-| Rule Mappings | 65 tool-specific → canonical rules |
+| Rule Mappings | 123 tool-specific → canonical rules |
 | OWASP Coverage | """
         + f"{covered_count}/10 categories"
         + """ |

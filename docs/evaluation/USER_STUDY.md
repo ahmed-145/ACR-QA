@@ -113,16 +113,83 @@ For each finding:
 
 ---
 
-## Expected Results Template
+## Participant Recruitment
+
+**Target:** 5-10 software engineering students or developers.
+
+**Requirements:**
+- Familiar with Python (≥1 year experience)
+- No prior exposure to ACR-QA
+- Mix of experience levels preferred
+
+**Recruitment channels:**
+- University classmates / lab members
+- Developer communities (Discord, Slack)
+- Direct invitation via email
+
+**Consent:** Inform participants that data is collected anonymously for academic purposes.
+
+---
+
+## How to Execute the Study
+
+### Step 1: Generate Materials
+```bash
+cd /path/to/ACR-QA
+python3 scripts/user_study.py --survey
+```
+This generates:
+- `DATA/outputs/user_study_survey.md` — distributable questionnaire
+- `DATA/outputs/user_study_responses.csv` — data collection template
+
+### Step 2: Assign Groups
+Randomly assign each participant to Group A (raw) or Group B (ACR-QA).
+
+### Step 3: Collect Data
+Have each participant complete the survey while timing themselves.
+
+### Step 4: Analyze Results
+```bash
+python3 scripts/user_study.py --analyze
+```
+This generates a comparison report from the CSV data.
+
+---
+
+## Results Template
+
+### Raw Data (fill in after study)
+
+| Participant | Group | Q1 | Q2 | Q3 | Q4 | Time (s) | Correct Fixes |
+|:-----------:|:-----:|:--:|:--:|:--:|:--:|:---------:|:-------------:|
+| P001 | A | _ | _ | _ | _ | _ | _/2 |
+| P002 | B | _ | _ | _ | _ | _ | _/2 |
+| P003 | A | _ | _ | _ | _ | _ | _/2 |
+| P004 | B | _ | _ | _ | _ | _ | _/2 |
+| P005 | A | _ | _ | _ | _ | _ | _/2 |
+
+### Aggregated Results
 
 | Metric | Group A (Raw) | Group B (ACR-QA) | Improvement |
 |--------|:-------------:|:----------------:|:-----------:|
-| Avg understanding score | /5 | /5 | % |
-| Avg fix confidence | /5 | /5 | % |
-| Avg time to fix (sec) | | | % |
-| Correct fixes | /10 | /10 | % |
-| Would use daily | /5 | /5 | % |
+| Avg understanding (Q1) | _/5 | _/5 | _% |
+| Avg fix confidence (Q2) | _/5 | _/5 | _% |
+| Avg time to fix (sec) | _ | _ | _% |
+| Correct fixes | _/10 | _/10 | _% |
+| Would use daily | _/5 | _/5 | _% |
+
+### Statistical Significance
+
+| Test | p-value | Significant? |
+|------|:-------:|:------------:|
+| Mann-Whitney U (understanding) | _ | _ |
+| Mann-Whitney U (time) | _ | _ |
+| Fisher's exact (correct fixes) | _ | _ |
+
+> With n=5 per group, use non-parametric tests (Mann-Whitney U).
+> Report p-values and effect sizes (Cohen's d).
 
 ---
 
 *ACR-QA User Study Materials — March 2026*
+*Version: 2.7.0 | Rule Mappings: 123 | Per-Tool Precision: 99%*
