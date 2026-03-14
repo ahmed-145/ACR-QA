@@ -896,7 +896,7 @@ def generate_report(all_results, comparative_data, owasp_coverage):
     for r in all_results:
         m = r["metrics"]
         recall_val = m.get("ground_truth_recall", m["recall"])
-        recall_str = f'{recall_val:.1%}' if recall_val is not None else "N/A"
+        recall_str = f"{recall_val:.1%}" if recall_val is not None else "N/A"
         f1_str = f'{m["f1"]:.1%}' if m["f1"] is not None else "N/A"
         report += f'| {r["repo"]} | {m["total"]} | {m["tp"]} | {m["fp"]} | {m["precision"]:.1%} | {m["security_precision"]:.1%} | {recall_str} | {f1_str} |\n'
 
@@ -1002,7 +1002,9 @@ DVPWA (Damn Vulnerable Python Web App) contains {len(DVPWA_GROUND_TRUTH)} known 
 | OWASP Coverage | """
         + f"{covered_count}/10 categories"
         + """ |
-| Repos Tested | """ + f"{len(all_results)}" + """ benchmark repositories |
+| Repos Tested | """
+        + f"{len(all_results)}"
+        + """ benchmark repositories |
 
 ## 7. Key Differentiators vs Competitors
 
