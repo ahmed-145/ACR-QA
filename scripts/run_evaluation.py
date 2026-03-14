@@ -161,11 +161,13 @@ TP_QUALITY_RULES = {
 # NOTE: This is Option B (honest overall precision). Style/dead-code findings
 # ARE real issues — Ruff and Vulture correctly identified them. Labeling all
 # style findings as FP would give misleading 37-56% precision.
-_KNOWN_FALSE_POSITIVE_RULE_IDS: frozenset[str] = frozenset({
-    # Nothing here currently — all canonical IDs represent real findings.
-    # If we discover Vulture false-positives on specific Django methods,
-    # we add those specific rule instances, not entire rule categories.
-})
+_KNOWN_FALSE_POSITIVE_RULE_IDS: frozenset[str] = frozenset(
+    {
+        # Nothing here currently — all canonical IDs represent real findings.
+        # If we discover Vulture false-positives on specific Django methods,
+        # we add those specific rule instances, not entire rule categories.
+    }
+)
 
 
 def classify_finding(finding: dict) -> str:
