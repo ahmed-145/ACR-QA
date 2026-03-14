@@ -9,7 +9,7 @@ import json
 import os
 import subprocess
 import sys
-from collections import Counter, defaultdict
+from collections import Counter
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).parent.parent))
@@ -193,7 +193,7 @@ def scan_repo(target_dir, repo_name):
         "200",
     ]
     env = os.environ.copy()
-    result = subprocess.run(cmd, capture_output=True, text=True, env=env, cwd=str(Path(__file__).parent.parent))
+    subprocess.run(cmd, capture_output=True, text=True, env=env, cwd=str(Path(__file__).parent.parent))
 
     # Parse findings from JSON output
     findings_path = Path(__file__).parent.parent / "DATA" / "outputs" / "findings.json"
@@ -207,7 +207,6 @@ def scan_repo(target_dir, repo_name):
 def run_tool_standalone(tool, target_dir):
     """Run a single tool standalone and count raw findings."""
     cwd = str(Path(__file__).parent.parent)
-    env = os.environ.copy()
 
     if tool == "bandit":
         cmd = f"bandit -r {target_dir} -f json -q 2>/dev/null"
@@ -280,7 +279,6 @@ def generate_charts(all_results, comparative_data, output_dir):
 
         matplotlib.use("Agg")
         import matplotlib.pyplot as plt
-        import matplotlib.patches as mpatches
         import numpy as np
     except ImportError:
         print("WARNING: matplotlib not available, skipping charts")
@@ -321,7 +319,7 @@ def generate_charts(all_results, comparative_data, output_dir):
     plt.tight_layout()
     plt.savefig(f"{output_dir}/precision_recall_chart.png", dpi=150)
     plt.close()
-    print(f"  ✓ Saved precision_recall_chart.png")
+    print("  ✓ Saved precision_recall_chart.png")
 
     # ─── Chart 2: Confusion Matrix ────────────────────────────────────
     total_tp = sum(r["metrics"]["tp"] for r in all_results)
@@ -355,7 +353,7 @@ def generate_charts(all_results, comparative_data, output_dir):
     plt.tight_layout()
     plt.savefig(f"{output_dir}/confusion_matrix.png", dpi=150)
     plt.close()
-    print(f"  ✓ Saved confusion_matrix.png")
+    print("  ✓ Saved confusion_matrix.png")
 
     # ─── Chart 3: Comparative Benchmark ───────────────────────────────
     if comparative_data:
@@ -382,7 +380,7 @@ def generate_charts(all_results, comparative_data, output_dir):
         plt.tight_layout()
         plt.savefig(f"{output_dir}/comparative_benchmark.png", dpi=150)
         plt.close()
-        print(f"  ✓ Saved comparative_benchmark.png")
+        print("  ✓ Saved comparative_benchmark.png")
 
     # ─── Chart 4: Severity Distribution ───────────────────────────────
     all_findings = []
@@ -414,7 +412,7 @@ def generate_charts(all_results, comparative_data, output_dir):
     plt.tight_layout()
     plt.savefig(f"{output_dir}/severity_distribution.png", dpi=150)
     plt.close()
-    print(f"  ✓ Saved severity_distribution.png")
+    print("  ✓ Saved severity_distribution.png")
 
     # ─── Chart 5: Noise Reduction ─────────────────────────────────────
     if comparative_data:
@@ -454,7 +452,7 @@ def generate_charts(all_results, comparative_data, output_dir):
         plt.tight_layout()
         plt.savefig(f"{output_dir}/noise_reduction.png", dpi=150)
         plt.close()
-        print(f"  ✓ Saved noise_reduction.png")
+        print("  ✓ Saved noise_reduction.png")
 
     # ─── Chart 6: Category Breakdown ──────────────────────────────────
     category_counts = Counter(f.get("category", "unknown") for f in all_findings)
@@ -491,13 +489,12 @@ def generate_charts(all_results, comparative_data, output_dir):
         plt.tight_layout()
         plt.savefig(f"{output_dir}/category_breakdown.png", dpi=150)
         plt.close()
-        print(f"  ✓ Saved category_breakdown.png")
+        print("  ✓ Saved category_breakdown.png")
 
 
 def generate_owasp_coverage():
     """Generate OWASP Top 10 coverage analysis."""
     from CORE.engines.normalizer import RULE_MAPPING
-    from CORE.engines.severity_scorer import SeverityScorer
 
     owasp_mapping = {
         "A01:2021 Broken Access Control": {
@@ -769,7 +766,7 @@ DVPWA (Damn Vulnerable Python Web App) contains {len(DVPWA_GROUND_TRUTH)} known 
         acr_total = comparative_data.get("ACR-QA", 0)
         noise_pct = ((raw_total - acr_total) / raw_total * 100) if raw_total > 0 else 0
 
-        report += f"""Tested on DVPWA — same codebase scanned by each tool independently, then by ACR-QA's full pipeline.
+        report += """Tested on DVPWA — same codebase scanned by each tool independently, then by ACR-QA's full pipeline.
 
 | Tool | Raw Findings | Notes |
 |------|:------------:|-------|
