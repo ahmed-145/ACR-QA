@@ -1,0 +1,63 @@
+{
+  "evaluation_date": "2026-03-14T02:55:45.528240",
+  "repos_evaluated": 1,
+  "results": [
+    {
+      "repo": "DVPWA",
+      "total_findings": 43,
+      "true_positives": 16,
+      "false_positives": 27,
+      "precision": 0.3721,
+      "recall": 1.0,
+      "f1_score": 0.5424
+    }
+  ],
+  "comparative_benchmark": {
+    "Bandit": 2,
+    "Semgrep": 0,
+    "Ruff": 33,
+    "ACR-QA": 43
+  },
+  "owasp_coverage": {
+    "A01:2021 Broken Access Control": {
+      "covered": 2,
+      "total": 3
+    },
+    "A02:2021 Cryptographic Failures": {
+      "covered": 7,
+      "total": 7
+    },
+    "A03:2021 Injection": {
+      "covered": 4,
+      "total": 4
+    },
+    "A04:2021 Insecure Design": {
+      "covered": 3,
+      "total": 3
+    },
+    "A05:2021 Security Misconfiguration": {
+      "covered": 6,
+      "total": 6
+    },
+    "A06:2021 Vulnerable Components": {
+      "covered": 6,
+      "total": 6
+    },
+    "A07:2021 Auth Failures": {
+      "covered": 3,
+      "total": 3
+    },
+    "A08:2021 Data Integrity": {
+      "covered": 2,
+      "total": 2
+    },
+    "A09:2021 Logging Failures": {
+      "covered": 0,
+      "total": 0
+    },
+    "A10:2021 SSRF": {
+      "covered": 2,
+      "total": 2
+    }
+  }
+}

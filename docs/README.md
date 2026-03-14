@@ -23,6 +23,13 @@
 |----------|-------------|
 | [Testing & Calibration](TESTING_AND_CALIBRATION.md) | Full test suite breakdown, code audit bugs, mass repo testing across 9 repos, all calibration fixes with root-cause analysis |
 
+## 📊 Evaluation
+
+| Document | Description |
+|----------|-------------|
+| [Evaluation Report](evaluation/EVALUATION.md) | Precision/recall/F1, confusion matrix, DVPWA ground truth, comparative benchmarks, OWASP coverage, competitive analysis |
+| [User Study](evaluation/USER_STUDY.md) | A/B comparison materials: raw tool output vs ACR-QA with AI explanations |
+
 ## 🎓 Presentation
 
 | Document | Description |
