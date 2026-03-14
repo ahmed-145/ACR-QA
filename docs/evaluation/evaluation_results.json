@@ -1,6 +1,6 @@
 {
-  "evaluation_date": "2026-03-14T02:55:45.528240",
-  "repos_evaluated": 1,
+  "evaluation_date": "2026-03-14T04:45:18.850602",
+  "repos_evaluated": 4,
   "results": [
     {
       "repo": "DVPWA",
@@ -10,6 +10,33 @@
       "precision": 0.3721,
       "recall": 1.0,
       "f1_score": 0.5424
+    },
+    {
+      "repo": "Pygoat",
+      "total_findings": 425,
+      "true_positives": 239,
+      "false_positives": 186,
+      "precision": 0.5624,
+      "recall": 1.0,
+      "f1_score": 0.7199
+    },
+    {
+      "repo": "VulPy",
+      "total_findings": 276,
+      "true_positives": 119,
+      "false_positives": 157,
+      "precision": 0.4312,
+      "recall": 1.0,
+      "f1_score": 0.6025
+    },
+    {
+      "repo": "DSVW",
+      "total_findings": 53,
+      "true_positives": 20,
+      "false_positives": 33,
+      "precision": 0.3774,
+      "recall": 1.0,
+      "f1_score": 0.5479
     }
   ],
   "comparative_benchmark": {
