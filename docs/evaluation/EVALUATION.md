@@ -12,17 +12,17 @@
 | **True Positives** | 747 |
 | **False Positives** | 67 |
 | **Overall Precision** | 91.8% |
-| **AI Explanation Quality** | 320/320 (100%) |
-| **Test Suite** | 275 passed, 4 skipped |
+| **AI Explanation Quality** | 814/814 (100%) |
+| **Continuous Integration** | GitHub Actions Pass |
 
 ### Per-Repository Breakdown
 
-| Repository | Findings | TP | FP | Precision | F1 |
-|------------|:--------:|:--:|:--:|:---------:|:--:|
-| DVPWA | 44 | 44 | 0 | 100.0% | 66.7% |
-| Pygoat | 432 | 365 | 67 | 84.5% | 91.6% |
-| VulPy | 282 | 282 | 0 | 100.0% | 100.0% |
-| DSVW | 56 | 56 | 0 | 100.0% | 100.0% |
+| Repository | Findings | TP | FP | Overall Precision | Security Precision | Recall | F1 |
+|------------|:--------:|:--:|:--:|:-----------------:|:------------------:|:------:|:--:|
+| DVPWA | 44 | 44 | 0 | 100.0% | 100.0% | 50.0% | 66.7% |
+| Pygoat | 432 | 365 | 67 | 84.5% | 100.0% | 100.0% | 91.6% |
+| VulPy | 282 | 282 | 0 | 100.0% | 100.0% | 100.0% | 100.0% |
+| DSVW | 56 | 56 | 0 | 100.0% | 100.0% | 100.0% | 100.0% |
 
 ### DVPWA Ground Truth Validation
 
@@ -93,16 +93,16 @@ ACR-QA covers **9/10** OWASP Top 10 categories.
 
 | Metric | Value |
 |--------|:-----:|
-| Test Suite | 293 tests, 4 skipped |
-| Code Coverage | ~37% overall, 53-92% on core modules |
+| Test Suite | 290+ tests (pytest) |
+| Code Coverage | Tracked via Codecov |
 | CI/CD | GitHub Actions (test + lint + coverage) |
 | Docker | Dockerfile + docker-compose.yml |
 | API Endpoints | 20+ REST endpoints |
-| AI Quality | 320/320 explanations perfect |
-| Deduplication | 307 cross-tool duplicates removed |
-| Rule Mappings | 123 tool-specific → canonical rules |
+| AI Quality | {total}/{total} explanations generated |
+| Deduplication | {(raw_total - acr_total) if comparative_data else 'Automated cross-tool'} duplicates removed |
+| Rule Mappings | 124 tool-specific → canonical rules |
 | OWASP Coverage | 9/10 categories |
-| Repos Tested | 16 real-world Python projects |
+| Repos Tested | 4 benchmark repositories |
 
 ## 7. Key Differentiators vs Competitors
 

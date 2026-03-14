@@ -1,6 +1,6 @@
 [
   {
-    "finding_id": "43be6866-a954-4382-a588-ed15c7bec2b7",
+    "finding_id": "72b4670d-bc57-43b9-ac7d-b2c35cc2a105",
     "canonical_rule_id": "IMPORT-002",
     "original_rule_id": "E401",
     "severity": "low",
@@ -62,7 +62,7 @@
     "original_severity": "warning"
   },
   {
-    "finding_id": "70ceff1a-3f92-4486-b2e1-f687bd230d0c",
+    "finding_id": "d959a8ac-8fc5-4e99-b504-1317ee8862e3",
     "canonical_rule_id": "IMPORT-002",
     "original_rule_id": "I001",
     "severity": "low",
@@ -124,7 +124,7 @@
     "original_severity": "warning"
   },
   {
-    "finding_id": "e7b106f2-b76a-48eb-8af9-635937f95509",
+    "finding_id": "46d96092-0b95-4a11-97a6-330f1763f384",
     "canonical_rule_id": "STYLE-004",
     "original_rule_id": "UP031",
     "severity": "low",
@@ -188,7 +188,7 @@
     "original_severity": "warning"
   },
   {
-    "finding_id": "061988f9-426c-469f-85ab-35b0ef9e1d4f",
+    "finding_id": "62c1bb34-817c-4b13-b01d-a41907fe328a",
     "canonical_rule_id": "STYLE-004",
     "original_rule_id": "UP031",
     "severity": "low",
@@ -252,7 +252,7 @@
     "original_severity": "warning"
   },
   {
-    "finding_id": "72f66325-42fe-4ffa-8065-b6a9b1f813e9",
+    "finding_id": "9141180d-8559-4dba-958e-c918a2299687",
     "canonical_rule_id": "STYLE-004",
     "original_rule_id": "UP031",
     "severity": "low",
@@ -316,7 +316,7 @@
     "original_severity": "warning"
   },
   {
-    "finding_id": "aa496338-80b6-499e-b631-47fc89d3b8fe",
+    "finding_id": "c1619be0-acb7-4c16-8a54-ca8c83fd3181",
     "canonical_rule_id": "STYLE-004",
     "original_rule_id": "UP031",
     "severity": "low",
@@ -380,7 +380,7 @@
     "original_severity": "warning"
   },
   {
-    "finding_id": "92d21853-4b93-4be8-bd96-e2eb9fd475ff",
+    "finding_id": "eecf7477-160c-4c70-8126-7fc1a7d17079",
     "canonical_rule_id": "STYLE-004",
     "original_rule_id": "UP031",
     "severity": "low",
@@ -444,7 +444,7 @@
     "original_severity": "warning"
   },
   {
-    "finding_id": "797cb8e5-1d9f-4076-9a77-00007cec0797",
+    "finding_id": "5ef3fd4b-3014-4226-aa94-20b1868996b2",
     "canonical_rule_id": "STYLE-004",
     "original_rule_id": "UP031",
     "severity": "low",
@@ -508,7 +508,7 @@
     "original_severity": "warning"
   },
   {
-    "finding_id": "b5e27a6d-9242-47fa-b79a-2b9b6c7c54cd",
+    "finding_id": "790e1a9e-8680-4aa1-b7cc-7e30cfa591c4",
     "canonical_rule_id": "STYLE-004",
     "original_rule_id": "UP031",
     "severity": "low",
@@ -572,7 +572,7 @@
     "original_severity": "warning"
   },
   {
-    "finding_id": "c6865300-4188-4b4e-834b-010a40ae2078",
+    "finding_id": "70726088-a65d-47e3-8f52-b89620a226db",
     "canonical_rule_id": "STYLE-004",
     "original_rule_id": "UP031",
     "severity": "low",
@@ -636,7 +636,7 @@
     "original_severity": "warning"
   },
   {
-    "finding_id": "d50a285e-5c60-4e57-b25c-c739c7570d95",
+    "finding_id": "cf42a1b9-c130-4dcd-9bb7-1700d0944d33",
     "canonical_rule_id": "STYLE-012",
     "original_rule_id": "E713",
     "severity": "low",
@@ -700,7 +700,7 @@
     "original_severity": "warning"
   },
   {
-    "finding_id": "354f07b8-683a-4b6d-b5a7-6a7fa143f509",
+    "finding_id": "0ece0f6f-3b0f-42c7-a05c-9b6e40c2bdca",
     "canonical_rule_id": "STYLE-004",
     "original_rule_id": "UP031",
     "severity": "low",
@@ -764,7 +764,7 @@
     "original_severity": "warning"
   },
   {
-    "finding_id": "84dec39e-b132-444a-a263-7c19a1a1e6a8",
+    "finding_id": "49f3c8d3-0481-49f5-ac9f-a8cbcd7e14e7",
     "canonical_rule_id": "STYLE-004",
     "original_rule_id": "UP031",
     "severity": "low",
@@ -828,7 +828,7 @@
     "original_severity": "warning"
   },
   {
-    "finding_id": "61d99972-6b7a-4824-b6d0-f2189238be1c",
+    "finding_id": "8ac9381f-b716-4bd9-9ef4-abe60fd8daf1",
     "canonical_rule_id": "STYLE-004",
     "original_rule_id": "UP031",
     "severity": "low",
@@ -892,7 +892,7 @@
     "original_severity": "warning"
   },
   {
-    "finding_id": "0ced9624-a98f-4bbe-8abf-e46f0165d04f",
+    "finding_id": "62784005-20bd-4e32-9f78-d063c1d613b3",
     "canonical_rule_id": "STYLE-004",
     "original_rule_id": "UP031",
     "severity": "low",
@@ -956,7 +956,7 @@
     "original_severity": "warning"
   },
   {
-    "finding_id": "df80b6ef-5407-406f-814b-52a111a19f9f",
+    "finding_id": "dff5af72-8be9-43c4-8d6b-eaedc9c2bfcf",
     "canonical_rule_id": "STYLE-004",
     "original_rule_id": "UP031",
     "severity": "low",
@@ -1020,7 +1020,7 @@
     "original_severity": "warning"
   },
   {
-    "finding_id": "2837b8a6-30cc-46a3-87b7-90890ccc6b5e",
+    "finding_id": "c38971cf-3001-42ab-a9bc-22ae8b250aef",
     "canonical_rule_id": "STYLE-004",
     "original_rule_id": "UP031",
     "severity": "low",
@@ -1084,7 +1084,7 @@
     "original_severity": "warning"
   },
   {
-    "finding_id": "145936cd-f2b9-4412-ae4d-72a23d8facb7",
+    "finding_id": "b6333576-e037-4a7b-9ed7-7a1208f8f51d",
     "canonical_rule_id": "STYLE-012",
     "original_rule_id": "E713",
     "severity": "low",
@@ -1148,7 +1148,7 @@
     "original_severity": "warning"
   },
   {
-    "finding_id": "e5b1dbe2-1a27-423b-bfb3-8d6688ef88a1",
+    "finding_id": "9476dfae-bd34-49b7-9ca2-52eb83c40bdd",
     "canonical_rule_id": "STYLE-004",
     "original_rule_id": "UP031",
     "severity": "low",
@@ -1212,7 +1212,7 @@
     "original_severity": "warning"
   },
   {
-    "finding_id": "4e219e2a-644c-4d7d-b8b8-f5d53feb0265",
+    "finding_id": "3a76cd51-c34a-4264-b9c9-d136aca743e8",
     "canonical_rule_id": "STYLE-004",
     "original_rule_id": "UP031",
     "severity": "low",
@@ -1276,7 +1276,7 @@
     "original_severity": "warning"
   },
   {
-    "finding_id": "9a57db99-3bf8-48ab-a2ff-eb0e84bc07c9",
+    "finding_id": "0540b54f-379a-46bd-b6d1-128f4f2296f2",
     "canonical_rule_id": "STYLE-004",
     "original_rule_id": "UP031",
     "severity": "low",
@@ -1340,7 +1340,7 @@
     "original_severity": "warning"
   },
   {
-    "finding_id": "95f00f1f-b585-44eb-8f98-b1c4d2627e8c",
+    "finding_id": "445a3dbc-0c48-4889-a970-93fd392c7363",
     "canonical_rule_id": "STYLE-004",
     "original_rule_id": "UP031",
     "severity": "low",
@@ -1404,7 +1404,7 @@
     "original_severity": "warning"
   },
   {
-    "finding_id": "b4000b39-9dfc-4623-bad8-526d405419f0",
+    "finding_id": "9962e2c6-98b8-4df0-a3eb-85b5117ca80b",
     "canonical_rule_id": "STYLE-012",
     "original_rule_id": "E713",
     "severity": "low",
@@ -1468,7 +1468,7 @@
     "original_severity": "warning"
   },
   {
-    "finding_id": "1cd095b9-0e38-44fc-b4ad-a5abd5ddb40d",
+    "finding_id": "b10f9c46-7b41-42fe-bf17-018e555e9b3d",
     "canonical_rule_id": "STYLE-004",
     "original_rule_id": "UP031",
     "severity": "low",
@@ -1532,7 +1532,7 @@
     "original_severity": "warning"
   },
   {
-    "finding_id": "ec13bde6-693e-415f-abb2-79248201911e",
+    "finding_id": "07a253eb-7ac7-412f-a267-9343247f5bdd",
     "canonical_rule_id": "STYLE-012",
     "original_rule_id": "E713",
     "severity": "low",
@@ -1596,7 +1596,7 @@
     "original_severity": "warning"
   },
   {
-    "finding_id": "82bf9610-0ecc-424a-b8f9-b98a102bdb28",
+    "finding_id": "c8a38e87-244d-4c05-8d9c-badb964e4f69",
     "canonical_rule_id": "STYLE-004",
     "original_rule_id": "UP031",
     "severity": "low",
@@ -1660,7 +1660,7 @@
     "original_severity": "warning"
   },
   {
-    "finding_id": "60e46e80-4bd2-4508-824e-aa71ea9617a4",
+    "finding_id": "2fb6c6c1-c50f-4f80-8e72-8ffb66d8e69c",
     "canonical_rule_id": "STYLE-004",
     "original_rule_id": "UP031",
     "severity": "low",
@@ -1724,7 +1724,7 @@
     "original_severity": "warning"
   },
   {
-    "finding_id": "dd3d3263-6bd3-43b1-965a-118927c347c4",
+    "finding_id": "664f8388-8968-4816-9342-54933b190f39",
     "canonical_rule_id": "STYLE-004",
     "original_rule_id": "UP031",
     "severity": "low",
@@ -1788,7 +1788,7 @@
     "original_severity": "warning"
   },
   {
-    "finding_id": "9f19c9a3-6c65-4305-a75d-9e342ff7501b",
+    "finding_id": "cbe51076-f7e2-4bb1-b471-cc8fe6c51bea",
     "canonical_rule_id": "STYLE-004",
     "original_rule_id": "UP031",
     "severity": "low",
@@ -1852,7 +1852,7 @@
     "original_severity": "warning"
   },
   {
-    "finding_id": "7290cd30-66b7-48ba-9da1-9b1af658eaf8",
+    "finding_id": "ca510a1d-8a2e-4301-af25-dfe6d15c7db1",
     "canonical_rule_id": "STYLE-004",
     "original_rule_id": "UP031",
     "severity": "low",
@@ -1915,7 +1915,7 @@
     "original_severity": "warning"
   },
   {
-    "finding_id": "8b34c443-a1df-43ba-a56b-f6f8efe6c0af",
+    "finding_id": "7baec0ba-e89c-41e3-8e8d-01a5e675d39b",
     "canonical_rule_id": "STYLE-007",
     "original_rule_id": "print-in-production",
     "severity": "low",
@@ -1974,7 +1974,7 @@
     "original_severity": "INFO"
   },
   {
-    "finding_id": "4a071c67-5063-4260-93ac-b8e0a614eba4",
+    "finding_id": "2d7ecf84-f40b-4a61-b3c4-80b5f4fbcfd3",
     "canonical_rule_id": "SECURITY-008",
     "original_rule_id": "unsafe-pickle",
     "severity": "medium",
@@ -2047,7 +2047,7 @@
     "original_severity": "ERROR"
   },
   {
-    "finding_id": "fe26dd99-74ed-4923-9b0b-1eefca07d746",
+    "finding_id": "ac182aac-2c35-483f-8bf4-6cb5262196f0",
     "canonical_rule_id": "SECURITY-046",
     "original_rule_id": "ssrf-requests-user-url",
     "severity": "high",
@@ -2121,7 +2121,7 @@
     "original_severity": "ERROR"
   },
   {
-    "finding_id": "cde81394-d27e-4e20-93dd-7d96fc8d7497",
+    "finding_id": "d08d581e-de88-4278-8b17-7d5fa34b977c",
     "canonical_rule_id": "SECURITY-021",
     "original_rule_id": "shell-injection",
     "severity": "high",
@@ -2194,7 +2194,7 @@
     "original_severity": "ERROR"
   },
   {
-    "finding_id": "ab405437-0c7d-4856-8420-66c56b9d8e8f",
+    "finding_id": "225d55a7-3927-43e8-95e4-cbb93fc3e6c2",
     "canonical_rule_id": "SECURITY-044",
     "original_rule_id": "lxml-xxe",
     "severity": "medium",
@@ -2268,7 +2268,7 @@
     "original_severity": "ERROR"
   },
   {
-    "finding_id": "dc0611c4-d766-4748-acf3-df35d6cb93da",
+    "finding_id": "eb8c995d-2d4a-4646-a9d8-aa42e653d3c6",
     "canonical_rule_id": "SECURITY-046",
     "original_rule_id": "ssrf-requests-user-url",
     "severity": "high",
@@ -2342,7 +2342,7 @@
     "original_severity": "ERROR"
   },
   {
-    "finding_id": "693c0101-1621-4df3-a7c8-047778fb5a75",
+    "finding_id": "46ae304a-1308-4d8c-a58a-7ff592d4991f",
     "canonical_rule_id": "STYLE-007",
     "original_rule_id": "print-in-production",
     "severity": "low",
@@ -2401,7 +2401,7 @@
     "original_severity": "INFO"
   },
   {
-    "finding_id": "70e0bec9-bc70-47de-92f8-ee88398b1f7c",
+    "finding_id": "b21918d1-0df9-4d49-a70e-8a2f0fad7d13",
     "canonical_rule_id": "STYLE-007",
     "original_rule_id": "print-in-production",
     "severity": "low",
@@ -2459,7 +2459,7 @@
     "original_severity": "INFO"
   },
   {
-    "finding_id": "d234c6e6-29ed-401d-bb8c-f86f9c0fb867",
+    "finding_id": "10c7dd28-67bb-422e-906a-42696b40af46",
     "canonical_rule_id": "VAR-001",
     "original_rule_id": "unused-variable",
     "severity": "low",
@@ -2493,7 +2493,7 @@
     "original_severity": "info"
   },
   {
-    "finding_id": "bf2c90b5-0d6f-4b09-b2f0-74acfc87d859",
+    "finding_id": "65b54263-b3b2-44e7-9e42-8b82c6ccf4ae",
     "canonical_rule_id": "DEAD-001",
     "original_rule_id": "unused-code",
     "severity": "low",
@@ -2527,7 +2527,7 @@
     "original_severity": "info"
   },
   {
-    "finding_id": "e0170590-bb23-438d-9dfc-429a9cbaaf2a",
+    "finding_id": "05f0613c-8f1f-43c7-8dcf-6e962dca0dde",
     "canonical_rule_id": "COMPLEXITY-001",
     "original_rule_id": "high-complexity",
     "severity": "high",
@@ -2557,21 +2557,21 @@
       "original_output": {
         "type": "class",
         "rank": "F",
-        "complexity": 45,
-        "col_offset": 0,
         "name": "ReqHandler",
-        "lineno": 23,
+        "col_offset": 0,
         "endline": 81,
+        "complexity": 45,
+        "lineno": 23,
         "methods": [
           {
             "type": "method",
             "rank": "F",
-            "complexity": 44,
-            "col_offset": 4,
             "name": "do_GET",
-            "classname": "ReqHandler",
-            "lineno": 24,
+            "col_offset": 4,
             "endline": 81,
+            "complexity": 44,
+            "lineno": 24,
+            "classname": "ReqHandler",
             "closures": []
           }
         ]
@@ -2580,7 +2580,7 @@
     "original_severity": "high"
   },
   {
-    "finding_id": "fb6941c5-0d41-4e6c-8204-85b3eabd7d6c",
+    "finding_id": "423838e2-ae64-4c51-8c9e-b66f7dcac3a2",
     "canonical_rule_id": "COMPLEXITY-001",
     "original_rule_id": "high-complexity",
     "severity": "high",
@@ -2610,19 +2610,19 @@
       "original_output": {
         "type": "method",
         "rank": "F",
-        "complexity": 44,
-        "col_offset": 4,
         "name": "do_GET",
-        "classname": "ReqHandler",
-        "lineno": 24,
+        "col_offset": 4,
         "endline": 81,
+        "complexity": 44,
+        "lineno": 24,
+        "classname": "ReqHandler",
         "closures": []
       }
     },
     "original_severity": "high"
   },
   {
-    "finding_id": "54ce568e-4f5c-426f-8f4f-091f63c626a8",
+    "finding_id": "daedc8fa-812e-4b94-a8cb-3500582e0d58",
     "canonical_rule_id": "SECURITY-034",
     "original_rule_id": "B403",
     "severity": "low",
@@ -2671,7 +2671,7 @@
     "original_severity": "low"
   },
   {
-    "finding_id": "a2e0cdf5-dc85-4241-a23d-fe101cce00c9",
+    "finding_id": "2d93da24-a0ce-4851-9f86-a942765229d3",
     "canonical_rule_id": "SECURITY-039",
     "original_rule_id": "B410",
     "severity": "medium",
@@ -2722,7 +2722,7 @@
     "original_severity": "low"
   },
   {
-    "finding_id": "31bfe2c4-fdbb-464f-86b2-93558f045587",
+    "finding_id": "6a96c998-c2d5-4bca-81b7-08c01316ad93",
     "canonical_rule_id": "SECURITY-043",
     "original_rule_id": "B314",
     "severity": "medium",
@@ -2773,7 +2773,7 @@
     "original_severity": "medium"
   },
   {
-    "finding_id": "b69954b9-9886-4c8c-922f-d718c51fd022",
+    "finding_id": "c670e78c-280f-451e-aeae-a9961535e348",
     "canonical_rule_id": "SECURITY-043",
     "original_rule_id": "B314",
     "severity": "medium",
@@ -2824,7 +2824,7 @@
     "original_severity": "medium"
   },
   {
-    "finding_id": "164ee3ca-cc87-4766-b9d9-a5a54e80f153",
+    "finding_id": "7e8cb1a2-70be-49e5-ade3-36c793456308",
     "canonical_rule_id": "SECURITY-027",
     "original_rule_id": "B608",
     "severity": "high",
@@ -2875,7 +2875,7 @@
     "original_severity": "medium"
   },
   {
-    "finding_id": "d0252d31-1ee2-4a48-8b77-3bca697c9bc2",
+    "finding_id": "d0180664-6fdc-4ce8-a907-85c9a009b7fc",
     "canonical_rule_id": "SECURITY-008",
     "original_rule_id": "B301",
     "severity": "medium",
@@ -2926,7 +2926,7 @@
     "original_severity": "medium"
   },
   {
-    "finding_id": "e6e18f17-881d-4fa7-9c2c-61d9327580a5",
+    "finding_id": "4d97440b-e2c4-401f-9be2-8afc2a360701",
     "canonical_rule_id": "SECURITY-042",
     "original_rule_id": "B310",
     "severity": "medium",
@@ -2977,7 +2977,7 @@
     "original_severity": "medium"
   },
   {
-    "finding_id": "f7af5624-1fa8-42e2-90b0-c0cd5972e6d6",
+    "finding_id": "9bca4351-eefe-4469-aba4-ed118e2290e6",
     "canonical_rule_id": "SECURITY-021",
     "original_rule_id": "B602",
     "severity": "high",
@@ -3028,7 +3028,7 @@
     "original_severity": "high"
   },
   {
-    "finding_id": "0983a03e-bb8c-4099-991f-2cd6d41e3d74",
+    "finding_id": "5a3461af-b54c-4fcc-a337-acfa002f9eac",
     "canonical_rule_id": "SECURITY-044",
     "original_rule_id": "B320",
     "severity": "medium",
@@ -3079,7 +3079,7 @@
     "original_severity": "medium"
   },
   {
-    "finding_id": "8a4a7d5d-1b4f-4698-b498-dedc374ce369",
+    "finding_id": "c759bcaa-2e0c-4c18-ba56-0a0dc5fa2878",
     "canonical_rule_id": "SECURITY-044",
     "original_rule_id": "B320",
     "severity": "medium",
@@ -3130,7 +3130,7 @@
     "original_severity": "medium"
   },
   {
-    "finding_id": "358abb03-8d04-4c43-b893-9ac41fa6333e",
+    "finding_id": "35bdccb3-a2d6-4340-b057-c23a5ee0ce8c",
     "canonical_rule_id": "SECURITY-042",
     "original_rule_id": "B310",
     "severity": "medium",
@@ -3181,7 +3181,7 @@
     "original_severity": "medium"
   },
   {
-    "finding_id": "53826985-1f0e-47a4-a9af-2694ad952be3",
+    "finding_id": "27bf533a-2e72-444d-9767-692820fbe11b",
     "canonical_rule_id": "SECURITY-001",
     "original_rule_id": "B102",
     "severity": "high",
@@ -3232,7 +3232,7 @@
     "original_severity": "medium"
   },
   {
-    "finding_id": "30bc0328-9b9a-4af5-9b55-4b84e70ddf11",
+    "finding_id": "5ae682af-9593-420c-9cb2-c24bf0a2fd81",
     "canonical_rule_id": "SECURITY-043",
     "original_rule_id": "B314",
     "severity": "medium",
@@ -3283,7 +3283,7 @@
     "original_severity": "medium"
   },
   {
-    "finding_id": "f661a888-237f-4e3f-903b-9bbd531a82c4",
+    "finding_id": "05a29c6d-a206-4960-b276-c9dd8e73faa5",
     "canonical_rule_id": "SECURITY-027",
     "original_rule_id": "B608",
     "severity": "high",

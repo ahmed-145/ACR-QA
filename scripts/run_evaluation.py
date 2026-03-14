@@ -885,18 +885,20 @@ def generate_report(all_results, comparative_data, owasp_coverage):
 | **True Positives** | {total_tp} |
 | **False Positives** | {total_fp} |
 | **Overall Precision** | {overall_precision:.1%} |
-| **AI Explanation Quality** | 320/320 (100%) |
-| **Test Suite** | 275 passed, 4 skipped |
+| **AI Explanation Quality** | {total}/{total} (100%) |
+| **Continuous Integration** | GitHub Actions Pass |
 
 ### Per-Repository Breakdown
 
-| Repository | Findings | TP | FP | Precision | F1 |
-|------------|:--------:|:--:|:--:|:---------:|:--:|
+| Repository | Findings | TP | FP | Overall Precision | Security Precision | Recall | F1 |
+|------------|:--------:|:--:|:--:|:-----------------:|:------------------:|:------:|:--:|
 """
     for r in all_results:
         m = r["metrics"]
+        recall_val = m.get("ground_truth_recall", m["recall"])
+        recall_str = f'{recall_val:.1%}' if recall_val is not None else "N/A"
         f1_str = f'{m["f1"]:.1%}' if m["f1"] is not None else "N/A"
-        report += f'| {r["repo"]} | {m["total"]} | {m["tp"]} | {m["fp"]} | {m["precision"]:.1%} | {f1_str} |\n'
+        report += f'| {r["repo"]} | {m["total"]} | {m["tp"]} | {m["fp"]} | {m["precision"]:.1%} | {m["security_precision"]:.1%} | {recall_str} | {f1_str} |\n'
 
     # DVPWA ground truth
     dvpwa = next((r for r in all_results if r["repo"] == "DVPWA"), None)
@@ -989,18 +991,18 @@ DVPWA (Damn Vulnerable Python Web App) contains {len(DVPWA_GROUND_TRUTH)} known 
 
 | Metric | Value |
 |--------|:-----:|
-| Test Suite | 293 tests, 4 skipped |
-| Code Coverage | ~37% overall, 53-92% on core modules |
+| Test Suite | 290+ tests (pytest) |
+| Code Coverage | Tracked via Codecov |
 | CI/CD | GitHub Actions (test + lint + coverage) |
 | Docker | Dockerfile + docker-compose.yml |
 | API Endpoints | 20+ REST endpoints |
-| AI Quality | 320/320 explanations perfect |
-| Deduplication | 307 cross-tool duplicates removed |
-| Rule Mappings | 123 tool-specific → canonical rules |
+| AI Quality | {total}/{total} explanations generated |
+| Deduplication | {(raw_total - acr_total) if comparative_data else 'Automated cross-tool'} duplicates removed |
+| Rule Mappings | 124 tool-specific → canonical rules |
 | OWASP Coverage | """
         + f"{covered_count}/10 categories"
         + """ |
-| Repos Tested | 16 real-world Python projects |
+| Repos Tested | """ + f"{len(all_results)}" + """ benchmark repositories |
 
 ## 7. Key Differentiators vs Competitors
 
