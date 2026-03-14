@@ -129,7 +129,21 @@ rules:
       cwe: CWE-347
       canonical_rule_id: SECURITY-047
 
+  - id: aiohttp-jinja2-autoescape-false
+    patterns:
+      - pattern: aiohttp_jinja2.setup(..., autoescape=False, ...)
+    message: "Disabling autoescape in aiohttp_jinja2 allows Cross-Site Scripting (XSS). User input rendered in templates will not be HTML-escaped. Remove autoescape=False or set it to True."
+    languages:
+      - python
+    severity: WARNING
+    metadata:
+      cwe: CWE-79
+      owasp: A03:2021
+      category: security
+      canonical_rule_id: SECURITY-045
+
   - id: lxml-xxe
+
     pattern-either:
       - pattern: lxml.etree.parse($INPUT)
       - pattern: etree.fromstring($INPUT)

@@ -163,9 +163,10 @@ RULE_MAPPING = {
     "command-injection": "SECURITY-021",  # Same as B602
     "sql-injection": "SECURITY-027",  # Same as B608
     # ── New Semgrep rules (added in precision/recall overhaul) ──
-    "flask-xss-render-string": "SECURITY-045",  # XSS via render_template_string
-    "ssrf-requests-user-url": "SECURITY-046",  # SSRF via requests.get(user_url)
-    "jwt-none-algorithm": "SECURITY-047",  # JWT signature bypass
+    "flask-xss-render-string": "SECURITY-045",
+    "aiohttp-jinja2-autoescape-false": "SECURITY-045",
+    "ssrf-requests-user-url": "SECURITY-046",
+    "jwt-none-algorithm": "SECURITY-047",
     "lxml-xxe": "SECURITY-044",  # XXE via lxml (maps to existing lxml rule)
     "open-redirect": "SECURITY-048",  # Open redirect via user-controlled URL
 }

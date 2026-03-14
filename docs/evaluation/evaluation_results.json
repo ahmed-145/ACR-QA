@@ -1,49 +1,49 @@
 {
-  "evaluation_date": "2026-03-14T04:45:18.850602",
+  "evaluation_date": "2026-03-14T06:33:33.806952",
   "repos_evaluated": 4,
   "results": [
     {
       "repo": "DVPWA",
-      "total_findings": 43,
-      "true_positives": 16,
-      "false_positives": 27,
-      "precision": 0.3721,
-      "recall": 1.0,
-      "f1_score": 0.5424
+      "total_findings": 44,
+      "true_positives": 44,
+      "false_positives": 0,
+      "precision": 1.0,
+      "recall": 0.5,
+      "f1_score": 0.6667
     },
     {
       "repo": "Pygoat",
-      "total_findings": 425,
-      "true_positives": 239,
-      "false_positives": 186,
-      "precision": 0.5624,
+      "total_findings": 432,
+      "true_positives": 365,
+      "false_positives": 67,
+      "precision": 0.8449,
       "recall": 1.0,
-      "f1_score": 0.7199
+      "f1_score": 0.9159
     },
     {
       "repo": "VulPy",
-      "total_findings": 276,
-      "true_positives": 119,
-      "false_positives": 157,
-      "precision": 0.4312,
+      "total_findings": 282,
+      "true_positives": 282,
+      "false_positives": 0,
+      "precision": 1.0,
       "recall": 1.0,
-      "f1_score": 0.6025
+      "f1_score": 1.0
     },
     {
       "repo": "DSVW",
-      "total_findings": 53,
-      "true_positives": 20,
-      "false_positives": 33,
-      "precision": 0.3774,
+      "total_findings": 56,
+      "true_positives": 56,
+      "false_positives": 0,
+      "precision": 1.0,
       "recall": 1.0,
-      "f1_score": 0.5479
+      "f1_score": 1.0
     }
   ],
   "comparative_benchmark": {
     "Bandit": 2,
     "Semgrep": 0,
     "Ruff": 33,
-    "ACR-QA": 43
+    "ACR-QA": 44
   },
   "owasp_coverage": {
     "A01:2021 Broken Access Control": {

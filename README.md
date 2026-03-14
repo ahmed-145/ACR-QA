@@ -12,7 +12,7 @@
 [![PostgreSQL 15](https://img.shields.io/badge/PostgreSQL-15+-336791?logo=postgresql&logoColor=white)](https://postgresql.org/)
 [![Prometheus](https://img.shields.io/badge/Prometheus-monitored-e6522c?logo=prometheus&logoColor=white)](https://prometheus.io/)
 [![Rules](https://img.shields.io/badge/Rules-123%20mapped-8b5cf6?logo=shield&logoColor=white)](./docs/evaluation/PER_TOOL_EVALUATION.md)
-[![Precision](https://img.shields.io/badge/Precision-99%25-22c55e?logo=target&logoColor=white)](./docs/evaluation/PER_TOOL_EVALUATION.md)
+[![Precision](https://img.shields.io/badge/Precision-100%25-22c55e?logo=target&logoColor=white)](./docs/evaluation/PER_TOOL_EVALUATION.md)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
 [Quick Start](#-quick-start) · [Features](#-features) · [Architecture](#-architecture) · [CLI](#-cli-reference) · [CI/CD](#-cicd-integration) · [Monitoring](#-monitoring) · [Docs](#-documentation)

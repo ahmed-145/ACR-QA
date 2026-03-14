@@ -33,14 +33,14 @@ DVPWA_GROUND_TRUTH = {
     },
     # Weak hashing (MD5 for passwords)
     "weak_hash": {
-        "files": ["xss/dao/user.py"],
+        "files": ["sqli/dao/user.py"],
         "cwe": "CWE-328",
         "severity": "medium",
         "description": "MD5 used for password hashing",
     },
     # XSS vulnerabilities
     "xss": {
-        "files": ["xss/views.py"],
+        "files": ["sqli/app.py"],
         "cwe": "CWE-79",
         "severity": "high",
         "description": "User input rendered without escaping",
@@ -54,11 +54,116 @@ DVPWA_GROUND_TRUTH = {
     },
     # No CSRF protection
     "no_csrf": {
-        "files": ["xss/views.py", "sqli/views.py"],
+        "files": ["sqli/views.py"],
         "cwe": "CWE-352",
         "severity": "medium",
         "description": "Forms without CSRF tokens",
     },
+}
+
+# ─── Pygoat Ground Truth ─────────────────────────────────────────────────
+# Deliberately vulnerable Django app — vulnerabilities confirmed by code inspection
+PYGOAT_GROUND_TRUTH = {
+    "sqli": {
+        "files": ["introduction/views.py"],
+        "cwe": "CWE-89",
+        "severity": "high",
+        "description": "Raw SQL string concatenation in sql_lab() and injection_sql_lab()",
+    },
+    "insecure_deserialization": {
+        "files": ["introduction/views.py"],
+        "cwe": "CWE-502",
+        "severity": "high",
+        "description": "pickle.loads() on user-controlled token",
+    },
+    "command_injection": {
+        "files": ["introduction/views.py"],
+        "cwe": "CWE-78",
+        "severity": "high",
+        "description": "subprocess.Popen with user-controlled shell command",
+    },
+    "arbitrary_eval": {
+        "files": ["introduction/views.py"],
+        "cwe": "CWE-95",
+        "severity": "high",
+        "description": "eval() on user-controlled input",
+    },
+    "unsafe_yaml": {
+        "files": ["introduction/views.py"],
+        "cwe": "CWE-20",
+        "severity": "medium",
+        "description": "yaml.load() with yaml.Loader (arbitrary code execution)",
+    },
+}
+
+# ─── VulPy Ground Truth ───────────────────────────────────────────────────
+# Vulnerable Python Flask app — vulnerabilities in bad/ directory
+VULPY_GROUND_TRUTH = {
+    "sqli": {
+        "files": ["bad/libuser.py"],
+        "cwe": "CWE-89",
+        "severity": "high",
+        "description": "SQL string formatting in login(), create(), password_change()",
+    },
+    "weak_session": {
+        "files": ["bad/libsession.py"],
+        "cwe": "CWE-384",
+        "severity": "high",
+        "description": "Session stored as unauthenticated base64 JSON (no signature)",
+    },
+    "hardcoded_secret": {
+        "files": ["bad/vulpy.py"],
+        "cwe": "CWE-259",
+        "severity": "high",
+        "description": "Hardcoded secret key in Flask app config",
+    },
+}
+
+# ─── DSVW Ground Truth ────────────────────────────────────────────────────
+# Single-file deliberately vulnerable web app — all vulns in dsvw.py
+DSVW_GROUND_TRUTH = {
+    "sqli": {
+        "files": ["dsvw.py"],
+        "cwe": "CWE-89",
+        "severity": "high",
+        "description": "Raw SQL string concatenation on user-controlled input",
+    },
+    "insecure_deserialization": {
+        "files": ["dsvw.py"],
+        "cwe": "CWE-502",
+        "severity": "high",
+        "description": "pickle.loads() on user-controlled object parameter",
+    },
+    "command_injection": {
+        "files": ["dsvw.py"],
+        "cwe": "CWE-78",
+        "severity": "high",
+        "description": "subprocess.run with shell=True on user-controlled domain",
+    },
+    "ssrf": {
+        "files": ["dsvw.py"],
+        "cwe": "CWE-918",
+        "severity": "high",
+        "description": "urllib.request.urlopen on user-controlled path/include param",
+    },
+    "xxe": {
+        "files": ["dsvw.py"],
+        "cwe": "CWE-611",
+        "severity": "high",
+        "description": "lxml etree parse with resolve_entities=True on user XML",
+    },
+}
+
+# ── Map repo name → ground truth dict ────────────────────────────────────
+GROUND_TRUTH_BY_REPO = {
+    "dvpwa": DVPWA_GROUND_TRUTH,
+    "DVPWA": DVPWA_GROUND_TRUTH,
+    "pygoat": PYGOAT_GROUND_TRUTH,
+    "Pygoat": PYGOAT_GROUND_TRUTH,
+    "vulpy": VULPY_GROUND_TRUTH,
+    "VulPy": VULPY_GROUND_TRUTH,
+    "dsvw": DSVW_GROUND_TRUTH,
+    "DSVW": DSVW_GROUND_TRUTH,
 }
 
 # ─── Known False Positive Patterns ───────────────────────────────────────
@@ -298,11 +403,16 @@ def compute_metrics(findings: list, recall: float | None = None) -> dict:
     return result
 
 
-def compute_dvpwa_recall(findings, ground_truth):
-    """Compute recall against known DVPWA vulnerabilities."""
+def compute_ground_truth_recall(findings, ground_truth):
+    """Compute recall against known vulnerabilities for any repo with ground truth."""
     detected = set()
     for vuln_name, vuln_info in ground_truth.items():
         for finding in findings:
+            # Only count actual security findings towards detecting a vulnerability
+            is_security_finding = "SECURITY" in finding.get("canonical_rule_id", "").upper() or finding.get("category") == "security"
+            if not is_security_finding:
+                continue
+
             file_path = finding.get("file", "")
             for gt_file in vuln_info["files"]:
                 if gt_file in file_path:
@@ -330,8 +440,10 @@ def generate_charts(all_results, comparative_data, output_dir):
     fig, ax = plt.subplots(figsize=(10, 6))
     repos = [r["repo"] for r in all_results]
     precisions = [r["metrics"]["precision"] * 100 for r in all_results]
-    recalls = [r["metrics"]["recall"] * 100 for r in all_results]
-    f1s = [r["metrics"]["f1"] * 100 for r in all_results]
+    # recall can be None for repos without ground truth — treat as 0 for chart
+    recall_raw = [r["metrics"]["recall"] for r in all_results]
+    recalls = [(v * 100 if v is not None else 0) for v in recall_raw]
+    f1s = [(r["metrics"]["f1"] * 100 if r["metrics"]["f1"] is not None else 0) for r in all_results]
 
     x = np.arange(len(repos))
     width = 0.25
@@ -641,13 +753,14 @@ def main():
         for f in findings:
             f["label"] = classify_finding(f)
 
-        # Compute DVPWA ground-truth recall FIRST so we can pass it into compute_metrics
+        # Compute ground-truth recall if this repo has a ground truth dict
         gt_recall = None
         detected_vulns: set = set()
-        if repo_name == "DVPWA":
-            detected_vulns, gt_recall = compute_dvpwa_recall(findings, DVPWA_GROUND_TRUTH)
+        ground_truth = GROUND_TRUTH_BY_REPO.get(repo_name)
+        if ground_truth:
+            detected_vulns, gt_recall = compute_ground_truth_recall(findings, ground_truth)
             print(
-                f"  Ground truth recall: {gt_recall:.2%} ({len(detected_vulns)}/{len(DVPWA_GROUND_TRUTH)} known vulns)"
+                f"  Ground truth recall: {gt_recall:.2%} ({len(detected_vulns)}/{len(ground_truth)} known vulns)"
             )
 
         # Compute metrics — pass real recall if available, None otherwise (no fake 100%)
@@ -661,11 +774,11 @@ def main():
             f"Recall: {recall_str}"
         )
 
-        # Store DVPWA ground truth details
-        if repo_name == "DVPWA" and gt_recall is not None:
+        # Store ground truth details for any repo with ground truth
+        if ground_truth and gt_recall is not None:
             metrics["ground_truth_recall"] = gt_recall
             metrics["detected_vulns"] = list(detected_vulns)
-            metrics["missed_vulns"] = [v for v in DVPWA_GROUND_TRUTH if v not in detected_vulns]
+            metrics["missed_vulns"] = [v for v in ground_truth if v not in detected_vulns]
 
         all_results.append(
             {
@@ -782,7 +895,8 @@ def generate_report(all_results, comparative_data, owasp_coverage):
 """
     for r in all_results:
         m = r["metrics"]
-        report += f'| {r["repo"]} | {m["total"]} | {m["tp"]} | {m["fp"]} | {m["precision"]:.1%} | {m["f1"]:.1%} |\n'
+        f1_str = f'{m["f1"]:.1%}' if m["f1"] is not None else "N/A"
+        report += f'| {r["repo"]} | {m["total"]} | {m["tp"]} | {m["fp"]} | {m["precision"]:.1%} | {f1_str} |\n'
 
     # DVPWA ground truth
     dvpwa = next((r for r in all_results if r["repo"] == "DVPWA"), None)
