@@ -124,6 +124,11 @@ class SeverityScorer:
         "SECURITY-042": "medium",  # urllib_urlopen — SSRF risk
         "SECURITY-043": "medium",  # Unsafe XML parsing (ElementTree/SAX/pulldom)
         "SECURITY-044": "medium",  # Unsafe XML parsing (lxml)
+        # ── New rules from precision/recall overhaul ──
+        "SECURITY-045": "high",  # XSS via render_template_string (CWE-79)
+        "SECURITY-046": "high",  # SSRF via requests with user-controlled URL (CWE-918)
+        "SECURITY-047": "critical",  # JWT none algorithm — signature bypass (CWE-347)
+        "SECURITY-048": "medium",  # Open redirect via user-controlled URL (CWE-601)
     }
 
     # Context-based severity adjustments

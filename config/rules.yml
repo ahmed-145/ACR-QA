@@ -1178,3 +1178,78 @@ SECURITY-033:
     from django.utils.safestring import mark_safe
     output = mark_safe(f"<b>{user_name}</b>")  # XSS if user_name has HTML
 
+
+SECURITY-045:
+  name: "XSS via Flask render_template_string"
+  category: "security"
+  severity: "high"
+  description: "render_template_string() with user-controlled input enables XSS attacks"
+  rationale: |
+    Unlike render_template() which loads from disk, render_template_string()
+    executes template strings at runtime. When user input reaches this function,
+    an attacker can inject Jinja2 template syntax or HTML/JS for XSS.
+    This bypasses CSRF protections and can steal session cookies.
+  remediation: "Use render_template() with validated templates, or sanitize and escape all user input before passing to render_template_string()"
+  example_good: |
+    from flask import render_template
+    return render_template("user_page.html", name=username)
+  example_bad: |
+    from flask import render_template_string, request
+    template = request.args.get("template", "")
+    return render_template_string(template)  # XSS/SSTI!
+
+SECURITY-046:
+  name: "SSRF via Requests with User-Controlled URL"
+  category: "security"
+  severity: "high"
+  description: "requests.get/post with user-controlled URL enables Server-Side Request Forgery (SSRF)"
+  rationale: |
+    SSRF allows attackers to make the server fetch internal resources.
+    With cloud providers, this can leak instance metadata including credentials
+    (e.g., http://169.254.169.254/ on AWS, http://metadata.google.internal/).
+    OWASP Top 10 2021: A10 — SSRF.
+  remediation: "Validate URLs against an allowlist of permitted domains/protocols; use a DNS-based SSRF blocker"
+  example_good: |
+    ALLOWED_DOMAINS = {"api.example.com", "cdn.example.com"}
+    from urllib.parse import urlparse
+    if urlparse(url).netloc not in ALLOWED_DOMAINS:
+        raise ValueError("Domain not allowed")
+    response = requests.get(url)
+  example_bad: |
+    url = request.args.get("url")
+    response = requests.get(url)  # SSRF! Can access internal services
+
+SECURITY-047:
+  name: "JWT None Algorithm Bypass"
+  category: "security"
+  severity: "critical"
+  description: "JWT decoded with 'none' algorithm allows complete signature bypass"
+  rationale: |
+    The JWT 'none' algorithm disables signature verification entirely. An attacker
+    can create a token with any claims (e.g., admin: true) by using algorithm='none'
+    and omitting the signature. This is a well-known vulnerability (CVE-2015-9235).
+    Never allow 'none' in your algorithms list.
+  remediation: "Whitelist only specific algorithms: algorithms=['HS256'] or ['RS256']. Never include 'none'."
+  example_good: |
+    payload = jwt.decode(token, SECRET_KEY, algorithms=["HS256"])
+  example_bad: |
+    payload = jwt.decode(token, "", algorithms=["none"])  # No verification!
+
+SECURITY-048:
+  name: "Open Redirect Vulnerability"
+  category: "security"
+  severity: "medium"
+  description: "redirect() with user-controlled destination enables open redirect attacks"
+  rationale: |
+    Open redirects allow attackers to craft URLs that appear to come from your
+    domain but redirect users to malicious sites. Used in phishing campaigns,
+    OAuth flow hijacking, and credential harvesting. CWE-601.
+  remediation: "Validate redirect URLs against an allowlist; use url_for() for internal redirects"
+  example_good: |
+    next_url = request.args.get("next", "/")
+    if not urlparse(next_url).netloc:  # Only allow relative URLs
+        return redirect(next_url)
+    return redirect("/")
+  example_bad: |
+    next_url = request.args.get("next")
+    return redirect(next_url)  # Attacker sets next=https://evil.com

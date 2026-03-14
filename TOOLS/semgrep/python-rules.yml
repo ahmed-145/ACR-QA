@@ -84,6 +84,81 @@ rules:
       category: security
       canonical_rule_id: PATH-001
 
+  - id: flask-xss-render-string
+    pattern-either:
+      - pattern: flask.render_template_string($TEMPLATE, ...)
+      - pattern: render_template_string($TEMPLATE, ...)
+    message: |
+      render_template_string() with user-controlled input is vulnerable to XSS
+      (Cross-Site Scripting). An attacker can inject malicious HTML/JS into
+      the rendered page.
+    severity: ERROR
+    languages: [python]
+    metadata:
+      category: security
+      cwe: CWE-79
+      canonical_rule_id: SECURITY-045
+
+  - id: ssrf-requests-user-url
+    pattern-either:
+      - pattern: requests.get($URL, ...)
+      - pattern: requests.post($URL, ...)
+      - pattern: requests.request($METHOD, $URL, ...)
+      - pattern: urllib.request.urlopen($URL)
+    message: |
+      Potential SSRF (Server-Side Request Forgery). If $URL is user-controlled,
+      an attacker may reach internal services, metadata endpoints, or localhost.
+    severity: ERROR
+    languages: [python]
+    metadata:
+      category: security
+      cwe: CWE-918
+      canonical_rule_id: SECURITY-046
+
+  - id: jwt-none-algorithm
+    pattern-either:
+      - pattern: jwt.decode($TOKEN, ..., algorithms=["none"], ...)
+      - pattern: jwt.decode($TOKEN, ..., algorithms=["HS256", "none"], ...)
+    message: |
+      JWT decoded with 'none' algorithm. This allows signature bypass — an
+      attacker can forge tokens without a secret key.
+    severity: ERROR
+    languages: [python]
+    metadata:
+      category: security
+      cwe: CWE-347
+      canonical_rule_id: SECURITY-047
+
+  - id: lxml-xxe
+    pattern-either:
+      - pattern: lxml.etree.parse($INPUT)
+      - pattern: etree.fromstring($INPUT)
+      - pattern: etree.parse($INPUT)
+    message: |
+      lxml parses XML with external entity resolution enabled by default.
+      This allows XXE (XML External Entity) attacks. Use resolve_entities=False.
+    severity: ERROR
+    languages: [python]
+    metadata:
+      category: security
+      cwe: CWE-611
+      canonical_rule_id: SECURITY-044
+
+  - id: open-redirect
+    pattern-either:
+      - pattern: redirect(request.args.get(...))
+      - pattern: redirect(request.form.get(...))
+      - pattern: redirect(request.values.get(...))
+    message: |
+      Open redirect vulnerability. User-controlled redirect destination can
+      redirect users to malicious sites (phishing, credential harvesting).
+    severity: WARNING
+    languages: [python]
+    metadata:
+      category: security
+      cwe: CWE-601
+      canonical_rule_id: SECURITY-048
+
   # ============================================================
   # BEST PRACTICE RULES
   # ============================================================

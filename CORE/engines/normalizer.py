@@ -162,6 +162,12 @@ RULE_MAPPING = {
     "unsafe-pickle": "SECURITY-008",  # Same as B301
     "command-injection": "SECURITY-021",  # Same as B602
     "sql-injection": "SECURITY-027",  # Same as B608
+    # ── New Semgrep rules (added in precision/recall overhaul) ──
+    "flask-xss-render-string": "SECURITY-045",  # XSS via render_template_string
+    "ssrf-requests-user-url": "SECURITY-046",  # SSRF via requests.get(user_url)
+    "jwt-none-algorithm": "SECURITY-047",  # JWT signature bypass
+    "lxml-xxe": "SECURITY-044",  # XXE via lxml (maps to existing lxml rule)
+    "open-redirect": "SECURITY-048",  # Open redirect via user-controlled URL
 }
 
 # Category Mapping

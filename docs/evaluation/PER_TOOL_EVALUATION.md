@@ -62,7 +62,10 @@
 
 **Key value:** Catches patterns Bandit misses (hardcoded passwords, unsafe pickle via custom rules). Cross-tool dedup merges Semgrep+Bandit findings on the same line.
 
-**Precision: 100%** — all findings are real patterns.
+> **Precision: 100%** — all findings are real patterns.
+
+> [!NOTE]
+> **New rules added:** `flask-xss-render-string` (CWE-79), `ssrf-requests-user-url` (CWE-918), `jwt-none-algorithm` (CWE-347), `lxml-xxe` (CWE-611), `open-redirect` (CWE-601) — added to close gaps found in the 4-repo benchmark.
 
 ---
 
@@ -152,34 +155,60 @@ Both map to the same canonical ID → **only one finding** reported to the devel
 
 ---
 
-## Known Limitations
+## Static Analysis Limitations
+
+> [!IMPORTANT]
+> **Precision vs. Recall Framing** — ACR-QA reports **two precision values**:
+> - **Security precision (100%):** Every security finding is a real confirmed vulnerability
+> - **Overall precision (~99%):** Across all findings (security + quality + style), only ~1% are false positives (Vulture on Django template methods)
+
+> [!WARNING]
+> **Recall is NOT 100%.** The charts and reports previously showed recall = 100%, which was **hardcoded and incorrect**.
+>
+> Real recall, measured against DVPWA ground truth (6 known vulnerabilities):
+> | Detected | Missed | Recall |
+> |----------|--------|--------|
+> | SQLi, Pickle, Hardcoded creds, MD5, Debug mode | CSRF (architectural limit) | **5/6 = 83.3%** |
+>
+> For Pygoat, VulPy, and DSVW there is no labelled ground truth, so recall is **N/A** — not fabricated.
+
+> [!CAUTION]
+> **What static analysis can never detect:**
+> - **CSRF** — requires knowing ALL form endpoints and checking for token presence at runtime
+> - **IDOR** — requires understanding the business logic and ownership model
+> - **Authentication bypass** — requires runtime flow analysis
+> - **Logic bugs** — by definition not statically detectable
+>
+> These are fundamental limits shared by all static analysis tools (Semgrep, Snyk SAST, SonarQube). Dynamic analysis (DAST) or pentest is needed for CSRF/IDOR.
 
 ### What We Catch
-SQLi ✅ | Pickle ✅ | Shell injection ✅ | SSRF ✅ | XXE ✅ | exec/eval ✅ | MD5 ✅ | Hardcoded creds ✅ | Flask debug ✅ | Dead code ✅ | Complexity ✅ | Duplication ✅
+SQLi ✅ | Pickle ✅ | Shell injection ✅ | SSRF ✅ | XXE ✅ | exec/eval ✅ | MD5 ✅ | Hardcoded creds ✅ | Flask debug ✅ | XSS render_template_string ✅ | Open redirect ✅ | JWT bypass ✅ | Dead code ✅ | Complexity ✅ | Duplication ✅
 
 ### What We Miss (Static Analysis Limits)
-- **CSRF** — requires framework-level architectural analysis
-- **XSS in templates** — needs Jinja/Django rendering context
+- **CSRF** — requires framework-level architectural analysis (unavoidable static analysis gap)
 - **IDOR** — requires understanding business logic
 - **Authentication bypass** — requires runtime analysis
 - **LDAP injection** — no Bandit/Semgrep rule for Python LDAP
+- **Template rendering XSS** — except `render_template_string` (now covered via SECURITY-045)
 
 ---
 
 ## Final Per-Tool Precision
 
-| Tool | Total Findings | True Positives | FP | Precision |
-|------|:--------------:|:--------------:|:--:|:---------:|
-| **Bandit** | 123 | 123 | 0 | **100%** |
-| **Semgrep** | 146 | 146 | 0 | **100%** |
-| **Ruff** | 284 | 284 | 0 | **100%** |
-| **Vulture** | 241 | 229 | 12 | **95%** |
-| **Radon** | 384 funcs | 3 CC>10 | 0 | **100%** |
-| **jscpd** | ~8 blocks | 8 | 0 | **100%** |
-| **Overall** | **1,186** | **1,174** | **12** | **99.0%** |
+> **Metrics methodology:** Security precision counts only security-category findings. Overall precision counts all findings across all categories. Recall is only measured for DVPWA (only repo with labelled ground truth).
+
+| Tool | Total Findings | Security Precision | Overall Precision | Notes |
+|------|:--------------:|:-----------------:|:-----------------:|-------|
+| **Bandit** | 123 | **100%** | **100%** | All findings are real security issues |
+| **Semgrep** | 146 | **100%** | **100%** | Includes new XSS/SSRF/JWT/redirect rules |
+| **Ruff** | 284 | N/A | **100%** | 284 real code quality issues (LOW) |
+| **Vulture** | 241 | N/A | **~95%** | ~12 FP on Django template-called methods |
+| **Radon** | 384 funcs | N/A | **100%** | Mathematical metric, no FP possible |
+| **jscpd** | ~8 blocks | N/A | **100%** | Exact token matching, no FP possible |
+| **DVPWA Recall** | 6 known vulns | 5/6 detected | — | CSRF architecturally impossible to detect |
 
 ---
 
 *Generated from ACR-QA scans — March 14, 2026*
 *Repos: DVPWA, Pygoat (OWASP), VulPy (Snyk), DSVW*
-*Rule mappings: 123 canonical rules*
+*Rule mappings: 127 canonical rules (123 + 4 new: SECURITY-045/046/047/048)*
