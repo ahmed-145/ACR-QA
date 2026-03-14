@@ -125,6 +125,9 @@ RULE_MAPPING = {
     "UP017": "STYLE-009",  # Use datetime.UTC alias
     "UP024": "STYLE-010",  # Use errors instead of aliases in os module
     "UP032": "STYLE-011",  # Use f-string instead of format call
+    # ── Ruff: Additional style rules ──
+    "E401": "IMPORT-002",  # Multiple imports on one line
+    "E713": "STYLE-012",  # Test for membership should be 'not in x'
     # ── Ruff: Naming — Round 3 ──
     "N804": "NAMING-004",  # First argument of classmethod should be cls
     "N818": "NAMING-005",  # Exception name should end in Error
@@ -142,6 +145,21 @@ RULE_MAPPING = {
     "B410": "SECURITY-039",  # Unsafe XML parsing (lxml)
     "B321": "SECURITY-040",  # FTP cleartext protocol
     "B402": "SECURITY-041",  # import_ftplib — FTP module imported
+    # ── Bandit: XML/Network/Misc security (previously CUSTOM-*) ──
+    "B201": "SECURITY-022",  # flask_debug_true
+    "B310": "SECURITY-042",  # urllib_urlopen — audit url open for permitted schemes
+    "B314": "SECURITY-043",  # xml_bad_etree — unsafe XML parsing (ElementTree)
+    "B317": "SECURITY-043",  # xml_bad_sax — unsafe XML parsing (SAX)
+    "B319": "SECURITY-043",  # xml_bad_pulldom — unsafe XML parsing (pulldom)
+    "B320": "SECURITY-044",  # xml_bad_lxml — unsafe XML parsing (lxml)
+    "B409": "SECURITY-039",  # import_lxml — lxml imported (unsafe XML)
+    # ── Semgrep custom rules → Canonical IDs ──
+    "print-in-production": "STYLE-007",  # print() found — same as Ruff T201
+    "hardcoded-password": "SECURITY-005",  # Same as B105/B106/B107
+    "shell-injection": "SECURITY-021",  # Same as B602
+    "unsafe-pickle": "SECURITY-008",  # Same as B301
+    "command-injection": "SECURITY-021",  # Same as B602
+    "sql-injection": "SECURITY-027",  # Same as B608
 }
 
 # Category Mapping

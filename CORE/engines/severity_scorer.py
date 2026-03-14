@@ -120,6 +120,10 @@ class SeverityScorer:
         "SECURITY-039": "medium",  # Unsafe XML parsing (lxml)
         "SECURITY-040": "medium",  # FTP cleartext protocol
         "SECURITY-041": "low",  # import ftplib (informational)
+        # ── New mappings (previously CUSTOM-*) ──
+        "SECURITY-042": "medium",  # urllib_urlopen — SSRF risk
+        "SECURITY-043": "medium",  # Unsafe XML parsing (ElementTree/SAX/pulldom)
+        "SECURITY-044": "medium",  # Unsafe XML parsing (lxml)
     }
 
     # Context-based severity adjustments
