@@ -392,6 +392,31 @@ def analyze_single_file():
                             }
                         )
 
+            # Run Bandit (security scanner)
+            try:
+                result = subprocess.run(
+                    ["bandit", "-f", "json", "-q", temp_path],
+                    capture_output=True,
+                    text=True,
+                )
+                if result.stdout:
+                    bandit_data = json_module.loads(result.stdout)
+                    for issue in bandit_data.get("results", []):
+                        sev = issue.get("issue_severity", "LOW").lower()
+                        findings.append(
+                            {
+                                "line": issue.get("line_number", 1),
+                                "column": 1,
+                                "rule_id": issue.get("test_id", "B000"),
+                                "severity": "high" if sev == "high" else "medium" if sev == "medium" else "low",
+                                "message": issue.get("issue_text", ""),
+                                "tool": "bandit",
+                                "category": "security",
+                            }
+                        )
+            except Exception:
+                pass  # Bandit not installed or failed — skip
+
         finally:
             # Clean up temp file
             os.unlink(temp_path)

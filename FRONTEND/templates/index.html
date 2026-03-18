@@ -263,6 +263,51 @@
                 </div>
             </div>
 
+            <!-- ── Live Scan Panel ── -->
+            <div class="glass rounded-2xl p-6 border border-purple-500/20" style="box-shadow: 0 0 30px rgba(167,139,250,0.08)">
+                <div class="flex items-center justify-between mb-5 flex-wrap gap-3">
+                    <div class="flex items-center gap-3">
+                        <span class="text-xl">🔬</span>
+                        <h2 class="text-lg font-bold">Live Scan</h2>
+                        <span class="px-2 py-0.5 bg-purple-900/40 text-purple-300 text-xs rounded-md border border-purple-500/30 font-semibold">DEMO</span>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <button onclick="loadSampleCode()" class="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-lg text-sm font-medium border border-slate-700 hover:border-purple-500/40 transition-all">
+                            📋 Load Sample (Vulnerable)
+                        </button>
+                        <button id="scan-btn" onclick="runLiveScan()" class="px-5 py-2 bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-500 hover:to-blue-500 rounded-lg text-sm font-bold transition-all shadow-lg shadow-purple-500/20 flex items-center gap-2">
+                            <span id="scan-icon">⚡</span> Scan Now
+                        </button>
+                    </div>
+                </div>
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-5">
+                    <!-- Code editor -->
+                    <div>
+                        <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Python Code</label>
+                        <textarea id="live-code" spellcheck="false"
+                            class="w-full h-72 px-4 py-3 bg-slate-950 border border-slate-700 rounded-xl text-emerald-300 text-sm leading-relaxed focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all resize-none"
+                            style="font-family:'JetBrains Mono',monospace;tab-size:4"
+                            placeholder="# Paste Python code here — or click 'Load Sample' for a demo&#10;&#10;def hello():&#10;    print('Hello, world!')">
+                        </textarea>
+                        <p class="text-xs text-slate-600 mt-1.5">Tools: Ruff (linting) · Bandit (security) · Vulture (dead code)</p>
+                    </div>
+                    <!-- Results -->
+                    <div>
+                        <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">
+                            Findings <span id="live-scan-count" class="ml-1 px-2 py-0.5 bg-slate-800 rounded text-slate-500 font-mono">0</span>
+                        </label>
+                        <div id="live-scan-results" class="h-72 overflow-y-auto rounded-xl bg-slate-950 border border-slate-700 p-3 space-y-2">
+                            <div class="flex items-center justify-center h-full text-slate-600 text-sm">
+                                <div class="text-center">
+                                    <div class="text-3xl mb-2 opacity-40">⚡</div>
+                                    <p>Paste code and click <strong>Scan Now</strong></p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
             <!-- ── Filters ── -->
             <div class="glass rounded-2xl p-6">
                 <h2 class="text-base font-bold mb-4 flex items-center gap-2"><span>🔍</span> Filter Findings</h2>
@@ -761,6 +806,129 @@
                 <p class="text-lg text-red-400 font-bold mb-4">${msg}</p>
                 <button onclick="refreshData()" class="px-6 py-3 bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-500 hover:to-blue-500 rounded-xl font-semibold text-sm transition-all">Try Again</button>
             </div>`;
+    }
+
+    // ─────────────────────────────────────────────────
+    // Live Scan
+    // ─────────────────────────────────────────────────
+    function loadSampleCode() {
+        document.getElementById('live-code').value = `#!/usr/bin/env python3
+"""Sample vulnerable code for ACR-QA live scan demo."""
+import os
+import pickle
+import subprocess
+
+# SECURITY: Hardcoded credentials (B105, B106)
+DB_PASSWORD = "admin123"
+API_KEY = "sk-1234567890abcdef"
+SECRET_TOKEN = "ghp_ABCDEFghijklmnop1234567890"
+
+def process_user_input(user_data):
+    """Multiple security issues in one function."""
+    # SECURITY: eval() injection (B307)
+    result = eval(user_data)
+
+    # SECURITY: SQL injection (B608)
+    query = "SELECT * FROM users WHERE name = '" + user_data + "'"
+
+    # SECURITY: Shell injection (B602)
+    subprocess.call("echo " + user_data, shell=True)
+
+    # SECURITY: Unsafe deserialization (B301)
+    data = pickle.loads(user_data.encode())
+
+    return result
+
+def insecure_hash(password):
+    """Weak cryptography."""
+    import hashlib
+    # SECURITY: Weak hash (B303)
+    return hashlib.md5(password.encode()).hexdigest()
+
+class UserManager:
+    unused_variable = 42  # DEAD CODE: unused
+
+    def get_user(self, id):
+        pass  # Unused function
+
+    def _private_unused(self):
+        pass
+`;
+        // Flash the textarea border
+        const ta = document.getElementById('live-code');
+        ta.classList.add('ring-2', 'ring-purple-500');
+        setTimeout(() => ta.classList.remove('ring-2', 'ring-purple-500'), 800);
+    }
+
+    async function runLiveScan() {
+        const code = document.getElementById('live-code').value.trim();
+        if (!code) { alert('Paste some Python code first!'); return; }
+
+        const btn = document.getElementById('scan-btn');
+        const icon = document.getElementById('scan-icon');
+        const results = document.getElementById('live-scan-results');
+        const count = document.getElementById('live-scan-count');
+
+        // Loading state
+        btn.disabled = true;
+        btn.classList.add('opacity-60');
+        icon.innerHTML = '<span class="animate-spin inline-block">⏳</span>';
+        results.innerHTML = `<div class="flex items-center justify-center h-full"><div class="text-center"><div class="animate-spin text-3xl mb-3">⚡</div><p class="text-slate-400 text-sm font-medium">Running Ruff + Bandit + Vulture…</p></div></div>`;
+
+        try {
+            const resp = await fetch('/api/analyze', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ content: code, filename: 'demo.py' })
+            });
+            const data = await resp.json();
+
+            if (!data.success) {
+                results.innerHTML = `<div class="p-4 text-red-400 text-sm">${data.error}</div>`;
+                count.textContent = '0';
+                return;
+            }
+
+            count.textContent = data.total;
+            count.className = `ml-1 px-2 py-0.5 rounded font-mono text-xs font-bold ${data.total > 0 ? 'bg-red-900/50 text-red-300' : 'bg-emerald-900/50 text-emerald-300'}`;
+
+            if (data.findings.length === 0) {
+                results.innerHTML = `<div class="flex items-center justify-center h-full text-emerald-400 text-sm"><div class="text-center"><div class="text-4xl mb-2">✅</div><p class="font-bold">No issues found!</p></div></div>`;
+                return;
+            }
+
+            // Sort: high first, then medium, then low
+            const sevOrder = { high: 0, medium: 1, low: 2 };
+            data.findings.sort((a, b) => (sevOrder[a.severity] ?? 3) - (sevOrder[b.severity] ?? 3));
+
+            const sevColors = {
+                high: { bg: 'bg-red-900/40', text: 'text-red-300', border: 'border-red-500/40', emoji: '🔴' },
+                medium: { bg: 'bg-yellow-900/40', text: 'text-yellow-300', border: 'border-yellow-500/40', emoji: '🟡' },
+                low: { bg: 'bg-emerald-900/30', text: 'text-emerald-300', border: 'border-emerald-500/30', emoji: '🟢' },
+            };
+
+            results.innerHTML = data.findings.map(f => {
+                const s = sevColors[f.severity] || sevColors.low;
+                return `
+                    <div class="p-2.5 rounded-lg border ${s.border} ${s.bg} text-xs slide-in">
+                        <div class="flex items-center gap-2 mb-1 flex-wrap">
+                            <span class="font-bold ${s.text}">${s.emoji} ${f.severity.toUpperCase()}</span>
+                            <span class="px-1.5 py-0.5 bg-purple-900/50 text-purple-300 rounded font-mono font-bold border border-purple-500/30">${f.rule_id}</span>
+                            <span class="px-1.5 py-0.5 bg-blue-900/30 text-blue-300 rounded font-medium">${f.tool}</span>
+                            <span class="ml-auto text-slate-500 font-mono">L${f.line}</span>
+                        </div>
+                        <p class="text-slate-300 leading-relaxed">${f.message}</p>
+                    </div>`;
+            }).join('');
+
+        } catch (e) {
+            results.innerHTML = `<div class="p-4 text-red-400 text-sm">❌ Connection failed — is Flask running? <code class="mono text-xs">python3 FRONTEND/app.py</code></div>`;
+            count.textContent = '!';
+        } finally {
+            btn.disabled = false;
+            btn.classList.remove('opacity-60');
+            icon.textContent = '⚡';
+        }
     }
 
     function refreshData() { location.reload(); }
