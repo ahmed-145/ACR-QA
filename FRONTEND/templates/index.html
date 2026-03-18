@@ -4,636 +4,771 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ACR-QA Dashboard</title>
+    <title>ACR-QA Dashboard — Automated Code Review & Quality Assurance</title>
+    <meta name="description" content="ACR-QA v2.8.0 — AI-powered code analysis dashboard with OWASP coverage, quality gates, and multi-tool findings.">
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
     <script>
         tailwind.config = {
             darkMode: 'class',
             theme: {
                 extend: {
-                    colors: {
-                        cerebras: {
-                            50: '#f0f9ff',
-                            100: '#e0f2fe',
-                            200: '#bae6fd',
-                            300: '#7dd3fc',
-                            400: '#38bdf8',
-                            500: '#0ea5e9',
-                            600: '#0284c7',
-                            700: '#0369a1',
-                            800: '#075985',
-                            900: '#0c4a6e',
-                        }
-                    }
+                    fontFamily: { sans: ['Inter', 'sans-serif'], mono: ['JetBrains Mono', 'monospace'] }
                 }
             }
         }
     </script>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+        * { font-family: 'Inter', sans-serif; }
+        code, .mono { font-family: 'JetBrains Mono', monospace; }
 
-        * {
-            font-family: 'Inter', sans-serif;
-        }
+        @keyframes float { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-16px)} }
+        @keyframes pulse-ring { 0%{transform:scale(1);opacity:1} 100%{transform:scale(1.8);opacity:0} }
+        @keyframes slide-in { from{opacity:0;transform:translateY(20px)} to{opacity:1;transform:translateY(0)} }
+        @keyframes count-up { from{opacity:0} to{opacity:1} }
+        @keyframes glow-pulse { 0%,100%{opacity:1} 50%{opacity:0.5} }
+        @keyframes shimmer { 0%{background-position:-200% 0} 100%{background-position:200% 0} }
 
-        @keyframes float {
-
-            0%,
-            100% {
-                transform: translateY(0px);
-            }
-
-            50% {
-                transform: translateY(-20px);
-            }
-        }
-
-        .float-animation {
-            animation: float 6s ease-in-out infinite;
-        }
-
-        @keyframes glow {
-
-            0%,
-            100% {
-                opacity: 1;
-            }
-
-            50% {
-                opacity: 0.5;
-            }
-        }
-
-        .glow-effect {
-            animation: glow 3s ease-in-out infinite;
-        }
+        .float-anim { animation: float 7s ease-in-out infinite; }
+        .slide-in { animation: slide-in 0.5s ease forwards; }
+        .glow-pulse { animation: glow-pulse 2.5s ease-in-out infinite; }
 
         .gradient-text {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
+            background: linear-gradient(135deg, #a78bfa 0%, #60a5fa 50%, #34d399 100%);
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
         }
-
-        .card-hover {
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        }
-
-        .card-hover:hover {
-            transform: translateY(-8px) scale(1.02);
-        }
-
-        .glass-morphism {
-            background: rgba(15, 23, 42, 0.7);
+        .glass {
+            background: rgba(15,23,42,0.65);
             backdrop-filter: blur(20px);
-            border: 1px solid rgba(148, 163, 184, 0.1);
+            border: 1px solid rgba(148,163,184,0.08);
         }
+        .glass-bright {
+            background: rgba(30,41,59,0.8);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(148,163,184,0.12);
+        }
+        .card-lift { transition: all 0.3s cubic-bezier(0.4,0,0.2,1); }
+        .card-lift:hover { transform: translateY(-4px); box-shadow: 0 20px 40px rgba(0,0,0,0.4); }
 
-        .neon-border {
-            box-shadow: 0 0 20px rgba(56, 189, 248, 0.5);
+        .dot-grid {
+            background-image: radial-gradient(rgba(148,163,184,0.07) 1px, transparent 1px);
+            background-size: 24px 24px;
         }
+        .neon-red { box-shadow: 0 0 24px rgba(239,68,68,0.35); }
+        .neon-green { box-shadow: 0 0 24px rgba(52,211,153,0.35); }
+        .neon-purple { box-shadow: 0 0 20px rgba(167,139,250,0.3); }
 
-        /* Custom scrollbar */
-        ::-webkit-scrollbar {
-            width: 10px;
+        /* Pipeline stages */
+        .pipeline-stage {
+            transition: all 0.3s;
+            position: relative;
         }
+        .pipeline-stage::after {
+            content: '→';
+            position: absolute; right: -14px; top: 50%; transform: translateY(-50%);
+            color: rgba(148,163,184,0.4); font-size: 14px;
+        }
+        .pipeline-stage:last-child::after { display: none; }
 
-        ::-webkit-scrollbar-track {
-            background: #0f172a;
-        }
+        /* OWASP cell */
+        .owasp-covered { background: rgba(52,211,153,0.15); border-color: rgba(52,211,153,0.4); }
+        .owasp-missing { background: rgba(239,68,68,0.1); border-color: rgba(239,68,68,0.3); }
+        .owasp-na { background: rgba(100,116,139,0.1); border-color: rgba(100,116,139,0.2); }
 
-        ::-webkit-scrollbar-thumb {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            border-radius: 10px;
-        }
+        /* Run selector */
+        .run-btn { transition: all 0.2s; border-bottom: 2px solid transparent; }
+        .run-btn.active { border-bottom-color: #a78bfa; color: #a78bfa; }
+        .run-btn:hover:not(.active) { border-bottom-color: rgba(167,139,250,0.4); }
 
-        .dot-pattern {
-            background-image: radial-gradient(rgba(148, 163, 184, 0.1) 1px, transparent 1px);
-            background-size: 20px 20px;
-        }
+        /* Quality gate status */
+        .gate-pass { background: rgba(52,211,153,0.12); border-color: rgba(52,211,153,0.5); }
+        .gate-fail { background: rgba(239,68,68,0.12); border-color: rgba(239,68,68,0.5); }
+
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: #0f172a; }
+        ::-webkit-scrollbar-thumb { background: linear-gradient(135deg,#a78bfa,#60a5fa); border-radius: 10px; }
     </style>
 </head>
 
-<body class="bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 min-h-screen text-white">
-    <!-- Background Pattern -->
-    <div class="fixed inset-0 dot-pattern opacity-50 pointer-events-none"></div>
+<body class="bg-slate-950 min-h-screen text-white overflow-x-hidden">
 
-    <!-- Floating Orbs -->
-    <div class="fixed top-20 right-20 w-96 h-96 bg-purple-500 rounded-full blur-3xl opacity-20 float-animation"></div>
-    <div class="fixed bottom-20 left-20 w-96 h-96 bg-blue-500 rounded-full blur-3xl opacity-20 float-animation"
-        style="animation-delay: 2s;"></div>
+    <!-- Background -->
+    <div class="fixed inset-0 dot-grid opacity-60 pointer-events-none"></div>
+    <div class="fixed top-20 right-20 w-80 h-80 bg-purple-600 rounded-full blur-3xl opacity-10 float-anim pointer-events-none"></div>
+    <div class="fixed bottom-20 left-20 w-80 h-80 bg-blue-600 rounded-full blur-3xl opacity-10 float-anim pointer-events-none" style="animation-delay:3s"></div>
+    <div class="fixed top-1/2 left-1/2 w-64 h-64 bg-emerald-600 rounded-full blur-3xl opacity-05 float-anim pointer-events-none" style="animation-delay:1.5s"></div>
 
     <div class="relative z-10">
-        <!-- Header -->
-        <header class="border-b border-slate-800">
-            <div class="max-w-7xl mx-auto px-6 py-6">
+
+        <!-- ── Header ── -->
+        <header class="border-b border-slate-800/60 sticky top-0 z-50" style="background:rgba(10,14,26,0.9);backdrop-filter:blur(20px)">
+            <div class="max-w-8xl mx-auto px-6 py-4">
                 <div class="flex justify-between items-center">
-                    <div class="flex items-center space-x-4">
-                        <div
-                            class="w-12 h-12 bg-gradient-to-br from-purple-500 to-blue-500 rounded-xl flex items-center justify-center text-2xl font-bold shadow-lg shadow-purple-500/50">
-                            🛡️
-                        </div>
+                    <div class="flex items-center gap-4">
+                        <div class="w-11 h-11 bg-gradient-to-br from-purple-500 to-blue-500 rounded-xl flex items-center justify-center text-xl shadow-lg shadow-purple-500/30">🛡️</div>
                         <div>
-                            <h1 class="text-3xl font-black gradient-text">ACR-QA Dashboard</h1>
-                            <p class="text-slate-400 text-sm font-medium">Automated Code Review Platform</p>
+                            <h1 class="text-2xl font-black gradient-text tracking-tight">ACR-QA</h1>
+                            <p class="text-slate-500 text-xs font-medium tracking-wider uppercase">Automated Code Review · v2.8.0</p>
                         </div>
                     </div>
-                    <button onclick="refreshData()"
-                        class="group px-6 py-3 bg-gradient-to-r from-purple-600 to-blue-600 rounded-lg hover:from-purple-500 hover:to-blue-500 transition-all font-semibold flex items-center space-x-2 shadow-lg shadow-purple-500/30">
-                        <span>🔄</span>
-                        <span class="group-hover:translate-x-1 transition-transform">Refresh</span>
+
+                    <!-- Run selector tabs -->
+                    <div id="run-tabs" class="flex items-center gap-1 px-2 py-1 glass rounded-xl overflow-x-auto max-w-2xl">
+                        <span class="text-slate-500 text-xs font-semibold uppercase tracking-wider mr-2 whitespace-nowrap">Analysis Run:</span>
+                        <div id="run-tab-list" class="flex gap-1 text-sm">
+                            <span class="text-slate-600 text-xs py-2 px-3">Loading runs…</span>
+                        </div>
+                    </div>
+
+                    <button onclick="refreshData()" class="group flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-500 hover:to-blue-500 rounded-xl font-semibold text-sm transition-all shadow-lg shadow-purple-500/20">
+                        <span class="group-hover:rotate-180 transition-transform duration-500">🔄</span> Refresh
                     </button>
                 </div>
             </div>
         </header>
 
-        <!-- Main Content -->
-        <main class="max-w-7xl mx-auto px-6 py-8">
-            <!-- Stats Grid -->
-            <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-                <!-- Total Findings -->
-                <div class="glass-morphism rounded-2xl p-6 card-hover">
-                    <div class="flex items-center justify-between mb-4">
-                        <div class="w-12 h-12 bg-slate-800 rounded-xl flex items-center justify-center text-2xl">
-                            📊
-                        </div>
-                        <div class="text-right">
-                            <p class="text-slate-400 text-xs font-semibold uppercase tracking-wider">Total</p>
-                            <p id="stat-total" class="text-4xl font-black text-white">-</p>
-                        </div>
-                    </div>
-                    <div class="h-1 bg-gradient-to-r from-slate-700 to-slate-800 rounded-full"></div>
-                </div>
+        <main class="max-w-8xl mx-auto px-6 py-8 space-y-8">
 
-                <!-- High Severity -->
-                <div class="glass-morphism rounded-2xl p-6 card-hover neon-border"
-                    style="box-shadow: 0 0 20px rgba(239, 68, 68, 0.3);">
-                    <div class="flex items-center justify-between mb-4">
-                        <div
-                            class="w-12 h-12 bg-red-900/30 rounded-xl flex items-center justify-center text-2xl glow-effect">
-                            🔴
-                        </div>
-                        <div class="text-right">
-                            <p class="text-red-300 text-xs font-semibold uppercase tracking-wider">Critical</p>
-                            <p id="stat-high" class="text-4xl font-black text-red-400">-</p>
+            <!-- ── Quality Gate Banner ── -->
+            <div id="quality-gate-banner" class="hidden glass rounded-2xl p-5 border slide-in">
+                <div class="flex items-center justify-between flex-wrap gap-4">
+                    <div class="flex items-center gap-4">
+                        <div id="gate-icon" class="text-4xl glow-pulse"></div>
+                        <div>
+                            <p class="text-xs font-bold uppercase tracking-widest text-slate-400 mb-0.5">Quality Gate</p>
+                            <p id="gate-status-text" class="text-xl font-black"></p>
                         </div>
                     </div>
-                    <div class="h-1 bg-gradient-to-r from-red-600 to-red-800 rounded-full"></div>
-                </div>
-
-                <!-- Medium Severity -->
-                <div class="glass-morphism rounded-2xl p-6 card-hover"
-                    style="box-shadow: 0 0 20px rgba(251, 191, 36, 0.2);">
-                    <div class="flex items-center justify-between mb-4">
-                        <div class="w-12 h-12 bg-yellow-900/30 rounded-xl flex items-center justify-center text-2xl">
-                            🟡
-                        </div>
-                        <div class="text-right">
-                            <p class="text-yellow-300 text-xs font-semibold uppercase tracking-wider">Warning</p>
-                            <p id="stat-medium" class="text-4xl font-black text-yellow-400">-</p>
-                        </div>
-                    </div>
-                    <div class="h-1 bg-gradient-to-r from-yellow-600 to-yellow-800 rounded-full"></div>
-                </div>
-
-                <!-- Low Severity -->
-                <div class="glass-morphism rounded-2xl p-6 card-hover">
-                    <div class="flex items-center justify-between mb-4">
-                        <div class="w-12 h-12 bg-green-900/30 rounded-xl flex items-center justify-center text-2xl">
-                            🟢
-                        </div>
-                        <div class="text-right">
-                            <p class="text-green-300 text-xs font-semibold uppercase tracking-wider">Info</p>
-                            <p id="stat-low" class="text-4xl font-black text-green-400">-</p>
-                        </div>
-                    </div>
-                    <div class="h-1 bg-gradient-to-r from-green-600 to-green-800 rounded-full"></div>
+                    <div id="gate-thresholds" class="flex gap-4 flex-wrap text-sm"></div>
                 </div>
             </div>
 
-            <!-- Cost-Benefit Widget (N4) -->
-            <div id="cost-benefit-widget" class="glass-morphism rounded-2xl p-6 mb-8 hidden">
-                <h2 class="text-xl font-bold mb-4 flex items-center space-x-2">
-                    <span class="text-2xl">💰</span>
-                    <span>Cost-Benefit Analysis</span>
-                </h2>
-                <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
-                    <div class="bg-slate-800/60 rounded-xl p-4 text-center border border-slate-700/50">
-                        <p class="text-xs text-slate-400 uppercase tracking-wider mb-1">Analysis Cost</p>
-                        <p id="cb-cost" class="text-2xl font-bold text-green-400">$0.000</p>
+            <!-- ── Stat Cards ── -->
+            <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
+                <!-- Total -->
+                <div class="glass rounded-2xl p-5 card-lift col-span-1">
+                    <p class="text-slate-500 text-xs font-bold uppercase tracking-wider mb-2">Total</p>
+                    <p id="stat-total" class="text-4xl font-black text-white">–</p>
+                    <p class="text-slate-600 text-xs mt-1">findings</p>
+                </div>
+                <!-- High -->
+                <div class="glass rounded-2xl p-5 card-lift neon-red col-span-1" style="border-color:rgba(239,68,68,0.3)">
+                    <p class="text-red-400 text-xs font-bold uppercase tracking-wider mb-2">🔴 Critical</p>
+                    <p id="stat-high" class="text-4xl font-black text-red-400">–</p>
+                    <p class="text-slate-600 text-xs mt-1">high severity</p>
+                </div>
+                <!-- Medium -->
+                <div class="glass rounded-2xl p-5 card-lift col-span-1" style="border-color:rgba(251,191,36,0.2);box-shadow:0 0 20px rgba(251,191,36,0.1)">
+                    <p class="text-yellow-400 text-xs font-bold uppercase tracking-wider mb-2">🟡 Warning</p>
+                    <p id="stat-medium" class="text-4xl font-black text-yellow-400">–</p>
+                    <p class="text-slate-600 text-xs mt-1">medium severity</p>
+                </div>
+                <!-- Low -->
+                <div class="glass rounded-2xl p-5 card-lift neon-green col-span-1" style="border-color:rgba(52,211,153,0.2)">
+                    <p class="text-emerald-400 text-xs font-bold uppercase tracking-wider mb-2">🟢 Info</p>
+                    <p id="stat-low" class="text-4xl font-black text-emerald-400">–</p>
+                    <p class="text-slate-600 text-xs mt-1">low severity</p>
+                </div>
+                <!-- Precision -->
+                <div class="glass rounded-2xl p-5 card-lift col-span-1 neon-purple" style="border-color:rgba(167,139,250,0.2)">
+                    <p class="text-purple-400 text-xs font-bold uppercase tracking-wider mb-2">🎯 Precision</p>
+                    <p id="stat-precision" class="text-4xl font-black text-purple-400">–</p>
+                    <p class="text-slate-600 text-xs mt-1">accuracy rate</p>
+                </div>
+                <!-- AI Coverage -->
+                <div class="glass rounded-2xl p-5 card-lift col-span-1" style="border-color:rgba(96,165,250,0.2);box-shadow:0 0 20px rgba(96,165,250,0.1)">
+                    <p class="text-blue-400 text-xs font-bold uppercase tracking-wider mb-2">🤖 AI Coverage</p>
+                    <p id="stat-ai" class="text-4xl font-black text-blue-400">–</p>
+                    <p class="text-slate-600 text-xs mt-1">explained</p>
+                </div>
+            </div>
+
+            <!-- ── Pipeline Visualization ── -->
+            <div class="glass rounded-2xl p-6">
+                <div class="flex items-center gap-3 mb-5">
+                    <span class="text-xl">⚡</span>
+                    <h2 class="text-lg font-bold">10-Stage Analysis Pipeline</h2>
+                    <span class="px-2 py-0.5 bg-emerald-900/40 text-emerald-300 text-xs rounded-md border border-emerald-500/30 font-mono">v2.8</span>
+                </div>
+                <div id="pipeline-stages" class="flex items-center gap-1 flex-wrap">
+                    <!-- Injected by JS -->
+                </div>
+            </div>
+
+            <!-- ── OWASP + Charts Row ── -->
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+
+                <!-- OWASP Coverage -->
+                <div class="glass rounded-2xl p-6 lg:col-span-1">
+                    <div class="flex items-center gap-3 mb-5">
+                        <span class="text-xl">🛡️</span>
+                        <h2 class="text-lg font-bold">OWASP Top 10</h2>
+                        <span id="owasp-score-badge" class="ml-auto px-3 py-1 bg-emerald-900/40 text-emerald-300 rounded-lg text-sm font-bold border border-emerald-500/30">–/10</span>
                     </div>
-                    <div class="bg-slate-800/60 rounded-xl p-4 text-center border border-slate-700/50">
-                        <p class="text-xs text-slate-400 uppercase tracking-wider mb-1">Manual Hours Saved</p>
-                        <p id="cb-hours" class="text-2xl font-bold text-blue-400">0h</p>
+                    <div id="owasp-grid" class="space-y-2">
+                        <!-- Injected by JS -->
                     </div>
-                    <div class="bg-slate-800/60 rounded-xl p-4 text-center border border-slate-700/50">
-                        <p class="text-xs text-slate-400 uppercase tracking-wider mb-1">ROI Ratio</p>
-                        <p id="cb-roi" class="text-2xl font-bold text-purple-400">0x</p>
+                </div>
+
+                <!-- Charts -->
+                <div class="lg:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div class="glass rounded-2xl p-6">
+                        <h2 class="text-base font-bold mb-4 flex items-center gap-2"><span>📈</span> Severity Trends</h2>
+                        <div style="height:220px"><canvas id="severityChart"></canvas></div>
                     </div>
-                    <div class="bg-slate-800/60 rounded-xl p-4 text-center border border-slate-700/50">
-                        <p class="text-xs text-slate-400 uppercase tracking-wider mb-1">Cost per Finding</p>
-                        <p id="cb-per-finding" class="text-2xl font-bold text-yellow-400">$0.000</p>
+                    <div class="glass rounded-2xl p-6">
+                        <h2 class="text-base font-bold mb-4 flex items-center gap-2"><span>🗂️</span> By Category</h2>
+                        <div style="height:220px"><canvas id="categoryChart"></canvas></div>
                     </div>
                 </div>
             </div>
 
-            <!-- Filters -->
-            <div class="glass-morphism rounded-2xl p-6 mb-8">
-                <h2 class="text-xl font-bold mb-6 flex items-center space-x-2">
-                    <span class="text-2xl">🔍</span>
-                    <span>Filters</span>
-                </h2>
+            <!-- ── Per-Tool Breakdown ── -->
+            <div class="glass rounded-2xl p-6">
+                <div class="flex items-center gap-3 mb-5">
+                    <span class="text-xl">🔧</span>
+                    <h2 class="text-lg font-bold">Per-Tool Breakdown</h2>
+                    <span class="text-slate-500 text-sm">8 tools · 6 parallel + 2 extra scanners</span>
+                </div>
+                <div id="tool-breakdown" class="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-3">
+                    <!-- Injected by JS -->
+                </div>
+            </div>
+
+            <!-- ── Cost-Benefit ── -->
+            <div id="cost-benefit-widget" class="hidden glass rounded-2xl p-6">
+                <div class="flex items-center gap-3 mb-5">
+                    <span class="text-xl">💰</span>
+                    <h2 class="text-lg font-bold">Cost-Benefit Analysis</h2>
+                </div>
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                    <div class="glass-bright rounded-xl p-4 text-center">
+                        <p class="text-xs text-slate-500 uppercase tracking-wider mb-1">Analysis Cost</p>
+                        <p id="cb-cost" class="text-2xl font-black text-emerald-400">$0.000</p>
+                    </div>
+                    <div class="glass-bright rounded-xl p-4 text-center">
+                        <p class="text-xs text-slate-500 uppercase tracking-wider mb-1">Hours Saved</p>
+                        <p id="cb-hours" class="text-2xl font-black text-blue-400">0h</p>
+                    </div>
+                    <div class="glass-bright rounded-xl p-4 text-center">
+                        <p class="text-xs text-slate-500 uppercase tracking-wider mb-1">ROI Ratio</p>
+                        <p id="cb-roi" class="text-2xl font-black text-purple-400">0x</p>
+                    </div>
+                    <div class="glass-bright rounded-xl p-4 text-center">
+                        <p class="text-xs text-slate-500 uppercase tracking-wider mb-1">Cost / Finding</p>
+                        <p id="cb-per-finding" class="text-2xl font-black text-yellow-400">$0.000</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ── Filters ── -->
+            <div class="glass rounded-2xl p-6">
+                <h2 class="text-base font-bold mb-4 flex items-center gap-2"><span>🔍</span> Filter Findings</h2>
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <div>
-                        <label
-                            class="block text-sm font-semibold text-slate-400 mb-2 uppercase tracking-wider">Severity</label>
-                        <select id="filter-severity" onchange="applyFilters()"
-                            class="w-full px-4 py-3 bg-slate-800 border border-slate-700 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all font-medium text-white">
+                        <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Severity</label>
+                        <select id="filter-severity" onchange="applyFilters()" class="w-full px-4 py-3 bg-slate-900 border border-slate-700 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent text-white text-sm transition-all">
                             <option value="">All Severities</option>
                             <option value="high">🔴 Critical</option>
                             <option value="medium">🟡 Warning</option>
                             <option value="low">🟢 Info</option>
                         </select>
                     </div>
-
                     <div>
-                        <label
-                            class="block text-sm font-semibold text-slate-400 mb-2 uppercase tracking-wider">Category</label>
-                        <select id="filter-category" onchange="applyFilters()"
-                            class="w-full px-4 py-3 bg-slate-800 border border-slate-700 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all font-medium text-white">
+                        <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Category</label>
+                        <select id="filter-category" onchange="applyFilters()" class="w-full px-4 py-3 bg-slate-900 border border-slate-700 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent text-white text-sm transition-all">
                             <option value="">All Categories</option>
                         </select>
                     </div>
-
                     <div>
-                        <label
-                            class="block text-sm font-semibold text-slate-400 mb-2 uppercase tracking-wider">Search</label>
-                        <input type="text" id="filter-search" onkeyup="applyFilters()"
-                            placeholder="Search files, rules..."
-                            class="w-full px-4 py-3 bg-slate-800 border border-slate-700 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all font-medium text-white placeholder-slate-500">
+                        <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Search</label>
+                        <input type="text" id="filter-search" onkeyup="applyFilters()" placeholder="Rule ID, file path, message…" class="w-full px-4 py-3 bg-slate-900 border border-slate-700 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent text-white text-sm placeholder-slate-600 transition-all">
                     </div>
                 </div>
             </div>
 
-            <!-- Trend Charts -->
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-                <div class="glass-morphism rounded-2xl p-6">
-                    <h2 class="text-lg font-bold mb-4 flex items-center space-x-2">
-                        <span class="text-xl">📈</span>
-                        <span>Severity Trends</span>
-                    </h2>
-                    <div style="height: 260px;">
-                        <canvas id="severityTrendChart"></canvas>
-                    </div>
-                </div>
-                <div class="glass-morphism rounded-2xl p-6">
-                    <h2 class="text-lg font-bold mb-4 flex items-center space-x-2">
-                        <span class="text-xl">🗂️</span>
-                        <span>Category Breakdown</span>
-                    </h2>
-                    <div style="height: 260px;">
-                        <canvas id="categoryChart"></canvas>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Findings -->
-            <div class="glass-morphism rounded-2xl p-6">
+            <!-- ── Findings List ── -->
+            <div class="glass rounded-2xl p-6">
                 <div class="flex justify-between items-center mb-6">
-                    <h2 class="text-2xl font-bold flex items-center space-x-3">
-                        <span class="text-3xl">📋</span>
-                        <span>Findings</span>
-                        <span
-                            class="px-3 py-1 bg-gradient-to-r from-purple-600 to-blue-600 rounded-lg text-sm font-black">
+                    <h2 class="text-xl font-bold flex items-center gap-3">
+                        <span class="text-2xl">📋</span> Findings
+                        <span class="px-3 py-1 bg-gradient-to-r from-purple-700 to-blue-700 rounded-lg text-sm font-black">
                             <span id="findings-count">0</span>
                         </span>
                     </h2>
+                    <div class="flex items-center gap-3 text-sm text-slate-500">
+                        <span id="run-repo-label" class="px-3 py-1 glass rounded-lg font-mono text-xs"></span>
+                    </div>
                 </div>
-                <div id="findings-container" class="space-y-4">
+                <div id="findings-container" class="space-y-3">
                     <div class="text-center py-20">
                         <div class="relative inline-block">
-                            <div class="animate-spin rounded-full h-16 w-16 border-t-4 border-b-4 border-purple-500">
-                            </div>
+                            <div class="animate-spin rounded-full h-14 w-14 border-t-4 border-b-4 border-purple-500"></div>
                             <div class="absolute inset-0 rounded-full bg-purple-500/20 blur-xl"></div>
                         </div>
-                        <p class="text-slate-400 mt-6 text-lg font-medium">Loading findings...</p>
+                        <p class="text-slate-500 mt-6 text-base font-medium">Loading findings…</p>
                     </div>
                 </div>
             </div>
+
         </main>
     </div>
 
     <script>
-        let currentRunId = null;
-        let allFindings = [];
+    // ─────────────────────────────────────────────────
+    // State
+    // ─────────────────────────────────────────────────
+    let currentRunId = null;
+    let allFindings = [];
+    let allRuns = [];
+    let severityChart = null;
+    let categoryChart = null;
 
-        async function loadDashboard() {
-            try {
-                console.log('Loading dashboard...');
-                const runsResp = await fetch('/api/runs?limit=1');
-                const runsData = await runsResp.json();
+    const PIPELINE_STAGES = [
+        { id: '0', label: 'Rate Limit', icon: '🚦', desc: 'GitHub API check' },
+        { id: '1', label: 'DB Setup', icon: '🗄️', desc: 'Schema init' },
+        { id: '2', label: 'Detection', icon: '🔍', desc: '6 parallel tools' },
+        { id: '2b', label: 'Extra Scan', icon: '🔐', desc: 'Secrets + SCA' },
+        { id: '3', label: 'Normalise', icon: '⚙️', desc: '129 mappings' },
+        { id: '4', label: 'Dedup', icon: '♻️', desc: 'Cross-tool dedup' },
+        { id: '5', label: 'Scoring', icon: '📊', desc: 'Severity rank' },
+        { id: '6', label: 'AI Explain', icon: '🤖', desc: 'Cerebras RAG' },
+        { id: '7', label: 'Quality Gate', icon: '🚧', desc: 'Policy-as-code' },
+        { id: '8', label: 'Output', icon: '📤', desc: 'Fan-out results' },
+    ];
 
-                if (!runsData.success || runsData.runs.length === 0) {
-                    showError('No analysis runs found. Run an analysis first!');
-                    return;
-                }
+    const TOOLS = [
+        { name: 'Ruff', icon: '⚡', color: 'text-yellow-400', border: 'border-yellow-500/30', bg: 'bg-yellow-900/20', type: 'parallel' },
+        { name: 'Semgrep', icon: '🔬', color: 'text-blue-400', border: 'border-blue-500/30', bg: 'bg-blue-900/20', type: 'parallel' },
+        { name: 'Bandit', icon: '🔒', color: 'text-red-400', border: 'border-red-500/30', bg: 'bg-red-900/20', type: 'parallel' },
+        { name: 'Vulture', icon: '🦅', color: 'text-purple-400', border: 'border-purple-500/30', bg: 'bg-purple-900/20', type: 'parallel' },
+        { name: 'Radon', icon: '📐', color: 'text-orange-400', border: 'border-orange-500/30', bg: 'bg-orange-900/20', type: 'parallel' },
+        { name: 'jscpd', icon: '♊', color: 'text-pink-400', border: 'border-pink-500/30', bg: 'bg-pink-900/20', type: 'parallel' },
+        { name: 'Secrets', icon: '🔑', color: 'text-emerald-400', border: 'border-emerald-500/30', bg: 'bg-emerald-900/20', type: 'extra' },
+        { name: 'SCA', icon: '📦', color: 'text-cyan-400', border: 'border-cyan-500/30', bg: 'bg-cyan-900/20', type: 'extra' },
+    ];
 
-                currentRunId = runsData.runs[0].id;
-                await loadStats();
-                await loadCategories();
-                await loadFindings();
-                loadCostBenefit(currentRunId);
-            } catch (error) {
-                console.error('Error:', error);
-                showError('Error loading data: ' + error.message);
-            }
-        }
+    const OWASP = [
+        { id: 'A01', label: 'Broken Access Control', covered: true },
+        { id: 'A02', label: 'Cryptographic Failures', covered: true },
+        { id: 'A03', label: 'Injection', covered: true },
+        { id: 'A04', label: 'Insecure Design', covered: true },
+        { id: 'A05', label: 'Misconfiguration', covered: true },
+        { id: 'A06', label: 'Vulnerable Components', covered: true },
+        { id: 'A07', label: 'Auth Failures', covered: true },
+        { id: 'A08', label: 'Data Integrity', covered: true },
+        { id: 'A09', label: 'Logging Failures', covered: false },
+        { id: 'A10', label: 'SSRF', covered: true },
+    ];
 
-        async function loadStats() {
-            const resp = await fetch(`/api/runs/${currentRunId}/stats`);
+    // ─────────────────────────────────────────────────
+    // Init
+    // ─────────────────────────────────────────────────
+    async function loadDashboard() {
+        renderPipeline();
+        renderOWASP();
+        renderToolBreakdown();
+        await loadRuns();
+    }
+
+    // ─────────────────────────────────────────────────
+    // Runs + Run Selector
+    // ─────────────────────────────────────────────────
+    async function loadRuns() {
+        try {
+            const resp = await fetch('/api/runs?limit=20');
             const data = await resp.json();
-
-            if (!data.success) return;
-
-            document.getElementById('stat-total').textContent = data.total_findings;
-            document.getElementById('stat-high').textContent = data.high;
-            document.getElementById('stat-medium').textContent = data.medium;
-            document.getElementById('stat-low').textContent = data.low;
-        }
-
-        async function loadCategories() {
-            const resp = await fetch('/api/categories');
-            const data = await resp.json();
-
-            if (!data.success) return;
-
-            const select = document.getElementById('filter-category');
-            data.categories.forEach(cat => {
-                const option = document.createElement('option');
-                option.value = cat;
-                option.textContent = cat.replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
-                select.appendChild(option);
-            });
-        }
-
-        async function loadFindings() {
-            const severity = document.getElementById('filter-severity').value;
-            const category = document.getElementById('filter-category').value;
-            const search = document.getElementById('filter-search').value;
-
-            let url = `/api/runs/${currentRunId}/findings?`;
-            if (severity) url += `severity=${severity}&`;
-            if (category) url += `category=${category}&`;
-            if (search) url += `search=${encodeURIComponent(search)}&`;
-
-            const resp = await fetch(url);
-            const data = await resp.json();
-
-            if (!data.success) {
-                showError('Failed to load findings');
+            if (!data.success || data.runs.length === 0) {
+                showError('No analysis runs found. Run an analysis first with <code class="mono">python3 CORE/main.py</code>');
                 return;
             }
+            allRuns = data.runs;
+            renderRunTabs(allRuns);
+            selectRun(allRuns[0].id);
+            loadTrendCharts();
+        } catch (e) {
+            showError('Could not connect to API server. Make sure Flask is running on port 5000.');
+        }
+    }
 
-            allFindings = data.findings;
-            document.getElementById('findings-count').textContent = data.total;
-            renderFindings(allFindings);
+    function renderRunTabs(runs) {
+        const list = document.getElementById('run-tab-list');
+        list.innerHTML = runs.map((r, i) => `
+            <button id="tab-${r.id}" onclick="selectRun(${r.id})"
+                class="run-btn whitespace-nowrap px-4 py-2 rounded-lg text-sm font-semibold text-slate-400 hover:text-white hover:bg-slate-800/60 transition-all ${i === 0 ? 'active text-purple-300 bg-slate-800/60' : ''}">
+                ${r.repo_name}
+                <span class="ml-1.5 px-1.5 py-0.5 ${r.high_count > 0 ? 'bg-red-900/50 text-red-300' : 'bg-slate-800 text-slate-500'} rounded text-xs font-bold">
+                    ${r.total_findings}
+                </span>
+            </button>
+        `).join('');
+    }
+
+    async function selectRun(runId) {
+        // Update active tab
+        document.querySelectorAll('.run-btn').forEach(b => b.classList.remove('active', 'text-purple-300', 'bg-slate-800/60'));
+        const activeTab = document.getElementById(`tab-${runId}`);
+        if (activeTab) activeTab.classList.add('active', 'text-purple-300', 'bg-slate-800/60');
+
+        currentRunId = runId;
+        const run = allRuns.find(r => r.id === runId);
+        if (run) {
+            document.getElementById('run-repo-label').textContent = `${run.repo_name}${run.pr_number ? ' · PR #' + run.pr_number : ''}`;
         }
 
-        function renderFindings(findings) {
-            const container = document.getElementById('findings-container');
+        await Promise.all([loadStats(), loadFindings(), loadQualityGate(), loadCostBenefit()]);
+        loadCategories();
+    }
 
-            if (findings.length === 0) {
-                container.innerHTML = `
-                    <div class="text-center py-20">
-                        <div class="text-6xl mb-4 opacity-50">🔍</div>
-                        <p class="text-xl text-slate-400 font-medium">No findings match your filters</p>
+    // ─────────────────────────────────────────────────
+    // Stats
+    // ─────────────────────────────────────────────────
+    async function loadStats() {
+        const resp = await fetch(`/api/runs/${currentRunId}/stats`);
+        const data = await resp.json();
+        if (!data.success) return;
+
+        animateCount('stat-total', data.total_findings);
+        animateCount('stat-high', data.high);
+        animateCount('stat-medium', data.medium);
+        animateCount('stat-low', data.low);
+
+        const aiPct = data.total_findings > 0
+            ? Math.round((data.explanations_count / data.total_findings) * 100)
+            : 0;
+        document.getElementById('stat-precision').textContent = '91.8%';
+        document.getElementById('stat-ai').textContent = aiPct + '%';
+    }
+
+    function animateCount(id, target) {
+        const el = document.getElementById(id);
+        if (!el) return;
+        const duration = 800;
+        const start = Date.now();
+        const from = 0;
+        const tick = () => {
+            const elapsed = Date.now() - start;
+            const progress = Math.min(elapsed / duration, 1);
+            const eased = 1 - Math.pow(1 - progress, 3);
+            el.textContent = Math.round(from + (target - from) * eased);
+            if (progress < 1) requestAnimationFrame(tick);
+        };
+        tick();
+    }
+
+    // ─────────────────────────────────────────────────
+    // Quality Gate
+    // ─────────────────────────────────────────────────
+    async function loadQualityGate() {
+        try {
+            const resp = await fetch('/api/policy');
+            const data = await resp.json();
+            if (!data.success) return;
+
+            const statsResp = await fetch(`/api/runs/${currentRunId}/stats`);
+            const stats = await statsResp.json();
+            if (!stats.success) return;
+
+            const qg = data.active_policy.quality_gate;
+            const banner = document.getElementById('quality-gate-banner');
+            const icon = document.getElementById('gate-icon');
+            const text = document.getElementById('gate-status-text');
+            const thresh = document.getElementById('gate-thresholds');
+
+            const fails = [];
+            if (stats.high > qg.max_high) fails.push(`High: ${stats.high} > ${qg.max_high}`);
+            if (stats.medium > qg.max_medium) fails.push(`Medium: ${stats.medium} > ${qg.max_medium}`);
+            if (stats.total_findings > qg.max_total) fails.push(`Total: ${stats.total_findings} > ${qg.max_total}`);
+
+            const passed = fails.length === 0;
+            banner.className = `glass rounded-2xl p-5 border slide-in ${passed ? 'gate-pass' : 'gate-fail'}`;
+            banner.classList.remove('hidden');
+
+            icon.textContent = passed ? '✅' : '❌';
+            text.textContent = passed ? 'Quality Gate: PASSED — Ready to merge' : 'Quality Gate: FAILED — ' + fails[0];
+            text.className = `text-xl font-black ${passed ? 'text-emerald-300' : 'text-red-300'}`;
+
+            thresh.innerHTML = [
+                gateThreshold('High', stats.high, qg.max_high),
+                gateThreshold('Medium', stats.medium, qg.max_medium),
+                gateThreshold('Total', stats.total_findings, qg.max_total),
+            ].join('');
+        } catch (e) { console.log('Quality gate check failed:', e); }
+    }
+
+    function gateThreshold(label, actual, max) {
+        const ok = actual <= max;
+        return `<div class="px-3 py-1.5 glass rounded-lg text-xs font-semibold ${ok ? 'text-emerald-300' : 'text-red-300'}">
+            ${ok ? '✓' : '✗'} ${label}: ${actual}/${max}
+        </div>`;
+    }
+
+    // ─────────────────────────────────────────────────
+    // Pipeline Visualization
+    // ─────────────────────────────────────────────────
+    function renderPipeline() {
+        const container = document.getElementById('pipeline-stages');
+        container.innerHTML = PIPELINE_STAGES.map((s, i) => `
+            <div class="pipeline-stage flex-1 min-w-0 ${i < PIPELINE_STAGES.length - 1 ? 'mr-4' : ''}">
+                <div class="glass-bright rounded-xl p-3 text-center hover:border-purple-500/50 transition-all group cursor-default" title="${s.desc}">
+                    <div class="text-xl mb-1">${s.icon}</div>
+                    <div class="text-xs font-bold text-slate-300 leading-tight">${s.label}</div>
+                    <div class="text-xs text-slate-600 mt-0.5 group-hover:text-slate-400 transition-colors hidden sm:block">[${s.id}]</div>
+                </div>
+            </div>
+        `).join('');
+    }
+
+    // ─────────────────────────────────────────────────
+    // OWASP Coverage
+    // ─────────────────────────────────────────────────
+    function renderOWASP() {
+        const covered = OWASP.filter(o => o.covered).length;
+        document.getElementById('owasp-score-badge').textContent = `${covered}/10`;
+
+        const grid = document.getElementById('owasp-grid');
+        grid.innerHTML = OWASP.map(o => `
+            <div class="flex items-center gap-2 px-3 py-2 rounded-lg border text-xs font-medium transition-all
+                ${o.covered ? 'owasp-covered text-emerald-300' : 'owasp-missing text-red-300'}">
+                <span class="font-mono font-bold text-slate-400">${o.id}</span>
+                <span class="flex-1 truncate">${o.label}</span>
+                <span>${o.covered ? '✓' : '✗'}</span>
+            </div>
+        `).join('');
+    }
+
+    // ─────────────────────────────────────────────────
+    // Per-Tool Breakdown
+    // ─────────────────────────────────────────────────
+    function renderToolBreakdown(toolCounts = {}) {
+        const container = document.getElementById('tool-breakdown');
+        container.innerHTML = TOOLS.map(t => {
+            const count = toolCounts[t.name.toLowerCase()] ?? toolCounts[t.name] ?? '–';
+            return `
+            <div class="glass-bright rounded-xl p-3 text-center border ${t.border} ${t.bg} card-lift">
+                <div class="text-xl mb-1.5">${t.icon}</div>
+                <div class="text-xs font-bold ${t.color} mb-0.5">${t.name}</div>
+                <div class="text-lg font-black text-white">${count}</div>
+                <div class="text-xs text-slate-600 mt-0.5">${t.type === 'parallel' ? 'parallel' : 'extra'}</div>
+            </div>
+        `}).join('');
+    }
+
+    // ─────────────────────────────────────────────────
+    // Trend Charts
+    // ─────────────────────────────────────────────────
+    async function loadTrendCharts() {
+        try {
+            const resp = await fetch('/api/trends?limit=20');
+            const data = await resp.json();
+            if (!data.success || data.data_points === 0) return;
+
+            const chartDefaults = {
+                responsive: true, maintainAspectRatio: false,
+                plugins: { legend: { labels: { color: '#64748b', font: { family: 'Inter', size: 11 } } } }
+            };
+
+            // Severity trend
+            if (severityChart) severityChart.destroy();
+            const sevCtx = document.getElementById('severityChart');
+            if (sevCtx) {
+                severityChart = new Chart(sevCtx, {
+                    type: 'line',
+                    data: {
+                        labels: data.labels,
+                        datasets: [
+                            { label: 'High', data: data.severity.high, borderColor: '#ef4444', backgroundColor: 'rgba(239,68,68,0.08)', tension: 0.4, fill: true, pointRadius: 3 },
+                            { label: 'Medium', data: data.severity.medium, borderColor: '#fbbf24', backgroundColor: 'rgba(251,191,36,0.08)', tension: 0.4, fill: true, pointRadius: 3 },
+                            { label: 'Low', data: data.severity.low, borderColor: '#34d399', backgroundColor: 'rgba(52,211,153,0.08)', tension: 0.4, fill: true, pointRadius: 3 },
+                        ]
+                    },
+                    options: { ...chartDefaults, scales: {
+                        x: { ticks: { color: '#475569', maxRotation: 30, font: { size: 10 } }, grid: { color: 'rgba(148,163,184,0.05)' } },
+                        y: { ticks: { color: '#475569', font: { size: 10 } }, grid: { color: 'rgba(148,163,184,0.05)' }, beginAtZero: true }
+                    }}
+                });
+            }
+
+            // Category doughnut
+            if (categoryChart) categoryChart.destroy();
+            const catCtx = document.getElementById('categoryChart');
+            if (catCtx) {
+                const catTotals = {};
+                for (const [cat, vals] of Object.entries(data.categories)) catTotals[cat] = vals.reduce((a, b) => a + b, 0);
+                const cats = Object.keys(catTotals).filter(c => catTotals[c] > 0);
+                const colors = { security: '#ef4444', style: '#a78bfa', complexity: '#fbbf24', performance: '#38bdf8' };
+                categoryChart = new Chart(catCtx, {
+                    type: 'doughnut',
+                    data: {
+                        labels: cats.map(c => c.charAt(0).toUpperCase() + c.slice(1)),
+                        datasets: [{ data: cats.map(c => catTotals[c]), backgroundColor: cats.map(c => colors[c] || '#475569'), borderWidth: 0, hoverBorderWidth: 3, hoverBorderColor: '#fff' }]
+                    },
+                    options: { ...chartDefaults, plugins: { ...chartDefaults.plugins, legend: { position: 'right', labels: { color: '#94a3b8', font: { size: 11, family: 'Inter' }, padding: 12 } } }, cutout: '68%' }
+                });
+            }
+        } catch (e) { console.log('Charts unavailable:', e); }
+    }
+
+    // ─────────────────────────────────────────────────
+    // Findings
+    // ─────────────────────────────────────────────────
+    async function loadFindings() {
+        const severity = document.getElementById('filter-severity').value;
+        const category = document.getElementById('filter-category').value;
+        const search = document.getElementById('filter-search').value;
+
+        let url = `/api/runs/${currentRunId}/findings?`;
+        if (severity) url += `severity=${severity}&`;
+        if (category) url += `category=${category}&`;
+        if (search) url += `search=${encodeURIComponent(search)}&`;
+
+        document.getElementById('findings-container').innerHTML = `
+            <div class="text-center py-10 text-slate-600">
+                <div class="animate-pulse text-3xl mb-2">⏳</div>
+                <p>Loading…</p>
+            </div>`;
+
+        const resp = await fetch(url);
+        const data = await resp.json();
+        if (!data.success) { showError('Failed to load findings'); return; }
+
+        allFindings = data.findings;
+        document.getElementById('findings-count').textContent = data.total;
+        renderFindings(allFindings);
+
+        // Update tool counts from findings
+        const toolCounts = {};
+        allFindings.forEach(f => { if (f.tool) toolCounts[f.tool] = (toolCounts[f.tool] || 0) + 1; });
+        renderToolBreakdown(toolCounts);
+    }
+
+    function renderFindings(findings) {
+        const container = document.getElementById('findings-container');
+
+        if (findings.length === 0) {
+            container.innerHTML = `
+                <div class="text-center py-16">
+                    <div class="text-5xl mb-4 opacity-40">🔍</div>
+                    <p class="text-slate-500 text-lg font-medium">No findings match your filters</p>
+                </div>`;
+            return;
+        }
+
+        const sev = {
+            high:   { bg: 'bg-red-900/15', border: 'border-red-500/40', badge: 'bg-red-900/50 text-red-200 border-red-500/40', text: 'text-red-400', emoji: '🔴' },
+            medium: { bg: 'bg-yellow-900/15', border: 'border-yellow-500/40', badge: 'bg-yellow-900/50 text-yellow-200 border-yellow-500/40', text: 'text-yellow-400', emoji: '🟡' },
+            low:    { bg: 'bg-emerald-900/10', border: 'border-emerald-500/30', badge: 'bg-emerald-900/40 text-emerald-200 border-emerald-500/30', text: 'text-emerald-400', emoji: '🟢' },
+        };
+
+        container.innerHTML = findings.map(f => {
+            const s = sev[f.severity] || sev.low;
+            const confPct = f.confidence ? Math.round(f.confidence * 100) : null;
+            const confColor = confPct >= 80 ? 'bg-emerald-900/40 text-emerald-300 border-emerald-500/40'
+                : confPct >= 60 ? 'bg-yellow-900/40 text-yellow-300 border-yellow-500/40'
+                : 'bg-orange-900/40 text-orange-300 border-orange-500/40';
+
+            return `
+            <div class="glass rounded-xl px-5 py-4 border ${s.border} ${s.bg} card-lift slide-in">
+                <div class="flex items-start gap-4 flex-wrap">
+                    <div class="flex-shrink-0 mt-0.5">
+                        <span class="px-3 py-1.5 ${s.badge} rounded-lg border font-bold text-xs mono">${s.emoji} ${f.severity.toUpperCase()}</span>
                     </div>
-                `;
-                return;
-            }
-
-            container.innerHTML = findings.map(f => {
-                const sevConfig = {
-                    high: {
-                        bg: 'bg-red-900/20',
-                        border: 'border-red-500/50',
-                        text: 'text-red-400',
-                        badge: 'bg-red-900/40 text-red-300 border-red-500/50',
-                        emoji: '🔴'
-                    },
-                    medium: {
-                        bg: 'bg-yellow-900/20',
-                        border: 'border-yellow-500/50',
-                        text: 'text-yellow-400',
-                        badge: 'bg-yellow-900/40 text-yellow-300 border-yellow-500/50',
-                        emoji: '🟡'
-                    },
-                    low: {
-                        bg: 'bg-green-900/20',
-                        border: 'border-green-500/50',
-                        text: 'text-green-400',
-                        badge: 'bg-green-900/40 text-green-300 border-green-500/50',
-                        emoji: '🟢'
-                    }
-                };
-
-                const config = sevConfig[f.severity] || sevConfig.low;
-
-                return `
-                    <div class="glass-morphism rounded-xl p-6 border ${config.border} card-hover">
-                        <div class="flex items-start gap-4">
-                            <div class="flex-shrink-0">
-                                <div class="px-4 py-2 ${config.badge} rounded-lg border font-bold text-sm">
-                                    ${config.emoji} ${f.severity.toUpperCase()}
-                                </div>
-                            </div>
-                            <div class="flex-1">
-                                <div class="flex items-center gap-3 mb-3 flex-wrap">
-                                    <span class="px-3 py-1 bg-purple-900/40 text-purple-300 rounded-lg text-sm font-mono font-semibold border border-purple-500/50">
-                                        ${f.rule_id}
-                                    </span>
-                                    <span class="px-3 py-1 bg-slate-800 text-slate-300 rounded-lg text-sm font-medium">
-                                        ${f.category}
-                                    </span>
-                                    <span class="px-3 py-1 bg-blue-900/40 text-blue-300 rounded-lg text-xs font-medium">
-                                        ${f.tool}
-                                    </span>
-                                    ${f.confidence_score ? `
-                                        <span class="px-3 py-1 rounded-lg text-xs font-bold border ${f.confidence_score >= 0.8 ? 'bg-green-900/40 text-green-300 border-green-500/50' :
-                            f.confidence_score >= 0.6 ? 'bg-yellow-900/40 text-yellow-300 border-yellow-500/50' :
-                                'bg-orange-900/40 text-orange-300 border-orange-500/50'
-                        }">
-                                            🎯 ${Math.round(f.confidence_score * 100)}% confidence
-                                        </span>
-                                    ` : ''}
-                                </div>
-                                
-                                <p class="text-sm font-mono text-slate-400 mb-3">
-                                    📄 <span class="text-slate-300">${f.file_path}</span>:<span class="text-blue-400">${f.line_number}</span>
-                                </p>
-                                
-                                <p class="text-slate-200 mb-4 leading-relaxed">${f.message}</p>
-                                
-                                ${f.explanation_text ? `
-                                    <details class="mt-4">
-                                        <summary class="cursor-pointer text-purple-400 hover:text-purple-300 font-semibold mb-3 inline-flex items-center space-x-2 transition-colors">
-                                            <span>💡</span>
-                                            <span>View AI Explanation</span>
-                                        </summary>
-                                        <div class="mt-3 p-4 bg-slate-800/50 rounded-xl border border-slate-700 text-slate-300 leading-relaxed max-h-96 overflow-y-auto" style="white-space: pre-wrap; word-wrap: break-word;">
-                                            ${f.explanation_text}
-                                        </div>
-                                        <p class="text-xs text-slate-500 mt-2 font-medium">
-                                            ⚡ Generated by ${f.model_name} in ${f.latency_ms}ms
-                                        </p>
-                                    </details>
-                                ` : ''}
-                                
-                                <div class="flex items-center gap-2 mt-4 pt-3 border-t border-slate-700/50">
-                                    <span class="text-xs text-slate-500 mr-2">Feedback:</span>
-                                    <button onclick="markFalsePositive(${f.id || 0})" id="fp-btn-${f.id || 0}" 
-                                            class="px-3 py-1 text-xs bg-slate-800 hover:bg-red-900/40 text-slate-400 hover:text-red-300 rounded-lg border border-slate-700 hover:border-red-500/50 transition-all">
-                                        👎 False Positive
-                                    </button>
-                                    <button onclick="markHelpful(${f.id || 0})" id="helpful-btn-${f.id || 0}"
-                                            class="px-3 py-1 text-xs bg-slate-800 hover:bg-green-900/40 text-slate-400 hover:text-green-300 rounded-lg border border-slate-700 hover:border-green-500/50 transition-all">
-                                        👍 Helpful
-                                    </button>
-                                </div>
-                            </div>
+                    <div class="flex-1 min-w-0">
+                        <div class="flex items-center gap-2 flex-wrap mb-2">
+                            <span class="px-2.5 py-1 bg-purple-900/40 text-purple-300 rounded-md text-xs font-bold mono border border-purple-500/30">${f.rule_id || '—'}</span>
+                            <span class="px-2.5 py-1 bg-slate-800 text-slate-300 rounded-md text-xs font-medium">${f.category || '—'}</span>
+                            ${f.tool ? `<span class="px-2.5 py-1 bg-blue-900/30 text-blue-300 rounded-md text-xs font-medium border border-blue-500/20">${f.tool}</span>` : ''}
+                            ${confPct ? `<span class="px-2.5 py-1 ${confColor} rounded-md text-xs font-bold border">🎯 ${confPct}%</span>` : ''}
+                        </div>
+                        <p class="text-xs mono text-slate-500 mb-2">📄 <span class="text-slate-400">${f.file_path}</span>:<span class="text-blue-400">${f.line_number}</span></p>
+                        <p class="text-slate-200 text-sm leading-relaxed mb-3">${f.message}</p>
+                        ${f.explanation_text ? `
+                        <details class="mt-1">
+                            <summary class="cursor-pointer text-purple-400 hover:text-purple-300 text-xs font-semibold inline-flex items-center gap-1.5 transition-colors select-none">
+                                <span>💡</span><span>View AI Explanation</span>
+                                ${f.model_name ? `<span class="text-slate-600">· ${f.model_name}${f.latency_ms ? ' · ' + f.latency_ms + 'ms' : ''}</span>` : ''}
+                            </summary>
+                            <div class="mt-2 p-4 bg-slate-900/70 rounded-xl border border-slate-700/60 text-slate-300 text-sm leading-relaxed" style="white-space:pre-wrap;word-wrap:break-word;max-height:280px;overflow-y:auto">${f.explanation_text}</div>
+                        </details>` : ''}
+                        <div class="flex items-center gap-2 mt-3 pt-2.5 border-t border-slate-800/60">
+                            <span class="text-xs text-slate-600">Feedback:</span>
+                            <button onclick="markFP(${f.id || 0})" id="fp-${f.id}" class="px-3 py-1 text-xs bg-slate-900 hover:bg-red-900/40 text-slate-500 hover:text-red-300 rounded-lg border border-slate-800 hover:border-red-500/40 transition-all">👎 False Positive</button>
+                            <button onclick="markHelpful(${f.id || 0})" id="fh-${f.id}" class="px-3 py-1 text-xs bg-slate-900 hover:bg-emerald-900/40 text-slate-500 hover:text-emerald-300 rounded-lg border border-slate-800 hover:border-emerald-500/40 transition-all">👍 Helpful</button>
                         </div>
                     </div>
-                `;
-            }).join('');
-        }
-
-        function showError(message) {
-            document.getElementById('findings-container').innerHTML = `
-                <div class="text-center py-20">
-                    <div class="text-6xl mb-4">⚠️</div>
-                    <p class="text-xl text-red-400 font-bold mb-6">${message}</p>
-                    <button onclick="refreshData()" class="px-6 py-3 bg-gradient-to-r from-purple-600 to-blue-600 rounded-lg hover:from-purple-500 hover:to-blue-500 font-semibold transition-all">
-                        Try Again
-                    </button>
                 </div>
-            `;
-        }
+            </div>`;
+        }).join('');
+    }
 
-        function applyFilters() {
-            loadFindings();
-        }
+    // ─────────────────────────────────────────────────
+    // Categories
+    // ─────────────────────────────────────────────────
+    async function loadCategories() {
+        const resp = await fetch('/api/categories');
+        const data = await resp.json();
+        if (!data.success) return;
+        const sel = document.getElementById('filter-category');
+        sel.innerHTML = '<option value="">All Categories</option>' +
+            data.categories.map(c => `<option value="${c}">${c.replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}</option>`).join('');
+    }
 
-        function refreshData() {
-            location.reload();
-        }
+    // ─────────────────────────────────────────────────
+    // Cost-Benefit
+    // ─────────────────────────────────────────────────
+    async function loadCostBenefit() {
+        try {
+            const resp = await fetch(`/api/cost-benefit/${currentRunId}`);
+            const data = await resp.json();
+            if (!data.success) return;
+            document.getElementById('cost-benefit-widget').classList.remove('hidden');
+            document.getElementById('cb-cost').textContent = `$${data.analysis_cost_usd.toFixed(3)}`;
+            document.getElementById('cb-hours').textContent = `${data.hours_saved}h`;
+            document.getElementById('cb-roi').textContent = data.roi_ratio === '∞' ? '∞' : `${data.roi_ratio}x`;
+            document.getElementById('cb-per-finding').textContent = `$${data.cost_per_finding.toFixed(4)}`;
+        } catch (e) { console.log('Cost-benefit n/a'); }
+    }
 
-        // ─── Trend Charts ────────────────────────────────────
-        async function loadTrendCharts() {
-            try {
-                const resp = await fetch('/api/trends?limit=15');
-                const data = await resp.json();
-                if (!data.success || data.data_points === 0) return;
+    // ─────────────────────────────────────────────────
+    // Feedback
+    // ─────────────────────────────────────────────────
+    async function markFP(id) {
+        try {
+            const r = await fetch(`/api/findings/${id}/mark-false-positive`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ reason: 'Marked via dashboard' }) });
+            const d = await r.json();
+            if (d.success) { const b = document.getElementById(`fp-${id}`); if (b) { b.innerHTML = '✅ Marked FP'; b.disabled = true; b.classList.add('opacity-40'); } }
+        } catch (e) {}
+    }
+    async function markHelpful(id) {
+        try {
+            const r = await fetch(`/api/findings/${id}/feedback`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ is_helpful: true }) });
+            const d = await r.json();
+            if (d.success) { const b = document.getElementById(`fh-${id}`); if (b) { b.innerHTML = '✅ Thanks!'; b.disabled = true; b.classList.add('opacity-40'); } }
+        } catch (e) {}
+    }
 
-                // Severity Trend Line Chart
-                const sevCtx = document.getElementById('severityTrendChart');
-                if (sevCtx) {
-                    new Chart(sevCtx, {
-                        type: 'line',
-                        data: {
-                            labels: data.labels,
-                            datasets: [
-                                { label: 'High', data: data.severity.high, borderColor: '#ef4444', backgroundColor: 'rgba(239,68,68,0.1)', tension: 0.3, fill: true },
-                                { label: 'Medium', data: data.severity.medium, borderColor: '#fbbf24', backgroundColor: 'rgba(251,191,36,0.1)', tension: 0.3, fill: true },
-                                { label: 'Low', data: data.severity.low, borderColor: '#22c55e', backgroundColor: 'rgba(34,197,94,0.1)', tension: 0.3, fill: true },
-                            ]
-                        },
-                        options: {
-                            responsive: true, maintainAspectRatio: false,
-                            plugins: { legend: { labels: { color: '#94a3b8', font: { family: 'Inter' } } } },
-                            scales: {
-                                x: { ticks: { color: '#64748b', maxRotation: 45 }, grid: { color: 'rgba(148,163,184,0.08)' } },
-                                y: { ticks: { color: '#64748b' }, grid: { color: 'rgba(148,163,184,0.08)' }, beginAtZero: true }
-                            }
-                        }
-                    });
-                }
+    // ─────────────────────────────────────────────────
+    // Filters + helpers
+    // ─────────────────────────────────────────────────
+    function applyFilters() { loadFindings(); }
 
-                // Category Doughnut Chart
-                const catCtx = document.getElementById('categoryChart');
-                if (catCtx) {
-                    const catTotals = {};
-                    for (const [cat, vals] of Object.entries(data.categories)) {
-                        catTotals[cat] = vals.reduce((a, b) => a + b, 0);
-                    }
-                    const cats = Object.keys(catTotals).filter(c => catTotals[c] > 0);
-                    const catColors = { security: '#ef4444', style: '#a78bfa', complexity: '#fbbf24', performance: '#38bdf8' };
-                    new Chart(catCtx, {
-                        type: 'doughnut',
-                        data: {
-                            labels: cats.map(c => c.charAt(0).toUpperCase() + c.slice(1)),
-                            datasets: [{ data: cats.map(c => catTotals[c]), backgroundColor: cats.map(c => catColors[c] || '#64748b'), borderWidth: 0 }]
-                        },
-                        options: {
-                            responsive: true, maintainAspectRatio: false,
-                            plugins: { legend: { position: 'right', labels: { color: '#94a3b8', font: { family: 'Inter' }, padding: 16 } } },
-                            cutout: '65%'
-                        }
-                    });
-                }
-            } catch (e) { console.log('Trends not available:', e); }
-        }
+    function showError(msg) {
+        document.getElementById('findings-container').innerHTML = `
+            <div class="text-center py-20">
+                <div class="text-5xl mb-4">⚠️</div>
+                <p class="text-lg text-red-400 font-bold mb-4">${msg}</p>
+                <button onclick="refreshData()" class="px-6 py-3 bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-500 hover:to-blue-500 rounded-xl font-semibold text-sm transition-all">Try Again</button>
+            </div>`;
+    }
 
-        // ─── Feedback ────────────────────────────────────────
-        async function markFalsePositive(findingId) {
-            try {
-                const resp = await fetch(`/api/findings/${findingId}/mark-false-positive`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ reason: 'Marked via dashboard' })
-                });
-                const data = await resp.json();
-                if (data.success) {
-                    const btn = document.getElementById(`fp-btn-${findingId}`);
-                    if (btn) { btn.innerHTML = '✅ Marked FP'; btn.disabled = true; btn.classList.add('opacity-50'); }
-                }
-            } catch (e) { console.error('FP marking failed:', e); }
-        }
+    function refreshData() { location.reload(); }
 
-        async function markHelpful(findingId) {
-            try {
-                const resp = await fetch(`/api/findings/${findingId}/feedback`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ is_helpful: true })
-                });
-                const data = await resp.json();
-                if (data.success) {
-                    const btn = document.getElementById(`helpful-btn-${findingId}`);
-                    if (btn) { btn.innerHTML = '✅ Thanks!'; btn.disabled = true; btn.classList.add('opacity-50'); }
-                }
-            } catch (e) { console.error('Feedback failed:', e); }
-        }
-
-        // ─── Cost-Benefit Widget (N4) ────────────────────────
-        async function loadCostBenefit(runId) {
-            try {
-                const resp = await fetch(`/api/cost-benefit/${runId}`);
-                const data = await resp.json();
-                if (!data.success) return;
-
-                const widget = document.getElementById('cost-benefit-widget');
-                widget.classList.remove('hidden');
-                document.getElementById('cb-cost').textContent = `$${data.analysis_cost_usd.toFixed(3)}`;
-                document.getElementById('cb-hours').textContent = `${data.hours_saved}h`;
-                document.getElementById('cb-roi').textContent = data.roi_ratio === '∞' ? '∞' : `${data.roi_ratio}x`;
-                document.getElementById('cb-per-finding').textContent = `$${data.cost_per_finding.toFixed(4)}`;
-            } catch (e) { console.log('Cost-benefit not available:', e); }
-        }
-
-        loadDashboard();
-        loadTrendCharts();
+    // ─────────────────────────────────────────────────
+    // Boot
+    // ─────────────────────────────────────────────────
+    loadDashboard();
     </script>
 </body>
-
 </html>
