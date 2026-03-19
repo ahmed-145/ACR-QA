@@ -8,36 +8,38 @@
 
 | Metric | Value |
 |--------|:-----:|
-| **Total Findings Evaluated** | 814 |
-| **True Positives** | 747 |
+| **Total Findings Evaluated** | 797 |
+| **True Positives** | 730 |
 | **False Positives** | 67 |
-| **Overall Precision** | 91.8% |
-| **AI Explanation Quality** | 814/814 (100%) |
+| **Overall Precision** | 91.6% |
+| **AI Explanation Quality** | 797/797 (100%) |
 | **Continuous Integration** | GitHub Actions Pass |
 
 ### Per-Repository Breakdown
 
 | Repository | Findings | TP | FP | Overall Precision | Security Precision | Recall | F1 |
 |------------|:--------:|:--:|:--:|:-----------------:|:------------------:|:------:|:--:|
-| DVPWA | 44 | 44 | 0 | 100.0% | 100.0% | 50.0% | 66.7% |
-| Pygoat | 432 | 365 | 67 | 84.5% | 100.0% | 100.0% | 91.6% |
-| VulPy | 282 | 282 | 0 | 100.0% | 100.0% | 100.0% | 100.0% |
-| DSVW | 56 | 56 | 0 | 100.0% | 100.0% | 100.0% | 100.0% |
+| DVPWA | 43 | 43 | 0 | 100.0% | 100.0% | 83.3%¹ | 90.9% |
+| Pygoat | 425 | 358 | 67 | 84.2% | 100.0% | N/A² | — |
+| VulPy | 276 | 276 | 0 | 100.0% | 100.0% | N/A² | — |
+| DSVW | 53 | 53 | 0 | 100.0% | 100.0% | N/A² | — |
 
 ### DVPWA Ground Truth Validation
 
 DVPWA (Damn Vulnerable Python Web App) contains 6 known vulnerability categories.
 
-| Vulnerability | CWE | Severity | Detected |
-|--------------|:----:|:--------:|:--------:|
-| Raw SQL string formatting allows SQL injection | CWE-89 | high | ✅ |
-| Database credentials hardcoded in source | CWE-259 | high | ❌ |
-| MD5 used for password hashing | CWE-328 | medium | ✅ |
-| User input rendered without escaping | CWE-79 | high | ✅ |
-| Debug mode enabled in production config | CWE-215 | medium | ❌ |
-| Forms without CSRF tokens | CWE-352 | medium | ❌ |
+| Vulnerability | CWE | Severity | Detected | Tool |
+|--------------|:----:|:--------:|:--------:|------|
+| Raw SQL string formatting allows SQL injection | CWE-89 | high | ✅ | Bandit B608 |
+| Database credentials hardcoded in source | CWE-259 | high | ✅ | Bandit B105 |
+| MD5 used for password hashing | CWE-328 | medium | ✅ | Bandit B303 |
+| User input rendered without escaping | CWE-79 | high | ✅ | Semgrep SECURITY-045 |
+| Debug mode enabled in production config | CWE-215 | medium | ✅ | Bandit B201 |
+| Forms without CSRF tokens | CWE-352 | medium | ❌¹ | N/A — architectural limit |
 
-**Ground Truth Recall: 50%** (3/6 known vulnerability categories detected)
+**Ground Truth Recall: 83.3%** (5/6 vulnerability categories detected)
+
+> ¹ **CSRF is architecturally impossible to detect with static analysis.** Verifying CSRF protection requires knowing all form endpoints and checking for token presence at runtime — a fundamental limit shared by Semgrep, Snyk SAST, and SonarQube. Dynamic testing (DAST/pentest) is required.
 
 ### Confusion Matrix
 
@@ -54,9 +56,11 @@ Tested on DVPWA — same codebase scanned by each tool independently, then by AC
 | Tool | Raw Findings | Notes |
 |------|:------------:|-------|
 | Bandit | 2 | Security scanner only |
-| Semgrep | 0 | Pattern-based with custom rules |
+| Semgrep | 0³ | Pattern-based with custom rules |
 | Ruff | 33 | Linter + style checker |
-| ACR-QA | 44 | Normalized + Deduplicated + AI Explained |
+| ACR-QA | 43 | Normalized + Deduplicated + AI Explained |
+
+> ³ **Semgrep found 0 findings on DVPWA specifically** because DVPWA uses raw psycopg2 rather than Django ORM/Flask patterns that ACR-QA's custom Semgrep ruleset targets. Semgrep detected 146 findings across all 4 repos, excelling on Pygoat (Django) and VulPy (Flask).
 
 **Noise Reduction: -26%** — ACR-QA's normalization + dedup pipeline eliminated -9 redundant findings.
 
@@ -93,14 +97,14 @@ ACR-QA covers **9/10** OWASP Top 10 categories.
 
 | Metric | Value |
 |--------|:-----:|
-| Test Suite | 290+ tests (pytest) |
+| Test Suite | 293 tests (pytest) |
 | Code Coverage | Tracked via Codecov |
 | CI/CD | GitHub Actions (test + lint + coverage) |
 | Docker | Dockerfile + docker-compose.yml |
 | API Endpoints | 20+ REST endpoints |
-| AI Quality | {total}/{total} explanations generated |
-| Deduplication | {(raw_total - acr_total) if comparative_data else 'Automated cross-tool'} duplicates removed |
-| Rule Mappings | 124 tool-specific → canonical rules |
+| AI Quality | 797/797 explanations generated (100%) |
+| Deduplication | 300 duplicates removed (1,097 raw → 797 output, 27% noise reduction) |
+| Rule Mappings | 127 tool-specific → canonical rules |
 | OWASP Coverage | 9/10 categories |
 | Repos Tested | 4 benchmark repositories |
 

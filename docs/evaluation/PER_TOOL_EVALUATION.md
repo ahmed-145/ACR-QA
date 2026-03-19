@@ -1,7 +1,7 @@
 # ACR-QA Per-Tool Evaluation Report
 
 > Per-engine accuracy analysis across 4 deliberately vulnerable Python repositories.
-> Generated from actual ACR-QA scans with verified rule mappings (123 canonical rules).
+> Generated from actual ACR-QA scans with verified rule mappings (127 canonical rules).
 
 ---
 
