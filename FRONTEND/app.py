@@ -717,7 +717,7 @@ def get_policy_config():
                     {
                         "max_high": 0,
                         "max_medium": 10,
-                        "max_total": 100,
+                        "max_total": 200,
                         "max_security": 0,
                     },
                 ),
