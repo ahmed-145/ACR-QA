@@ -39,7 +39,7 @@ DVPWA (Damn Vulnerable Python Web App) contains 6 known vulnerability categories
 
 **Ground Truth Recall: 83.3%** (5/6 vulnerability categories detected)
 
-> ¹ **CSRF is architecturally impossible to detect with static analysis.** Verifying CSRF protection requires knowing all form endpoints and checking for token presence at runtime — a fundamental limit shared by Semgrep, Snyk SAST, and SonarQube. Dynamic testing (DAST/pentest) is required.
+> ¹ **CSRF — deliberately excluded, not architecturally impossible.** Framework-level misconfiguration patterns (e.g., `@csrf_exempt` on sensitive Django views, Flask apps missing `CSRFProtect()`, `WTF_CSRF_CHECK_DEFAULT = False`) *are* statically detectable via Semgrep heuristics. However, these rules produce high false-positive rates on API-only applications using token-based auth (JWT, API keys), where CSRF protection is genuinely unnecessary. ACR-QA prioritises precision over recall — a noisy rule that fires on every REST API undermines developer trust. **Future work (v3.0):** A context-aware rule that first verifies the app uses session-based auth before flagging absent CSRF protection. Full runtime token-presence verification still requires DAST/pentest.
 
 ### Confusion Matrix
 

@@ -173,23 +173,38 @@ Both map to the same canonical ID → **only one finding** reported to the devel
 > For Pygoat, VulPy, and DSVW there is no labelled ground truth, so recall is **N/A** — not fabricated.
 
 > [!CAUTION]
-> **What static analysis can never detect:**
-> - **CSRF** — requires knowing ALL form endpoints and checking for token presence at runtime
-> - **IDOR** — requires understanding the business logic and ownership model
-> - **Authentication bypass** — requires runtime flow analysis
+> **Hard limits of static analysis (no static tool can catch these):**
+> - **IDOR** — requires understanding the business logic and data ownership model at runtime
+> - **Authentication bypass** — requires runtime flow analysis across sessions
 > - **Logic bugs** — by definition not statically detectable
 >
-> These are fundamental limits shared by all static analysis tools (Semgrep, Snyk SAST, SonarQube). Dynamic analysis (DAST) or pentest is needed for CSRF/IDOR.
+> These are fundamental limits shared by all SAST tools (Semgrep, Snyk SAST, SonarQube, CodeQL).
+
+> [!NOTE]
+> **CSRF: Partially Detectable via Framework Heuristics**
+>
+> CSRF is **not fully impossible** to catch statically — the following patterns are detectable:
+> | Pattern | Framework | Detection Method |
+> |---------|-----------|------------------|
+> | `@csrf_exempt` on sensitive view | Django | Semgrep pattern match |
+> | `CSRFProtect(app)` never called | Flask | Semgrep structural check |
+> | `WTF_CSRF_CHECK_DEFAULT = False` | Flask-WTF | Semgrep config check |
+> | `CsrfViewMiddleware` excluded from `MIDDLEWARE` | Django | Semgrep config check |
+>
+> **Why ACR-QA does not include these rules by default:**
+> These heuristics produce high false-positive rates on legitimate API-only applications that use token-based authentication (JWT, API keys) and have no session-based forms — where CSRF protection is genuinely unnecessary. A rule firing on every Flask REST API would create noise that undermines trust in the tool.
+>
+> **Future work:** A context-aware CSRF rule that first checks whether the app uses session-based auth (e.g., `flask_login`, `session[...]`) before flagging the absence of `CSRFProtect()` would achieve high precision. This is planned as part of ACR-QA v3.0 inter-procedural analysis.
 
 ### What We Catch
 SQLi ✅ | Pickle ✅ | Shell injection ✅ | SSRF ✅ | XXE ✅ | exec/eval ✅ | MD5 ✅ | Hardcoded creds ✅ | Flask debug ✅ | XSS render_template_string ✅ | Open redirect ✅ | JWT bypass ✅ | Dead code ✅ | Complexity ✅ | Duplication ✅
 
-### What We Miss (Static Analysis Limits)
-- **CSRF** — requires framework-level architectural analysis (unavoidable static analysis gap)
-- **IDOR** — requires understanding business logic
-- **Authentication bypass** — requires runtime analysis
-- **LDAP injection** — no Bandit/Semgrep rule for Python LDAP
-- **Template rendering XSS** — except `render_template_string` (now covered via SECURITY-045)
+### What We Miss (Known Gaps)
+- **CSRF (full verification)** — template-level token presence requires runtime traversal. Framework misconfiguration patterns are detectable but excluded by design (see note above) — planned for v3.0
+- **IDOR** — requires understanding business logic; no static approximation exists
+- **Authentication bypass** — requires runtime flow analysis
+- **LDAP injection** — no Bandit/Semgrep rule for Python LDAP libraries
+- **Context-dependent XSS** — except `render_template_string` (covered via SECURITY-045)
 
 ---
 
@@ -205,7 +220,7 @@ SQLi ✅ | Pickle ✅ | Shell injection ✅ | SSRF ✅ | XXE ✅ | exec/eval ✅
 | **Vulture** | 241 | N/A | **~95%** | ~12 FP on Django template-called methods |
 | **Radon** | 384 funcs | N/A | **100%** | Mathematical metric, no FP possible |
 | **jscpd** | ~8 blocks | N/A | **100%** | Exact token matching, no FP possible |
-| **DVPWA Recall** | 6 known vulns | 5/6 detected | — | CSRF architecturally impossible to detect |
+| **DVPWA Recall** | 6 known vulns | 5/6 detected | — | CSRF excluded by design (high FP on API apps) — see limitations |
 
 ---
 
