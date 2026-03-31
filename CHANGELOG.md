@@ -2,6 +2,35 @@
 
 All notable changes to ACR-QA are documented here.
 
+## [v2.9] — 2026-03-31 (God Mode Validation & Coverage Overhaul)
+
+### Added
+- **77 coverage-boost tests** — `TESTS/test_coverage_boost.py` targeting `quality_gate.py` (8%→93%) and `severity_scorer.py` (34%→62%). Covers all CUSTOM-* keyword inference, COMPLEXITY/DEAD/DUP context adjustments, message-parsing fallbacks, and the `score_severity()` convenience function.
+- **Thesis deliverables** — `docs/evaluation/USER_STUDY_PROTOCOL.md` (20-min study protocol), `USER_STUDY_SURVEY.md` (15-question questionnaire), `user_study_responses_template.csv`, and `docs/DEMO_VIDEO_SCRIPT.md` (structured 5-minute recording script).
+- **KB entries** for `NAMING-003`, `IMPORT-003`, `STYLE-005` in `config/rules.yml` — richer AI explanations for previously unmapped rules.
+
+### Changed
+- **Version** unified to `v2.7.0` across `CORE/__init__.py` and `main.py` (was v2.5/v2.6 inconsistency)
+- **Severity upgrades** — `SECURITY-008` (pickle/marshal) and `SECURITY-018` (yaml.load unsafe) promoted from **medium → high** to reflect CWE-502 arbitrary code execution risk
+- **CUSTOM-* findings eliminated** — `N813→NAMING-003`, `F405→IMPORT-003`, `UP036→STYLE-005` added to `RULE_MAPPING` in `normalizer.py`; output now shows 0 `CUSTOM-*` findings
+- **PR comment paths** — `clean_file_path()` added to `post_pr_comments.py` strips `/tmp/pr-files/` and runner checkout paths so comments show `myapp/login.py:38` not `/tmp/pr-files/myapp/login.py:38`
+- **Semgrep FP reduction** — `assert-for-validation` rule now excludes `tests/`, `conftest.py`, and framework-internal paths via `paths.exclude`
+
+### Fixed
+- Test assertion for `SECURITY-008` moved from `test_medium_security_rules` to `test_all_security_rules_are_high` to match intentional severity upgrade
+
+### Commits
+| SHA | Summary |
+|-----|---------|
+| `10669e8` | test: 77 coverage-boost tests for quality_gate + severity_scorer |
+| `327dd74` | docs: user study materials + demo video script |
+| `dfe8288` | test: SECURITY-008/018 assertions updated (medium→high) |
+| `edf7adf` | fix: complete code quality overhaul v2.7.0 |
+| `e0686d5` | fix: god-mode deep analysis fixes |
+| `eca9355` | fix: add missing Semgrep rule mappings |
+
+---
+
 ## [v2.7] — 2026-03-05 (Competitive Features Release)
 
 ### Added

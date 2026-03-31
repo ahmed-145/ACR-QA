@@ -12,8 +12,6 @@ convenience function, and all edge cases.
 import sys
 from pathlib import Path
 
-import pytest
-
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
 
@@ -123,9 +121,7 @@ class TestQualityGateFullCoverage:
 
     def test_multiple_threshold_failures(self):
         """Both high AND total thresholds exceeded."""
-        gate = self.QualityGate(
-            {"quality_gate": {"max_high": 0, "max_total": 0}}
-        )
+        gate = self.QualityGate({"quality_gate": {"max_high": 0, "max_total": 0}})
         findings = [{"canonical_severity": "high", "category": "security"}]
         result = gate.evaluate(findings)
         assert result["passed"] is False

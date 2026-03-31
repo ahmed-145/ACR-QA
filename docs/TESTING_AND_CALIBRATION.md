@@ -1,7 +1,7 @@
 # ACR-QA Testing & Calibration Report
 
-**Latest Run:** March 11, 2026 · **Version:** v2.8  
-**Unit Tests:** 275 passed, 4 skipped · **Coverage:** 38.85%
+**Latest Run:** March 31, 2026 · **Version:** v2.9  
+**Unit Tests:** 374 passed · **Coverage:** quality\_gate 93%, severity\_scorer 62%, total CORE ~55%
 
 ---
 
@@ -384,3 +384,113 @@ Tested 7 **completely new** repos to validate all calibration fixes hold up.
 | RULE_SEVERITY entries | **59** |
 | Cross-tool dedup groups | **6** |
 
+
+---
+
+## 10. Round 4 — God Mode End-to-End Session (v2.9)
+
+**Date:** March 31, 2026 · **Commits:** `edf7adf` → `10669e8` (6 commits on main)
+
+This session was a comprehensive end-to-end validation and code quality overhaul,
+triggered by running a deliberate "God Mode" test PR (#9) containing 8 intentional
+vulnerabilities to stress-test the full pipeline.
+
+---
+
+### Test Files (v2.9)
+
+| File | Tests | Added In |
+|------|:---:|:---:|
+| `TESTS/test_coverage_boost.py` | **77** | v2.9 |
+| `TESTS/test_god_mode.py` | 78 | v2.7 |
+| `TESTS/test_deep_coverage.py` | 98 | v2.6 |
+| `TESTS/test_config_quality.py` | 30 | v2.5 |
+| `TESTS/test_integration.py` | 69 | v2.4 |
+| **Total** | **374** | — |
+
+---
+
+### God Mode PR #9 — What Was Tested
+
+PR #9 (`test/god-mode-live-pr`) had 8 deliberate security vulnerabilities designed to
+exercise every detection path.
+
+| Vulnerability | Rule | Expected | Caught? |
+|---|---|:---:|:---:|
+| `eval(user_input)` | SECURITY-001 | 🔴 High | ✅ |
+| Hardcoded password `admin123` | SECURITY-005 | 🔴 High | ✅ |
+| Raw SQL `% name` formatting | SECURITY-027 | 🔴 High | ✅ |
+| `subprocess.Popen(shell=True)` | SECURITY-021 | 🔴 High | ✅ |
+| `pickle.loads(user_data)` | SECURITY-008 | 🔴 High | ✅ |
+| `yaml.load()` without Loader | SECURITY-018 | 🔴 High | ✅ |
+| Hardcoded `SECRET_KEY` | HARDCODE-001 | 🔴 High | ✅ |
+| Assert for input validation | SECURITY-002 | 🟢 Low | ✅ |
+
+**All 8 detected correctly. Zero false positives.**
+
+---
+
+### Code Quality Fixes Applied (v2.9)
+
+| # | Fix | File | Commit |
+|---|-----|------|--------|
+| 1 | Version unified to **v2.7.0** everywhere | `CORE/__init__.py`, `main.py` | `edf7adf` |
+| 2 | `SECURITY-008` (pickle) medium → **high** (CWE-502 RCE) | `severity_scorer.py` | `edf7adf` |
+| 3 | `SECURITY-018` (yaml.load) medium → **high** (CWE-502 RCE) | `severity_scorer.py` | `edf7adf` |
+| 4 | `CUSTOM-N813` → `NAMING-003` | `normalizer.py` | `edf7adf` |
+| 5 | `CUSTOM-F405` → `IMPORT-003` | `normalizer.py` | `edf7adf` |
+| 6 | `CUSTOM-UP036` → `STYLE-005` | `normalizer.py` | `edf7adf` |
+| 7 | PR comments strip `/tmp/pr-files/` from file paths | `post_pr_comments.py` | `edf7adf` |
+| 8 | `assert-for-validation` Semgrep rule excludes test files | `python-rules.yml` | `edf7adf` |
+| 9 | KB entries added for NAMING-003, IMPORT-003, STYLE-005 | `config/rules.yml` | `edf7adf` |
+| 10 | Test assertions updated for SECURITY-008/018 → high | `test_deep_coverage.py` | `dfe8288` |
+
+---
+
+### Coverage Improvements (v2.9)
+
+| Module | Before (v2.8) | After (v2.9) | Δ |
+|--------|:---:|:---:|:---:|
+| `quality_gate.py` | 8% | **93%** | +85 |
+| `severity_scorer.py` | 34% | **62%** | +28 |
+
+**New test classes in `test_coverage_boost.py`:**
+
+| Class | Tests | What It Covers |
+|-------|:---:|----------------|
+| `TestQualityGateFullCoverage` | 30 | All init branches, threshold pass/fail combos, print_report, result structure |
+| `TestSeverityScorerFullCoverage` | 47 | CUSTOM-* keyword inference, COMPLEXITY/DEAD/DUP adjustments, message fallbacks, priority |
+
+---
+
+### CUSTOM-* Findings Eliminated
+
+Before this session, 3 Ruff codes appeared as `CUSTOM-N813`, `CUSTOM-F405`, `CUSTOM-UP036`.
+
+| Ruff Code | Before | After |
+|-----------|--------|-------|
+| N813 | `CUSTOM-N813` | `NAMING-003` |
+| F405 | `CUSTOM-F405` | `IMPORT-003` |
+| UP036 | `CUSTOM-UP036` | `STYLE-005` |
+
+**After fix: 0 CUSTOM-* findings in any output.**
+
+---
+
+### PR Comment Path Display Fix
+
+**Before:** `File: /tmp/pr-files/myapp/auth/login.py:38`  
+**After:** `File: myapp/auth/login.py:38`
+
+Added `clean_file_path()` to `scripts/post_pr_comments.py`.
+
+---
+
+### Thesis Deliverables Generated
+
+| File | Purpose |
+|------|---------|
+| `docs/evaluation/USER_STUDY_PROTOCOL.md` | Full protocol, 3 test scenarios, researcher script, data table |
+| `docs/evaluation/USER_STUDY_SURVEY.md` | 15-question participant questionnaire |
+| `docs/evaluation/user_study_responses_template.csv` | Data collection CSV template |
+| `docs/DEMO_VIDEO_SCRIPT.md` | 5-minute demo video script with timestamps and voiceover |
