@@ -71,9 +71,7 @@ class ExplanationEngine:
         remediation = rule_def.get("remediation") or (
             "Review the flagged code and apply the fix shown in the issue message."
         )
-        rule_name = rule_def.get("name") or (
-            canonical_id.replace("CUSTOM-", "").replace("-", " ").title()
-        )
+        rule_name = rule_def.get("name") or (canonical_id.replace("CUSTOM-", "").replace("-", " ").title())
 
         # Build structured prompt with evidence
         prompt = f"""You are a code quality expert. Explain this code issue using ONLY the provided rule definition.
@@ -113,8 +111,6 @@ Provide a concise explanation in this format:
 Start with: "This code violates {canonical_id}..." and end with a ```python code block showing the fix.
 """
         return prompt
-
-
 
     @retry(stop=stop_after_attempt(3), wait=wait_exponential(multiplier=1, min=2, max=10))
     def generate_explanation(self, finding, code_snippet=""):
