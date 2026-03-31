@@ -172,6 +172,8 @@ RULE_MAPPING = {
     # ── Bugs found in god-mode live test (2026-03-31) ──
     "bare-except": "EXCEPT-001",  # Semgrep custom rule — bare except clause
     "too-many-parameters": "SOLID-001",  # Semgrep custom rule — too many function params
+    "yaml-load-unsafe": "SECURITY-018",  # Semgrep custom rule — unsafe yaml.load()
+    "assert-for-validation": "ASSERT-001",  # Semgrep custom rule — assert for input validation
 }
 
 # Category Mapping

@@ -62,28 +62,41 @@ class ExplanationEngine:
         canonical_id = finding.get("canonical_rule_id", finding.get("rule_id", "UNKNOWN"))
         rule_def = self.rules_catalog.get(canonical_id, {})
 
+        # For unmapped CUSTOM-* rules: use the tool's raw message as the rationale
+        # This prevents generic filler like "because it matters" in AI explanations
+        tool_message = finding.get("message", "")
+        rationale = rule_def.get("rationale") or (
+            tool_message if tool_message else "This pattern should be avoided in production code."
+        )
+        remediation = rule_def.get("remediation") or (
+            "Review the flagged code and apply the fix shown in the issue message."
+        )
+        rule_name = rule_def.get("name") or (
+            canonical_id.replace("CUSTOM-", "").replace("-", " ").title()
+        )
+
         # Build structured prompt with evidence
         prompt = f"""You are a code quality expert. Explain this code issue using ONLY the provided rule definition.
 
 **Rule: {canonical_id}**
-Name: {rule_def.get("name", "Code Issue")}
-Category: {rule_def.get("category", "unknown")}
-Severity: {rule_def.get("severity", "medium")}
+Name: {rule_name}
+Category: {rule_def.get("category", finding.get("category", "unknown"))}
+Severity: {rule_def.get("severity", finding.get("canonical_severity", "medium"))}
 
 **Why This Matters:**
-{rule_def.get("rationale", "This pattern should be avoided.")}
+{rationale}
 
 **How to Fix:**
-{rule_def.get("remediation", "Review and refactor the code.")}
+{remediation}
 
 **Good Example:**
 ```python
-{rule_def.get("example_good", "# No example available")}
+{rule_def.get("example_good", "# See fix below")}
 ```
 
 **Bad Example:**
 ```python
-{rule_def.get("example_bad", "# No example available")}
+{rule_def.get("example_bad", "# See detected issue below")}
 ```
 
 **Detected Issue:**
@@ -100,6 +113,8 @@ Provide a concise explanation in this format:
 Start with: "This code violates {canonical_id}..." and end with a ```python code block showing the fix.
 """
         return prompt
+
+
 
     @retry(stop=stop_after_attempt(3), wait=wait_exponential(multiplier=1, min=2, max=10))
     def generate_explanation(self, finding, code_snippet=""):

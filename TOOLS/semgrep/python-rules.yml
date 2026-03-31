@@ -20,6 +20,8 @@ rules:
     pattern-either:
       - pattern: $CURSOR.execute("..." + $VAR + "...")
       - pattern: $CURSOR.execute(f"...{$VAR}...")
+      - pattern: $CURSOR.execute("..." % $VAR)
+      - pattern: $CURSOR.execute("...%s..." % $ARGS)
     message: |
       Possible SQL injection vulnerability. Use parameterized queries instead.
     severity: ERROR
@@ -27,6 +29,7 @@ rules:
     metadata:
       category: security
       canonical_rule_id: SECURITY-027
+
 
   - id: unsafe-pickle
     pattern-either:
@@ -58,12 +61,20 @@ rules:
     pattern-either:
       - pattern: password = "..."
       - pattern: PASSWORD = "..."
+      - pattern: DB_PASSWORD = "..."
+      - pattern: db_password = "..."
       - pattern: secret = "..."
       - pattern: SECRET = "..."
+      - pattern: SECRET_KEY = "..."
+      - pattern: secret_key = "..."
       - pattern: api_key = "..."
       - pattern: API_KEY = "..."
+      - pattern: API_TOKEN = "..."
+      - pattern: api_token = "..."
       - pattern: token = "..."
       - pattern: TOKEN = "..."
+      - pattern: auth_token = "..."
+      - pattern: AUTH_TOKEN = "..."
     message: |
       Hardcoded secret detected! Use environment variables instead.
     severity: WARNING
@@ -71,6 +82,7 @@ rules:
     metadata:
       category: security
       canonical_rule_id: HARDCODE-001
+
 
   - id: path-traversal
     pattern-either:
@@ -83,6 +95,22 @@ rules:
     metadata:
       category: security
       canonical_rule_id: PATH-001
+
+  - id: yaml-load-unsafe
+    pattern-either:
+      - pattern: yaml.load($X)
+      - pattern: yaml.load(stream=$X)
+    message: |
+      yaml.load() without a Loader is unsafe and can execute arbitrary code.
+      Use yaml.safe_load() or yaml.load($X, Loader=yaml.SafeLoader) instead.
+    severity: ERROR
+    languages: [python]
+    metadata:
+      category: security
+      cwe: CWE-502
+      canonical_rule_id: SECURITY-018
+
+
 
   - id: flask-xss-render-string
     pattern-either:
