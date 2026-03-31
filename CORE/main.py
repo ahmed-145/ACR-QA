@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-ACR-QA v2.5 - Main Analysis Pipeline
+ACR-QA v2.7 - Main Analysis Pipeline
 Orchestrates: Detection → Normalization → Config Filtering → Quality Gate → Explanation → Storage
 """
 
@@ -35,7 +35,7 @@ class AnalysisPipeline:
 
     def run(self, repo_name="local", pr_number=None, limit=None, files=None, rich_output=False):
         """Run full analysis pipeline."""
-        print("🚀 ACR-QA v2.5 Analysis Pipeline")
+        print("🚀 ACR-QA v2.7 Analysis Pipeline")
         print("=" * 50)
 
         # Step 0: Check rate limit
@@ -541,7 +541,7 @@ def get_diff_files(base_branch: str = "main") -> list:
 
 
 def main():
-    parser = argparse.ArgumentParser(description="ACR-QA v2.5 Analysis Pipeline")
+    parser = argparse.ArgumentParser(description="ACR-QA v2.7 Analysis Pipeline")
     parser.add_argument("--target-dir", default="samples/realistic-issues", help="Directory to analyze")
     parser.add_argument("--repo-name", default="local", help="Repository name")
     parser.add_argument("--pr-number", type=int, help="Pull request number")

@@ -174,6 +174,10 @@ RULE_MAPPING = {
     "too-many-parameters": "SOLID-001",  # Semgrep custom rule — too many function params
     "yaml-load-unsafe": "SECURITY-018",  # Semgrep custom rule — unsafe yaml.load()
     "assert-for-validation": "ASSERT-001",  # Semgrep custom rule — assert for input validation
+    # ── Remaining CUSTOM-* eliminations (god-mode phase 2) ──
+    "N813": "NAMING-003",  # Ruff: camelCase import alias is not pep8-convention
+    "F405": "IMPORT-003",  # Ruff: wildcard import may be undefined names
+    "UP036": "STYLE-005",  # Ruff: deprecated typing compatibility syntax
 }
 
 # Category Mapping

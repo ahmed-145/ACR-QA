@@ -38,7 +38,7 @@ class SeverityScorer:
         # ══════════════════════════════════════════════
         # MEDIUM: Risky patterns, weak crypto, design smells
         # ══════════════════════════════════════════════
-        "SECURITY-008": "medium",  # pickle / marshal usage
+        "SECURITY-008": "high",  # pickle / marshal usage (RCE risk via CWE-502)
         "SECURITY-009": "medium",  # ⚠️ MD5 / weak hash
         "SECURITY-010": "medium",  # DES / weak cipher
         "SECURITY-011": "medium",  # mktemp usage
@@ -47,7 +47,7 @@ class SeverityScorer:
         "SECURITY-015": "medium",  # ssl_with_bad_defaults
         "SECURITY-016": "medium",  # ssl_with_no_version
         "SECURITY-017": "medium",  # weak_cryptographic_key
-        "SECURITY-018": "medium",  # yaml_load (unsafe)
+        "SECURITY-018": "high",  # yaml_load unsafe (arbitrary code exec via CWE-502)
         "SECURITY-019": "medium",  # ssh_no_host_key_verification
         "SECURITY-022": "medium",  # subprocess_without_shell
         "SECURITY-023": "medium",  # any_other_function_with_shell

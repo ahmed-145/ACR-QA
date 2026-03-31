@@ -1253,3 +1253,54 @@ SECURITY-048:
   example_bad: |
     next_url = request.args.get("next")
     return redirect(next_url)  # Attacker sets next=https://evil.com
+
+# ─── Rules added: god-mode phase 2 (CUSTOM-* elimination) ─────────────────────
+
+NAMING-003:
+  name: "CamelCase Import Alias"
+  category: "style"
+  severity: "low"
+  description: "Import alias uses CamelCase instead of lowercase (PEP-8 N813)"
+  rationale: |
+    PEP-8 requires that module aliases use lowercase names. Using CamelCase
+    aliases (e.g., `import numpy as NP`) makes code inconsistent and harder
+    to read for developers expecting standard conventions.
+  remediation: "Use lowercase aliases, e.g. `import numpy as np`"
+  example_good: |
+    import numpy as np
+    import pandas as pd
+  example_bad: |
+    import numpy as NP  # CamelCase alias — non-standard
+
+IMPORT-003:
+  name: "Wildcard Import"
+  category: "style"
+  severity: "low"
+  description: "Wildcard import (from module import *) pollutes namespace"
+  rationale: |
+    Wildcard imports make it impossible to know which names are in scope,
+    can silently override existing names, and confuse IDEs and linters.
+    PEP-8 explicitly discourages them outside of __init__.py files.
+  remediation: "Import only what you need: `from module import ClassA, ClassB`"
+  example_good: |
+    from os.path import join, exists
+  example_bad: |
+    from os.path import *  # What names are now in scope?
+
+STYLE-005:
+  name: "Deprecated Typing Syntax"
+  category: "style"
+  severity: "low"
+  description: "Using deprecated typing backport syntax (UP036 - Python 3.12+)"
+  rationale: |
+    Python 3.9+ supports built-in generics (list[int], dict[str, int]) directly.
+    Using typing.List, typing.Dict from the typing module is deprecated
+    and will be removed in a future Python version.
+  remediation: "Use built-in generics: list[int] instead of List[int]"
+  example_good: |
+    def process(items: list[str]) -> dict[str, int]:
+        return {item: len(item) for item in items}
+  example_bad: |
+    from typing import List, Dict
+    def process(items: List[str]) -> Dict[str, int]:
+        return {item: len(item) for item in items}

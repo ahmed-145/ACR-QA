@@ -255,9 +255,18 @@ rules:
       Assert statements are removed with -O flag. Don't use for input validation.
     severity: WARNING
     languages: [python]
+    paths:
+      exclude:
+        - "TESTS/**"
+        - "tests/**"
+        - "test_*.py"
+        - "*_test.py"
+        - "conftest.py"
+        - "pytest/**"
     metadata:
       category: security
       canonical_rule_id: ASSERT-001
+
 
   - id: print-in-production
     pattern: print(...)

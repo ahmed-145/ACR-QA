@@ -17,6 +17,22 @@ from CORE import __version__
 from DATABASE.database import Database
 
 
+def clean_file_path(raw_path: str) -> str:
+    """Strip CI/tmp prefixes from file paths for clean display in PR comments."""
+    prefixes_to_strip = [
+        "/tmp/pr-files/",
+        "/home/runner/work/ACR-QA/ACR-QA/",
+        "/home/runner/work/",
+        "/tmp/",
+    ]
+    path = raw_path
+    for prefix in prefixes_to_strip:
+        if path.startswith(prefix):
+            path = path[len(prefix) :]
+            break
+    return path
+
+
 def format_severity_emoji(severity):
     """Get emoji for severity level"""
     return {"high": "🔴", "medium": "🟡", "low": "🟢"}.get(severity, "⚪")
@@ -70,7 +86,8 @@ def format_pr_comment(findings):
         for i, finding in enumerate(by_severity["high"], 1):
             lines.append(f"#### {i}. {finding['canonical_rule_id']} - {finding['category']}")
             lines.append("")
-            lines.append(f"**📍 Location:** `{finding['file_path']}:{finding['line_number']}`")
+            clean_path = clean_file_path(finding["file_path"])
+            lines.append(f"**📍 Location:** `{clean_path}:{finding['line_number']}`")
             lines.append("")
             lines.append("**📝 Issue:**")
             lines.append(f"> {finding['message']}")
@@ -95,7 +112,7 @@ def format_pr_comment(findings):
         to_show = by_severity["medium"][:5]
         for i, finding in enumerate(to_show, 1):
             lines.append(f"#### {i}. {finding['canonical_rule_id']}")
-            lines.append(f"**Location:** `{finding['file_path']}:{finding['line_number']}`")
+            lines.append(f"**Location:** `{clean_file_path(finding['file_path'])}:{finding['line_number']}`")
             lines.append(f"**Message:** {finding['message']}")
 
             explanation = finding.get("explanation_text")

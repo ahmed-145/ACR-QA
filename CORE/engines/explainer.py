@@ -304,7 +304,7 @@ Start with: "This code violates {canonical_id}..." and end with a ```python code
 **Explanation to evaluate:**
 {explanation_text}
 
-**Original issue:** {canonical_id} - {finding.get('message', '')}
+**Original issue:** {canonical_id} - {finding.get("message", "")}
 
 Rate each criterion (1=poor, 5=excellent):
 1. Relevance: Does this explanation directly address the code issue?

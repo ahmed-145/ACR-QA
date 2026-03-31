@@ -164,9 +164,7 @@ class RateLimiter:
                 tokens_needed = 1.0 - tokens
                 retry_after = tokens_needed * self.refill_rate
 
-                logger.warning(
-                    f"✗ RATE LIMITED: {bucket_key} " f"(tokens: {tokens:.2f}, retry after {retry_after:.1f}s)"
-                )
+                logger.warning(f"✗ RATE LIMITED: {bucket_key} (tokens: {tokens:.2f}, retry after {retry_after:.1f}s)")
 
                 # Log rate limit event
                 self._log_rate_limit_event(repo_name, pr_number, retry_after)
