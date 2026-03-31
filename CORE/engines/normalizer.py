@@ -169,6 +169,9 @@ RULE_MAPPING = {
     "jwt-none-algorithm": "SECURITY-047",
     "lxml-xxe": "SECURITY-044",  # XXE via lxml (maps to existing lxml rule)
     "open-redirect": "SECURITY-048",  # Open redirect via user-controlled URL
+    # ── Bugs found in god-mode live test (2026-03-31) ──
+    "bare-except": "EXCEPT-001",  # Semgrep custom rule — bare except clause
+    "too-many-parameters": "SOLID-001",  # Semgrep custom rule — too many function params
 }
 
 # Category Mapping
