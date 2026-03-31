@@ -75,3 +75,6 @@ docs/thesis/*.pdf
 *.egg-info/
 dist/
 build/
+# Agent private notes (not for repo)
+AGENT_NOTES.md
+MEMORY.md
