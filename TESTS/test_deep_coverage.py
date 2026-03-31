@@ -38,19 +38,21 @@ class TestSeverityScorer:
         self.scorer = SeverityScorer()
 
     def test_all_security_rules_are_high(self):
-        """Critical security rules (eval, SQLi, hardcoded passwords) must be HIGH."""
+        """Critical security rules (eval, SQLi, pickle, yaml.load, hardcoded passwords) must be HIGH."""
         for rule in [
             "SECURITY-001",  # eval/exec
             "SECURITY-003",  # bad file permissions
             "SECURITY-004",  # bind all interfaces
             "SECURITY-005",  # hardcoded passwords
+            "SECURITY-008",  # pickle/marshal (RCE via CWE-502) — upgraded from medium
+            "SECURITY-018",  # yaml.load unsafe (RCE via CWE-502) — upgraded from medium
             "SECURITY-027",  # SQL injection
         ]:
             assert self.scorer.score(rule, {}) == "high", f"{rule} should be high"
 
     def test_medium_security_rules(self):
         """Risky but non-critical security rules should be MEDIUM."""
-        for rule in ["SECURITY-009", "SECURITY-008"]:
+        for rule in ["SECURITY-009"]:
             assert self.scorer.score(rule, {}) == "medium", f"{rule} should be medium"
 
     def test_low_security_rules(self):
