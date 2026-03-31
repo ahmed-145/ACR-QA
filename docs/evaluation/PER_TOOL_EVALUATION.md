@@ -67,6 +67,9 @@
 > [!NOTE]
 > **New rules added:** `flask-xss-render-string` (CWE-79), `ssrf-requests-user-url` (CWE-918), `jwt-none-algorithm` (CWE-347), `lxml-xxe` (CWE-611), `open-redirect` (CWE-601) — added to close gaps found in the 4-repo benchmark.
 
+> [!NOTE]
+> **v2.9 CUSTOM-* fix:** Before v2.9, 3 Ruff codes appeared as `CUSTOM-N813`, `CUSTOM-F405`, `CUSTOM-UP036` in Semgrep/normalizer output because they were missing from `RULE_MAPPING`. These are now correctly mapped to `NAMING-003`, `IMPORT-003`, `STYLE-005`. Output now shows **0 CUSTOM-\* findings**.
+
 ---
 
 ## 3. Ruff (Linter & Style Checker)
@@ -224,6 +227,34 @@ SQLi ✅ | Pickle ✅ | Shell injection ✅ | SSRF ✅ | XXE ✅ | exec/eval ✅
 
 ---
 
-*Generated from ACR-QA scans — March 14, 2026*
-*Repos: DVPWA, Pygoat (OWASP), VulPy (Snyk), DSVW*
+## v2.9 CI Incident Log — What Failed and Why
+
+This section documents the 2 CI failures that occurred during the v2.9 session and how they were resolved.
+
+### Incident 1 — Lint & Format Check failed (ruff)
+
+| Field | Detail |
+|-------|--------|
+| **Job** | `Lint & Format Check` — `ruff format --check` |
+| **File** | `TESTS/test_coverage_boost.py` |
+| **Error** | `1 file would be reformatted` — ruff expected auto-formatted style |
+| **Root cause** | Test file was written manually and committed without running `ruff format` first. CI enforces `ruff format --check CORE/ DATABASE/ FRONTEND/ TESTS/` on every push. |
+| **Fix** | Ran `.venv/bin/ruff format TESTS/test_coverage_boost.py` (reformatted) + `.venv/bin/ruff check --fix` (2 lint fixes). Committed in same push. |
+| **Prevention** | Always run `ruff format && ruff check --fix` before committing new test files. |
+
+### Incident 2 — Run Test Suite failed (SECURITY-008 assertion)
+
+| Field | Detail |
+|-------|--------|
+| **Job** | `Run Test Suite` — `pytest TESTS/` |
+| **File** | `TESTS/test_deep_coverage.py` |
+| **Error** | `AssertionError: SECURITY-008 should be medium` |
+| **Root cause** | `SECURITY-008` (pickle) was intentionally upgraded from medium → high (CWE-502) in `severity_scorer.py`, but the test still asserted `medium`. The test was not updated when the severity change was made. |
+| **Fix** | Moved `SECURITY-008` from `test_medium_security_rules` to `test_all_security_rules_are_high`. Updated docstring to document the CWE-502 policy decision. |
+| **Prevention** | When changing severity in `RULE_SEVERITY`, always search for corresponding assertions in test files. |
+
+---
+
+*Generated from ACR-QA scans — March 31, 2026 (v2.9)*  
+*Repos: DVPWA, Pygoat (OWASP), VulPy (Snyk), DSVW + Flask/httpx god-mode validation*  
 *Rule mappings: 127 canonical rules (123 + 4 new: SECURITY-045/046/047/048)*

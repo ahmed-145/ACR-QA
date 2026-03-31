@@ -46,10 +46,12 @@
 
 | Metric | Value |
 |--------|-------|
-| Total tests | 97 |
-| Passed | 97 |
+| Total tests | **374** (as of v2.9) |
+| Passed | **374** |
 | Skipped | 4 (infrastructure-dependent) |
-| Runtime | 6.59s |
+| Runtime | ~6s |
+| `quality_gate.py` coverage | **93%** |
+| `severity_scorer.py` coverage | **62%** |
 
 ## Resource Usage
 
@@ -67,3 +69,18 @@
 - AI explanation latency varies with Cerebras API load (first call always slowest due to TCP warming)
 - Quality gate correctly failed for test samples (intentional issues)
 - Dedup removed 7.2% of findings (same file+line+rule from different tools)
+
+## v2.9 Updates Since This Baseline
+
+| Change | Before | After |
+|--------|--------|-------|
+| Test count | 97 | **374** |
+| `quality_gate.py` coverage | ~38% | **93%** |
+| `severity_scorer.py` coverage | ~25% | **62%** |
+| SECURITY-008 (pickle) severity | medium | **high** (CWE-502) |
+| SECURITY-018 (yaml.load) severity | medium | **high** (CWE-502) |
+| CUSTOM-* findings in output | 3 types | **0** |
+| PR comment file paths | `/tmp/pr-files/` prefix | Clean relative paths |
+| Rule mappings | 97 | 127 |
+
+**Pipeline timing unchanged** — normalization and severity scoring are pure in-memory operations; the new test coverage does not affect runtime performance.
