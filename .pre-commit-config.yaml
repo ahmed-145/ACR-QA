@@ -1,21 +1,59 @@
-# Pre-commit hooks — auto-format and lint before every commit
-# Install: pip install pre-commit && pre-commit install
+# .pre-commit-config.yaml
+# Runs automatically on every `git commit` to block bad commits.
+# Install once with: .venv/bin/pre-commit install
+# Run manually on all files: .venv/bin/pre-commit run --all-files
 
 repos:
+  # Standard file hygiene
   - repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v4.5.0
+    rev: v5.0.0
     hooks:
       - id: trailing-whitespace
       - id: end-of-file-fixer
       - id: check-yaml
       - id: check-json
+      - id: check-merge-conflict
+      - id: debug-statements        # catches leftover breakpoint() / pdb.set_trace()
       - id: check-added-large-files
         args: ['--maxkb=500']
-      - id: check-merge-conflict
 
-  - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.6.0
+  # Ruff — format check + lint (must match what we run manually)
+  - repo: local
     hooks:
-      - id: ruff
-        args: ['--fix']
       - id: ruff-format
+        name: ruff format
+        entry: .venv/bin/ruff format --check
+        language: system
+        types: [python]
+        args: [CORE/, DATABASE/, FRONTEND/, TESTS/]
+        pass_filenames: false
+
+      - id: ruff-lint
+        name: ruff lint
+        entry: .venv/bin/ruff check
+        language: system
+        types: [python]
+        args: [CORE/, DATABASE/, FRONTEND/, TESTS/]
+        pass_filenames: false
+
+  # mypy — type checking on CORE/ only (where we have annotations)
+  - repo: local
+    hooks:
+      - id: mypy
+        name: mypy type check
+        entry: .venv/bin/mypy
+        language: system
+        types: [python]
+        args: [CORE/, --ignore-missing-imports, --no-error-summary]
+        pass_filenames: false
+
+  # pytest — fast smoke test (no coverage, just pass/fail)
+  - repo: local
+    hooks:
+      - id: pytest-fast
+        name: pytest (smoke test)
+        entry: .venv/bin/pytest
+        language: system
+        args: [TESTS/, -q, --tb=short, -x, --no-header]
+        pass_filenames: false
+        stages: [pre-commit]
