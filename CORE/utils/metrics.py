@@ -30,19 +30,19 @@ class MetricsCollector:
             10.0,
         ]
 
-    def inc_counter(self, name: str, labels: dict = None, value: float = 1):
+    def inc_counter(self, name: str, labels: dict | None = None, value: float = 1):
         """Increment a counter metric."""
         key = self._make_key(name, labels)
         with self._lock:
             self._counters[key] = self._counters.get(key, 0) + value
 
-    def set_gauge(self, name: str, value: float, labels: dict = None):
+    def set_gauge(self, name: str, value: float, labels: dict | None = None):
         """Set a gauge metric."""
         key = self._make_key(name, labels)
         with self._lock:
             self._gauges[key] = value
 
-    def observe_histogram(self, name: str, value: float, labels: dict = None):
+    def observe_histogram(self, name: str, value: float, labels: dict | None = None):
         """Observe a value for a histogram metric."""
         key = self._make_key(name, labels)
         with self._lock:
@@ -58,7 +58,7 @@ class MetricsCollector:
                 if value <= bucket:
                     self._histograms[key]["buckets"][bucket] += 1
 
-    def _make_key(self, name: str, labels: dict = None) -> str:
+    def _make_key(self, name: str, labels: dict | None = None) -> str:
         if not labels:
             return name
         label_str = ",".join(f'{k}="{v}"' for k, v in sorted(labels.items()))

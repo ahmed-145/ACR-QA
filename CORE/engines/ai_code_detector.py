@@ -160,8 +160,8 @@ class AICodeDetector:
                 "ai_templates": 0.25,
                 "uniform_functions": 0.15,
             }
-            total_weight = sum(weights.get(s["type"], 0.1) for s in signals)
-            overall_score = sum(s["score"] * weights.get(s["type"], 0.1) for s in signals) / max(total_weight, 0.01)
+            total_weight = sum(weights.get(s["type"], 0.1) for s in signals)  # type: ignore[call-overload]
+            overall_score = sum(s["score"] * weights.get(s["type"], 0.1) for s in signals) / max(total_weight, 0.01)  # type: ignore[call-overload]
         else:
             overall_score = 0
 
@@ -288,7 +288,7 @@ class AICodeDetector:
             return 0.2
         return 0
 
-    def analyze_directory(self, directory: str, extensions: list[str] = None) -> dict[str, Any]:
+    def analyze_directory(self, directory: str, extensions: list[str] | None = None) -> dict[str, Any]:
         """
         Analyze all files in a directory.
 

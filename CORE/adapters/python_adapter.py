@@ -77,7 +77,7 @@ class PythonAdapter(LanguageAdapter):
         output_path = Path(output_dir)
         output_path.mkdir(parents=True, exist_ok=True)
 
-        results = {"tools_run": [], "errors": []}
+        results: dict[str, list] = {"tools_run": [], "errors": []}
 
         try:
             subprocess.run(

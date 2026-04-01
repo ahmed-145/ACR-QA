@@ -53,7 +53,7 @@ class QualityGate:
         """
         # Count by severity
         counts = {"high": 0, "medium": 0, "low": 0, "total": len(findings)}
-        category_counts = {}
+        category_counts: dict[str, int] = {}
 
         for f in findings:
             sev = f.get("canonical_severity", f.get("severity", "low")).lower()

@@ -78,3 +78,6 @@ build/
 # Agent private notes (not for repo)
 AGENT_NOTES.md
 MEMORY.md
+
+# Agent-generated index files (regenerated each session)
+CODEBASE_INDEX.md

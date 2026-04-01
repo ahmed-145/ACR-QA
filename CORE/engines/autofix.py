@@ -55,13 +55,13 @@ class AutoFixEngine:
         """
         rule_id = finding.get("canonical_rule_id")
 
-        if not self.can_fix(rule_id):
+        if not self.can_fix(rule_id or ""):  # type: ignore[arg-type]
             return None
 
         fix_func = self.fixable_rules[rule_id]
         return fix_func(finding)
 
-    def fix_unused_import(self, finding: dict) -> dict:
+    def fix_unused_import(self, finding: dict) -> dict | None:
         """Remove unused import statement"""
         file_path = finding["file_path"]
         line_num = finding["line"]
@@ -80,7 +80,7 @@ class AutoFixEngine:
             "description": f"Remove unused import on line {line_num}",
         }
 
-    def fix_unused_variable(self, finding: dict) -> dict:
+    def fix_unused_variable(self, finding: dict) -> dict | None:
         """Remove or prefix unused variable with underscore"""
         file_path = finding["file_path"]
         line_num = finding["line"]
@@ -119,7 +119,7 @@ class AutoFixEngine:
             "description": f"Prefix unused variable '{var_name}' with underscore",
         }
 
-    def fix_fstring_conversion(self, finding: dict) -> dict:
+    def fix_fstring_conversion(self, finding: dict) -> dict | None:
         """Convert % formatting to f-strings"""
         file_path = finding["file_path"]
         line_num = finding["line"]
@@ -147,7 +147,7 @@ class AutoFixEngine:
 
         return None
 
-    def fix_boolean_comparison(self, finding: dict) -> dict:
+    def fix_boolean_comparison(self, finding: dict) -> dict | None:
         """Simplify boolean comparisons"""
         file_path = finding["file_path"]
         line_num = finding["line"]
@@ -174,7 +174,7 @@ class AutoFixEngine:
 
         return None
 
-    def add_type_hints(self, finding: dict) -> dict:
+    def add_type_hints(self, finding: dict) -> dict | None:
         """Add basic type hints to function"""
         file_path = finding["file_path"]
         line_num = finding["line"]
@@ -200,7 +200,7 @@ class AutoFixEngine:
 
         return None
 
-    def fix_bare_except(self, finding: dict) -> dict:
+    def fix_bare_except(self, finding: dict) -> dict | None:
         """Replace bare except with except Exception"""
         file_path = finding["file_path"]
         line_num = finding["line"]
@@ -224,7 +224,7 @@ class AutoFixEngine:
 
         return None
 
-    def fix_eval_usage(self, finding: dict) -> dict:
+    def fix_eval_usage(self, finding: dict) -> dict | None:
         """Replace eval() with ast.literal_eval() for safer evaluation"""
         file_path = finding["file_path"]
         line_num = finding["line"]
@@ -248,7 +248,7 @@ class AutoFixEngine:
 
         return None
 
-    def fix_dead_code(self, finding: dict) -> dict:
+    def fix_dead_code(self, finding: dict) -> dict | None:
         """Remove dead/unreachable code"""
         file_path = finding["file_path"]
         line_num = finding["line"]
@@ -275,7 +275,7 @@ def apply_fixes(fixes: list[dict]) -> dict[str, list[str]]:
     Returns:
         Dict mapping file paths to list of changes made
     """
-    changes_by_file = {}
+    changes_by_file: dict[str, list[str]] = {}
 
     for fix in fixes:
         file_path = fix["file"]

@@ -53,7 +53,7 @@ class ConfigLoader:
 
     def __init__(self, project_dir: str = "."):
         self.project_dir = Path(project_dir)
-        self._config = None
+        self._config: dict | None = None
 
     def load(self) -> dict[str, Any]:
         """Load config from project directory, falling back to defaults."""

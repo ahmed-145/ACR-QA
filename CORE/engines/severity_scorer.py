@@ -335,7 +335,7 @@ if __name__ == "__main__":
     failed = 0
 
     for test in test_cases:
-        result = scorer.score(test["rule_id"], test["finding"])
+        result = scorer.score(test["rule_id"], test["finding"])  # type: ignore[arg-type]
         status = "✓" if result == test["expected"] else "✗"
 
         if result == test["expected"]:

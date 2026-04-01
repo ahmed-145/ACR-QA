@@ -75,7 +75,7 @@ class LanguageAdapter(ABC):
 
     def find_files(self) -> list[Path]:
         """Find all files matching this adapter's extensions in target_dir."""
-        files = []
+        files: list[Path] = []
         for ext in self.file_extensions:
             files.extend(self.target_dir.rglob(f"*{ext}"))
         return sorted(files)

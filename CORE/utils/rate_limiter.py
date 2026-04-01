@@ -130,7 +130,7 @@ class RateLimiter:
 
             if not bucket_data:
                 # First request - initialize bucket
-                tokens = self.bucket_size - 1  # Consume 1 token
+                tokens = float(self.bucket_size - 1)  # Consume 1 token
                 last_refill = current_time
 
                 self.redis.hset(bucket_key, mapping={"tokens": tokens, "last_refill": last_refill})
@@ -140,8 +140,8 @@ class RateLimiter:
                 return True, None
 
             # Parse bucket state
-            tokens = float(bucket_data.get("tokens", 0))
-            last_refill = float(bucket_data.get("last_refill", current_time))
+            tokens = float(bucket_data.get("tokens", 0))  # type: ignore[union-attr]
+            last_refill = float(bucket_data.get("last_refill", current_time))  # type: ignore[union-attr]
 
             # Refill tokens based on time elapsed
             time_elapsed = current_time - last_refill
