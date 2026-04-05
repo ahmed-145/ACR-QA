@@ -2,7 +2,31 @@
 
 All notable changes to ACR-QA are documented here.
 
+## [v3.0.1-patch1] — 2026-04-05 (Beast Mode — Docs, Tests, DX)
+
+### Added
+- **E2E integration tests** (`TestE2EPipeline`, 4 tests): full mock pipeline through
+  `get_all_findings()` — ESLint + npm audit + Semgrep, language field, tool_raw metadata
+- **CLI routing tests** (`TestCLILanguageRouting`, 5 tests): `detect_language()`, adapter
+  instantiation, `run_tools()` graceful error on empty dir, ESLint config generation
+- **`EVALUATION.md` Round 6**: JS/TS adapter evaluation section — methodology, 16-category
+  security coverage table, SonarQube CE comparison template + full runbook
+- **Mermaid architecture diagram** in `ROADMAP.md`: current Python + JS pipeline → normalizer
+  → gate → AI → DB → dashboard, plus Phase 2 TS rewrite components
+- **README JS/TS section**: pipeline flow diagram, 15-rule security table, prerequisites
+- **README CLI reference**: `--lang`, `--no-ai`, `--json`, `--version` flags + JS scan examples
+- **Languages badge** on README: Python | JS | TS
+
+### Changed
+- `CORE/__init__.py`: version `3.0.0` → `3.0.1` (sync with CHANGELOG)
+- README badges: 370 → **409 tests**, 2.9.0 → **3.0.1**, 123 → **299 rules**
+- `.pre-commit-config.yaml`: added `--no-cov` to pytest hook (commits: 60s → ~2s)
+- `pyproject.toml`: coverage threshold 30% → **40%**
+- Test count: **409 → 418 passing** (9 new JS E2E + CLI routing tests)
+- Roadmap: JS adapter checkbox checked ~~(v3.0.1)~~
+
 ## [v3.0.1] — 2026-04-05 (JavaScript/TypeScript Support)
+
 
 ### Added
 - **`CORE/adapters/js_adapter.py`** — Full JS/TS language adapter:
