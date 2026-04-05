@@ -43,6 +43,7 @@ addopts = [
     "--cov=scripts",
     "--cov-report=html",
     "--cov-report=term-missing",
-    "--cov-fail-under=30",
+    "--cov-fail-under=40",
+
     "-v"
 ]

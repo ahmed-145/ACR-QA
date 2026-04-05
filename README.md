@@ -7,11 +7,12 @@
 
 [![Python 3.11+](https://img.shields.io/badge/Python-3.11+-3776ab?logo=python&logoColor=white)](https://www.python.org/)
 [![CI Tests](https://github.com/ahmed-145/ACR-QA/actions/workflows/tests.yml/badge.svg)](https://github.com/ahmed-145/ACR-QA/actions/workflows/tests.yml)
-[![Tests](https://img.shields.io/badge/Tests-370%20passing-22c55e?logo=pytest&logoColor=white)](./TESTS/)
-[![Version](https://img.shields.io/badge/Version-2.9.0-blue)](CHANGELOG.md)
+[![Tests](https://img.shields.io/badge/Tests-409%20passing-22c55e?logo=pytest&logoColor=white)](./TESTS/)
+[![Version](https://img.shields.io/badge/Version-3.0.1-blue)](CHANGELOG.md)
 [![PostgreSQL 15](https://img.shields.io/badge/PostgreSQL-15+-336791?logo=postgresql&logoColor=white)](https://postgresql.org/)
 [![Prometheus](https://img.shields.io/badge/Prometheus-monitored-e6522c?logo=prometheus&logoColor=white)](https://prometheus.io/)
-[![Rules](https://img.shields.io/badge/Rules-123%20mapped-8b5cf6?logo=shield&logoColor=white)](./docs/evaluation/PER_TOOL_EVALUATION.md)
+[![Rules](https://img.shields.io/badge/Rules-299%20mapped-8b5cf6?logo=shield&logoColor=white)](./docs/evaluation/PER_TOOL_EVALUATION.md)
+[![Languages](https://img.shields.io/badge/Languages-Python%20%7C%20JS%20%7C%20TS-f7df1e?logo=javascript&logoColor=black)](./CORE/adapters/)
 [![Precision](https://img.shields.io/badge/Precision-100%25-22c55e?logo=target&logoColor=white)](./docs/evaluation/PER_TOOL_EVALUATION.md)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
@@ -327,13 +328,26 @@ Options:
   --diff-base BRANCH   Base branch for diff (default: main)
   --auto-fix           Generate auto-fix suggestions for fixable rules
   --rich               Beautiful terminal output with Rich tables & panels
+  --lang LANG          Language: auto (default) | python | javascript | typescript
+  --no-ai              Skip AI explanation step (faster, no API key needed)
+  --json               Output findings as JSON (pipe-friendly)
+  --version            Print ACR-QA version and exit
 ```
 
 ### Examples
 
 ```bash
-# Analyze a project
+# Analyze a Python project
 python3 CORE/main.py --target-dir ./myproject --limit 100
+
+# Analyze a JavaScript / TypeScript project
+python3 CORE/main.py --target-dir ./my-react-app --lang javascript --no-ai
+
+# Auto-detect language (checks for package.json, .py, .ts files)
+python3 CORE/main.py --target-dir ./myproject
+
+# JSON output for scripting / CI pipelines
+python3 CORE/main.py --target-dir . --json --no-ai > findings.json
 
 # PR diff mode (only changed files)
 python3 CORE/main.py --target-dir . --diff-only --diff-base main
@@ -352,6 +366,72 @@ python3 scripts/export_provenance.py <RUN_ID>
 
 # Generate default .acrqa.yml config
 make init-config
+```
+
+---
+
+## 🟨 JavaScript / TypeScript Support
+
+ACR-QA v3.0.1 ships with a **full JS/TS language adapter** — no configuration required.
+
+### How It Works
+
+```
+JS/TS Project
+    │
+    ├── ESLint (eslint-plugin-security)   → 20 rules: no-eval, object-injection, unsafe-regex…
+    ├── Semgrep (TOOLS/semgrep/js-rules.yml) → 15 custom rules: XSS, SQLi, prototype pollution…
+    └── npm audit                          → CVE dependency scan → SECURITY-059/SECURITY-060
+         │
+         ▼
+    Normalizer → 55 rule mappings → CanonicalFinding (same schema as Python)
+         │
+         ▼
+    Severity Scorer + Quality Gate + AI Explanations
+```
+
+### Usage
+
+```bash
+# Auto-detect (ACR-QA checks for package.json + .js/.ts files automatically)
+python3 CORE/main.py --target-dir ./my-react-app
+
+# Force JS mode
+python3 CORE/main.py --target-dir ./my-express-api --lang javascript --no-ai
+
+# TypeScript project
+python3 CORE/main.py --target-dir ./my-next-app --lang typescript
+
+# JSON output — pipe into jq or any CI tool
+python3 CORE/main.py --target-dir . --lang javascript --json --no-ai | jq '.findings[] | select(.severity == "high")'
+```
+
+### Security Rules Covered (JS/TS)
+
+| Threat | Tool | Canonical ID | Severity |
+|--------|------|-------------|---------|
+| eval() / new Function() injection | ESLint + Semgrep | SECURITY-001 | 🔴 HIGH |
+| SQL injection (string concat) | Semgrep | SECURITY-027 | 🔴 HIGH |
+| NoSQL injection (MongoDB) | Semgrep | SECURITY-058 | 🔴 HIGH |
+| XSS (innerHTML, document.write) | Semgrep | SECURITY-045 | 🔴 HIGH |
+| Prototype pollution | Semgrep | SECURITY-057 | 🔴 HIGH |
+| Path traversal (req.params) | Semgrep | SECURITY-049 | 🔴 HIGH |
+| Command injection (exec/spawn) | Semgrep | SECURITY-021 | 🔴 HIGH |
+| Hardcoded secrets | Semgrep | SECURITY-005 | 🔴 HIGH |
+| JWT none algorithm | Semgrep | SECURITY-047 | 🔴 HIGH |
+| Dynamic require() | ESLint | SECURITY-052 | 🔴 HIGH |
+| Object injection | ESLint | SECURITY-056 | 🔴 HIGH |
+| ReDoS (unsafe regex) | ESLint | SECURITY-051 | 🔴 HIGH |
+| npm CVE (critical/high) | npm audit | SECURITY-059 | 🔴 HIGH |
+| Math.random() (weak crypto) | Semgrep | SECURITY-037 | 🟡 MEDIUM |
+| npm CVE (moderate) | npm audit | SECURITY-060 | 🟡 MEDIUM |
+
+### Prerequisites (JS mode)
+
+```bash
+npm install -g eslint eslint-plugin-security   # ESLint security plugin
+# semgrep  ← already installed system-wide
+# npm      ← already installed with Node.js
 ```
 
 ---
@@ -539,7 +619,7 @@ make test-e2e          # End-to-end with Docker
 - [x] ~~Deep-code audit + 98 tests + bug fixes~~ (v2.6)
 - [x] ~~Competitive features: test gap analyzer, OWASP compliance, policy engine, feedback tuner, confidence filtering~~ (v2.7)
 - [x] ~~God-mode testing: 273 tests across 11 test suites~~ (v2.7)
-- [ ] JavaScript / TypeScript language adapter
+- [x] ~~JavaScript / TypeScript language adapter~~ (v3.0.1) — ESLint, Semgrep JS, npm audit, 55 rule mappings
 - [ ] User study (8–10 participants)
 - [ ] Precision / recall evaluation against ground-truth labels
 - [ ] ☁️ Cloud deployment on DigitalOcean ($200 free credit via GitHub Student Pack)

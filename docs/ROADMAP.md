@@ -6,6 +6,55 @@
 
 ---
 
+## Architecture Overview
+
+```mermaid
+graph TD
+    subgraph "ACR-QA v3.0.1 — Current"
+        CLI["CLI --lang auto|python|javascript"]
+        DETECT["Language Detector\ndetect_language()"]
+        CLI --> DETECT
+
+        subgraph PY["Python Adapter"]
+            RUFF["Ruff"]
+            BANDIT["Bandit"]
+            SEMGREP_PY["Semgrep python-rules"]
+            VULTURE["Vulture"]
+            RADON["Radon"]
+        end
+
+        subgraph JS["JS/TS Adapter"]
+            ESLINT["ESLint + security plugin"]
+            SEMGREP_JS["Semgrep js-rules"]
+            NPM["npm audit"]
+        end
+
+        DETECT -->|python| RUFF
+        DETECT -->|javascript| ESLINT
+
+        NORM["Normalizer — 299 rule mappings"]
+        SCORE["Severity Scorer"]
+        GATE["Quality Gate .acrqa.yml"]
+        AI["AI Explainer — Cerebras"]
+        DB[("PostgreSQL")]
+        DASH["Flask Dashboard — 22 endpoints"]
+
+        RUFF & BANDIT & SEMGREP_PY & VULTURE & RADON --> NORM
+        ESLINT & SEMGREP_JS & NPM --> NORM
+        NORM --> SCORE --> GATE --> AI --> DB --> DASH
+    end
+
+    subgraph "Phase 2 — Planned TS Rewrite"
+        TS_CLI["npx acrqa CLI"]
+        TS_EXT["VS Code Extension"]
+        TS_ACT["GitHub Action"]
+        TS_DASH["Express + React Dashboard"]
+        TS_CLI & TS_EXT & TS_ACT --> TS_DASH
+    end
+```
+
+---
+
 ## Where We Are Now
 
 ### ✅ Phase 1 — Python MVP (COMPLETE, v3.0.0)

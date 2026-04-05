@@ -54,6 +54,7 @@ repos:
         name: pytest (smoke test)
         entry: .venv/bin/pytest
         language: system
-        args: [TESTS/, -q, --tb=short, -x, --no-header]
+        args: [TESTS/, -q, --tb=short, -x, --no-header, --no-cov]
+
         pass_filenames: false
         stages: [pre-commit]

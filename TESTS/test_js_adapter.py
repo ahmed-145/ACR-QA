@@ -396,3 +396,147 @@ class TestGetAllFindings:
         """Empty results produce no findings."""
         findings = adapter.get_all_findings({"eslint": [], "semgrep": {}, "npm_audit": {}})
         assert findings == []
+
+
+# ──────────────────────────────────────────────────────────────────────────────
+# E2E Integration: Full pipeline on a real in-memory JS project (no ESLint needed)
+# ──────────────────────────────────────────────────────────────────────────────
+
+
+class TestE2EPipeline:
+    """
+    End-to-end test: run the full JS adapter pipeline on a synthetic JS project.
+
+    Uses pre-built mock tool output (no real ESLint/npm invocation) to prove
+    the normalize → score → aggregate flow works end-to-end.
+    """
+
+    def test_full_pipeline_eslint_plus_npm(self, tmp_path: Path) -> None:
+        """Full pipeline: ESLint + npm audit → normalized → aggregated findings."""
+        adapter = JavaScriptAdapter(target_dir=str(tmp_path))
+
+        mock_eslint = [
+            {
+                "filePath": str(tmp_path / "app.js"),
+                "messages": [
+                    {"ruleId": "no-eval", "message": "eval is evil", "severity": 2, "line": 3, "column": 1},
+                    {"ruleId": "no-console", "message": "no console", "severity": 1, "line": 10, "column": 5},
+                ],
+            }
+        ]
+        mock_npm_audit = {
+            "vulnerabilities": {
+                "lodash": {"severity": "critical", "via": [{"title": "Prototype Pollution", "cve": "CVE-2019-10744"}]},
+                "axios": {"severity": "moderate", "via": [{"title": "SSRF vuln"}]},
+            }
+        }
+
+        results = {"eslint": mock_eslint, "semgrep": {}, "npm_audit": mock_npm_audit}
+        findings = adapter.get_all_findings(results)
+
+        # Should have 2 ESLint + 2 npm audit = 4 total
+        assert len(findings) == 4
+
+        # All are proper CanonicalFindings
+        severities = {f.severity for f in findings}
+        assert "high" in severities  # eval + lodash critical
+
+        # Rule IDs are canonical (no CUSTOM- for known rules)
+        rule_ids = {f.canonical_rule_id for f in findings}
+        assert "SECURITY-001" in rule_ids  # no-eval
+        assert "SECURITY-059" in rule_ids  # lodash CVE critical
+
+    def test_pipeline_deduplicates_tool_metadata(self, tmp_path: Path) -> None:
+        """Each finding has tool_name stored in tool_raw."""
+        adapter = JavaScriptAdapter(target_dir=str(tmp_path))
+        mock_eslint = [
+            {
+                "filePath": str(tmp_path / "index.js"),
+                "messages": [
+                    {"ruleId": "no-eval", "message": "eval", "severity": 2, "line": 1, "column": 1},
+                ],
+            }
+        ]
+        findings = adapter.get_all_findings({"eslint": mock_eslint, "semgrep": {}, "npm_audit": {}})
+        assert findings[0].tool_raw["tool_name"] == "eslint"
+
+    def test_pipeline_language_is_javascript(self, tmp_path: Path) -> None:
+        """All findings from JS adapter have language=javascript."""
+        adapter = JavaScriptAdapter(target_dir=str(tmp_path))
+        mock_eslint = [
+            {
+                "filePath": str(tmp_path / "app.js"),
+                "messages": [{"ruleId": "no-var", "message": "use let", "severity": 1, "line": 1, "column": 1}],
+            }
+        ]
+        findings = adapter.get_all_findings({"eslint": mock_eslint, "semgrep": {}, "npm_audit": {}})
+        assert all(f.language == "javascript" for f in findings)
+
+    def test_pipeline_npm_audit_only(self, tmp_path: Path) -> None:
+        """npm-audit-only results work without ESLint."""
+        adapter = JavaScriptAdapter(target_dir=str(tmp_path))
+        mock_npm = {
+            "vulnerabilities": {
+                "express": {"severity": "high", "via": [{"title": "ReDoS"}]},
+            }
+        }
+        findings = adapter.get_all_findings({"eslint": [], "semgrep": {}, "npm_audit": mock_npm})
+        assert len(findings) == 1
+        assert findings[0].file == "package.json"
+        assert findings[0].severity == "high"
+
+
+# ──────────────────────────────────────────────────────────────────────────────
+# CLI routing: --lang javascript paths through main.py
+# ──────────────────────────────────────────────────────────────────────────────
+
+
+class TestCLILanguageRouting:
+    """
+    Test that --lang javascript correctly routes to JavaScriptAdapter.
+    Tests the adapter selection logic without invoking real tools.
+    """
+
+    def test_detect_language_returns_javascript_for_js_project(self, tmp_path: Path) -> None:
+        """detect_language() returns 'javascript' for a project with package.json + .js files."""
+        (tmp_path / "index.js").write_text("const x = 1")
+        (tmp_path / "app.js").write_text("console.log(x)")
+        (tmp_path / "package.json").write_text('{"name":"test","version":"1.0.0"}')
+        result = JavaScriptAdapter.detect_language(str(tmp_path))
+        assert result == "javascript"
+
+    def test_detect_language_returns_python_for_python_project(self, tmp_path: Path) -> None:
+        """detect_language() returns 'python' for a project with .py + pyproject.toml."""
+        (tmp_path / "main.py").write_text("print('hi')")
+        (tmp_path / "utils.py").write_text("def foo(): pass")
+        (tmp_path / "pyproject.toml").write_text("[tool.ruff]")
+        result = JavaScriptAdapter.detect_language(str(tmp_path))
+        assert result == "python"
+
+    def test_js_adapter_instantiates_with_js_target(self, tmp_path: Path) -> None:
+        """JavaScriptAdapter can be instantiated and reports correct language."""
+        (tmp_path / "app.js").write_text("const x = 1")
+        adapter = JavaScriptAdapter(target_dir=str(tmp_path))
+        assert adapter.language_name == "JavaScript/TypeScript"
+        assert ".js" in adapter.file_extensions
+        assert ".ts" in adapter.file_extensions
+
+    def test_js_adapter_run_tools_no_js_files(self, tmp_path: Path) -> None:
+        """run_tools() returns error (not crash) when no JS files found."""
+        adapter = JavaScriptAdapter(target_dir=str(tmp_path))
+        results = adapter.run_tools(output_dir=str(tmp_path / "out"))
+        # Should return gracefully with error message, not crash
+        assert "errors" in results
+        assert isinstance(results["errors"], list)
+
+    def test_eslint_config_generates_without_error(self, tmp_path: Path) -> None:
+        """_get_eslint_config_path() generates a valid JSON config file."""
+        import json as json_mod
+
+        adapter = JavaScriptAdapter(target_dir=str(tmp_path))
+        config_path = adapter._get_eslint_config_path()
+        config_content = open(config_path).read()
+        parsed = json_mod.loads(config_content)
+        assert "rules" in parsed
+        assert "no-eval" in parsed["rules"]
+        assert parsed["rules"]["no-eval"] == "error"
