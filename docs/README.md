@@ -12,7 +12,8 @@
 
 | Document | Description |
 |----------|-------------|
-| [REST API](setup/API-Documentation.md) | All 11 HTTP endpoints with request/response examples |
+| [REST API Reference](API_REFERENCE.md) | All 22 HTTP endpoints, CLI reference, JS fetch() integration example [v3.0] |
+| [REST API (legacy)](setup/API-Documentation.md) | Original 11 HTTP endpoints reference (v2.7) |
 | [Cloud Deployment](setup/Cloud-Deployment.md) | PythonAnywhere, Replit, ngrok deployment guides |
 | [Token Setup](setup/TOKEN_SETUP.md) | GitHub, GitLab, and Cerebras API key configuration |
 | [Policy Engine](POLICY_ENGINE.md) | `.acrqa.yml` config reference — rules, thresholds, autofix, AI |
@@ -42,6 +43,12 @@
 | [LaTeX Slides](acr_qa_presentation.tex) | Formal presentation slide source |
 | [Phase 1 Extras](thesis/Phase1-extras.md) | Additional Phase 1 implementation details |
 
+## 🗺️ Roadmap
+
+| Document | Description |
+|----------|-------------|
+| [ROADMAP](ROADMAP.md) | Phase 1 (Python v3.0, complete), Phase 1B (JS adapter), Phase 2 (full TS rewrite — architecture, stack, implementation order) |
+
 ## 📁 Project Root Docs
 
 | Document | Description |
@@ -62,4 +69,4 @@ During analysis runs, ACR-QA generates:
 
 ---
 
-**Last Updated:** March 31, 2026 · **Version:** 2.9.0
+**Last Updated:** April 5, 2026 · **Version:** 3.0.1

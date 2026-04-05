@@ -2,6 +2,38 @@
 
 All notable changes to ACR-QA are documented here.
 
+## [v3.0.1] — 2026-04-05 (JavaScript/TypeScript Support)
+
+### Added
+- **`CORE/adapters/js_adapter.py`** — Full JS/TS language adapter:
+  - ESLint runner with `eslint-plugin-security` (20 rules, auto-config via temp JSON)
+  - Semgrep JS runner using `TOOLS/semgrep/js-rules.yml`
+  - `npm audit` SCA runner — maps CVEs to `SECURITY-059`/`SECURITY-060`
+  - `normalize_eslint()`, `normalize_npm_audit()`, `normalize_semgrep_js()` → CanonicalFinding
+  - `detect_language()` — auto-detects python/javascript/mixed from project structure
+  - `node_modules`, `dist`, `build`, `.next` automatically excluded
+- **`TOOLS/semgrep/js-rules.yml`** — 15 custom Semgrep JS/TS security rules:
+  eval injection, SQL injection, NoSQL injection, XSS (innerHTML + document.write),
+  prototype pollution, path traversal, open redirect, hardcoded secrets,
+  insecure Math.random(), JWT none algorithm, command injection, console.log, var usage
+- **`--lang` CLI flag** — `auto` (default), `python`, `javascript`, `typescript`.
+  Auto-detection routes to `JavaScriptAdapter` when `package.json` + JS files found.
+- **`docs/ROADMAP.md`** — Full project roadmap: Phase 1 (Python), Phase 1B (JS adapter),
+  Phase 2 (TS rewrite plan with architecture, stack, implementation order, migration guide).
+- **`TESTS/test_js_adapter.py`** — 39 new tests covering all adapter functionality.
+
+### Changed
+- `severity_scorer.py`: 20 new JS canonical IDs — `SECURITY-051..060`, `STYLE-017/018`,
+  `ASYNC-002/003`, `VAR-002`, `PATTERN-002`, `BEST-PRACTICE-007`, `IMPORT-004`
+- Test count: **370 → 409 passing** (39 new JS adapter tests)
+
+### How to scan JS/TS projects
+```bash
+python -m CORE --target-dir /path/to/react-app          # auto-detects JS
+python -m CORE --target-dir /path/to/express-app --lang javascript --no-ai
+python -m CORE --target-dir /path/to/next-app --json > findings.json
+```
+
 ## [v3.0.0] — 2026-04-05 (Python Version Finalized)
 
 ### Added
