@@ -95,6 +95,17 @@ class SeverityScorer:
         "NAMING-005": "low",  # Exception name should end in Error
         "BEST-PRACTICE-001": "low",  # stacklevel in warnings.warn
         "BEST-PRACTICE-002": "low",  # zip() without strict=
+        # ── Round 5 additions (Django, SQLAlchemy, aiohttp, black, Pillow) ──
+        "STYLE-014": "low",  # UP041: Replace timeout=None form
+        "STYLE-015": "low",  # UP030: Implicit positional format fields
+        "STYLE-016": "low",  # B018: Useless expression / statement
+        "BEST-PRACTICE-003": "low",  # B027: Empty method in abstract class
+        "BEST-PRACTICE-004": "low",  # global statement usage
+        "BEST-PRACTICE-005": "medium",  # open() without context manager (resource leak)
+        "ASSERT-002": "low",  # B011: assert False — raise AssertionError() instead
+        "SECURITY-049": "high",  # path-traversal (user-controlled path = file read/write risk)
+        "SECURITY-050": "medium",  # B023: function defined in loop uses closure variable (logic bug)
+        "BEST-PRACTICE-006": "low",  # B009: getattr with constant attribute string
         "SECURITY-034": "low",  # import pickle (informational)
         "SECURITY-035": "low",  # import subprocess (informational)
         "IMPORT-003": "medium",  # Wildcard import — can cause name collisions

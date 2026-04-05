@@ -1,6 +1,6 @@
 # ACR-QA Testing & Calibration Report
 
-**Latest Run:** March 31, 2026 · **Version:** v2.9  
+**Latest Run:** March 31, 2026 · **Version:** v2.9
 **Unit Tests:** 374 passed · **Coverage:** quality\_gate 93%, severity\_scorer 62%, total CORE ~55%
 
 ---
@@ -197,7 +197,7 @@ Findings were listed in discovery order (by file path). SQL injection appeared b
 
 Default `max_security=0` failed every repo with any security finding. Default `max_medium=10` failed 5/9 well-maintained repos.
 
-**Fix (Phase 1):** `max_security` 0 → 3  
+**Fix (Phase 1):** `max_security` 0 → 3
 **Fix (Phase 4):** `max_medium` 10 → **20**
 
 ---
@@ -254,7 +254,7 @@ Prompt only asked for text advice. Never requested a code block.
 **Fix:** Updated prompt to end with:
 > *"...end with a `python` code block showing the fix."*
 
-**Before:** Text-only advice  
+**Before:** Text-only advice
 **After:** Every explanation ends with corrected code, e.g.:
 ```python
 # Fix: Use parameterized query
@@ -479,7 +479,7 @@ Before this session, 3 Ruff codes appeared as `CUSTOM-N813`, `CUSTOM-F405`, `CUS
 
 ### PR Comment Path Display Fix
 
-**Before:** `File: /tmp/pr-files/myapp/auth/login.py:38`  
+**Before:** `File: /tmp/pr-files/myapp/auth/login.py:38`
 **After:** `File: myapp/auth/login.py:38`
 
 Added `clean_file_path()` to `scripts/post_pr_comments.py`.
@@ -494,3 +494,42 @@ Added `clean_file_path()` to `scripts/post_pr_comments.py`.
 | `docs/evaluation/USER_STUDY_SURVEY.md` | 15-question participant questionnaire |
 | `docs/evaluation/user_study_responses_template.csv` | Data collection CSV template |
 | `docs/DEMO_VIDEO_SCRIPT.md` | 5-minute demo video script with timestamps and voiceover |
+
+---
+
+## Section 11 — Round 5: New Repo Testing (April 5, 2026)
+
+### Repos Tested
+
+| Repo | Stars | Domain | Total Findings | H | M | L | Gate | CUSTOM-* |
+|------|-------|--------|---------------|---|---|---|------|---------|
+| Django | 82k★ | Web Framework | 50 (cap) | ? | ? | ? | ❌ FAIL | 4 types |
+| SQLAlchemy | 10k★ | ORM | 207 | 11 | 14 | 182 | ❌ FAIL | 0 |
+| aiohttp | 15k★ | Async HTTP | 76 | 0 | 6 | 70 | ✅ PASS | 4 types |
+| black | 39k★ | Code formatter | 88 | 2 | 9 | 77 | ❌ FAIL | 4 types |
+| Pillow | 12k★ | Image processing | 71 | 3 | 13 | 55 | ❌ FAIL | 5 types |
+
+**Key result:** aiohttp is the only repo that passes - a well-maintained async library with strict code review culture.
+
+### New CUSTOM-* Rules Fixed (12 rules added to `normalizer.py`)
+
+| Rule ID | Canonical ID | Severity | Source |
+|---------|-------------|----------|--------|
+| `UP041` | `STYLE-014` | low | Ruff — timeout=None style |
+| `B027` | `BEST-PRACTICE-003` | low | Ruff — empty abstract method |
+| `UP030` | `STYLE-015` | low | Ruff — implicit positional format |
+| `B011` | `ASSERT-002` | low | Ruff — assert False instead of AssertionError |
+| `B018` | `STYLE-016` | low | Ruff — useless expression |
+| `B023` | `SECURITY-050` | medium | Ruff — closure variable in loop (logic/security bug) |
+| `B026` | `STYLE-016` | low | Ruff — star-arg after keyword arg |
+| `B009` | `BEST-PRACTICE-006` | low | Ruff — getattr with constant string |
+| `sql-injection-string-concat` | `SECURITY-027` | high | Semgrep — SQL via string concat |
+| `global-variable` | `BEST-PRACTICE-004` | low | Semgrep — global statement |
+| `open-without-context-manager` | `BEST-PRACTICE-005` | medium | Semgrep — open() without with |
+| `path-traversal` | `SECURITY-049` | high | Semgrep — user-controlled file path |
+
+### After Fix
+
+- CUSTOM-* findings: **0** across all repos
+- Tests: **370 passed**, 0 failed
+- RULE_MAPPING now covers: **139+ rules**

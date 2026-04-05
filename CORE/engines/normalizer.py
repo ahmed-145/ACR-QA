@@ -178,6 +178,19 @@ RULE_MAPPING = {
     "N813": "NAMING-003",  # Ruff: camelCase import alias is not pep8-convention
     "F405": "IMPORT-003",  # Ruff: wildcard import may be undefined names
     "UP036": "STYLE-005",  # Ruff: deprecated typing compatibility syntax
+    # ── New rules — Round 5 (Django, SQLAlchemy, aiohttp, black, Pillow) ──
+    "UP041": "STYLE-014",  # Ruff: Replace `timeout=None` with `timeout=httpx.Timeout(None)`
+    "B027": "BEST-PRACTICE-003",  # Ruff: Empty method in abstract class (should be abstractmethod)
+    "UP030": "STYLE-015",  # Ruff: Use implicit references for positional format fields
+    "B011": "ASSERT-002",  # Ruff: Do not `assert False` — raise AssertionError() instead
+    "B018": "STYLE-016",  # Ruff: Found useless expression (statement with no side effects)
+    "sql-injection-string-concat": "SECURITY-027",  # Semgrep: SQL built via string concatenation
+    "global-variable": "BEST-PRACTICE-004",  # Semgrep: Use of global statement — prefer class/function scope
+    "open-without-context-manager": "BEST-PRACTICE-005",  # Semgrep: open() not in 'with' statement
+    "B023": "SECURITY-050",  # Ruff: function defined in loop uses variable from outer scope (closure bug)
+    "B026": "STYLE-016",  # Ruff: star-arg unpacking after keyword arg — confusing call signature
+    "B009": "BEST-PRACTICE-006",  # Ruff: Do not call getattr with constant attr string
+    "path-traversal": "SECURITY-049",  # Semgrep: user-controlled path traversal risk
 }
 
 # Category Mapping
