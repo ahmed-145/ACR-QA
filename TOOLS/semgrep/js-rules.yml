@@ -1,0 +1,227 @@
+rules:
+  # ============================================================
+  # ACR-QA JavaScript/TypeScript Security Rules
+  # Semgrep patterns for JS/TS codebases
+  # Language: javascript, typescript
+  # ============================================================
+
+  # ── Injection ────────────────────────────────────────────────────────────────
+  - id: js-eval-injection
+    pattern-either:
+      - pattern: eval($X)
+      - pattern: new Function($X)
+      - pattern: setTimeout($X, ...)
+        # only flag string arguments
+    message: |
+      Dynamic code execution via eval() or Function() constructor.
+      This allows arbitrary code execution if user input reaches this call.
+    severity: ERROR
+    languages: [javascript, typescript]
+    metadata:
+      category: security
+      canonical_rule_id: SECURITY-001
+      owasp: A03:2021 - Injection
+      cwe: CWE-95
+
+  - id: js-sql-injection
+    patterns:
+      - pattern: $QUERY = $PREFIX + $USER_INPUT
+      - pattern-either:
+          - pattern: db.query($QUERY, ...)
+          - pattern: connection.query($QUERY, ...)
+          - pattern: pool.query($QUERY, ...)
+          - pattern: knex.raw($QUERY)
+    message: |
+      Possible SQL injection: query built by string concatenation.
+      Use parameterized queries: db.query('SELECT * FROM users WHERE id = ?', [id])
+    severity: ERROR
+    languages: [javascript, typescript]
+    metadata:
+      category: security
+      canonical_rule_id: SECURITY-027
+      owasp: A03:2021 - Injection
+      cwe: CWE-89
+
+  - id: js-nosql-injection
+    pattern-either:
+      - pattern: |
+          $COLLECTION.find({..., $FIELD: req.body.$X, ...})
+      - pattern: |
+          $COLLECTION.find({..., $FIELD: req.query.$X, ...})
+      - pattern: |
+          $COLLECTION.findOne({..., $FIELD: req.params.$X, ...})
+    message: |
+      Possible NoSQL injection: user input used directly in MongoDB query.
+      Validate and sanitize query parameters before use.
+    severity: ERROR
+    languages: [javascript, typescript]
+    metadata:
+      category: security
+      canonical_rule_id: SECURITY-058
+      owasp: A03:2021 - Injection
+      cwe: CWE-943
+
+  - id: js-command-injection
+    pattern-either:
+      - pattern: exec($CMD, ...)
+      - pattern: execSync($CMD, ...)
+      - pattern: spawn($CMD, ...)
+      - pattern: child_process.exec($CMD, ...)
+    message: |
+      Shell command execution detected. If $CMD contains user input, this
+      allows arbitrary command injection. Use execFile() with argument arrays instead.
+    severity: ERROR
+    languages: [javascript, typescript]
+    metadata:
+      category: security
+      canonical_rule_id: SECURITY-021
+      owasp: A03:2021 - Injection
+      cwe: CWE-78
+
+  # ── XSS ─────────────────────────────────────────────────────────────────────
+  - id: js-xss-innerhtml
+    pattern-either:
+      - pattern: $EL.innerHTML = $X
+      - pattern: $EL.outerHTML = $X
+      - pattern: document.write($X)
+      - pattern: document.writeln($X)
+    message: |
+      Possible XSS: setting innerHTML or using document.write() with dynamic content.
+      Use textContent or sanitize with DOMPurify before setting HTML.
+    severity: WARNING
+    languages: [javascript, typescript]
+    metadata:
+      category: security
+      canonical_rule_id: SECURITY-045
+      owasp: A03:2021 - Injection
+      cwe: CWE-79
+
+  # ── Hardcoded Secrets ────────────────────────────────────────────────────────
+  - id: js-hardcoded-secret
+    pattern-either:
+      - pattern: const $KEY = "..."
+        metavariable-regex:
+          metavariable: $KEY
+          regex: .*(password|secret|api_key|apikey|token|auth|credential).*
+      - pattern: let $KEY = "..."
+        metavariable-regex:
+          metavariable: $KEY
+          regex: .*(password|secret|api_key|apikey|token|auth|credential).*
+    message: |
+      Possible hardcoded secret in variable name matching sensitive patterns.
+      Use environment variables: process.env.API_KEY
+    severity: ERROR
+    languages: [javascript, typescript]
+    metadata:
+      category: security
+      canonical_rule_id: SECURITY-005
+      owasp: A02:2021 - Cryptographic Failures
+      cwe: CWE-798
+
+  # ── Prototype Pollution ───────────────────────────────────────────────────────
+  - id: js-prototype-pollution
+    pattern-either:
+      - pattern: Object.assign($OBJ, req.body)
+      - pattern: Object.assign($OBJ, req.query)
+      - pattern: $OBJ.__proto__ = $X
+      - pattern: $OBJ.constructor.prototype = $X
+    message: |
+      Prototype pollution risk: merging user input into objects can modify
+      Object.prototype. Use structuredClone() or a deep merge with prototype checks.
+    severity: ERROR
+    languages: [javascript, typescript]
+    metadata:
+      category: security
+      canonical_rule_id: SECURITY-057
+      owasp: A08:2021 - Software and Data Integrity Failures
+      cwe: CWE-1321
+
+  # ── Path Traversal ───────────────────────────────────────────────────────────
+  - id: js-path-traversal
+    pattern-either:
+      - pattern: fs.readFile(req.params.$X, ...)
+      - pattern: fs.readFileSync(req.query.$X, ...)
+      - pattern: fs.createReadStream(req.body.$X, ...)
+      - pattern: path.join($DIR, req.params.$X)
+      - pattern: path.resolve($DIR, req.query.$X)
+    message: |
+      Path traversal risk: user-controlled input used in file path.
+      Validate against an allowlist or use path.normalize() + startsWith() check.
+    severity: ERROR
+    languages: [javascript, typescript]
+    metadata:
+      category: security
+      canonical_rule_id: SECURITY-049
+      owasp: A01:2021 - Broken Access Control
+      cwe: CWE-22
+
+  # ── Open Redirect ─────────────────────────────────────────────────────────────
+  - id: js-open-redirect
+    pattern-either:
+      - pattern: res.redirect(req.query.$X)
+      - pattern: res.redirect(req.body.$X)
+      - pattern: res.redirect(req.params.$X)
+    message: |
+      Open redirect: redirecting to user-controlled URL.
+      Validate redirect destination against an allowlist of trusted domains.
+    severity: WARNING
+    languages: [javascript, typescript]
+    metadata:
+      category: security
+      canonical_rule_id: SECURITY-048
+      owasp: A01:2021 - Broken Access Control
+      cwe: CWE-601
+
+  # ── Weak Cryptography ─────────────────────────────────────────────────────────
+  - id: js-insecure-random
+    pattern-either:
+      - pattern: Math.random()
+    message: |
+      Math.random() is not cryptographically secure. For security-sensitive
+      operations (tokens, IDs), use crypto.randomBytes() or crypto.randomUUID().
+    severity: WARNING
+    languages: [javascript, typescript]
+    metadata:
+      category: security
+      canonical_rule_id: SECURITY-037
+      owasp: A02:2021 - Cryptographic Failures
+      cwe: CWE-338
+
+  # ── JWT ──────────────────────────────────────────────────────────────────────
+  - id: js-jwt-none-algorithm
+    pattern-either:
+      - pattern: jwt.verify($TOKEN, $SECRET, {algorithms: ["none"]}, ...)
+      - pattern: jwt.sign($PAYLOAD, "", ...)
+      - pattern: jwt.sign($PAYLOAD, null, ...)
+    message: |
+      JWT with 'none' algorithm or empty secret: tokens will not be verified.
+      Always specify a strong algorithm (RS256, ES256) and non-empty secret.
+    severity: ERROR
+    languages: [javascript, typescript]
+    metadata:
+      category: security
+      canonical_rule_id: SECURITY-047
+      owasp: A02:2021 - Cryptographic Failures
+      cwe: CWE-347
+
+  # ── Code Quality ─────────────────────────────────────────────────────────────
+  - id: js-console-log
+    pattern: console.log(...)
+    message: |
+      console.log() found in source code. Remove debug logging before production
+      or use a structured logger (winston, pino).
+    severity: INFO
+    languages: [javascript, typescript]
+    metadata:
+      category: style
+      canonical_rule_id: STYLE-007
+
+  - id: js-global-variable
+    pattern: var $X = $VAL
+    message: |
+      Use of var creates function-scoped or global variable. Use let or const instead.
+    severity: INFO
+    languages: [javascript, typescript]
+    metadata:
+      category: style
+      canonical_rule_id: STYLE-017

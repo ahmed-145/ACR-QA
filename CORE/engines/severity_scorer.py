@@ -109,6 +109,25 @@ class SeverityScorer:
         "SECURITY-034": "low",  # import pickle (informational)
         "SECURITY-035": "low",  # import subprocess (informational)
         "IMPORT-003": "medium",  # Wildcard import — can cause name collisions
+        # ── JavaScript/TypeScript rules (Round 5+) ──
+        "SECURITY-051": "high",  # ReDoS — catastrophic regex backtracking
+        "SECURITY-052": "high",  # Dynamic require() — path traversal risk
+        "SECURITY-053": "medium",  # Timing attack — non-constant time comparison
+        "SECURITY-054": "medium",  # Buffer() without bounds / deprecated new Buffer()
+        "SECURITY-055": "high",  # CSRF before method-override missing
+        "SECURITY-056": "high",  # Object injection via obj[user_input]
+        "SECURITY-057": "high",  # Prototype pollution via Object.assign(obj, req.body)
+        "SECURITY-058": "high",  # NoSQL injection (MongoDB query w/ user input)
+        "SECURITY-059": "high",  # npm audit critical/high CVE
+        "SECURITY-060": "medium",  # npm audit moderate CVE
+        "STYLE-017": "low",  # var instead of let/const
+        "STYLE-018": "low",  # prefer const over let
+        "ASYNC-002": "medium",  # Promise executor returns value (logic bug)
+        "ASYNC-003": "low",  # async function with no await
+        "VAR-002": "medium",  # Undefined variable reference
+        "PATTERN-002": "low",  # == instead of === (type coercion risk)
+        "BEST-PRACTICE-007": "medium",  # with() statement
+        "IMPORT-004": "medium",  # Circular import
         # ══════════════════════════════════════════════
         # CUSTOM-xxx: Semgrep custom rules
         # ══════════════════════════════════════════════

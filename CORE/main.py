@@ -591,6 +591,17 @@ def main():
         help="Output findings as JSON to stdout (pipe-friendly, for JS consumers)",
     )
 
+    parser.add_argument(
+        "--lang",
+        choices=["auto", "python", "javascript", "typescript"],
+        default="auto",
+        dest="language",
+        help=(
+            "Language to analyze: 'auto' detects from project files (default), "
+            "'python', 'javascript'/'typescript' (alias: js/ts support)"
+        ),
+    )
+
     args = parser.parse_args()
 
     # Determine files to analyze
@@ -605,6 +616,42 @@ def main():
             print("📝 No changed Python files found. Running full analysis.")
 
     pipeline = AnalysisPipeline(target_dir=args.target_dir, files=files)
+
+    # --lang: Route to JS adapter when JS/TS project is detected or specified
+    language = args.language
+    if language == "auto":
+        from CORE.adapters.js_adapter import JavaScriptAdapter
+
+        language = JavaScriptAdapter.detect_language(args.target_dir)
+        if language != "python":
+            print(f"🔍 Auto-detected language: {language}")
+
+    if language in ("javascript", "typescript"):
+        from CORE.adapters.js_adapter import JavaScriptAdapter
+
+        print(f"\n🟨 ACR-QA JS/TS Adapter — analyzing {args.target_dir}")
+        print("=" * 50)
+        js_adapter = JavaScriptAdapter(target_dir=args.target_dir)
+        results = js_adapter.run_tools()
+        findings = js_adapter.get_all_findings(results)
+        print(f"\n  Total findings: {len(findings)}")
+        high = sum(1 for f in findings if getattr(f, "severity", "") == "high")
+        med = sum(1 for f in findings if getattr(f, "severity", "") == "medium")
+        low = sum(1 for f in findings if getattr(f, "severity", "") == "low")
+        print(f"  🔴 High: {high}  🟡 Medium: {med}  🟢 Low: {low}")
+        for err in results.get("errors", []):
+            print(f"  ⚠️  {err}")
+        if args.json_output:
+            import dataclasses
+
+            print(
+                json.dumps(
+                    [dataclasses.asdict(f) if hasattr(f, "__dataclass_fields__") else vars(f) for f in findings],
+                    indent=2,
+                    default=str,
+                )
+            )
+        return  # Skip Python pipeline
 
     # --no-ai: override limit to 0 to skip AI explanation step entirely
     effective_limit = 0 if args.no_ai else args.limit
