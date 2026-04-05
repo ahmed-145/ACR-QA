@@ -7,7 +7,7 @@
 
 [![Python 3.11+](https://img.shields.io/badge/Python-3.11+-3776ab?logo=python&logoColor=white)](https://www.python.org/)
 [![CI Tests](https://github.com/ahmed-145/ACR-QA/actions/workflows/tests.yml/badge.svg)](https://github.com/ahmed-145/ACR-QA/actions/workflows/tests.yml)
-[![Tests](https://img.shields.io/badge/Tests-374%20passing-22c55e?logo=pytest&logoColor=white)](./TESTS/)
+[![Tests](https://img.shields.io/badge/Tests-370%20passing-22c55e?logo=pytest&logoColor=white)](./TESTS/)
 [![Version](https://img.shields.io/badge/Version-2.9.0-blue)](CHANGELOG.md)
 [![PostgreSQL 15](https://img.shields.io/badge/PostgreSQL-15+-336791?logo=postgresql&logoColor=white)](https://postgresql.org/)
 [![Prometheus](https://img.shields.io/badge/Prometheus-monitored-e6522c?logo=prometheus&logoColor=white)](https://prometheus.io/)
@@ -212,7 +212,7 @@ python3 FRONTEND/app.py   # → http://localhost:5000
 
 ```
 ┌──────────────────────────────────────────────────────────────────────┐
-│                        ACR-QA v2.9 Pipeline                         │
+│                        ACR-QA v3.0 Pipeline                         │
 │                                                                      │
 │  GitHub PR ──► Detection Layer ──► Normalizer ──► Severity Scorer   │
 │                ┌─────────────┐     ┌──────────┐   ┌──────────────┐  │

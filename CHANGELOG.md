@@ -2,6 +2,39 @@
 
 All notable changes to ACR-QA are documented here.
 
+## [v3.0.0] — 2026-04-05 (Python Version Finalized)
+
+### Added
+- **`docs/API_REFERENCE.md`** — Full REST API reference for all 22 endpoints, CLI reference, and JS integration example. Stable surface for any JS frontend, VS Code extension, or CI tool.
+- **CLI: `--version`** — `python -m CORE --version` prints `ACR-QA v3.0.0`
+- **CLI: `--no-ai`** — Skips AI explanation step entirely (sets limit=0). Useful for CI pipelines or large repos where speed matters.
+- **CLI: `--json`** — Dumps findings as JSON to stdout after analysis (pipe-friendly for JS consumers: `python -m CORE --json > results.json`)
+- **12 new `RULE_MAPPING` entries** (Round 5 calibration): `UP041`, `B027`, `UP030`, `B011`, `B018`, `B023`, `B026`, `B009` (Ruff bugbear), plus `sql-injection-string-concat`, `global-variable`, `open-without-context-manager`, `path-traversal` (Semgrep). CUSTOM-* count is now 0 across all tested repos.
+- **Round 5 repo testing**: Django, SQLAlchemy, aiohttp, black, Pillow — 5 new repos benchmarked.
+
+### Changed
+- **Version** unified to `v3.0.0` across `CORE/__init__.py` and `CORE/main.py` (was v2.7.0 vs v2.9 inconsistency)
+- **`SECURITY-049`** = path-traversal (high), **`SECURITY-050`** = B023 closure bug (medium)
+- **`BEST-PRACTICE-005`** = `open()` without context manager (medium — resource leak)
+- **`BEST-PRACTICE-006`** = `getattr()` with constant string attribute (low)
+- `main.py` argument parser adds usage examples in `--help` epilog
+- `TESTING_AND_CALIBRATION.md` Section 11 added with Round 5 full analysis
+
+### Notable Findings (Round 5)
+| Repo | Gate | Notes |
+|------|------|-------|
+| aiohttp | ✅ PASS | 0 HIGH — exactly as expected for a strictly-maintained async lib |
+| Django | ❌ FAIL | B324 hashlib FPs (intentional MD5 for cache/legacy — known limitation) |
+| SQLAlchemy | ❌ FAIL | Same B324 FPs |
+| black | ❌ FAIL | 2 HIGH (B023 closure bugs — real issues) |
+| Pillow | ❌ FAIL | 3 HIGH (path-traversal in format loaders — real concerns) |
+
+### Commits
+| SHA | Summary |
+|-----|---------|
+| `5bda20b` | feat(rules): Round 5 testing — 12 new CUSTOM-* rules mapped |
+| `b213a1c` | chore: pre-commit hooks, AGENTS.md, CODEBASE_INDEX.md, mypy clean |
+
 ## [v2.9] — 2026-03-31 (God Mode Validation & Coverage Overhaul)
 
 ### Added

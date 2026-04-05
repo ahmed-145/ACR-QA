@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-ACR-QA v2.7 - Main Analysis Pipeline
+ACR-QA v3.0 - Main Analysis Pipeline
 Orchestrates: Detection → Normalization → Config Filtering → Quality Gate → Explanation → Storage
 """
 
@@ -35,7 +35,7 @@ class AnalysisPipeline:
 
     def run(self, repo_name="local", pr_number=None, limit=None, files=None, rich_output=False):
         """Run full analysis pipeline."""
-        print("🚀 ACR-QA v2.7 Analysis Pipeline")
+        print("🚀 ACR-QA v3.0 Analysis Pipeline")
         print("=" * 50)
 
         # Step 0: Check rate limit
@@ -541,7 +541,15 @@ def get_diff_files(base_branch: str = "main") -> list:
 
 
 def main():
-    parser = argparse.ArgumentParser(description="ACR-QA v2.7 Analysis Pipeline")
+    parser = argparse.ArgumentParser(
+        description="ACR-QA v3.0 Analysis Pipeline",
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+        epilog="""examples:
+  python -m CORE --target-dir ./myproject
+  python -m CORE --target-dir ./myproject --limit 0 --no-ai
+  python -m CORE --target-dir ./myproject --json > results.json
+  python -m CORE --target-dir ./myproject --rich --auto-fix""",
+    )
     parser.add_argument("--target-dir", default="samples/realistic-issues", help="Directory to analyze")
     parser.add_argument("--repo-name", default="local", help="Repository name")
     parser.add_argument("--pr-number", type=int, help="Pull request number")
@@ -566,6 +574,22 @@ def main():
         action="store_true",
         help="Use Rich library for beautiful terminal output (tables, colors, panels)",
     )
+    parser.add_argument(
+        "--version",
+        action="version",
+        version="ACR-QA v3.0.0",
+    )
+    parser.add_argument(
+        "--no-ai",
+        action="store_true",
+        help="Skip AI explanation step (faster; useful for CI or large repos)",
+    )
+    parser.add_argument(
+        "--json",
+        action="store_true",
+        dest="json_output",
+        help="Output findings as JSON to stdout (pipe-friendly, for JS consumers)",
+    )
 
     args = parser.parse_args()
 
@@ -581,13 +605,26 @@ def main():
             print("📝 No changed Python files found. Running full analysis.")
 
     pipeline = AnalysisPipeline(target_dir=args.target_dir, files=files)
+
+    # --no-ai: override limit to 0 to skip AI explanation step entirely
+    effective_limit = 0 if args.no_ai else args.limit
+
     run_id = pipeline.run(
         repo_name=args.repo_name,
         pr_number=args.pr_number,
-        limit=args.limit,
+        limit=effective_limit,
         files=files,
         rich_output=args.rich,
     )
+
+    # --json: dump findings as JSON to stdout (pipe-friendly, for JS consumers)
+    if args.json_output:
+        findings_path = Path("DATA/outputs/findings.json")
+        if findings_path.exists():
+            with open(findings_path) as fp:
+                print(fp.read())
+        else:
+            print("[]")
 
     # Run auto-fix if requested
     if args.auto_fix and run_id:
