@@ -57,7 +57,7 @@ graph TD
 
 ## Where We Are Now
 
-### ✅ Phase 1 — Python MVP (COMPLETE, v3.0.0)
+### ✅ Phase 1 — Python MVP (COMPLETE, v3.0.1)
 
 The Python version is **feature-complete and thesis-ready**.
 
@@ -75,7 +75,7 @@ The Python version is **feature-complete and thesis-ready**.
 | Flask Dashboard | ✅ | 22 REST endpoints — runs, findings, stats, trends, compliance |
 | PostgreSQL + Redis | ✅ | Full persistence + caching layer |
 | CLI | ✅ | `--version`, `--no-ai`, `--json`, `--lang`, `--rich`, `--diff-only`, `--auto-fix` |
-| Tests | ✅ | 409 passing (5 test files) |
+| Tests | ✅ | 418 passing (14 test files) |
 | Docs | ✅ | API_REFERENCE.md, EVALUATION.md, TESTING_AND_CALIBRATION.md, AGENTS.md |
 
 #### Repos tested (Round 1–5)
@@ -280,7 +280,7 @@ npx acrqa --target-dir ./src --json > results.json
 
 ```
 CORE/
-├── __init__.py          ← version string (3.0.0)
+├── __init__.py          ← version string (3.0.1)
 ├── main.py              ← CLI: --version, --no-ai, --json, --lang
 ├── config_loader.py     ← reads .acrqa.yml policy
 └── engines/
@@ -310,11 +310,11 @@ TESTS/
 ├── test_deep_coverage.py ← 98 deep coverage tests
 ├── test_god_mode.py     ← 78 god-mode tests
 ├── test_integration.py  ← Integration tests
-└── test_js_adapter.py   ← 39 JS adapter tests [NEW v3.0.1]
+└── test_js_adapter.py   ← 48 tests — JS adapter, E2E pipeline, CLI routing [NEW v3.0.1]
 
 docs/
-├── API_REFERENCE.md     ← 22 REST endpoints + CLI + JS usage [NEW v3.0.0]
-├── ROADMAP.md           ← THIS FILE [NEW v3.0.1]
+├── API_REFERENCE.md     ← 22 REST endpoints + CLI + JS usage [v3.0.0]
+├── ROADMAP.md           ← THIS FILE [v3.0.1]
 ├── TESTING_AND_CALIBRATION.md ← Round 1-5 repo testing results
 ├── AGENTS.md            ← AI agent instructions (replaces AGENTS.md at root)
 └── evaluation/

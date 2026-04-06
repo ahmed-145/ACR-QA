@@ -1,4 +1,4 @@
-# ACR-QA v2.8 Architecture
+# ACR-QA v3.0.1 Architecture
 
 ## System Overview
 
