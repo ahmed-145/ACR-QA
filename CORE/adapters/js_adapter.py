@@ -502,11 +502,14 @@ export default [
             all_findings.extend(npm_findings)
             logger.info("npm audit normalized: %d findings", len(npm_findings))
 
-        # Deduplicate: same file + line + canonical rule from different tools
-        seen: set[tuple[str, int, str]] = set()
+        # Deduplicate: same file + line + column + canonical rule from different tools.
+        # Column is included to preserve multiple violations on the same line (e.g. two
+        # bracket accesses on the same line both flagged by detect-object-injection).
+        # Graceful: column defaults to 0 if a tool doesn't emit it.
+        seen: set[tuple[str, int, int, str]] = set()
         deduped: list[CanonicalFinding] = []
         for f in all_findings:
-            key = (f.file, f.line, f.canonical_rule_id)
+            key = (f.file, f.line, f.column, f.canonical_rule_id)
             if key not in seen:
                 seen.add(key)
                 deduped.append(f)
