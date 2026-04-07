@@ -439,17 +439,49 @@ export default [
         return findings
 
     def normalize_semgrep_js(self, semgrep_data: dict) -> list[CanonicalFinding]:
-        """Convert Semgrep JS results to CanonicalFindings (reuses normalizer logic)."""
-        try:
-            from CORE.engines.normalizer import normalize_semgrep
+        """Convert Semgrep JS results to CanonicalFindings using JS_RULE_MAPPING.
 
-            return normalize_semgrep(semgrep_data)
-        except ImportError:
-            return []
+        Deliberately does NOT delegate to normalizer.normalize_semgrep because that
+        function uses the Python RULE_MAPPING which does not contain JS rule IDs like
+        'js-global-variable'. All JS Semgrep rule IDs must be resolved via JS_RULE_MAPPING.
+        """
+        findings: list[CanonicalFinding] = []
+        for item in semgrep_data.get("results", []):
+            check_id = item.get("check_id", "")
+            # Semgrep check_id format: "<namespace>.<rule-id>" — take last segment
+            rule_id = check_id.split(".")[-1] if "." in check_id else check_id
+            canonical_rule_id = JS_RULE_MAPPING.get(rule_id, f"CUSTOM-{rule_id}")
+            sev_raw = item.get("extra", {}).get("severity", "WARNING").lower()
+            severity = "high" if sev_raw == "error" else "low" if sev_raw == "info" else "medium"
+            category_raw = item.get("extra", {}).get("metadata", {}).get("category", "security")
+            findings.append(
+                CanonicalFinding(
+                    canonical_rule_id=canonical_rule_id,
+                    original_rule_id=rule_id,
+                    message=item.get("extra", {}).get("message", ""),
+                    file=item.get("path", "unknown"),
+                    line=item.get("start", {}).get("line", 0),
+                    column=item.get("start", {}).get("col", 0),
+                    severity=severity,
+                    category=self._infer_category(canonical_rule_id) or category_raw,
+                    language="javascript",
+                    tool_raw={
+                        "tool_name": "semgrep",
+                        "rule_id": rule_id,
+                        "check_id": check_id,
+                        "source": "semgrep",
+                    },
+                )
+            )
+        return findings
 
     def get_all_findings(self, results: dict[str, Any]) -> list[CanonicalFinding]:
         """
         Normalize all tool results into a unified CanonicalFinding list.
+
+        Deduplicates findings with the same (file, line, canonical_rule_id) — this
+        removes duplicates where ESLint and Semgrep both flag the same pattern on
+        the same line (e.g. no-var + js-global-variable on every ``var`` declaration).
 
         Call after run_tools().
         """
@@ -470,7 +502,19 @@ export default [
             all_findings.extend(npm_findings)
             logger.info("npm audit normalized: %d findings", len(npm_findings))
 
-        return all_findings
+        # Deduplicate: same file + line + canonical rule from different tools
+        seen: set[tuple[str, int, str]] = set()
+        deduped: list[CanonicalFinding] = []
+        for f in all_findings:
+            key = (f.file, f.line, f.canonical_rule_id)
+            if key not in seen:
+                seen.add(key)
+                deduped.append(f)
+        removed = len(all_findings) - len(deduped)
+        if removed:
+            logger.info("Deduplication removed %d duplicate findings", removed)
+
+        return deduped
 
     def get_rule_mappings(self) -> dict[str, str]:
         """Return JS rule ID → canonical ID mapping."""

@@ -397,6 +397,113 @@ class TestGetAllFindings:
         findings = adapter.get_all_findings({"eslint": [], "semgrep": {}, "npm_audit": {}})
         assert findings == []
 
+    def test_normalize_semgrep_js_uses_js_rule_mapping(self, adapter: JavaScriptAdapter) -> None:
+        """normalize_semgrep_js must resolve JS rule IDs via JS_RULE_MAPPING, not Python normalizer.
+
+        Root cause of CUSTOM-* bug: the old implementation delegated to
+        normalizer.normalize_semgrep which uses Python RULE_MAPPING (no JS rules).
+        """
+        semgrep_data = {
+            "results": [
+                {
+                    "check_id": "tools.semgrep.js-global-variable",
+                    "path": "/project/app.js",
+                    "start": {"line": 5, "col": 1},
+                    "extra": {"severity": "WARNING", "message": "Use let/const", "metadata": {"category": "style"}},
+                },
+                {
+                    "check_id": "tools.semgrep.js-console-log",
+                    "path": "/project/app.js",
+                    "start": {"line": 10, "col": 1},
+                    "extra": {"severity": "INFO", "message": "console.log found", "metadata": {"category": "style"}},
+                },
+                {
+                    "check_id": "tools.semgrep.js-command-injection",
+                    "path": "/project/app.js",
+                    "start": {"line": 20, "col": 1},
+                    "extra": {
+                        "severity": "ERROR",
+                        "message": "exec() with user input",
+                        "metadata": {"category": "security"},
+                    },
+                },
+                {
+                    "check_id": "tools.semgrep.totally-unknown-rule",
+                    "path": "/project/app.js",
+                    "start": {"line": 30, "col": 1},
+                    "extra": {"severity": "WARNING", "message": "something", "metadata": {"category": "security"}},
+                },
+            ]
+        }
+        findings = adapter.normalize_semgrep_js(semgrep_data)
+        assert len(findings) == 4
+        # Known rules → canonical IDs via JS_RULE_MAPPING (not CUSTOM-)
+        assert findings[0].canonical_rule_id == "BEST-PRACTICE-004"  # js-global-variable
+        assert findings[1].canonical_rule_id == "STYLE-007"  # js-console-log
+        assert findings[2].canonical_rule_id == "SECURITY-021"  # js-command-injection
+        # Unknown rule → CUSTOM- prefix acceptable
+        assert findings[3].canonical_rule_id == "CUSTOM-totally-unknown-rule"
+        # All findings have semgrep as tool
+        assert all(f.tool_raw["tool_name"] == "semgrep" for f in findings)
+
+    def test_dedup_removes_same_file_line_rule_from_multiple_tools(self, adapter: JavaScriptAdapter) -> None:
+        """Dedup removes findings with same (file, line, canonical_rule_id) across tools."""
+        # Semgrep no-var maps to STYLE-017 same as ESLint no-var → same file+line = duplicate
+        results = {
+            "eslint": [
+                {
+                    "filePath": "/app.js",
+                    "messages": [
+                        {"ruleId": "no-var", "message": "use let", "severity": 1, "line": 5, "column": 1},
+                        {"ruleId": "no-eval", "message": "eval", "severity": 2, "line": 10, "column": 1},
+                    ],
+                }
+            ],
+            "semgrep": {
+                "results": [
+                    # Different canonical rule (BEST-PRACTICE-004) on same line as no-var → survive
+                    {
+                        "check_id": "tools.semgrep.js-global-variable",
+                        "path": "/app.js",
+                        "start": {"line": 5, "col": 1},
+                        "extra": {"severity": "WARNING", "message": "global var", "metadata": {"category": "style"}},
+                    },
+                    # Different line → survive
+                    {
+                        "check_id": "tools.semgrep.js-global-variable",
+                        "path": "/app.js",
+                        "start": {"line": 99, "col": 1},
+                        "extra": {"severity": "WARNING", "message": "global var", "metadata": {"category": "style"}},
+                    },
+                ]
+            },
+            "npm_audit": {},
+        }
+        findings = adapter.get_all_findings(results)
+        # eslint no-var@5, eslint no-eval@10, semgrep global-var@5 (diff rule), semgrep global-var@99
+        assert len(findings) == 4
+        lines = [f.line for f in findings]
+        assert 99 in lines
+
+    def test_dedup_preserves_same_rule_different_lines(self, adapter: JavaScriptAdapter) -> None:
+        """Same rule on different lines must NOT be deduplicated."""
+        results = {
+            "eslint": [
+                {
+                    "filePath": "/app.js",
+                    "messages": [
+                        {"ruleId": "no-var", "message": "use let", "severity": 1, "line": 1, "column": 1},
+                        {"ruleId": "no-var", "message": "use let", "severity": 1, "line": 2, "column": 1},
+                        {"ruleId": "no-var", "message": "use let", "severity": 1, "line": 3, "column": 1},
+                    ],
+                }
+            ],
+            "semgrep": {},
+            "npm_audit": {},
+        }
+        findings = adapter.get_all_findings(results)
+        assert len(findings) == 3  # all 3 lines preserved
+
 
 # ──────────────────────────────────────────────────────────────────────────────
 # E2E Integration: Full pipeline on a real in-memory JS project (no ESLint needed)

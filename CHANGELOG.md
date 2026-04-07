@@ -2,7 +2,32 @@
 
 All notable changes to ACR-QA are documented here.
 
+## [v3.0.1-patch2] — 2026-04-07 (JS Adapter — CUSTOM-* Fix + Deduplication)
+
+### Fixed
+- **CUSTOM-* Semgrep mapping bug** (`js_adapter.py`): `normalize_semgrep_js` was delegating
+  to `normalizer.normalize_semgrep` which uses Python `RULE_MAPPING`. JS rule IDs like
+  `js-global-variable`, `js-console-log`, `js-command-injection` were all becoming
+  `CUSTOM-*`. Fix: inlined normalization directly using `JS_RULE_MAPPING`.
+- **Semgrep severity mapping**: Semgrep `ERROR`→`high`, `WARNING`→`medium`, `INFO`→`low`.
+  Old path inherited Python normalizer's severity mapping which didn't handle Semgrep levels.
+
+### Added
+- **Deduplication in `get_all_findings()`**: removes findings with same `(file, line, canonical_rule_id)`
+  from multiple tools. ESLint `no-var` (→ STYLE-017) + Semgrep `js-global-variable` (→ BEST-PRACTICE-004)
+  are different rules and survive; exact duplicates are dropped. On DVNA: 946 raw → **112 unique**.
+- **4 new tests** in `TestGetAllFindings` (`test_js_adapter.py`):
+  - `test_normalize_semgrep_js_uses_js_rule_mapping`: asserts JS rules resolve via `JS_RULE_MAPPING`
+  - `test_dedup_removes_same_file_line_rule_from_multiple_tools`
+  - `test_dedup_preserves_same_rule_different_lines`
+  - `test_empty_results_returns_empty` (already existed, confirmed passing)
+- **Test count: 418 → 421 passing**
+- **README badge**: 409 → **421 tests**
+- **EVALUATION.md**: updated Round 6 results with post-dedup numbers (946 raw → 112 unique,
+  834 duplicates removed), documented all 3 bug fixes, updated comparison table
+
 ## [v3.0.1-patch1] — 2026-04-05 (Beast Mode — Docs, Tests, DX)
+
 
 ### Added
 - **E2E integration tests** (`TestE2EPipeline`, 4 tests): full mock pipeline through
