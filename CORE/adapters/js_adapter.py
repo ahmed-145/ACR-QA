@@ -65,6 +65,11 @@ JS_RULE_MAPPING: dict[str, str] = {
     "import/no-duplicates": "DUP-001",  # Duplicate imports
     # ── Semgrep JS rules (custom, defined in js-rules.yml) ───────────────────
     "js-eval-injection": "SECURITY-001",
+    "express-cookie-session-no-secure": "SECURITY-060",
+    "express-cookie-session-no-httponly": "SECURITY-060",
+    # ── Hardcoded Secrets ──
+    "express-session-hardcoded-secret": "HARDCODE-001",
+    # ── Custom / Manually mapped (from v3) ──"SECURITY-045",
     "js-prototype-pollution": "SECURITY-057",
     "js-xss-innerhtml": "SECURITY-045",
     "js-xss-document-write": "SECURITY-045",
@@ -327,14 +332,12 @@ export default [
         # Load all js-*.yml rule files from TOOLS/semgrep/ for comprehensive coverage
         semgrep_dir = Path(__file__).parent.parent.parent / "TOOLS" / "semgrep"
         js_rule_files = sorted(semgrep_dir.glob("js-*.yml"))
-        if not js_rule_files:
-            # Fallback: use semgrep's built-in JS security rules
-            js_rule_files = []
-            rules_args = ["--config", "p/javascript"]
-        else:
-            rules_args = []
-            for rule_file in js_rule_files:
-                rules_args.extend(["--config", str(rule_file)])
+
+        # Always run built-in javascript rules
+        rules_args = ["--config", "p/javascript"]
+
+        for rule_file in js_rule_files:
+            rules_args.extend(["--config", str(rule_file)])
 
         cmd = [
             "semgrep",

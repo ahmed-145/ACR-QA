@@ -59,11 +59,11 @@ def _run_benchmark(target_dir: str, label: str) -> dict:
 
     with tempfile.TemporaryDirectory() as out_dir:
         start = time.perf_counter()
-        adapter.run_tools(output_dir=out_dir)
+        results = adapter.run_tools(output_dir=out_dir)
         elapsed = time.perf_counter() - start
 
     # Count findings (ESLint + Semgrep)
-    findings = adapter.get_all_findings()
+    findings = adapter.get_all_findings(results)
     num_findings = len(findings)
     rate = num_files / elapsed if elapsed > 0 else 0
 
