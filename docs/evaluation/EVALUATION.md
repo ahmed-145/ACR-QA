@@ -396,7 +396,7 @@ The DVNA maintainers document **11 distinct vulnerability instances** across 10 
 |---|----------------|---------------|------|-------------------|----------------|
 | 1 | A1 — Injection | SQL Injection (string concat in query) | `core/appHandler.js` | ✅ **Caught** | `SECURITY-061` (js-sequelize-raw-query) |
 | 2 | A1 — Injection | Command Injection (`exec()` with user input) | `core/appHandler.js` | ✅ **Caught** | `SECURITY-021` (js-command-injection) |
-| 3 | A2 — Broken Auth | Hardcoded JWT secret | `server.js` | ✅ **Caught** | Semgrep `SECURITY-054` (jwt-hardcoded) |
+| 3 | A2 — Broken Auth | Hardcoded Session secret | `server.js` | ✅ **Caught** | Semgrep `HARDCODE-001` (express-session-hardcoded-secret) |
 | 4 | A3 — Sensitive Data | Password hash logged via `console.log` | `models/index.js` | ✅ **Caught** | `STYLE-007` (js-console-log) |
 | 5 | A4 — XXE | XML parsing with `noent:true` | `core/appHandler.js` | ✅ **Caught** | `SECURITY-063` (js-xxe-libxmljs) |
 | 6 | A5 — Broken Access Control | Missing auth check on admin API | `routes/app.js` | ❌ Miss | Auth logic not statically detectable |
@@ -412,7 +412,7 @@ The DVNA maintainers document **11 distinct vulnerability instances** across 10 
 | Metric | Value |
 |--------|-------|
 | Total documented vulnerabilities | 11 |
-| **Caught by ACR-QA** | **8** (SQL injection, command injection, JWT secret, sensitive log, XXE, XSS ×2, insecure deserialization, open redirect) |
+| **Caught by ACR-QA** | **8** (SQL injection, command injection, Session secret, sensitive log, XXE, XSS ×2, insecure deserialization, open redirect) |
 | Missed by ACR-QA | 3 (broken access control ×2 — auth logic/IDOR; mathjs partial) |
 | **Recall** | **73%** (8/11) |
 | Notes | The 2 broken-access-control misses are architecturally undetectable by any static pattern tool |
@@ -432,7 +432,7 @@ The DVNA maintainers document **11 distinct vulnerability instances** across 10 
 **Detected (8 vulns):**
 - **SQL injection** (`SECURITY-061`): New Semgrep rule `js-sequelize-raw-query` catches `db.sequelize.query(variable, ...)` with any non-literal query argument at `appHandler.js:11`. ✅
 - **Command injection** (`SECURITY-021`): Semgrep rule `js-command-injection` caught `exec()` with user-controlled input. ✅
-- **Hardcoded JWT secret** (`SECURITY-054`): Caught by Semgrep custom rule. ✅
+- **Hardcoded Session secret** (`HARDCODE-001`): Caught by Semgrep integrated rule. ✅
 - **Sensitive data logging** (`STYLE-007`): `console.log` in `models/index.js` that leaks password hashes flagged. ✅
 - **XXE** (`SECURITY-063`): New Semgrep rule `js-xxe-libxmljs` catches `libxmljs.parseXmlString(data, {noent:true,...})` at `appHandler.js:235`. ✅
 - **Reflected XSS** (`SECURITY-064`): New Semgrep rule `js-ejs-unescaped-output` catches `<%- output.searchTerm %>` and similar patterns in `.ejs` template files. ✅

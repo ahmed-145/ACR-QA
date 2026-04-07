@@ -274,10 +274,10 @@ rules:
 
   # ── EJS Unescaped Output (XSS) ────────────────────────────────────────────────
   - id: js-ejs-unescaped-output
-    pattern: '<%- $EXPR %>'
+    pattern-regex: '(?s)<%-[^>]+>'
     message: |
       EJS unescaped output: <%- %> renders content without HTML escaping.
-      If $EXPR contains user-controlled data, this is stored or reflected XSS (CWE-79).
+      If it contains user-controlled data, this is stored or reflected XSS (CWE-79).
       Use <%= %> for HTML-safe output. Only use <%- %> for trusted, internal content.
     severity: WARNING
     languages: [generic]
@@ -286,4 +286,3 @@ rules:
       canonical_rule_id: SECURITY-064
       owasp: A03:2021 - Injection
       cwe: CWE-79
-
