@@ -1,90 +1,539 @@
 [
   {
     "cell": null,
-    "code": "E401",
-    "end_location": {
-      "column": 198,
-      "row": 2
-    },
-    "filename": "/tmp/eval-repos/dsvw/dsvw.py",
-    "fix": {
-      "applicability": "safe",
-      "edits": [
-        {
-          "content": "import html\nimport http.client\nimport http.server\nimport io\nimport json\nimport os\nimport pickle\nimport random\nimport re\nimport socket\nimport socketserver\nimport sqlite3\nimport string\nimport sys\nimport subprocess\nimport time\nimport traceback\nimport urllib.parse\nimport urllib.request\nimport xml.etree.ElementTree",
-          "end_location": {
-            "column": 198,
-            "row": 2
-          },
-          "location": {
-            "column": 1,
-            "row": 2
-          }
-        }
-      ],
-      "message": "Split imports"
-    },
-    "location": {
-      "column": 1,
-      "row": 2
-    },
-    "message": "Multiple imports on one line",
-    "noqa_row": 2,
-    "url": "https://docs.astral.sh/ruff/rules/multiple-imports-on-one-line"
-  },
-  {
-    "cell": null,
     "code": "I001",
     "end_location": {
-      "column": 1,
-      "row": 3
+      "column": 88,
+      "row": 250
     },
-    "filename": "/tmp/eval-repos/dsvw/dsvw.py",
+    "filename": "/home/ahmeed/Documents/KSIU/GRAD/SOLO/tmp_repos/aiohttp/aiohttp/__init__.py",
     "fix": {
       "applicability": "safe",
       "edits": [
         {
-          "content": "import html  # Python 3 required\nimport http.client\nimport http.server\nimport io\nimport json\nimport os\nimport pickle\nimport random\nimport re\nimport socket\nimport socketserver\nimport sqlite3\nimport string\nimport subprocess\nimport sys\nimport time\nimport traceback\nimport urllib.parse\nimport urllib.request\nimport xml.etree.ElementTree\n\n",
+          "content": "            from .worker import GunicornUVLoopWebWorker as guv\n            from .worker import GunicornWebWorker as gw\n",
           "end_location": {
             "column": 1,
-            "row": 3
+            "row": 251
           },
           "location": {
             "column": 1,
-            "row": 2
+            "row": 250
           }
         }
       ],
       "message": "Organize imports"
     },
     "location": {
-      "column": 1,
-      "row": 2
+      "column": 13,
+      "row": 250
     },
     "message": "Import block is un-sorted or un-formatted",
-    "noqa_row": 2,
+    "noqa_row": 250,
     "url": "https://docs.astral.sh/ruff/rules/unsorted-imports"
+  },
+  {
+    "cell": null,
+    "code": "N813",
+    "end_location": {
+      "column": 63,
+      "row": 250
+    },
+    "filename": "/home/ahmeed/Documents/KSIU/GRAD/SOLO/tmp_repos/aiohttp/aiohttp/__init__.py",
+    "fix": null,
+    "location": {
+      "column": 33,
+      "row": 250
+    },
+    "message": "Camelcase `GunicornUVLoopWebWorker` imported as lowercase `guv`",
+    "noqa_row": 250,
+    "url": "https://docs.astral.sh/ruff/rules/camelcase-imported-as-lowercase"
+  },
+  {
+    "cell": null,
+    "code": "N813",
+    "end_location": {
+      "column": 88,
+      "row": 250
+    },
+    "filename": "/home/ahmeed/Documents/KSIU/GRAD/SOLO/tmp_repos/aiohttp/aiohttp/__init__.py",
+    "fix": null,
+    "location": {
+      "column": 65,
+      "row": 250
+    },
+    "message": "Camelcase `GunicornWebWorker` imported as lowercase `gw`",
+    "noqa_row": 250,
+    "url": "https://docs.astral.sh/ruff/rules/camelcase-imported-as-lowercase"
+  },
+  {
+    "cell": null,
+    "code": "I001",
+    "end_location": {
+      "column": 6,
+      "row": 11
+    },
+    "filename": "/home/ahmeed/Documents/KSIU/GRAD/SOLO/tmp_repos/aiohttp/aiohttp/_websocket/reader.py",
+    "fix": {
+      "applicability": "safe",
+      "edits": [
+        {
+          "content": "    from .reader_py import (\n        WebSocketDataQueue as WebSocketDataQueuePython,\n    )\n    from .reader_py import (\n        WebSocketReader as WebSocketReaderPython,\n    )\n",
+          "end_location": {
+            "column": 1,
+            "row": 12
+          },
+          "location": {
+            "column": 1,
+            "row": 8
+          }
+        }
+      ],
+      "message": "Organize imports"
+    },
+    "location": {
+      "column": 5,
+      "row": 8
+    },
+    "message": "Import block is un-sorted or un-formatted",
+    "noqa_row": 8,
+    "url": "https://docs.astral.sh/ruff/rules/unsorted-imports"
+  },
+  {
+    "cell": null,
+    "code": "I001",
+    "end_location": {
+      "column": 10,
+      "row": 20
+    },
+    "filename": "/home/ahmeed/Documents/KSIU/GRAD/SOLO/tmp_repos/aiohttp/aiohttp/_websocket/reader.py",
+    "fix": {
+      "applicability": "safe",
+      "edits": [
+        {
+          "content": "        from .reader_c import (  # type: ignore[import-not-found]\n            WebSocketDataQueue as WebSocketDataQueueCython,\n        )\n        from .reader_c import (\n            WebSocketReader as WebSocketReaderCython,\n        )\n",
+          "end_location": {
+            "column": 1,
+            "row": 21
+          },
+          "location": {
+            "column": 1,
+            "row": 17
+          }
+        }
+      ],
+      "message": "Organize imports"
+    },
+    "location": {
+      "column": 9,
+      "row": 17
+    },
+    "message": "Import block is un-sorted or un-formatted",
+    "noqa_row": 17,
+    "url": "https://docs.astral.sh/ruff/rules/unsorted-imports"
+  },
+  {
+    "cell": null,
+    "code": "I001",
+    "end_location": {
+      "column": 10,
+      "row": 28
+    },
+    "filename": "/home/ahmeed/Documents/KSIU/GRAD/SOLO/tmp_repos/aiohttp/aiohttp/_websocket/reader.py",
+    "fix": {
+      "applicability": "safe",
+      "edits": [
+        {
+          "content": "        from .reader_py import (\n            WebSocketDataQueue as WebSocketDataQueuePython,\n        )\n        from .reader_py import (\n            WebSocketReader as WebSocketReaderPython,\n        )\n",
+          "end_location": {
+            "column": 1,
+            "row": 29
+          },
+          "location": {
+            "column": 1,
+            "row": 25
+          }
+        }
+      ],
+      "message": "Organize imports"
+    },
+    "location": {
+      "column": 9,
+      "row": 25
+    },
+    "message": "Import block is un-sorted or un-formatted",
+    "noqa_row": 25,
+    "url": "https://docs.astral.sh/ruff/rules/unsorted-imports"
+  },
+  {
+    "cell": null,
+    "code": "UP041",
+    "end_location": {
+      "column": 66,
+      "row": 123
+    },
+    "filename": "/home/ahmeed/Documents/KSIU/GRAD/SOLO/tmp_repos/aiohttp/aiohttp/_websocket/reader_py.py",
+    "fix": {
+      "applicability": "safe",
+      "edits": [
+        {
+          "content": "(TimeoutError, asyncio.CancelledError)",
+          "end_location": {
+            "column": 66,
+            "row": 123
+          },
+          "location": {
+            "column": 20,
+            "row": 123
+          }
+        }
+      ],
+      "message": "Replace with builtin `TimeoutError`"
+    },
+    "location": {
+      "column": 20,
+      "row": 123
+    },
+    "message": "Replace aliased errors with `TimeoutError`",
+    "noqa_row": 123,
+    "url": "https://docs.astral.sh/ruff/rules/timeout-error-alias"
+  },
+  {
+    "cell": null,
+    "code": "B027",
+    "end_location": {
+      "column": 12,
+      "row": 34
+    },
+    "filename": "/home/ahmeed/Documents/KSIU/GRAD/SOLO/tmp_repos/aiohttp/aiohttp/abc.py",
+    "fix": null,
+    "location": {
+      "column": 5,
+      "row": 28
+    },
+    "message": "`AbstractRouter.post_init` is an empty method in an abstract base class, but has no abstract decorator",
+    "noqa_row": 28,
+    "url": "https://docs.astral.sh/ruff/rules/empty-method-without-abstract-decorator"
+  },
+  {
+    "cell": null,
+    "code": "B027",
+    "end_location": {
+      "column": 12,
+      "row": 230
+    },
+    "filename": "/home/ahmeed/Documents/KSIU/GRAD/SOLO/tmp_repos/aiohttp/aiohttp/abc.py",
+    "fix": null,
+    "location": {
+      "column": 5,
+      "row": 225
+    },
+    "message": "`AbstractStreamWriter.send_headers` is an empty method in an abstract base class, but has no abstract decorator",
+    "noqa_row": 225,
+    "url": "https://docs.astral.sh/ruff/rules/empty-method-without-abstract-decorator"
+  },
+  {
+    "cell": null,
+    "code": "UP041",
+    "end_location": {
+      "column": 52,
+      "row": 725
+    },
+    "filename": "/home/ahmeed/Documents/KSIU/GRAD/SOLO/tmp_repos/aiohttp/aiohttp/client.py",
+    "fix": {
+      "applicability": "safe",
+      "edits": [
+        {
+          "content": "TimeoutError",
+          "end_location": {
+            "column": 52,
+            "row": 725
+          },
+          "location": {
+            "column": 32,
+            "row": 725
+          }
+        }
+      ],
+      "message": "Replace `asyncio.TimeoutError` with builtin `TimeoutError`"
+    },
+    "location": {
+      "column": 32,
+      "row": 725
+    },
+    "message": "Replace aliased errors with `TimeoutError`",
+    "noqa_row": 725,
+    "url": "https://docs.astral.sh/ruff/rules/timeout-error-alias"
+  },
+  {
+    "cell": null,
+    "code": "N818",
+    "end_location": {
+      "column": 23,
+      "row": 119
+    },
+    "filename": "/home/ahmeed/Documents/KSIU/GRAD/SOLO/tmp_repos/aiohttp/aiohttp/client_exceptions.py",
+    "fix": null,
+    "location": {
+      "column": 7,
+      "row": 119
+    },
+    "message": "Exception name `TooManyRedirects` should be named with an Error suffix",
+    "noqa_row": 119,
+    "url": "https://docs.astral.sh/ruff/rules/error-suffix-on-exception-name"
+  },
+  {
+    "cell": null,
+    "code": "UP030",
+    "end_location": {
+      "column": 10,
+      "row": 209
+    },
+    "filename": "/home/ahmeed/Documents/KSIU/GRAD/SOLO/tmp_repos/aiohttp/aiohttp/client_exceptions.py",
+    "fix": {
+      "applicability": "unsafe",
+      "edits": [
+        {
+          "content": "\"Cannot connect to unix socket {.path} ssl:{} [{}]\".format(\n            self, \"default\" if self.ssl is True else self.ssl, self.strerror\n        )",
+          "end_location": {
+            "column": 10,
+            "row": 209
+          },
+          "location": {
+            "column": 16,
+            "row": 207
+          }
+        }
+      ],
+      "message": "Remove explicit positional indices"
+    },
+    "location": {
+      "column": 16,
+      "row": 207
+    },
+    "message": "Use implicit references for positional format fields",
+    "noqa_row": 207,
+    "url": "https://docs.astral.sh/ruff/rules/format-literals"
+  },
+  {
+    "cell": null,
+    "code": "N818",
+    "end_location": {
+      "column": 32,
+      "row": 239
+    },
+    "filename": "/home/ahmeed/Documents/KSIU/GRAD/SOLO/tmp_repos/aiohttp/aiohttp/client_exceptions.py",
+    "fix": null,
+    "location": {
+      "column": 7,
+      "row": 239
+    },
+    "message": "Exception name `ServerFingerprintMismatch` should be named with an Error suffix",
+    "noqa_row": 239,
+    "url": "https://docs.astral.sh/ruff/rules/error-suffix-on-exception-name"
+  },
+  {
+    "cell": null,
+    "code": "N818",
+    "end_location": {
+      "column": 17,
+      "row": 257
+    },
+    "filename": "/home/ahmeed/Documents/KSIU/GRAD/SOLO/tmp_repos/aiohttp/aiohttp/client_exceptions.py",
+    "fix": null,
+    "location": {
+      "column": 7,
+      "row": 257
+    },
+    "message": "Exception name `InvalidURL` should be named with an Error suffix",
+    "noqa_row": 257,
+    "url": "https://docs.astral.sh/ruff/rules/error-suffix-on-exception-name"
+  },
+  {
+    "cell": null,
+    "code": "UP035",
+    "end_location": {
+      "column": 38,
+      "row": 3
+    },
+    "filename": "/home/ahmeed/Documents/KSIU/GRAD/SOLO/tmp_repos/aiohttp/aiohttp/client_proto.py",
+    "fix": {
+      "applicability": "safe",
+      "edits": [
+        {
+          "content": "from typing import Protocol\nfrom collections.abc import Callable",
+          "end_location": {
+            "column": 38,
+            "row": 3
+          },
+          "location": {
+            "column": 1,
+            "row": 3
+          }
+        }
+      ],
+      "message": "Import from `collections.abc`"
+    },
+    "location": {
+      "column": 1,
+      "row": 3
+    },
+    "message": "Import from `collections.abc` instead: `Callable`",
+    "noqa_row": 3,
+    "url": "https://docs.astral.sh/ruff/rules/deprecated-import"
   },
   {
     "cell": null,
     "code": "UP031",
     "end_location": {
-      "column": 953,
-      "row": 10
+      "column": 70,
+      "row": 658
     },
-    "filename": "/tmp/eval-repos/dsvw/dsvw.py",
+    "filename": "/home/ahmeed/Documents/KSIU/GRAD/SOLO/tmp_repos/aiohttp/aiohttp/client_reqrep.py",
     "fix": {
       "applicability": "unsafe",
       "edits": [
         {
-          "content": "\"<!DOCTYPE html>\\n<html>\\n<head>\\n<style>a {{font-weight: bold; text-decoration: none; visited: blue; color: blue;}} ul {{display: inline-block;}} .disabled {{text-decoration: line-through; color: gray}} .disabled a {{visited: gray; color: gray; pointer-events: none; cursor: default}} table {{border-collapse: collapse; margin: 12px; border: 2px solid black}} th, td {{border: 1px solid black; padding: 3px}} span {{font-size: larger; font-weight: bold}}</style>\\n<title>{}</title>\\n</head>\\n<body style='font: 12px monospace'>\\n<script>function process(data) {{alert(\\\"Surname(s) from JSON results: \\\" + Object.keys(data).map(function(k) {{return data[k]}}));}}; var index=document.location.hash.indexOf('lang='); if (index != -1) document.write('<div style=\\\"position: absolute; top: 5px; right: 5px;\\\">Chosen language: <b>' + decodeURIComponent(document.location.hash.substring(index + 5)) + '</b></div>');</script>\\n\".format(html.escape(NAME))",
+          "content": "\"Attempt to decode JSON with \"\n                        \"unexpected mimetype: {}\".format(self.content_type)",
           "end_location": {
-            "column": 953,
-            "row": 10
+            "column": 70,
+            "row": 658
+          },
+          "location": {
+            "column": 25,
+            "row": 657
+          }
+        }
+      ],
+      "message": "Replace with format specifiers"
+    },
+    "location": {
+      "column": 25,
+      "row": 657
+    },
+    "message": "Use format specifiers instead of percent format",
+    "noqa_row": 657,
+    "url": "https://docs.astral.sh/ruff/rules/printf-string-formatting"
+  },
+  {
+    "cell": null,
+    "code": "B011",
+    "end_location": {
+      "column": 21,
+      "row": 927
+    },
+    "filename": "/home/ahmeed/Documents/KSIU/GRAD/SOLO/tmp_repos/aiohttp/aiohttp/client_reqrep.py",
+    "fix": {
+      "applicability": "unsafe",
+      "edits": [
+        {
+          "content": "raise AssertionError()",
+          "end_location": {
+            "column": 21,
+            "row": 927
+          },
+          "location": {
+            "column": 9,
+            "row": 927
+          }
+        }
+      ],
+      "message": "Replace `assert False`"
+    },
+    "location": {
+      "column": 16,
+      "row": 927
+    },
+    "message": "Do not `assert False` (`python -O` removes these calls), raise `AssertionError()`",
+    "noqa_row": 927,
+    "url": "https://docs.astral.sh/ruff/rules/assert-false"
+  },
+  {
+    "cell": null,
+    "code": "UP036",
+    "end_location": {
+      "column": 31,
+      "row": 37
+    },
+    "filename": "/home/ahmeed/Documents/KSIU/GRAD/SOLO/tmp_repos/aiohttp/aiohttp/client_ws.py",
+    "fix": {
+      "applicability": "unsafe",
+      "edits": [
+        {
+          "content": "import asyncio as async_timeout\nfrom typing import Self",
+          "end_location": {
+            "column": 39,
+            "row": 42
+          },
+          "location": {
+            "column": 1,
+            "row": 37
+          }
+        }
+      ],
+      "message": "Remove outdated version block"
+    },
+    "location": {
+      "column": 4,
+      "row": 37
+    },
+    "message": "Version block is outdated for minimum Python version",
+    "noqa_row": 37,
+    "url": "https://docs.astral.sh/ruff/rules/outdated-version-block"
+  },
+  {
+    "cell": null,
+    "code": "UP035",
+    "end_location": {
+      "column": 39,
+      "row": 42
+    },
+    "filename": "/home/ahmeed/Documents/KSIU/GRAD/SOLO/tmp_repos/aiohttp/aiohttp/client_ws.py",
+    "fix": {
+      "applicability": "safe",
+      "edits": [
+        {
+          "content": "from typing import Self",
+          "end_location": {
+            "column": 39,
+            "row": 42
+          },
+          "location": {
+            "column": 5,
+            "row": 42
+          }
+        }
+      ],
+      "message": "Import from `typing`"
+    },
+    "location": {
+      "column": 5,
+      "row": 42
+    },
+    "message": "Import from `typing` instead: `Self`",
+    "noqa_row": 42,
+    "url": "https://docs.astral.sh/ruff/rules/deprecated-import"
+  },
+  {
+    "cell": null,
+    "code": "UP031",
+    "end_location": {
+      "column": 74,
+      "row": 287
+    },
+    "filename": "/home/ahmeed/Documents/KSIU/GRAD/SOLO/tmp_repos/aiohttp/aiohttp/client_ws.py",
+    "fix": {
+      "applicability": "unsafe",
+      "edits": [
+        {
+          "content": "\"data argument must be str ({!r})\".format(type(data))",
+          "end_location": {
+            "column": 74,
+            "row": 287
           },
           "location": {
             "column": 29,
-            "row": 10
+            "row": 287
           }
         }
       ],
@@ -92,526 +541,207 @@
     },
     "location": {
       "column": 29,
-      "row": 10
+      "row": 287
     },
     "message": "Use format specifiers instead of percent format",
-    "noqa_row": 10,
+    "noqa_row": 287,
     "url": "https://docs.astral.sh/ruff/rules/printf-string-formatting"
   },
   {
     "cell": null,
     "code": "UP031",
     "end_location": {
-      "column": 1262,
-      "row": 10
+      "column": 79,
+      "row": 294
     },
-    "filename": "/tmp/eval-repos/dsvw/dsvw.py",
+    "filename": "/home/ahmeed/Documents/KSIU/GRAD/SOLO/tmp_repos/aiohttp/aiohttp/client_ws.py",
     "fix": {
       "applicability": "unsafe",
       "edits": [
         {
-          "content": "\"<div style=\\\"position: fixed; bottom: 5px; text-align: center; width: 100%;\\\">Powered by <a href=\\\"{}\\\" style=\\\"font-weight: bold; text-decoration: none; visited: blue; color: blue\\\" target=\\\"_blank\\\">{}</a> (v<b>{}</b>)</div>\\n</body>\\n</html>\".format(GITHUB, re.search(r\"\\(([^)]+)\", NAME).group(1), VERSION)",
+          "content": "\"data argument must be byte-ish ({!r})\".format(type(data))",
           "end_location": {
-            "column": 1262,
-            "row": 10
-          },
-          "location": {
-            "column": 955,
-            "row": 10
-          }
-        }
-      ],
-      "message": "Replace with format specifiers"
-    },
-    "location": {
-      "column": 955,
-      "row": 10
-    },
-    "message": "Use format specifiers instead of percent format",
-    "noqa_row": 10,
-    "url": "https://docs.astral.sh/ruff/rules/printf-string-formatting"
-  },
-  {
-    "cell": null,
-    "code": "UP031",
-    "end_location": {
-      "column": 9361,
-      "row": 12
-    },
-    "filename": "/tmp/eval-repos/dsvw/dsvw.py",
-    "fix": {
-      "applicability": "unsafe",
-      "edits": [
-        {
-          "content": "\"/?object={}\".format(urllib.parse.quote(pickle.dumps(dict((_.findtext(\"username\"), (_.findtext(\"name\"), _.findtext(\"surname\"))) for _ in xml.etree.ElementTree.fromstring(USERS_XML).findall(\"user\")))))",
-          "end_location": {
-            "column": 9361,
-            "row": 12
-          },
-          "location": {
-            "column": 9167,
-            "row": 12
-          }
-        }
-      ],
-      "message": "Replace with format specifiers"
-    },
-    "location": {
-      "column": 9167,
-      "row": 12
-    },
-    "message": "Use format specifiers instead of percent format",
-    "noqa_row": 12,
-    "url": "https://docs.astral.sh/ruff/rules/printf-string-formatting"
-  },
-  {
-    "cell": null,
-    "code": "UP031",
-    "end_location": {
-      "column": 9612,
-      "row": 12
-    },
-    "filename": "/tmp/eval-repos/dsvw/dsvw.py",
-    "fix": {
-      "applicability": "unsafe",
-      "edits": [
-        {
-          "content": "\"/?object=cos%0Asystem%0A(S%27{}%27%0AtR.%0A\\\" onclick=\\\"alert('checking if arbitrary code can be executed remotely (true in case of delayed response)')\".format(urllib.parse.quote(\"ping -c 5 127.0.0.1\" if os.name != \"nt\" else \"ping -n 5 127.0.0.1\"))",
-          "end_location": {
-            "column": 9612,
-            "row": 12
-          },
-          "location": {
-            "column": 9363,
-            "row": 12
-          }
-        }
-      ],
-      "message": "Replace with format specifiers"
-    },
-    "location": {
-      "column": 9363,
-      "row": 12
-    },
-    "message": "Use format specifiers instead of percent format",
-    "noqa_row": 12,
-    "url": "https://docs.astral.sh/ruff/rules/printf-string-formatting"
-  },
-  {
-    "cell": null,
-    "code": "UP031",
-    "end_location": {
-      "column": 194,
-      "row": 26
-    },
-    "filename": "/tmp/eval-repos/dsvw/dsvw.py",
-    "fix": {
-      "applicability": "unsafe",
-      "edits": [
-        {
-          "content": "r\"(?:\\A|[?&]){}=([^&]+)\".format(match.group(\"parameter\"))",
-          "end_location": {
-            "column": 194,
-            "row": 26
-          },
-          "location": {
-            "column": 143,
-            "row": 26
-          }
-        }
-      ],
-      "message": "Replace with format specifiers"
-    },
-    "location": {
-      "column": 143,
-      "row": 26
-    },
-    "message": "Use format specifiers instead of percent format",
-    "noqa_row": 26,
-    "url": "https://docs.astral.sh/ruff/rules/printf-string-formatting"
-  },
-  {
-    "cell": null,
-    "code": "UP031",
-    "end_location": {
-      "column": 295,
-      "row": 31
-    },
-    "filename": "/tmp/eval-repos/dsvw/dsvw.py",
-    "fix": {
-      "applicability": "unsafe",
-      "edits": [
-        {
-          "content": "\"<div><span>Result(s):</span></div><table><thead><th>id</th><th>username</th><th>name</th><th>surname</th></thead>{}</table>{}\".format(\"\".join(\"<tr>%s</tr>\" % \"\".join(\"<td>%s</td>\" % (\"-\" if _ is None else _) for _ in row) for row in cursor.fetchall()), HTML_POSTFIX)",
-          "end_location": {
-            "column": 295,
-            "row": 31
-          },
-          "location": {
-            "column": 32,
-            "row": 31
-          }
-        }
-      ],
-      "message": "Replace with format specifiers"
-    },
-    "location": {
-      "column": 32,
-      "row": 31
-    },
-    "message": "Use format specifiers instead of percent format",
-    "noqa_row": 31,
-    "url": "https://docs.astral.sh/ruff/rules/printf-string-formatting"
-  },
-  {
-    "cell": null,
-    "code": "UP031",
-    "end_location": {
-      "column": 250,
-      "row": 31
-    },
-    "filename": "/tmp/eval-repos/dsvw/dsvw.py",
-    "fix": {
-      "applicability": "unsafe",
-      "edits": [
-        {
-          "content": "\"<tr>{}</tr>\".format(\"\".join(\"<td>%s</td>\" % (\"-\" if _ is None else _) for _ in row))",
-          "end_location": {
-            "column": 250,
-            "row": 31
-          },
-          "location": {
-            "column": 171,
-            "row": 31
-          }
-        }
-      ],
-      "message": "Replace with format specifiers"
-    },
-    "location": {
-      "column": 171,
-      "row": 31
-    },
-    "message": "Use format specifiers instead of percent format",
-    "noqa_row": 31,
-    "url": "https://docs.astral.sh/ruff/rules/printf-string-formatting"
-  },
-  {
-    "cell": null,
-    "code": "UP031",
-    "end_location": {
-      "column": 90,
-      "row": 33
-    },
-    "filename": "/tmp/eval-repos/dsvw/dsvw.py",
-    "fix": {
-      "applicability": "unsafe",
-      "edits": [
-        {
-          "content": "r\"\\g<1>{}\\g<2>\".format(params[\"v\"])",
-          "end_location": {
-            "column": 90,
-            "row": 33
-          },
-          "location": {
-            "column": 61,
-            "row": 33
-          }
-        }
-      ],
-      "message": "Replace with format specifiers"
-    },
-    "location": {
-      "column": 61,
-      "row": 33
-    },
-    "message": "Use format specifiers instead of percent format",
-    "noqa_row": 33,
-    "url": "https://docs.astral.sh/ruff/rules/printf-string-formatting"
-  },
-  {
-    "cell": null,
-    "code": "E713",
-    "end_location": {
-      "column": 106,
-      "row": 37
-    },
-    "filename": "/tmp/eval-repos/dsvw/dsvw.py",
-    "fix": {
-      "applicability": "safe",
-      "edits": [
-        {
-          "content": "\"://\" not in params[\"path\"]",
-          "end_location": {
-            "column": 106,
-            "row": 37
-          },
-          "location": {
             "column": 79,
-            "row": 37
-          }
-        }
-      ],
-      "message": "Convert to `not in`"
-    },
-    "location": {
-      "column": 83,
-      "row": 37
-    },
-    "message": "Test for membership should be `not in`",
-    "noqa_row": 37,
-    "url": "https://docs.astral.sh/ruff/rules/not-in-test"
-  },
-  {
-    "cell": null,
-    "code": "UP031",
-    "end_location": {
-      "column": 128,
-      "row": 43
-    },
-    "filename": "/tmp/eval-repos/dsvw/dsvw.py",
-    "fix": {
-      "applicability": "unsafe",
-      "edits": [
-        {
-          "content": "\".//user[name/text()='{}']\".format(params[\"name\"])",
-          "end_location": {
-            "column": 128,
-            "row": 43
+            "row": 294
           },
           "location": {
-            "column": 84,
-            "row": 43
+            "column": 29,
+            "row": 294
           }
         }
       ],
       "message": "Replace with format specifiers"
     },
     "location": {
-      "column": 84,
-      "row": 43
+      "column": 29,
+      "row": 294
     },
     "message": "Use format specifiers instead of percent format",
-    "noqa_row": 43,
+    "noqa_row": 294,
     "url": "https://docs.astral.sh/ruff/rules/printf-string-formatting"
   },
   {
     "cell": null,
-    "code": "UP031",
+    "code": "UP041",
     "end_location": {
-      "column": 121,
-      "row": 44
+      "column": 66,
+      "row": 415
     },
-    "filename": "/tmp/eval-repos/dsvw/dsvw.py",
-    "fix": {
-      "applicability": "unsafe",
-      "edits": [
-        {
-          "content": "\"<b>Surname:</b> {}{}\".format(found[-1].find(\"surname\").text if found else \"-\", HTML_POSTFIX)",
-          "end_location": {
-            "column": 121,
-            "row": 44
-          },
-          "location": {
-            "column": 32,
-            "row": 44
-          }
-        }
-      ],
-      "message": "Replace with format specifiers"
-    },
-    "location": {
-      "column": 32,
-      "row": 44
-    },
-    "message": "Use format specifiers instead of percent format",
-    "noqa_row": 44,
-    "url": "https://docs.astral.sh/ruff/rules/printf-string-formatting"
-  },
-  {
-    "cell": null,
-    "code": "UP031",
-    "end_location": {
-      "column": 123,
-      "row": 50
-    },
-    "filename": "/tmp/eval-repos/dsvw/dsvw.py",
-    "fix": {
-      "applicability": "unsafe",
-      "edits": [
-        {
-          "content": "\"INSERT INTO comments VALUES(NULL, '{}', '{}')\".format(params[\"comment\"], time.ctime())",
-          "end_location": {
-            "column": 123,
-            "row": 50
-          },
-          "location": {
-            "column": 40,
-            "row": 50
-          }
-        }
-      ],
-      "message": "Replace with format specifiers"
-    },
-    "location": {
-      "column": 40,
-      "row": 50
-    },
-    "message": "Use format specifiers instead of percent format",
-    "noqa_row": 50,
-    "url": "https://docs.astral.sh/ruff/rules/printf-string-formatting"
-  },
-  {
-    "cell": null,
-    "code": "UP031",
-    "end_location": {
-      "column": 159,
-      "row": 51
-    },
-    "filename": "/tmp/eval-repos/dsvw/dsvw.py",
-    "fix": {
-      "applicability": "unsafe",
-      "edits": [
-        {
-          "content": "\"Thank you for leaving the comment. Please click here <a href=\\\"/?comment=\\\">here</a> to see all comments{}\".format(HTML_POSTFIX)",
-          "end_location": {
-            "column": 159,
-            "row": 51
-          },
-          "location": {
-            "column": 36,
-            "row": 51
-          }
-        }
-      ],
-      "message": "Replace with format specifiers"
-    },
-    "location": {
-      "column": 36,
-      "row": 51
-    },
-    "message": "Use format specifiers instead of percent format",
-    "noqa_row": 51,
-    "url": "https://docs.astral.sh/ruff/rules/printf-string-formatting"
-  },
-  {
-    "cell": null,
-    "code": "UP031",
-    "end_location": {
-      "column": 283,
-      "row": 54
-    },
-    "filename": "/tmp/eval-repos/dsvw/dsvw.py",
-    "fix": {
-      "applicability": "unsafe",
-      "edits": [
-        {
-          "content": "\"<div><span>Comment(s):</span></div><table><thead><th>id</th><th>comment</th><th>time</th></thead>{}</table>{}\".format(\"\".join(\"<tr>%s</tr>\" % \"\".join(\"<td>%s</td>\" % (\"-\" if _ is None else _) for _ in row) for row in cursor.fetchall()), HTML_POSTFIX)",
-          "end_location": {
-            "column": 283,
-            "row": 54
-          },
-          "location": {
-            "column": 36,
-            "row": 54
-          }
-        }
-      ],
-      "message": "Replace with format specifiers"
-    },
-    "location": {
-      "column": 36,
-      "row": 54
-    },
-    "message": "Use format specifiers instead of percent format",
-    "noqa_row": 54,
-    "url": "https://docs.astral.sh/ruff/rules/printf-string-formatting"
-  },
-  {
-    "cell": null,
-    "code": "UP031",
-    "end_location": {
-      "column": 238,
-      "row": 54
-    },
-    "filename": "/tmp/eval-repos/dsvw/dsvw.py",
-    "fix": {
-      "applicability": "unsafe",
-      "edits": [
-        {
-          "content": "\"<tr>{}</tr>\".format(\"\".join(\"<td>%s</td>\" % (\"-\" if _ is None else _) for _ in row))",
-          "end_location": {
-            "column": 238,
-            "row": 54
-          },
-          "location": {
-            "column": 159,
-            "row": 54
-          }
-        }
-      ],
-      "message": "Replace with format specifiers"
-    },
-    "location": {
-      "column": 159,
-      "row": 54
-    },
-    "message": "Use format specifiers instead of percent format",
-    "noqa_row": 54,
-    "url": "https://docs.astral.sh/ruff/rules/printf-string-formatting"
-  },
-  {
-    "cell": null,
-    "code": "E713",
-    "end_location": {
-      "column": 148,
-      "row": 56
-    },
-    "filename": "/tmp/eval-repos/dsvw/dsvw.py",
+    "filename": "/home/ahmeed/Documents/KSIU/GRAD/SOLO/tmp_repos/aiohttp/aiohttp/client_ws.py",
     "fix": {
       "applicability": "safe",
       "edits": [
         {
-          "content": "\"://\" not in params[\"include\"]",
+          "content": "(TimeoutError, asyncio.CancelledError)",
           "end_location": {
-            "column": 148,
-            "row": 56
+            "column": 66,
+            "row": 415
           },
           "location": {
-            "column": 118,
-            "row": 56
+            "column": 20,
+            "row": 415
           }
         }
       ],
-      "message": "Convert to `not in`"
+      "message": "Replace with builtin `TimeoutError`"
     },
     "location": {
-      "column": 122,
-      "row": 56
+      "column": 20,
+      "row": 415
     },
-    "message": "Test for membership should be `not in`",
-    "noqa_row": 56,
-    "url": "https://docs.astral.sh/ruff/rules/not-in-test"
+    "message": "Replace aliased errors with `TimeoutError`",
+    "noqa_row": 415,
+    "url": "https://docs.astral.sh/ruff/rules/timeout-error-alias"
   },
   {
     "cell": null,
-    "code": "UP031",
+    "code": "UP041",
     "end_location": {
-      "column": 135,
+      "column": 64,
+      "row": 1476
+    },
+    "filename": "/home/ahmeed/Documents/KSIU/GRAD/SOLO/tmp_repos/aiohttp/aiohttp/connector.py",
+    "fix": {
+      "applicability": "safe",
+      "edits": [
+        {
+          "content": "(TimeoutError, ClientConnectorError)",
+          "end_location": {
+            "column": 64,
+            "row": 1476
+          },
+          "location": {
+            "column": 20,
+            "row": 1476
+          }
+        }
+      ],
+      "message": "Replace with builtin `TimeoutError`"
+    },
+    "location": {
+      "column": 20,
+      "row": 1476
+    },
+    "message": "Replace aliased errors with `TimeoutError`",
+    "noqa_row": 1476,
+    "url": "https://docs.astral.sh/ruff/rules/timeout-error-alias"
+  },
+  {
+    "cell": null,
+    "code": "UP017",
+    "end_location": {
+      "column": 71,
       "row": 61
     },
-    "filename": "/tmp/eval-repos/dsvw/dsvw.py",
+    "filename": "/home/ahmeed/Documents/KSIU/GRAD/SOLO/tmp_repos/aiohttp/aiohttp/cookiejar.py",
+    "fix": {
+      "applicability": "safe",
+      "edits": [
+        {
+          "content": "import datetime",
+          "end_location": {
+            "column": 16,
+            "row": 3
+          },
+          "location": {
+            "column": 1,
+            "row": 3
+          }
+        },
+        {
+          "content": "datetime.UTC",
+          "end_location": {
+            "column": 71,
+            "row": 61
+          },
+          "location": {
+            "column": 50,
+            "row": 61
+          }
+        }
+      ],
+      "message": "Convert to `datetime.UTC` alias"
+    },
+    "location": {
+      "column": 50,
+      "row": 61
+    },
+    "message": "Use `datetime.UTC` alias",
+    "noqa_row": 61,
+    "url": "https://docs.astral.sh/ruff/rules/datetime-timezone-utc"
+  },
+  {
+    "cell": null,
+    "code": "B028",
+    "end_location": {
+      "column": 26,
+      "row": 361
+    },
+    "filename": "/home/ahmeed/Documents/KSIU/GRAD/SOLO/tmp_repos/aiohttp/aiohttp/cookiejar.py",
     "fix": {
       "applicability": "unsafe",
       "edits": [
         {
-          "content": "\"<head><meta http-equiv=\\\"refresh\\\" content=\\\"0; url={}\\\"/>\".format(params[\"redir\"])",
+          "content": ", stacklevel=2",
           "end_location": {
-            "column": 135,
+            "column": 35,
+            "row": 363
+          },
+          "location": {
+            "column": 35,
+            "row": 363
+          }
+        }
+      ],
+      "message": "Set `stacklevel=2`"
+    },
+    "location": {
+      "column": 13,
+      "row": 361
+    },
+    "message": "No explicit `stacklevel` keyword argument found",
+    "noqa_row": 361,
+    "url": "https://docs.astral.sh/ruff/rules/no-explicit-stacklevel"
+  },
+  {
+    "cell": null,
+    "code": "UP031",
+    "end_location": {
+      "column": 86,
+      "row": 61
+    },
+    "filename": "/home/ahmeed/Documents/KSIU/GRAD/SOLO/tmp_repos/aiohttp/aiohttp/formdata.py",
+    "fix": {
+      "applicability": "unsafe",
+      "edits": [
+        {
+          "content": "\"filename must be an instance of str. Got: {}\".format(filename)",
+          "end_location": {
+            "column": 86,
             "row": 61
           },
           "location": {
-            "column": 57,
+            "column": 29,
             "row": 61
           }
         }
@@ -619,7 +749,7 @@
       "message": "Replace with format specifiers"
     },
     "location": {
-      "column": 57,
+      "column": 29,
       "row": 61
     },
     "message": "Use format specifiers instead of percent format",
@@ -630,220 +760,55 @@
     "cell": null,
     "code": "UP031",
     "end_location": {
-      "column": 498,
-      "row": 63
+      "column": 86,
+      "row": 72
     },
-    "filename": "/tmp/eval-repos/dsvw/dsvw.py",
+    "filename": "/home/ahmeed/Documents/KSIU/GRAD/SOLO/tmp_repos/aiohttp/aiohttp/formdata.py",
     "fix": {
       "applicability": "unsafe",
       "edits": [
         {
-          "content": "\"<div><span>Attacks:</span></div>\\n<ul>{}\\n</ul>\\n\".format((\"\".join(\"\\n<li%s>%s - <a href=\\\"%s\\\">vulnerable</a>|<a href=\\\"%s\\\">exploit</a>|<a href=\\\"%s\\\" target=\\\"_blank\\\">info</a></li>\" % (\" class=\\\"disabled\\\" title=\\\"module 'python-lxml' not installed\\\"\" if (\"lxml.etree\" not in sys.modules and any(_ in case[0].upper() for _ in (\"XML\", \"XPATH\"))) else \"\", case[0], case[1], case[2], case[3]) for case in CASES)).replace(\"<a href=\\\"None\\\">vulnerable</a>|\", \"<b>-</b>|\"))",
+          "content": "\"content_type must be an instance of str. Got: {}\".format(content_type)",
           "end_location": {
-            "column": 498,
-            "row": 63
+            "column": 86,
+            "row": 72
           },
           "location": {
-            "column": 32,
-            "row": 63
+            "column": 21,
+            "row": 72
           }
         }
       ],
       "message": "Replace with format specifiers"
     },
     "location": {
-      "column": 32,
-      "row": 63
+      "column": 21,
+      "row": 72
     },
     "message": "Use format specifiers instead of percent format",
-    "noqa_row": 63,
+    "noqa_row": 72,
     "url": "https://docs.astral.sh/ruff/rules/printf-string-formatting"
   },
   {
     "cell": null,
     "code": "UP031",
     "end_location": {
-      "column": 421,
-      "row": 63
+      "column": 85,
+      "row": 121
     },
-    "filename": "/tmp/eval-repos/dsvw/dsvw.py",
+    "filename": "/home/ahmeed/Documents/KSIU/GRAD/SOLO/tmp_repos/aiohttp/aiohttp/formdata.py",
     "fix": {
       "applicability": "unsafe",
       "edits": [
         {
-          "content": "\"\\n<li{}>{} - <a href=\\\"{}\\\">vulnerable</a>|<a href=\\\"{}\\\">exploit</a>|<a href=\\\"{}\\\" target=\\\"_blank\\\">info</a></li>\".format(\" class=\\\"disabled\\\" title=\\\"module 'python-lxml' not installed\\\"\" if (\"lxml.etree\" not in sys.modules and any(_ in case[0].upper() for _ in (\"XML\", \"XPATH\"))) else \"\", case[0], case[1], case[2], case[3])",
+          "content": "\"application/x-www-form-urlencoded; charset={}\".format(charset)",
           "end_location": {
-            "column": 421,
-            "row": 63
-          },
-          "location": {
-            "column": 95,
-            "row": 63
-          }
-        }
-      ],
-      "message": "Replace with format specifiers"
-    },
-    "location": {
-      "column": 95,
-      "row": 63
-    },
-    "message": "Use format specifiers instead of percent format",
-    "noqa_row": 63,
-    "url": "https://docs.astral.sh/ruff/rules/printf-string-formatting"
-  },
-  {
-    "cell": null,
-    "code": "UP031",
-    "end_location": {
-      "column": 279,
-      "row": 65
-    },
-    "filename": "/tmp/eval-repos/dsvw/dsvw.py",
-    "fix": {
-      "applicability": "unsafe",
-      "edits": [
-        {
-          "content": "\"{}{}{}\".format(\"\" if not \"callback\" in params else \"%s(\" % params[\"callback\"], json.dumps(dict((_.findtext(\"username\"), _.findtext(\"surname\")) for _ in xml.etree.ElementTree.fromstring(USERS_XML).findall(\"user\"))), \"\" if not \"callback\" in params else \")\")",
-          "end_location": {
-            "column": 279,
-            "row": 65
-          },
-          "location": {
-            "column": 27,
-            "row": 65
-          }
-        }
-      ],
-      "message": "Replace with format specifiers"
-    },
-    "location": {
-      "column": 27,
-      "row": 65
-    },
-    "message": "Use format specifiers instead of percent format",
-    "noqa_row": 65,
-    "url": "https://docs.astral.sh/ruff/rules/printf-string-formatting"
-  },
-  {
-    "cell": null,
-    "code": "E713",
-    "end_location": {
-      "column": 69,
-      "row": 65
-    },
-    "filename": "/tmp/eval-repos/dsvw/dsvw.py",
-    "fix": {
-      "applicability": "safe",
-      "edits": [
-        {
-          "content": "\"callback\" not in params",
-          "end_location": {
-            "column": 69,
-            "row": 65
-          },
-          "location": {
-            "column": 45,
-            "row": 65
-          }
-        }
-      ],
-      "message": "Convert to `not in`"
-    },
-    "location": {
-      "column": 49,
-      "row": 65
-    },
-    "message": "Test for membership should be `not in`",
-    "noqa_row": 65,
-    "url": "https://docs.astral.sh/ruff/rules/not-in-test"
-  },
-  {
-    "cell": null,
-    "code": "UP031",
-    "end_location": {
-      "column": 101,
-      "row": 65
-    },
-    "filename": "/tmp/eval-repos/dsvw/dsvw.py",
-    "fix": {
-      "applicability": "unsafe",
-      "edits": [
-        {
-          "content": "\"{}(\".format(params[\"callback\"])",
-          "end_location": {
-            "column": 101,
-            "row": 65
-          },
-          "location": {
-            "column": 75,
-            "row": 65
-          }
-        }
-      ],
-      "message": "Replace with format specifiers"
-    },
-    "location": {
-      "column": 75,
-      "row": 65
-    },
-    "message": "Use format specifiers instead of percent format",
-    "noqa_row": 65,
-    "url": "https://docs.astral.sh/ruff/rules/printf-string-formatting"
-  },
-  {
-    "cell": null,
-    "code": "E713",
-    "end_location": {
-      "column": 269,
-      "row": 65
-    },
-    "filename": "/tmp/eval-repos/dsvw/dsvw.py",
-    "fix": {
-      "applicability": "safe",
-      "edits": [
-        {
-          "content": "\"callback\" not in params",
-          "end_location": {
-            "column": 269,
-            "row": 65
-          },
-          "location": {
-            "column": 245,
-            "row": 65
-          }
-        }
-      ],
-      "message": "Convert to `not in`"
-    },
-    "location": {
-      "column": 249,
-      "row": 65
-    },
-    "message": "Test for membership should be `not in`",
-    "noqa_row": 65,
-    "url": "https://docs.astral.sh/ruff/rules/not-in-test"
-  },
-  {
-    "cell": null,
-    "code": "UP031",
-    "end_location": {
-      "column": 282,
-      "row": 68
-    },
-    "filename": "/tmp/eval-repos/dsvw/dsvw.py",
-    "fix": {
-      "applicability": "unsafe",
-      "edits": [
-        {
-          "content": "\"Welcome <b>{}</b><meta http-equiv=\\\"Set-Cookie\\\" content=\\\"SESSIONID={}; path=/\\\"><meta http-equiv=\\\"refresh\\\" content=\\\"1; url=/\\\"/>\".format(re.sub(r\"[^\\w]\", \"\", params.get(\"username\", \"\")), \"\".join(random.sample(string.ascii_letters + string.digits, 20)))",
-          "end_location": {
-            "column": 282,
-            "row": 68
+            "column": 85,
+            "row": 121
           },
           "location": {
             "column": 28,
-            "row": 68
+            "row": 121
           }
         }
       ],
@@ -851,32 +816,381 @@
     },
     "location": {
       "column": 28,
-      "row": 68
+      "row": 121
     },
     "message": "Use format specifiers instead of percent format",
-    "noqa_row": 68,
+    "noqa_row": 121,
     "url": "https://docs.astral.sh/ruff/rules/printf-string-formatting"
   },
   {
     "cell": null,
     "code": "UP031",
     "end_location": {
-      "column": 175,
-      "row": 78
+      "column": 78,
+      "row": 146
     },
-    "filename": "/tmp/eval-repos/dsvw/dsvw.py",
+    "filename": "/home/ahmeed/Documents/KSIU/GRAD/SOLO/tmp_repos/aiohttp/aiohttp/formdata.py",
     "fix": {
       "applicability": "unsafe",
       "edits": [
         {
-          "content": "\"{}{}\".format(\"text/html\" if content.startswith(\"<!DOCTYPE html>\") else \"text/plain\", \"; charset=%s\" % params.get(\"charset\", \"utf8\"))",
+          "content": "\"Can not serialize value type: {!r}\\n \"\n                    \"headers: {!r}\\n value: {!r}\".format(type(value), headers, value)",
           "end_location": {
-            "column": 175,
-            "row": 78
+            "column": 78,
+            "row": 146
+          },
+          "location": {
+            "column": 21,
+            "row": 145
+          }
+        }
+      ],
+      "message": "Replace with format specifiers"
+    },
+    "location": {
+      "column": 21,
+      "row": 145
+    },
+    "message": "Use format specifiers instead of percent format",
+    "noqa_row": 145,
+    "url": "https://docs.astral.sh/ruff/rules/printf-string-formatting"
+  },
+  {
+    "cell": null,
+    "code": "B905",
+    "end_location": {
+      "column": 78,
+      "row": 114
+    },
+    "filename": "/home/ahmeed/Documents/KSIU/GRAD/SOLO/tmp_repos/aiohttp/aiohttp/hdrs.py",
+    "fix": {
+      "applicability": "unsafe",
+      "edits": [
+        {
+          "content": ", strict=False",
+          "end_location": {
+            "column": 77,
+            "row": 114
+          },
+          "location": {
+            "column": 77,
+            "row": 114
+          }
+        }
+      ],
+      "message": "Add explicit value for parameter `strict=`"
+    },
+    "location": {
+      "column": 37,
+      "row": 114
+    },
+    "message": "`zip()` without an explicit `strict=` parameter",
+    "noqa_row": 114,
+    "url": "https://docs.astral.sh/ruff/rules/zip-without-explicit-strict"
+  },
+  {
+    "cell": null,
+    "code": "B905",
+    "end_location": {
+      "column": 84,
+      "row": 117
+    },
+    "filename": "/home/ahmeed/Documents/KSIU/GRAD/SOLO/tmp_repos/aiohttp/aiohttp/hdrs.py",
+    "fix": {
+      "applicability": "unsafe",
+      "edits": [
+        {
+          "content": ", strict=False",
+          "end_location": {
+            "column": 83,
+            "row": 117
+          },
+          "location": {
+            "column": 83,
+            "row": 117
+          }
+        }
+      ],
+      "message": "Add explicit value for parameter `strict=`"
+    },
+    "location": {
+      "column": 37,
+      "row": 117
+    },
+    "message": "`zip()` without an explicit `strict=` parameter",
+    "noqa_row": 117,
+    "url": "https://docs.astral.sh/ruff/rules/zip-without-explicit-strict"
+  },
+  {
+    "cell": null,
+    "code": "B905",
+    "end_location": {
+      "column": 68,
+      "row": 120
+    },
+    "filename": "/home/ahmeed/Documents/KSIU/GRAD/SOLO/tmp_repos/aiohttp/aiohttp/hdrs.py",
+    "fix": {
+      "applicability": "unsafe",
+      "edits": [
+        {
+          "content": ", strict=False",
+          "end_location": {
+            "column": 67,
+            "row": 120
+          },
+          "location": {
+            "column": 67,
+            "row": 120
+          }
+        }
+      ],
+      "message": "Add explicit value for parameter `strict=`"
+    },
+    "location": {
+      "column": 37,
+      "row": 120
+    },
+    "message": "`zip()` without an explicit `strict=` parameter",
+    "noqa_row": 120,
+    "url": "https://docs.astral.sh/ruff/rules/zip-without-explicit-strict"
+  },
+  {
+    "cell": null,
+    "code": "UP035",
+    "end_location": {
+      "column": 2,
+      "row": 43
+    },
+    "filename": "/home/ahmeed/Documents/KSIU/GRAD/SOLO/tmp_repos/aiohttp/aiohttp/helpers.py",
+    "fix": null,
+    "location": {
+      "column": 1,
+      "row": 31
+    },
+    "message": "`typing.ContextManager` is deprecated, use `contextlib.AbstractContextManager` instead",
+    "noqa_row": 31,
+    "url": "https://docs.astral.sh/ruff/rules/deprecated-import"
+  },
+  {
+    "cell": null,
+    "code": "UP036",
+    "end_location": {
+      "column": 31,
+      "row": 55
+    },
+    "filename": "/home/ahmeed/Documents/KSIU/GRAD/SOLO/tmp_repos/aiohttp/aiohttp/helpers.py",
+    "fix": {
+      "applicability": "unsafe",
+      "edits": [
+        {
+          "content": "import asyncio as async_timeout",
+          "end_location": {
+            "column": 25,
+            "row": 58
+          },
+          "location": {
+            "column": 1,
+            "row": 55
+          }
+        }
+      ],
+      "message": "Remove outdated version block"
+    },
+    "location": {
+      "column": 4,
+      "row": 55
+    },
+    "message": "Version block is outdated for minimum Python version",
+    "noqa_row": 55,
+    "url": "https://docs.astral.sh/ruff/rules/outdated-version-block"
+  },
+  {
+    "cell": null,
+    "code": "B904",
+    "end_location": {
+      "column": 70,
+      "row": 144
+    },
+    "filename": "/home/ahmeed/Documents/KSIU/GRAD/SOLO/tmp_repos/aiohttp/aiohttp/helpers.py",
+    "fix": null,
+    "location": {
+      "column": 13,
+      "row": 144
+    },
+    "message": "Within an `except` clause, raise exceptions with `raise ... from err` or `raise ... from None` to distinguish them from errors in exception handling",
+    "noqa_row": 144,
+    "url": "https://docs.astral.sh/ruff/rules/raise-without-from-inside-except"
+  },
+  {
+    "cell": null,
+    "code": "UP031",
+    "end_location": {
+      "column": 75,
+      "row": 147
+    },
+    "filename": "/home/ahmeed/Documents/KSIU/GRAD/SOLO/tmp_repos/aiohttp/aiohttp/helpers.py",
+    "fix": {
+      "applicability": "unsafe",
+      "edits": [
+        {
+          "content": "\"Unknown authorization method {}\".format(auth_type)",
+          "end_location": {
+            "column": 75,
+            "row": 147
+          },
+          "location": {
+            "column": 30,
+            "row": 147
+          }
+        }
+      ],
+      "message": "Replace with format specifiers"
+    },
+    "location": {
+      "column": 30,
+      "row": 147
+    },
+    "message": "Use format specifiers instead of percent format",
+    "noqa_row": 147,
+    "url": "https://docs.astral.sh/ruff/rules/printf-string-formatting"
+  },
+  {
+    "cell": null,
+    "code": "B904",
+    "end_location": {
+      "column": 57,
+      "row": 154
+    },
+    "filename": "/home/ahmeed/Documents/KSIU/GRAD/SOLO/tmp_repos/aiohttp/aiohttp/helpers.py",
+    "fix": null,
+    "location": {
+      "column": 13,
+      "row": 154
+    },
+    "message": "Within an `except` clause, raise exceptions with `raise ... from err` or `raise ... from None` to distinguish them from errors in exception handling",
+    "noqa_row": 154,
+    "url": "https://docs.astral.sh/ruff/rules/raise-without-from-inside-except"
+  },
+  {
+    "cell": null,
+    "code": "B904",
+    "end_location": {
+      "column": 53,
+      "row": 163
+    },
+    "filename": "/home/ahmeed/Documents/KSIU/GRAD/SOLO/tmp_repos/aiohttp/aiohttp/helpers.py",
+    "fix": null,
+    "location": {
+      "column": 13,
+      "row": 163
+    },
+    "message": "Within an `except` clause, raise exceptions with `raise ... from err` or `raise ... from None` to distinguish them from errors in exception handling",
+    "noqa_row": 163,
+    "url": "https://docs.astral.sh/ruff/rules/raise-without-from-inside-except"
+  },
+  {
+    "cell": null,
+    "code": "UP031",
+    "end_location": {
+      "column": 74,
+      "row": 181
+    },
+    "filename": "/home/ahmeed/Documents/KSIU/GRAD/SOLO/tmp_repos/aiohttp/aiohttp/helpers.py",
+    "fix": {
+      "applicability": "unsafe",
+      "edits": [
+        {
+          "content": "\"Basic {}\".format(base64.b64encode(creds).decode(self.encoding))",
+          "end_location": {
+            "column": 74,
+            "row": 181
+          },
+          "location": {
+            "column": 16,
+            "row": 181
+          }
+        }
+      ],
+      "message": "Replace with format specifiers"
+    },
+    "location": {
+      "column": 16,
+      "row": 181
+    },
+    "message": "Use format specifiers instead of percent format",
+    "noqa_row": 181,
+    "url": "https://docs.astral.sh/ruff/rules/printf-string-formatting"
+  },
+  {
+    "cell": null,
+    "code": "B904",
+    "end_location": {
+      "column": 72,
+      "row": 308
+    },
+    "filename": "/home/ahmeed/Documents/KSIU/GRAD/SOLO/tmp_repos/aiohttp/aiohttp/helpers.py",
+    "fix": null,
+    "location": {
+      "column": 9,
+      "row": 308
+    },
+    "message": "Within an `except` clause, raise exceptions with `raise ... from err` or `raise ... from None` to distinguish them from errors in exception handling",
+    "noqa_row": 308,
+    "url": "https://docs.astral.sh/ruff/rules/raise-without-from-inside-except"
+  },
+  {
+    "cell": null,
+    "code": "UP031",
+    "end_location": {
+      "column": 55,
+      "row": 460
+    },
+    "filename": "/home/ahmeed/Documents/KSIU/GRAD/SOLO/tmp_repos/aiohttp/aiohttp/helpers.py",
+    "fix": {
+      "applicability": "unsafe",
+      "edits": [
+        {
+          "content": "'\"{}\"'.format(qval)",
+          "end_location": {
+            "column": 55,
+            "row": 460
+          },
+          "location": {
+            "column": 42,
+            "row": 460
+          }
+        }
+      ],
+      "message": "Replace with format specifiers"
+    },
+    "location": {
+      "column": 42,
+      "row": 460
+    },
+    "message": "Use format specifiers instead of percent format",
+    "noqa_row": 460,
+    "url": "https://docs.astral.sh/ruff/rules/printf-string-formatting"
+  },
+  {
+    "cell": null,
+    "code": "UP031",
+    "end_location": {
+      "column": 59,
+      "row": 470
+    },
+    "filename": "/home/ahmeed/Documents/KSIU/GRAD/SOLO/tmp_repos/aiohttp/aiohttp/helpers.py",
+    "fix": {
+      "applicability": "unsafe",
+      "edits": [
+        {
+          "content": "'\"{}\"'.format(qval)",
+          "end_location": {
+            "column": 59,
+            "row": 470
           },
           "location": {
             "column": 46,
-            "row": 78
+            "row": 470
           }
         }
       ],
@@ -884,76 +1198,10 @@
     },
     "location": {
       "column": 46,
-      "row": 78
+      "row": 470
     },
     "message": "Use format specifiers instead of percent format",
-    "noqa_row": 78,
-    "url": "https://docs.astral.sh/ruff/rules/printf-string-formatting"
-  },
-  {
-    "cell": null,
-    "code": "UP031",
-    "end_location": {
-      "column": 174,
-      "row": 78
-    },
-    "filename": "/tmp/eval-repos/dsvw/dsvw.py",
-    "fix": {
-      "applicability": "unsafe",
-      "edits": [
-        {
-          "content": "\"; charset={}\".format(params.get(\"charset\", \"utf8\"))",
-          "end_location": {
-            "column": 174,
-            "row": 78
-          },
-          "location": {
-            "column": 128,
-            "row": 78
-          }
-        }
-      ],
-      "message": "Replace with format specifiers"
-    },
-    "location": {
-      "column": 128,
-      "row": 78
-    },
-    "message": "Use format specifiers instead of percent format",
-    "noqa_row": 78,
-    "url": "https://docs.astral.sh/ruff/rules/printf-string-formatting"
-  },
-  {
-    "cell": null,
-    "code": "UP031",
-    "end_location": {
-      "column": 123,
-      "row": 80
-    },
-    "filename": "/tmp/eval-repos/dsvw/dsvw.py",
-    "fix": {
-      "applicability": "unsafe",
-      "edits": [
-        {
-          "content": "\"{}{}\".format(content, HTML_POSTFIX if HTML_PREFIX in content and GITHUB not in content else \"\")",
-          "end_location": {
-            "column": 123,
-            "row": 80
-          },
-          "location": {
-            "column": 31,
-            "row": 80
-          }
-        }
-      ],
-      "message": "Replace with format specifiers"
-    },
-    "location": {
-      "column": 31,
-      "row": 80
-    },
-    "message": "Use format specifiers instead of percent format",
-    "noqa_row": 80,
+    "noqa_row": 470,
     "url": "https://docs.astral.sh/ruff/rules/printf-string-formatting"
   },
   {
@@ -961,32 +1209,3243 @@
     "code": "UP031",
     "end_location": {
       "column": 51,
-      "row": 96
+      "row": 473
     },
-    "filename": "/tmp/eval-repos/dsvw/dsvw.py",
+    "filename": "/home/ahmeed/Documents/KSIU/GRAD/SOLO/tmp_repos/aiohttp/aiohttp/helpers.py",
     "fix": {
       "applicability": "unsafe",
       "edits": [
         {
-          "content": "\"[x] exception occurred ('{}')\".format(ex)",
+          "content": "'\"{}\"'.format(qval)",
           "end_location": {
             "column": 51,
-            "row": 96
+            "row": 473
           },
           "location": {
-            "column": 15,
-            "row": 96
+            "column": 38,
+            "row": 473
           }
         }
       ],
       "message": "Replace with format specifiers"
     },
     "location": {
-      "column": 15,
-      "row": 96
+      "column": 38,
+      "row": 473
     },
     "message": "Use format specifiers instead of percent format",
-    "noqa_row": 96,
+    "noqa_row": 473,
     "url": "https://docs.astral.sh/ruff/rules/printf-string-formatting"
+  },
+  {
+    "cell": null,
+    "code": "UP031",
+    "end_location": {
+      "column": 75,
+      "row": 535
+    },
+    "filename": "/home/ahmeed/Documents/KSIU/GRAD/SOLO/tmp_repos/aiohttp/aiohttp/helpers.py",
+    "fix": null,
+    "location": {
+      "column": 38,
+      "row": 535
+    },
+    "message": "Use format specifiers instead of percent format",
+    "noqa_row": 535,
+    "url": "https://docs.astral.sh/ruff/rules/printf-string-formatting"
+  },
+  {
+    "cell": null,
+    "code": "UP041",
+    "end_location": {
+      "column": 39,
+      "row": 687
+    },
+    "filename": "/home/ahmeed/Documents/KSIU/GRAD/SOLO/tmp_repos/aiohttp/aiohttp/helpers.py",
+    "fix": {
+      "applicability": "safe",
+      "edits": [
+        {
+          "content": "TimeoutError",
+          "end_location": {
+            "column": 39,
+            "row": 687
+          },
+          "location": {
+            "column": 19,
+            "row": 687
+          }
+        }
+      ],
+      "message": "Replace `asyncio.TimeoutError` with builtin `TimeoutError`"
+    },
+    "location": {
+      "column": 19,
+      "row": 687
+    },
+    "message": "Replace aliased errors with `TimeoutError`",
+    "noqa_row": 687,
+    "url": "https://docs.astral.sh/ruff/rules/timeout-error-alias"
+  },
+  {
+    "cell": null,
+    "code": "UP036",
+    "end_location": {
+      "column": 39,
+      "row": 694
+    },
+    "filename": "/home/ahmeed/Documents/KSIU/GRAD/SOLO/tmp_repos/aiohttp/aiohttp/helpers.py",
+    "fix": {
+      "applicability": "unsafe",
+      "edits": [
+        {
+          "content": "        self._cancelling = task.cancelling()",
+          "end_location": {
+            "column": 49,
+            "row": 698
+          },
+          "location": {
+            "column": 1,
+            "row": 694
+          }
+        }
+      ],
+      "message": "Remove outdated version block"
+    },
+    "location": {
+      "column": 12,
+      "row": 694
+    },
+    "message": "Version block is outdated for minimum Python version",
+    "noqa_row": 694,
+    "url": "https://docs.astral.sh/ruff/rules/outdated-version-block"
+  },
+  {
+    "cell": null,
+    "code": "UP041",
+    "end_location": {
+      "column": 39,
+      "row": 701
+    },
+    "filename": "/home/ahmeed/Documents/KSIU/GRAD/SOLO/tmp_repos/aiohttp/aiohttp/helpers.py",
+    "fix": {
+      "applicability": "safe",
+      "edits": [
+        {
+          "content": "TimeoutError",
+          "end_location": {
+            "column": 39,
+            "row": 701
+          },
+          "location": {
+            "column": 19,
+            "row": 701
+          }
+        }
+      ],
+      "message": "Replace `asyncio.TimeoutError` with builtin `TimeoutError`"
+    },
+    "location": {
+      "column": 19,
+      "row": 701
+    },
+    "message": "Replace aliased errors with `TimeoutError`",
+    "noqa_row": 701,
+    "url": "https://docs.astral.sh/ruff/rules/timeout-error-alias"
+  },
+  {
+    "cell": null,
+    "code": "UP036",
+    "end_location": {
+      "column": 43,
+      "row": 721
+    },
+    "filename": "/home/ahmeed/Documents/KSIU/GRAD/SOLO/tmp_repos/aiohttp/aiohttp/helpers.py",
+    "fix": {
+      "applicability": "unsafe",
+      "edits": [
+        {
+          "content": "            if enter_task.uncancel() > self._cancelling:\n                return None",
+          "end_location": {
+            "column": 32,
+            "row": 726
+          },
+          "location": {
+            "column": 1,
+            "row": 721
+          }
+        }
+      ],
+      "message": "Remove outdated version block"
+    },
+    "location": {
+      "column": 16,
+      "row": 721
+    },
+    "message": "Version block is outdated for minimum Python version",
+    "noqa_row": 721,
+    "url": "https://docs.astral.sh/ruff/rules/outdated-version-block"
+  },
+  {
+    "cell": null,
+    "code": "UP041",
+    "end_location": {
+      "column": 39,
+      "row": 727
+    },
+    "filename": "/home/ahmeed/Documents/KSIU/GRAD/SOLO/tmp_repos/aiohttp/aiohttp/helpers.py",
+    "fix": {
+      "applicability": "safe",
+      "edits": [
+        {
+          "content": "TimeoutError",
+          "end_location": {
+            "column": 39,
+            "row": 727
+          },
+          "location": {
+            "column": 19,
+            "row": 727
+          }
+        }
+      ],
+      "message": "Replace `asyncio.TimeoutError` with builtin `TimeoutError`"
+    },
+    "location": {
+      "column": 19,
+      "row": 727
+    },
+    "message": "Replace aliased errors with `TimeoutError`",
+    "noqa_row": 727,
+    "url": "https://docs.astral.sh/ruff/rules/timeout-error-alias"
+  },
+  {
+    "cell": null,
+    "code": "UP017",
+    "end_location": {
+      "column": 86,
+      "row": 1100
+    },
+    "filename": "/home/ahmeed/Documents/KSIU/GRAD/SOLO/tmp_repos/aiohttp/aiohttp/helpers.py",
+    "fix": {
+      "applicability": "safe",
+      "edits": [
+        {
+          "content": "import datetime",
+          "end_location": {
+            "column": 16,
+            "row": 8
+          },
+          "location": {
+            "column": 1,
+            "row": 8
+          }
+        },
+        {
+          "content": "datetime.UTC",
+          "end_location": {
+            "column": 86,
+            "row": 1100
+          },
+          "location": {
+            "column": 65,
+            "row": 1100
+          }
+        }
+      ],
+      "message": "Convert to `datetime.UTC` alias"
+    },
+    "location": {
+      "column": 65,
+      "row": 1100
+    },
+    "message": "Use `datetime.UTC` alias",
+    "noqa_row": 1100,
+    "url": "https://docs.astral.sh/ruff/rules/datetime-timezone-utc"
+  },
+  {
+    "cell": null,
+    "code": "N818",
+    "end_location": {
+      "column": 21,
+      "row": 44
+    },
+    "filename": "/home/ahmeed/Documents/KSIU/GRAD/SOLO/tmp_repos/aiohttp/aiohttp/http_exceptions.py",
+    "fix": null,
+    "location": {
+      "column": 7,
+      "row": 44
+    },
+    "message": "Exception name `BadHttpMessage` should be named with an Error suffix",
+    "noqa_row": 44,
+    "url": "https://docs.astral.sh/ruff/rules/error-suffix-on-exception-name"
+  },
+  {
+    "cell": null,
+    "code": "B023",
+    "end_location": {
+      "column": 45,
+      "row": 354
+    },
+    "filename": "/home/ahmeed/Documents/KSIU/GRAD/SOLO/tmp_repos/aiohttp/aiohttp/http_parser.py",
+    "fix": null,
+    "location": {
+      "column": 42,
+      "row": 354
+    },
+    "message": "Function definition does not bind loop variable `msg`",
+    "noqa_row": 354,
+    "url": "https://docs.astral.sh/ruff/rules/function-uses-loop-variable"
+  },
+  {
+    "cell": null,
+    "code": "B904",
+    "end_location": {
+      "column": 14,
+      "row": 1038
+    },
+    "filename": "/home/ahmeed/Documents/KSIU/GRAD/SOLO/tmp_repos/aiohttp/aiohttp/http_parser.py",
+    "fix": null,
+    "location": {
+      "column": 13,
+      "row": 1036
+    },
+    "message": "Within an `except` clause, raise exceptions with `raise ... from err` or `raise ... from None` to distinguish them from errors in exception handling",
+    "noqa_row": 1036,
+    "url": "https://docs.astral.sh/ruff/rules/raise-without-from-inside-except"
+  },
+  {
+    "cell": null,
+    "code": "UP031",
+    "end_location": {
+      "column": 70,
+      "row": 1037
+    },
+    "filename": "/home/ahmeed/Documents/KSIU/GRAD/SOLO/tmp_repos/aiohttp/aiohttp/http_parser.py",
+    "fix": {
+      "applicability": "unsafe",
+      "edits": [
+        {
+          "content": "\"Can not decode content-encoding: {}\".format(self.encoding)",
+          "end_location": {
+            "column": 70,
+            "row": 1037
+          },
+          "location": {
+            "column": 17,
+            "row": 1037
+          }
+        }
+      ],
+      "message": "Replace with format specifiers"
+    },
+    "location": {
+      "column": 17,
+      "row": 1037
+    },
+    "message": "Use format specifiers instead of percent format",
+    "noqa_row": 1037,
+    "url": "https://docs.astral.sh/ruff/rules/printf-string-formatting"
+  },
+  {
+    "cell": null,
+    "code": "UP031",
+    "end_location": {
+      "column": 77,
+      "row": 1045
+    },
+    "filename": "/home/ahmeed/Documents/KSIU/GRAD/SOLO/tmp_repos/aiohttp/aiohttp/http_parser.py",
+    "fix": null,
+    "location": {
+      "column": 17,
+      "row": 1045
+    },
+    "message": "Use format specifiers instead of percent format",
+    "noqa_row": 1045,
+    "url": "https://docs.astral.sh/ruff/rules/printf-string-formatting"
+  },
+  {
+    "cell": null,
+    "code": "UP045",
+    "end_location": {
+      "column": 2,
+      "row": 53
+    },
+    "filename": "/home/ahmeed/Documents/KSIU/GRAD/SOLO/tmp_repos/aiohttp/aiohttp/http_writer.py",
+    "fix": null,
+    "location": {
+      "column": 18,
+      "row": 48
+    },
+    "message": "Use `X | None` for type annotations",
+    "noqa_row": 48,
+    "url": "https://docs.astral.sh/ruff/rules/non-pep604-annotation-optional"
+  },
+  {
+    "cell": null,
+    "code": "UP045",
+    "end_location": {
+      "column": 77,
+      "row": 54
+    },
+    "filename": "/home/ahmeed/Documents/KSIU/GRAD/SOLO/tmp_repos/aiohttp/aiohttp/http_writer.py",
+    "fix": null,
+    "location": {
+      "column": 20,
+      "row": 54
+    },
+    "message": "Use `X | None` for type annotations",
+    "noqa_row": 54,
+    "url": "https://docs.astral.sh/ruff/rules/non-pep604-annotation-optional"
+  },
+  {
+    "cell": null,
+    "code": "UP036",
+    "end_location": {
+      "column": 31,
+      "row": 44
+    },
+    "filename": "/home/ahmeed/Documents/KSIU/GRAD/SOLO/tmp_repos/aiohttp/aiohttp/multipart.py",
+    "fix": {
+      "applicability": "unsafe",
+      "edits": [
+        {
+          "content": "from typing import Self",
+          "end_location": {
+            "column": 51,
+            "row": 49
+          },
+          "location": {
+            "column": 1,
+            "row": 44
+          }
+        }
+      ],
+      "message": "Remove outdated version block"
+    },
+    "location": {
+      "column": 4,
+      "row": 44
+    },
+    "message": "Version block is outdated for minimum Python version",
+    "noqa_row": 44,
+    "url": "https://docs.astral.sh/ruff/rules/outdated-version-block"
+  },
+  {
+    "cell": null,
+    "code": "B028",
+    "end_location": {
+      "column": 22,
+      "row": 104
+    },
+    "filename": "/home/ahmeed/Documents/KSIU/GRAD/SOLO/tmp_repos/aiohttp/aiohttp/multipart.py",
+    "fix": {
+      "applicability": "unsafe",
+      "edits": [
+        {
+          "content": ", stacklevel=2",
+          "end_location": {
+            "column": 58,
+            "row": 104
+          },
+          "location": {
+            "column": 58,
+            "row": 104
+          }
+        }
+      ],
+      "message": "Set `stacklevel=2`"
+    },
+    "location": {
+      "column": 9,
+      "row": 104
+    },
+    "message": "No explicit `stacklevel` keyword argument found",
+    "noqa_row": 104,
+    "url": "https://docs.astral.sh/ruff/rules/no-explicit-stacklevel"
+  },
+  {
+    "cell": null,
+    "code": "B028",
+    "end_location": {
+      "column": 26,
+      "row": 112
+    },
+    "filename": "/home/ahmeed/Documents/KSIU/GRAD/SOLO/tmp_repos/aiohttp/aiohttp/multipart.py",
+    "fix": {
+      "applicability": "unsafe",
+      "edits": [
+        {
+          "content": ", stacklevel=2",
+          "end_location": {
+            "column": 62,
+            "row": 112
+          },
+          "location": {
+            "column": 62,
+            "row": 112
+          }
+        }
+      ],
+      "message": "Set `stacklevel=2`"
+    },
+    "location": {
+      "column": 13,
+      "row": 112
+    },
+    "message": "No explicit `stacklevel` keyword argument found",
+    "noqa_row": 112,
+    "url": "https://docs.astral.sh/ruff/rules/no-explicit-stacklevel"
+  },
+  {
+    "cell": null,
+    "code": "B028",
+    "end_location": {
+      "column": 26,
+      "row": 116
+    },
+    "filename": "/home/ahmeed/Documents/KSIU/GRAD/SOLO/tmp_repos/aiohttp/aiohttp/multipart.py",
+    "fix": {
+      "applicability": "unsafe",
+      "edits": [
+        {
+          "content": ", stacklevel=2",
+          "end_location": {
+            "column": 62,
+            "row": 116
+          },
+          "location": {
+            "column": 62,
+            "row": 116
+          }
+        }
+      ],
+      "message": "Set `stacklevel=2`"
+    },
+    "location": {
+      "column": 13,
+      "row": 116
+    },
+    "message": "No explicit `stacklevel` keyword argument found",
+    "noqa_row": 116,
+    "url": "https://docs.astral.sh/ruff/rules/no-explicit-stacklevel"
+  },
+  {
+    "cell": null,
+    "code": "B028",
+    "end_location": {
+      "column": 26,
+      "row": 124
+    },
+    "filename": "/home/ahmeed/Documents/KSIU/GRAD/SOLO/tmp_repos/aiohttp/aiohttp/multipart.py",
+    "fix": {
+      "applicability": "unsafe",
+      "edits": [
+        {
+          "content": ", stacklevel=2",
+          "end_location": {
+            "column": 62,
+            "row": 124
+          },
+          "location": {
+            "column": 62,
+            "row": 124
+          }
+        }
+      ],
+      "message": "Set `stacklevel=2`"
+    },
+    "location": {
+      "column": 13,
+      "row": 124
+    },
+    "message": "No explicit `stacklevel` keyword argument found",
+    "noqa_row": 124,
+    "url": "https://docs.astral.sh/ruff/rules/no-explicit-stacklevel"
+  },
+  {
+    "cell": null,
+    "code": "B028",
+    "end_location": {
+      "column": 26,
+      "row": 128
+    },
+    "filename": "/home/ahmeed/Documents/KSIU/GRAD/SOLO/tmp_repos/aiohttp/aiohttp/multipart.py",
+    "fix": {
+      "applicability": "unsafe",
+      "edits": [
+        {
+          "content": ", stacklevel=2",
+          "end_location": {
+            "column": 59,
+            "row": 128
+          },
+          "location": {
+            "column": 59,
+            "row": 128
+          }
+        }
+      ],
+      "message": "Set `stacklevel=2`"
+    },
+    "location": {
+      "column": 13,
+      "row": 128
+    },
+    "message": "No explicit `stacklevel` keyword argument found",
+    "noqa_row": 128,
+    "url": "https://docs.astral.sh/ruff/rules/no-explicit-stacklevel"
+  },
+  {
+    "cell": null,
+    "code": "B028",
+    "end_location": {
+      "column": 30,
+      "row": 135
+    },
+    "filename": "/home/ahmeed/Documents/KSIU/GRAD/SOLO/tmp_repos/aiohttp/aiohttp/multipart.py",
+    "fix": {
+      "applicability": "unsafe",
+      "edits": [
+        {
+          "content": ", stacklevel=2",
+          "end_location": {
+            "column": 63,
+            "row": 135
+          },
+          "location": {
+            "column": 63,
+            "row": 135
+          }
+        }
+      ],
+      "message": "Set `stacklevel=2`"
+    },
+    "location": {
+      "column": 17,
+      "row": 135
+    },
+    "message": "No explicit `stacklevel` keyword argument found",
+    "noqa_row": 135,
+    "url": "https://docs.astral.sh/ruff/rules/no-explicit-stacklevel"
+  },
+  {
+    "cell": null,
+    "code": "B028",
+    "end_location": {
+      "column": 30,
+      "row": 143
+    },
+    "filename": "/home/ahmeed/Documents/KSIU/GRAD/SOLO/tmp_repos/aiohttp/aiohttp/multipart.py",
+    "fix": {
+      "applicability": "unsafe",
+      "edits": [
+        {
+          "content": ", stacklevel=2",
+          "end_location": {
+            "column": 63,
+            "row": 143
+          },
+          "location": {
+            "column": 63,
+            "row": 143
+          }
+        }
+      ],
+      "message": "Set `stacklevel=2`"
+    },
+    "location": {
+      "column": 17,
+      "row": 143
+    },
+    "message": "No explicit `stacklevel` keyword argument found",
+    "noqa_row": 143,
+    "url": "https://docs.astral.sh/ruff/rules/no-explicit-stacklevel"
+  },
+  {
+    "cell": null,
+    "code": "B028",
+    "end_location": {
+      "column": 30,
+      "row": 149
+    },
+    "filename": "/home/ahmeed/Documents/KSIU/GRAD/SOLO/tmp_repos/aiohttp/aiohttp/multipart.py",
+    "fix": {
+      "applicability": "unsafe",
+      "edits": [
+        {
+          "content": ", stacklevel=2",
+          "end_location": {
+            "column": 63,
+            "row": 149
+          },
+          "location": {
+            "column": 63,
+            "row": 149
+          }
+        }
+      ],
+      "message": "Set `stacklevel=2`"
+    },
+    "location": {
+      "column": 17,
+      "row": 149
+    },
+    "message": "No explicit `stacklevel` keyword argument found",
+    "noqa_row": 149,
+    "url": "https://docs.astral.sh/ruff/rules/no-explicit-stacklevel"
+  },
+  {
+    "cell": null,
+    "code": "B028",
+    "end_location": {
+      "column": 30,
+      "row": 169
+    },
+    "filename": "/home/ahmeed/Documents/KSIU/GRAD/SOLO/tmp_repos/aiohttp/aiohttp/multipart.py",
+    "fix": {
+      "applicability": "unsafe",
+      "edits": [
+        {
+          "content": ", stacklevel=2",
+          "end_location": {
+            "column": 66,
+            "row": 169
+          },
+          "location": {
+            "column": 66,
+            "row": 169
+          }
+        }
+      ],
+      "message": "Set `stacklevel=2`"
+    },
+    "location": {
+      "column": 17,
+      "row": 169
+    },
+    "message": "No explicit `stacklevel` keyword argument found",
+    "noqa_row": 169,
+    "url": "https://docs.astral.sh/ruff/rules/no-explicit-stacklevel"
+  },
+  {
+    "cell": null,
+    "code": "UP031",
+    "end_location": {
+      "column": 28,
+      "row": 180
+    },
+    "filename": "/home/ahmeed/Documents/KSIU/GRAD/SOLO/tmp_repos/aiohttp/aiohttp/multipart.py",
+    "fix": {
+      "applicability": "unsafe",
+      "edits": [
+        {
+          "content": "\"{}*\".format(name)",
+          "end_location": {
+            "column": 28,
+            "row": 180
+          },
+          "location": {
+            "column": 16,
+            "row": 180
+          }
+        }
+      ],
+      "message": "Replace with format specifiers"
+    },
+    "location": {
+      "column": 16,
+      "row": 180
+    },
+    "message": "Use format specifiers instead of percent format",
+    "noqa_row": 180,
+    "url": "https://docs.astral.sh/ruff/rules/printf-string-formatting"
+  },
+  {
+    "cell": null,
+    "code": "B904",
+    "end_location": {
+      "column": 88,
+      "row": 487
+    },
+    "filename": "/home/ahmeed/Documents/KSIU/GRAD/SOLO/tmp_repos/aiohttp/aiohttp/multipart.py",
+    "fix": null,
+    "location": {
+      "column": 13,
+      "row": 487
+    },
+    "message": "Within an `except` clause, raise exceptions with `raise ... from err` or `raise ... from None` to distinguish them from errors in exception handling",
+    "noqa_row": 487,
+    "url": "https://docs.astral.sh/ruff/rules/raise-without-from-inside-except"
+  },
+  {
+    "cell": null,
+    "code": "UP031",
+    "end_location": {
+      "column": 87,
+      "row": 487
+    },
+    "filename": "/home/ahmeed/Documents/KSIU/GRAD/SOLO/tmp_repos/aiohttp/aiohttp/multipart.py",
+    "fix": {
+      "applicability": "unsafe",
+      "edits": [
+        {
+          "content": "\"data cannot be decoded with {} encoding\".format(real_encoding)",
+          "end_location": {
+            "column": 87,
+            "row": 487
+          },
+          "location": {
+            "column": 30,
+            "row": 487
+          }
+        }
+      ],
+      "message": "Replace with format specifiers"
+    },
+    "location": {
+      "column": 30,
+      "row": 487
+    },
+    "message": "Use format specifiers instead of percent format",
+    "noqa_row": 487,
+    "url": "https://docs.astral.sh/ruff/rules/printf-string-formatting"
+  },
+  {
+    "cell": null,
+    "code": "UP031",
+    "end_location": {
+      "column": 79,
+      "row": 662
+    },
+    "filename": "/home/ahmeed/Documents/KSIU/GRAD/SOLO/tmp_repos/aiohttp/aiohttp/multipart.py",
+    "fix": {
+      "applicability": "unsafe",
+      "edits": [
+        {
+          "content": "\"boundary missed for Content-Type: {}\".format(headers[CONTENT_TYPE])",
+          "end_location": {
+            "column": 79,
+            "row": 662
+          },
+          "location": {
+            "column": 17,
+            "row": 662
+          }
+        }
+      ],
+      "message": "Replace with format specifiers"
+    },
+    "location": {
+      "column": 17,
+      "row": 662
+    },
+    "message": "Use format specifiers instead of percent format",
+    "noqa_row": 662,
+    "url": "https://docs.astral.sh/ruff/rules/printf-string-formatting"
+  },
+  {
+    "cell": null,
+    "code": "UP031",
+    "end_location": {
+      "column": 81,
+      "row": 790
+    },
+    "filename": "/home/ahmeed/Documents/KSIU/GRAD/SOLO/tmp_repos/aiohttp/aiohttp/multipart.py",
+    "fix": {
+      "applicability": "unsafe",
+      "edits": [
+        {
+          "content": "\"boundary {!r} is too long (70 chars max)\".format(boundary)",
+          "end_location": {
+            "column": 81,
+            "row": 790
+          },
+          "location": {
+            "column": 30,
+            "row": 790
+          }
+        }
+      ],
+      "message": "Replace with format specifiers"
+    },
+    "location": {
+      "column": 30,
+      "row": 790
+    },
+    "message": "Use format specifiers instead of percent format",
+    "noqa_row": 790,
+    "url": "https://docs.astral.sh/ruff/rules/printf-string-formatting"
+  },
+  {
+    "cell": null,
+    "code": "UP031",
+    "end_location": {
+      "column": 81,
+      "row": 880
+    },
+    "filename": "/home/ahmeed/Documents/KSIU/GRAD/SOLO/tmp_repos/aiohttp/aiohttp/multipart.py",
+    "fix": {
+      "applicability": "unsafe",
+      "edits": [
+        {
+          "content": "\"boundary {!r} is too long (70 chars max)\".format(boundary)",
+          "end_location": {
+            "column": 81,
+            "row": 880
+          },
+          "location": {
+            "column": 30,
+            "row": 880
+          }
+        }
+      ],
+      "message": "Replace with format specifiers"
+    },
+    "location": {
+      "column": 30,
+      "row": 880
+    },
+    "message": "Use format specifiers instead of percent format",
+    "noqa_row": 880,
+    "url": "https://docs.astral.sh/ruff/rules/printf-string-formatting"
+  },
+  {
+    "cell": null,
+    "code": "B904",
+    "end_location": {
+      "column": 71,
+      "row": 959
+    },
+    "filename": "/home/ahmeed/Documents/KSIU/GRAD/SOLO/tmp_repos/aiohttp/aiohttp/multipart.py",
+    "fix": null,
+    "location": {
+      "column": 17,
+      "row": 959
+    },
+    "message": "Within an `except` clause, raise exceptions with `raise ... from err` or `raise ... from None` to distinguish them from errors in exception handling",
+    "noqa_row": 959,
+    "url": "https://docs.astral.sh/ruff/rules/raise-without-from-inside-except"
+  },
+  {
+    "cell": null,
+    "code": "UP031",
+    "end_location": {
+      "column": 70,
+      "row": 959
+    },
+    "filename": "/home/ahmeed/Documents/KSIU/GRAD/SOLO/tmp_repos/aiohttp/aiohttp/multipart.py",
+    "fix": {
+      "applicability": "unsafe",
+      "edits": [
+        {
+          "content": "\"Cannot create payload from {!r}\".format(obj)",
+          "end_location": {
+            "column": 70,
+            "row": 959
+          },
+          "location": {
+            "column": 33,
+            "row": 959
+          }
+        }
+      ],
+      "message": "Replace with format specifiers"
+    },
+    "location": {
+      "column": 33,
+      "row": 959
+    },
+    "message": "Use format specifiers instead of percent format",
+    "noqa_row": 959,
+    "url": "https://docs.astral.sh/ruff/rules/printf-string-formatting"
+  },
+  {
+    "cell": null,
+    "code": "N801",
+    "end_location": {
+      "column": 19,
+      "row": 70
+    },
+    "filename": "/home/ahmeed/Documents/KSIU/GRAD/SOLO/tmp_repos/aiohttp/aiohttp/payload.py",
+    "fix": null,
+    "location": {
+      "column": 7,
+      "row": 70
+    },
+    "message": "Class name `payload_type` should use CapWords convention",
+    "noqa_row": 70,
+    "url": "https://docs.astral.sh/ruff/rules/invalid-class-name"
+  },
+  {
+    "cell": null,
+    "code": "B027",
+    "end_location": {
+      "column": 12,
+      "row": 321
+    },
+    "filename": "/home/ahmeed/Documents/KSIU/GRAD/SOLO/tmp_repos/aiohttp/aiohttp/payload.py",
+    "fix": null,
+    "location": {
+      "column": 5,
+      "row": 307
+    },
+    "message": "`Payload._close` is an empty method in an abstract base class, but has no abstract decorator",
+    "noqa_row": 307,
+    "url": "https://docs.astral.sh/ruff/rules/empty-method-without-abstract-decorator"
+  },
+  {
+    "cell": null,
+    "code": "B028",
+    "end_location": {
+      "column": 26,
+      "row": 359
+    },
+    "filename": "/home/ahmeed/Documents/KSIU/GRAD/SOLO/tmp_repos/aiohttp/aiohttp/payload.py",
+    "fix": {
+      "applicability": "unsafe",
+      "edits": [
+        {
+          "content": "stacklevel=2, ",
+          "end_location": {
+            "column": 17,
+            "row": 364
+          },
+          "location": {
+            "column": 17,
+            "row": 364
+          }
+        }
+      ],
+      "message": "Set `stacklevel=2`"
+    },
+    "location": {
+      "column": 13,
+      "row": 359
+    },
+    "message": "No explicit `stacklevel` keyword argument found",
+    "noqa_row": 359,
+    "url": "https://docs.astral.sh/ruff/rules/no-explicit-stacklevel"
+  },
+  {
+    "cell": null,
+    "code": "UP031",
+    "end_location": {
+      "column": 67,
+      "row": 435
+    },
+    "filename": "/home/ahmeed/Documents/KSIU/GRAD/SOLO/tmp_repos/aiohttp/aiohttp/payload.py",
+    "fix": {
+      "applicability": "unsafe",
+      "edits": [
+        {
+          "content": "\"text/plain; charset={}\".format(encoding)",
+          "end_location": {
+            "column": 67,
+            "row": 435
+          },
+          "location": {
+            "column": 32,
+            "row": 435
+          }
+        }
+      ],
+      "message": "Replace with format specifiers"
+    },
+    "location": {
+      "column": 32,
+      "row": 435
+    },
+    "message": "Use format specifiers instead of percent format",
+    "noqa_row": 435,
+    "url": "https://docs.astral.sh/ruff/rules/printf-string-formatting"
+  },
+  {
+    "cell": null,
+    "code": "B026",
+    "end_location": {
+      "column": 18,
+      "row": 442
+    },
+    "filename": "/home/ahmeed/Documents/KSIU/GRAD/SOLO/tmp_repos/aiohttp/aiohttp/payload.py",
+    "fix": null,
+    "location": {
+      "column": 13,
+      "row": 442
+    },
+    "message": "Star-arg unpacking after a keyword argument is strongly discouraged",
+    "noqa_row": 442,
+    "url": "https://docs.astral.sh/ruff/rules/star-arg-unpacking-after-keyword-arg"
+  },
+  {
+    "cell": null,
+    "code": "UP031",
+    "end_location": {
+      "column": 67,
+      "row": 738
+    },
+    "filename": "/home/ahmeed/Documents/KSIU/GRAD/SOLO/tmp_repos/aiohttp/aiohttp/payload.py",
+    "fix": {
+      "applicability": "unsafe",
+      "edits": [
+        {
+          "content": "\"text/plain; charset={}\".format(encoding)",
+          "end_location": {
+            "column": 67,
+            "row": 738
+          },
+          "location": {
+            "column": 32,
+            "row": 738
+          }
+        }
+      ],
+      "message": "Replace with format specifiers"
+    },
+    "location": {
+      "column": 32,
+      "row": 738
+    },
+    "message": "Use format specifiers instead of percent format",
+    "noqa_row": 738,
+    "url": "https://docs.astral.sh/ruff/rules/printf-string-formatting"
+  },
+  {
+    "cell": null,
+    "code": "B026",
+    "end_location": {
+      "column": 18,
+      "row": 744
+    },
+    "filename": "/home/ahmeed/Documents/KSIU/GRAD/SOLO/tmp_repos/aiohttp/aiohttp/payload.py",
+    "fix": null,
+    "location": {
+      "column": 13,
+      "row": 744
+    },
+    "message": "Star-arg unpacking after a keyword argument is strongly discouraged",
+    "noqa_row": 744,
+    "url": "https://docs.astral.sh/ruff/rules/star-arg-unpacking-after-keyword-arg"
+  },
+  {
+    "cell": null,
+    "code": "B026",
+    "end_location": {
+      "column": 18,
+      "row": 938
+    },
+    "filename": "/home/ahmeed/Documents/KSIU/GRAD/SOLO/tmp_repos/aiohttp/aiohttp/payload.py",
+    "fix": null,
+    "location": {
+      "column": 13,
+      "row": 938
+    },
+    "message": "Star-arg unpacking after a keyword argument is strongly discouraged",
+    "noqa_row": 938,
+    "url": "https://docs.astral.sh/ruff/rules/star-arg-unpacking-after-keyword-arg"
+  },
+  {
+    "cell": null,
+    "code": "B026",
+    "end_location": {
+      "column": 18,
+      "row": 961
+    },
+    "filename": "/home/ahmeed/Documents/KSIU/GRAD/SOLO/tmp_repos/aiohttp/aiohttp/payload.py",
+    "fix": null,
+    "location": {
+      "column": 13,
+      "row": 961
+    },
+    "message": "Star-arg unpacking after a keyword argument is strongly discouraged",
+    "noqa_row": 961,
+    "url": "https://docs.astral.sh/ruff/rules/star-arg-unpacking-after-keyword-arg"
+  },
+  {
+    "cell": null,
+    "code": "I001",
+    "end_location": {
+      "column": 42,
+      "row": 21
+    },
+    "filename": "/home/ahmeed/Documents/KSIU/GRAD/SOLO/tmp_repos/aiohttp/aiohttp/pytest_plugin.py",
+    "fix": {
+      "applicability": "safe",
+      "edits": [
+        {
+          "content": "import asyncio\nimport contextlib\nimport inspect\nimport warnings\nfrom collections.abc import Awaitable, Callable, Iterator\nfrom typing import Any, Protocol, TypeVar, overload\n\nimport pytest\n\nfrom .test_utils import (\n    BaseTestServer,\n    RawTestServer,\n    TestClient,\n    TestServer,\n    loop_context,\n    setup_test_loop,\n    teardown_test_loop,\n)\nfrom .test_utils import (\n    unused_port as _unused_port,\n)\nfrom .web import Application, BaseRequest, Request\nfrom .web_protocol import _RequestHandler\n\n",
+          "end_location": {
+            "column": 1,
+            "row": 23
+          },
+          "location": {
+            "column": 1,
+            "row": 1
+          }
+        }
+      ],
+      "message": "Organize imports"
+    },
+    "location": {
+      "column": 1,
+      "row": 1
+    },
+    "message": "Import block is un-sorted or un-formatted",
+    "noqa_row": 1,
+    "url": "https://docs.astral.sh/ruff/rules/unsorted-imports"
+  },
+  {
+    "cell": null,
+    "code": "E721",
+    "end_location": {
+      "column": 44,
+      "row": 171
+    },
+    "filename": "/home/ahmeed/Documents/KSIU/GRAD/SOLO/tmp_repos/aiohttp/aiohttp/pytest_plugin.py",
+    "fix": null,
+    "location": {
+      "column": 16,
+      "row": 171
+    },
+    "message": "Use `is` and `is not` for type comparisons, or `isinstance()` for isinstance checks",
+    "noqa_row": 171,
+    "url": "https://docs.astral.sh/ruff/rules/type-comparison"
+  },
+  {
+    "cell": null,
+    "code": "UP031",
+    "end_location": {
+      "column": 53,
+      "row": 256
+    },
+    "filename": "/home/ahmeed/Documents/KSIU/GRAD/SOLO/tmp_repos/aiohttp/aiohttp/pytest_plugin.py",
+    "fix": {
+      "applicability": "unsafe",
+      "edits": [
+        {
+          "content": "\"Unknown loop '{}', available loops: {}\".format(name, list(factories.keys()))",
+          "end_location": {
+            "column": 53,
+            "row": 256
+          },
+          "location": {
+            "column": 21,
+            "row": 255
+          }
+        }
+      ],
+      "message": "Replace with format specifiers"
+    },
+    "location": {
+      "column": 21,
+      "row": 255
+    },
+    "message": "Use format specifiers instead of percent format",
+    "noqa_row": 255,
+    "url": "https://docs.astral.sh/ruff/rules/printf-string-formatting"
+  },
+  {
+    "cell": null,
+    "code": "UP031",
+    "end_location": {
+      "column": 73,
+      "row": 419
+    },
+    "filename": "/home/ahmeed/Documents/KSIU/GRAD/SOLO/tmp_repos/aiohttp/aiohttp/pytest_plugin.py",
+    "fix": {
+      "applicability": "unsafe",
+      "edits": [
+        {
+          "content": "\"Unknown argument type: {!r}\".format(type(__param))",
+          "end_location": {
+            "column": 73,
+            "row": 419
+          },
+          "location": {
+            "column": 30,
+            "row": 419
+          }
+        }
+      ],
+      "message": "Replace with format specifiers"
+    },
+    "location": {
+      "column": 30,
+      "row": 419
+    },
+    "message": "Use format specifiers instead of percent format",
+    "noqa_row": 419,
+    "url": "https://docs.astral.sh/ruff/rules/printf-string-formatting"
+  },
+  {
+    "cell": null,
+    "code": "N818",
+    "end_location": {
+      "column": 16,
+      "row": 28
+    },
+    "filename": "/home/ahmeed/Documents/KSIU/GRAD/SOLO/tmp_repos/aiohttp/aiohttp/streams.py",
+    "fix": null,
+    "location": {
+      "column": 7,
+      "row": 28
+    },
+    "message": "Exception name `EofStream` should be named with an Error suffix",
+    "noqa_row": 28,
+    "url": "https://docs.astral.sh/ruff/rules/error-suffix-on-exception-name"
+  },
+  {
+    "cell": null,
+    "code": "B904",
+    "end_location": {
+      "column": 37,
+      "row": 46
+    },
+    "filename": "/home/ahmeed/Documents/KSIU/GRAD/SOLO/tmp_repos/aiohttp/aiohttp/streams.py",
+    "fix": null,
+    "location": {
+      "column": 13,
+      "row": 46
+    },
+    "message": "Within an `except` clause, raise exceptions with `raise ... from err` or `raise ... from None` to distinguish them from errors in exception handling",
+    "noqa_row": 46,
+    "url": "https://docs.astral.sh/ruff/rules/raise-without-from-inside-except"
+  },
+  {
+    "cell": null,
+    "code": "UP031",
+    "end_location": {
+      "column": 35,
+      "row": 165
+    },
+    "filename": "/home/ahmeed/Documents/KSIU/GRAD/SOLO/tmp_repos/aiohttp/aiohttp/streams.py",
+    "fix": null,
+    "location": {
+      "column": 25,
+      "row": 165
+    },
+    "message": "Use format specifiers instead of percent format",
+    "noqa_row": 165,
+    "url": "https://docs.astral.sh/ruff/rules/printf-string-formatting"
+  },
+  {
+    "cell": null,
+    "code": "UP031",
+    "end_location": {
+      "column": 41,
+      "row": 169
+    },
+    "filename": "/home/ahmeed/Documents/KSIU/GRAD/SOLO/tmp_repos/aiohttp/aiohttp/streams.py",
+    "fix": null,
+    "location": {
+      "column": 25,
+      "row": 169
+    },
+    "message": "Use format specifiers instead of percent format",
+    "noqa_row": 169,
+    "url": "https://docs.astral.sh/ruff/rules/printf-string-formatting"
+  },
+  {
+    "cell": null,
+    "code": "UP031",
+    "end_location": {
+      "column": 46,
+      "row": 171
+    },
+    "filename": "/home/ahmeed/Documents/KSIU/GRAD/SOLO/tmp_repos/aiohttp/aiohttp/streams.py",
+    "fix": {
+      "applicability": "unsafe",
+      "edits": [
+        {
+          "content": "\"w={!r}\".format(self._waiter)",
+          "end_location": {
+            "column": 46,
+            "row": 171
+          },
+          "location": {
+            "column": 25,
+            "row": 171
+          }
+        }
+      ],
+      "message": "Replace with format specifiers"
+    },
+    "location": {
+      "column": 25,
+      "row": 171
+    },
+    "message": "Use format specifiers instead of percent format",
+    "noqa_row": 171,
+    "url": "https://docs.astral.sh/ruff/rules/printf-string-formatting"
+  },
+  {
+    "cell": null,
+    "code": "UP031",
+    "end_location": {
+      "column": 49,
+      "row": 173
+    },
+    "filename": "/home/ahmeed/Documents/KSIU/GRAD/SOLO/tmp_repos/aiohttp/aiohttp/streams.py",
+    "fix": {
+      "applicability": "unsafe",
+      "edits": [
+        {
+          "content": "\"e={!r}\".format(self._exception)",
+          "end_location": {
+            "column": 49,
+            "row": 173
+          },
+          "location": {
+            "column": 25,
+            "row": 173
+          }
+        }
+      ],
+      "message": "Replace with format specifiers"
+    },
+    "location": {
+      "column": 25,
+      "row": 173
+    },
+    "message": "Use format specifiers instead of percent format",
+    "noqa_row": 173,
+    "url": "https://docs.astral.sh/ruff/rules/printf-string-formatting"
+  },
+  {
+    "cell": null,
+    "code": "UP031",
+    "end_location": {
+      "column": 39,
+      "row": 174
+    },
+    "filename": "/home/ahmeed/Documents/KSIU/GRAD/SOLO/tmp_repos/aiohttp/aiohttp/streams.py",
+    "fix": {
+      "applicability": "unsafe",
+      "edits": [
+        {
+          "content": "\"<{}>\".format(\" \".join(info))",
+          "end_location": {
+            "column": 39,
+            "row": 174
+          },
+          "location": {
+            "column": 16,
+            "row": 174
+          }
+        }
+      ],
+      "message": "Replace with format specifiers"
+    },
+    "location": {
+      "column": 16,
+      "row": 174
+    },
+    "message": "Use format specifiers instead of percent format",
+    "noqa_row": 174,
+    "url": "https://docs.astral.sh/ruff/rules/printf-string-formatting"
+  },
+  {
+    "cell": null,
+    "code": "UP031",
+    "end_location": {
+      "column": 64,
+      "row": 354
+    },
+    "filename": "/home/ahmeed/Documents/KSIU/GRAD/SOLO/tmp_repos/aiohttp/aiohttp/streams.py",
+    "fix": {
+      "applicability": "unsafe",
+      "edits": [
+        {
+          "content": "\"{}() called while another coroutine is \"\n                \"already waiting for incoming data\".format(func_name)",
+          "end_location": {
+            "column": 64,
+            "row": 354
+          },
+          "location": {
+            "column": 17,
+            "row": 353
+          }
+        }
+      ],
+      "message": "Replace with format specifiers"
+    },
+    "location": {
+      "column": 17,
+      "row": 353
+    },
+    "message": "Use format specifiers instead of percent format",
+    "noqa_row": 353,
+    "url": "https://docs.astral.sh/ruff/rules/printf-string-formatting"
+  },
+  {
+    "cell": null,
+    "code": "UP031",
+    "end_location": {
+      "column": 48,
+      "row": 570
+    },
+    "filename": "/home/ahmeed/Documents/KSIU/GRAD/SOLO/tmp_repos/aiohttp/aiohttp/streams.py",
+    "fix": {
+      "applicability": "unsafe",
+      "edits": [
+        {
+          "content": "\"<{}>\".format(self.__class__.__name__)",
+          "end_location": {
+            "column": 48,
+            "row": 570
+          },
+          "location": {
+            "column": 16,
+            "row": 570
+          }
+        }
+      ],
+      "message": "Replace with format specifiers"
+    },
+    "location": {
+      "column": 16,
+      "row": 570
+    },
+    "message": "Use format specifiers instead of percent format",
+    "noqa_row": 570,
+    "url": "https://docs.astral.sh/ruff/rules/printf-string-formatting"
+  },
+  {
+    "cell": null,
+    "code": "UP041",
+    "end_location": {
+      "column": 66,
+      "row": 682
+    },
+    "filename": "/home/ahmeed/Documents/KSIU/GRAD/SOLO/tmp_repos/aiohttp/aiohttp/streams.py",
+    "fix": {
+      "applicability": "safe",
+      "edits": [
+        {
+          "content": "(TimeoutError, asyncio.CancelledError)",
+          "end_location": {
+            "column": 66,
+            "row": 682
+          },
+          "location": {
+            "column": 20,
+            "row": 682
+          }
+        }
+      ],
+      "message": "Replace with builtin `TimeoutError`"
+    },
+    "location": {
+      "column": 20,
+      "row": 682
+    },
+    "message": "Replace aliased errors with `TimeoutError`",
+    "noqa_row": 682,
+    "url": "https://docs.astral.sh/ruff/rules/timeout-error-alias"
+  },
+  {
+    "cell": null,
+    "code": "UP036",
+    "end_location": {
+      "column": 31,
+      "row": 57
+    },
+    "filename": "/home/ahmeed/Documents/KSIU/GRAD/SOLO/tmp_repos/aiohttp/aiohttp/test_utils.py",
+    "fix": {
+      "applicability": "unsafe",
+      "edits": [
+        {
+          "content": "from typing import Self",
+          "end_location": {
+            "column": 15,
+            "row": 60
+          },
+          "location": {
+            "column": 1,
+            "row": 57
+          }
+        }
+      ],
+      "message": "Remove outdated version block"
+    },
+    "location": {
+      "column": 4,
+      "row": 57
+    },
+    "message": "Version block is outdated for minimum Python version",
+    "noqa_row": 57,
+    "url": "https://docs.astral.sh/ruff/rules/outdated-version-block"
+  },
+  {
+    "cell": null,
+    "code": "UP031",
+    "end_location": {
+      "column": 84,
+      "row": 281
+    },
+    "filename": "/home/ahmeed/Documents/KSIU/GRAD/SOLO/tmp_repos/aiohttp/aiohttp/test_utils.py",
+    "fix": {
+      "applicability": "unsafe",
+      "edits": [
+        {
+          "content": "\"server must be TestServer instance, found type: {!r}\".format(type(server))",
+          "end_location": {
+            "column": 84,
+            "row": 281
+          },
+          "location": {
+            "column": 17,
+            "row": 281
+          }
+        }
+      ],
+      "message": "Replace with format specifiers"
+    },
+    "location": {
+      "column": 17,
+      "row": 281
+    },
+    "message": "Use format specifiers instead of percent format",
+    "noqa_row": 281,
+    "url": "https://docs.astral.sh/ruff/rules/printf-string-formatting"
+  },
+  {
+    "cell": null,
+    "code": "I001",
+    "end_location": {
+      "column": 65,
+      "row": 132
+    },
+    "filename": "/home/ahmeed/Documents/KSIU/GRAD/SOLO/tmp_repos/aiohttp/aiohttp/web.py",
+    "fix": {
+      "applicability": "safe",
+      "edits": [
+        {
+          "content": "import asyncio\nimport logging\nimport os\nimport socket\nimport sys\nimport warnings\nfrom argparse import ArgumentParser\nfrom collections.abc import Awaitable, Callable, Iterable\nfrom collections.abc import Iterable as TypingIterable\nfrom contextlib import suppress\nfrom importlib import import_module\nfrom typing import Any, cast\n\nfrom .abc import AbstractAccessLogger\nfrom .helpers import AppKey, RequestKey, ResponseKey\nfrom .log import access_logger\nfrom .typedefs import PathLike\nfrom .web_app import Application, CleanupError\nfrom .web_exceptions import (\n    HTTPAccepted,\n    HTTPBadGateway,\n    HTTPBadRequest,\n    HTTPClientError,\n    HTTPConflict,\n    HTTPCreated,\n    HTTPError,\n    HTTPException,\n    HTTPExpectationFailed,\n    HTTPFailedDependency,\n    HTTPForbidden,\n    HTTPFound,\n    HTTPGatewayTimeout,\n    HTTPGone,\n    HTTPInsufficientStorage,\n    HTTPInternalServerError,\n    HTTPLengthRequired,\n    HTTPMethodNotAllowed,\n    HTTPMisdirectedRequest,\n    HTTPMove,\n    HTTPMovedPermanently,\n    HTTPMultipleChoices,\n    HTTPNetworkAuthenticationRequired,\n    HTTPNoContent,\n    HTTPNonAuthoritativeInformation,\n    HTTPNotAcceptable,\n    HTTPNotExtended,\n    HTTPNotFound,\n    HTTPNotImplemented,\n    HTTPNotModified,\n    HTTPOk,\n    HTTPPartialContent,\n    HTTPPaymentRequired,\n    HTTPPermanentRedirect,\n    HTTPPreconditionFailed,\n    HTTPPreconditionRequired,\n    HTTPProxyAuthenticationRequired,\n    HTTPRedirection,\n    HTTPRequestEntityTooLarge,\n    HTTPRequestHeaderFieldsTooLarge,\n    HTTPRequestRangeNotSatisfiable,\n    HTTPRequestTimeout,\n    HTTPRequestURITooLong,\n    HTTPResetContent,\n    HTTPSeeOther,\n    HTTPServerError,\n    HTTPServiceUnavailable,\n    HTTPSuccessful,\n    HTTPTemporaryRedirect,\n    HTTPTooManyRequests,\n    HTTPUnauthorized,\n    HTTPUnavailableForLegalReasons,\n    HTTPUnprocessableEntity,\n    HTTPUnsupportedMediaType,\n    HTTPUpgradeRequired,\n    HTTPUseProxy,\n    HTTPVariantAlsoNegotiates,\n    HTTPVersionNotSupported,\n    NotAppKeyWarning,\n)\nfrom .web_fileresponse import FileResponse\nfrom .web_log import AccessLogger\nfrom .web_middlewares import middleware, normalize_path_middleware\nfrom .web_protocol import PayloadAccessError, RequestHandler, RequestPayloadError\nfrom .web_request import BaseRequest, FileField, Request\nfrom .web_response import (\n    ContentCoding,\n    Response,\n    StreamResponse,\n    json_bytes_response,\n    json_response,\n)\nfrom .web_routedef import (\n    AbstractRouteDef,\n    RouteDef,\n    RouteTableDef,\n    StaticDef,\n    delete,\n    get,\n    head,\n    options,\n    patch,\n    post,\n    put,\n    route,\n    static,\n    view,\n)\nfrom .web_runner import (\n    AppRunner,\n    BaseRunner,\n    BaseSite,\n    GracefulExit,\n    NamedPipeSite,\n    ServerRunner,\n    SockSite,\n    TCPSite,\n    UnixSite,\n)\nfrom .web_server import Server\nfrom .web_urldispatcher import (\n    AbstractResource,\n    AbstractRoute,\n    DynamicResource,\n    PlainResource,\n    PrefixedSubAppResource,\n    Resource,\n    ResourceRoute,\n    StaticResource,\n    UrlDispatcher,\n    UrlMappingMatchInfo,\n    View,\n)\nfrom .web_ws import WebSocketReady, WebSocketResponse, WSMsgType\n\n",
+          "end_location": {
+            "column": 1,
+            "row": 134
+          },
+          "location": {
+            "column": 1,
+            "row": 1
+          }
+        }
+      ],
+      "message": "Organize imports"
+    },
+    "location": {
+      "column": 1,
+      "row": 1
+    },
+    "message": "Import block is un-sorted or un-formatted",
+    "noqa_row": 1,
+    "url": "https://docs.astral.sh/ruff/rules/unsorted-imports"
+  },
+  {
+    "cell": null,
+    "code": "N818",
+    "end_location": {
+      "column": 20,
+      "row": 84
+    },
+    "filename": "/home/ahmeed/Documents/KSIU/GRAD/SOLO/tmp_repos/aiohttp/aiohttp/web_exceptions.py",
+    "fix": null,
+    "location": {
+      "column": 7,
+      "row": 84
+    },
+    "message": "Exception name `HTTPException` should be named with an Error suffix",
+    "noqa_row": 84,
+    "url": "https://docs.astral.sh/ruff/rules/error-suffix-on-exception-name"
+  },
+  {
+    "cell": null,
+    "code": "N818",
+    "end_location": {
+      "column": 21,
+      "row": 288
+    },
+    "filename": "/home/ahmeed/Documents/KSIU/GRAD/SOLO/tmp_repos/aiohttp/aiohttp/web_exceptions.py",
+    "fix": null,
+    "location": {
+      "column": 7,
+      "row": 288
+    },
+    "message": "Exception name `HTTPBadRequest` should be named with an Error suffix",
+    "noqa_row": 288,
+    "url": "https://docs.astral.sh/ruff/rules/error-suffix-on-exception-name"
+  },
+  {
+    "cell": null,
+    "code": "N818",
+    "end_location": {
+      "column": 23,
+      "row": 292
+    },
+    "filename": "/home/ahmeed/Documents/KSIU/GRAD/SOLO/tmp_repos/aiohttp/aiohttp/web_exceptions.py",
+    "fix": null,
+    "location": {
+      "column": 7,
+      "row": 292
+    },
+    "message": "Exception name `HTTPUnauthorized` should be named with an Error suffix",
+    "noqa_row": 292,
+    "url": "https://docs.astral.sh/ruff/rules/error-suffix-on-exception-name"
+  },
+  {
+    "cell": null,
+    "code": "N818",
+    "end_location": {
+      "column": 26,
+      "row": 296
+    },
+    "filename": "/home/ahmeed/Documents/KSIU/GRAD/SOLO/tmp_repos/aiohttp/aiohttp/web_exceptions.py",
+    "fix": null,
+    "location": {
+      "column": 7,
+      "row": 296
+    },
+    "message": "Exception name `HTTPPaymentRequired` should be named with an Error suffix",
+    "noqa_row": 296,
+    "url": "https://docs.astral.sh/ruff/rules/error-suffix-on-exception-name"
+  },
+  {
+    "cell": null,
+    "code": "N818",
+    "end_location": {
+      "column": 20,
+      "row": 300
+    },
+    "filename": "/home/ahmeed/Documents/KSIU/GRAD/SOLO/tmp_repos/aiohttp/aiohttp/web_exceptions.py",
+    "fix": null,
+    "location": {
+      "column": 7,
+      "row": 300
+    },
+    "message": "Exception name `HTTPForbidden` should be named with an Error suffix",
+    "noqa_row": 300,
+    "url": "https://docs.astral.sh/ruff/rules/error-suffix-on-exception-name"
+  },
+  {
+    "cell": null,
+    "code": "N818",
+    "end_location": {
+      "column": 19,
+      "row": 304
+    },
+    "filename": "/home/ahmeed/Documents/KSIU/GRAD/SOLO/tmp_repos/aiohttp/aiohttp/web_exceptions.py",
+    "fix": null,
+    "location": {
+      "column": 7,
+      "row": 304
+    },
+    "message": "Exception name `HTTPNotFound` should be named with an Error suffix",
+    "noqa_row": 304,
+    "url": "https://docs.astral.sh/ruff/rules/error-suffix-on-exception-name"
+  },
+  {
+    "cell": null,
+    "code": "N818",
+    "end_location": {
+      "column": 27,
+      "row": 308
+    },
+    "filename": "/home/ahmeed/Documents/KSIU/GRAD/SOLO/tmp_repos/aiohttp/aiohttp/web_exceptions.py",
+    "fix": null,
+    "location": {
+      "column": 7,
+      "row": 308
+    },
+    "message": "Exception name `HTTPMethodNotAllowed` should be named with an Error suffix",
+    "noqa_row": 308,
+    "url": "https://docs.astral.sh/ruff/rules/error-suffix-on-exception-name"
+  },
+  {
+    "cell": null,
+    "code": "N818",
+    "end_location": {
+      "column": 24,
+      "row": 338
+    },
+    "filename": "/home/ahmeed/Documents/KSIU/GRAD/SOLO/tmp_repos/aiohttp/aiohttp/web_exceptions.py",
+    "fix": null,
+    "location": {
+      "column": 7,
+      "row": 338
+    },
+    "message": "Exception name `HTTPNotAcceptable` should be named with an Error suffix",
+    "noqa_row": 338,
+    "url": "https://docs.astral.sh/ruff/rules/error-suffix-on-exception-name"
+  },
+  {
+    "cell": null,
+    "code": "N818",
+    "end_location": {
+      "column": 38,
+      "row": 342
+    },
+    "filename": "/home/ahmeed/Documents/KSIU/GRAD/SOLO/tmp_repos/aiohttp/aiohttp/web_exceptions.py",
+    "fix": null,
+    "location": {
+      "column": 7,
+      "row": 342
+    },
+    "message": "Exception name `HTTPProxyAuthenticationRequired` should be named with an Error suffix",
+    "noqa_row": 342,
+    "url": "https://docs.astral.sh/ruff/rules/error-suffix-on-exception-name"
+  },
+  {
+    "cell": null,
+    "code": "N818",
+    "end_location": {
+      "column": 25,
+      "row": 346
+    },
+    "filename": "/home/ahmeed/Documents/KSIU/GRAD/SOLO/tmp_repos/aiohttp/aiohttp/web_exceptions.py",
+    "fix": null,
+    "location": {
+      "column": 7,
+      "row": 346
+    },
+    "message": "Exception name `HTTPRequestTimeout` should be named with an Error suffix",
+    "noqa_row": 346,
+    "url": "https://docs.astral.sh/ruff/rules/error-suffix-on-exception-name"
+  },
+  {
+    "cell": null,
+    "code": "N818",
+    "end_location": {
+      "column": 19,
+      "row": 350
+    },
+    "filename": "/home/ahmeed/Documents/KSIU/GRAD/SOLO/tmp_repos/aiohttp/aiohttp/web_exceptions.py",
+    "fix": null,
+    "location": {
+      "column": 7,
+      "row": 350
+    },
+    "message": "Exception name `HTTPConflict` should be named with an Error suffix",
+    "noqa_row": 350,
+    "url": "https://docs.astral.sh/ruff/rules/error-suffix-on-exception-name"
+  },
+  {
+    "cell": null,
+    "code": "N818",
+    "end_location": {
+      "column": 15,
+      "row": 354
+    },
+    "filename": "/home/ahmeed/Documents/KSIU/GRAD/SOLO/tmp_repos/aiohttp/aiohttp/web_exceptions.py",
+    "fix": null,
+    "location": {
+      "column": 7,
+      "row": 354
+    },
+    "message": "Exception name `HTTPGone` should be named with an Error suffix",
+    "noqa_row": 354,
+    "url": "https://docs.astral.sh/ruff/rules/error-suffix-on-exception-name"
+  },
+  {
+    "cell": null,
+    "code": "N818",
+    "end_location": {
+      "column": 25,
+      "row": 358
+    },
+    "filename": "/home/ahmeed/Documents/KSIU/GRAD/SOLO/tmp_repos/aiohttp/aiohttp/web_exceptions.py",
+    "fix": null,
+    "location": {
+      "column": 7,
+      "row": 358
+    },
+    "message": "Exception name `HTTPLengthRequired` should be named with an Error suffix",
+    "noqa_row": 358,
+    "url": "https://docs.astral.sh/ruff/rules/error-suffix-on-exception-name"
+  },
+  {
+    "cell": null,
+    "code": "N818",
+    "end_location": {
+      "column": 29,
+      "row": 362
+    },
+    "filename": "/home/ahmeed/Documents/KSIU/GRAD/SOLO/tmp_repos/aiohttp/aiohttp/web_exceptions.py",
+    "fix": null,
+    "location": {
+      "column": 7,
+      "row": 362
+    },
+    "message": "Exception name `HTTPPreconditionFailed` should be named with an Error suffix",
+    "noqa_row": 362,
+    "url": "https://docs.astral.sh/ruff/rules/error-suffix-on-exception-name"
+  },
+  {
+    "cell": null,
+    "code": "N818",
+    "end_location": {
+      "column": 32,
+      "row": 366
+    },
+    "filename": "/home/ahmeed/Documents/KSIU/GRAD/SOLO/tmp_repos/aiohttp/aiohttp/web_exceptions.py",
+    "fix": null,
+    "location": {
+      "column": 7,
+      "row": 366
+    },
+    "message": "Exception name `HTTPRequestEntityTooLarge` should be named with an Error suffix",
+    "noqa_row": 366,
+    "url": "https://docs.astral.sh/ruff/rules/error-suffix-on-exception-name"
+  },
+  {
+    "cell": null,
+    "code": "N818",
+    "end_location": {
+      "column": 28,
+      "row": 378
+    },
+    "filename": "/home/ahmeed/Documents/KSIU/GRAD/SOLO/tmp_repos/aiohttp/aiohttp/web_exceptions.py",
+    "fix": null,
+    "location": {
+      "column": 7,
+      "row": 378
+    },
+    "message": "Exception name `HTTPRequestURITooLong` should be named with an Error suffix",
+    "noqa_row": 378,
+    "url": "https://docs.astral.sh/ruff/rules/error-suffix-on-exception-name"
+  },
+  {
+    "cell": null,
+    "code": "N818",
+    "end_location": {
+      "column": 31,
+      "row": 382
+    },
+    "filename": "/home/ahmeed/Documents/KSIU/GRAD/SOLO/tmp_repos/aiohttp/aiohttp/web_exceptions.py",
+    "fix": null,
+    "location": {
+      "column": 7,
+      "row": 382
+    },
+    "message": "Exception name `HTTPUnsupportedMediaType` should be named with an Error suffix",
+    "noqa_row": 382,
+    "url": "https://docs.astral.sh/ruff/rules/error-suffix-on-exception-name"
+  },
+  {
+    "cell": null,
+    "code": "N818",
+    "end_location": {
+      "column": 37,
+      "row": 386
+    },
+    "filename": "/home/ahmeed/Documents/KSIU/GRAD/SOLO/tmp_repos/aiohttp/aiohttp/web_exceptions.py",
+    "fix": null,
+    "location": {
+      "column": 7,
+      "row": 386
+    },
+    "message": "Exception name `HTTPRequestRangeNotSatisfiable` should be named with an Error suffix",
+    "noqa_row": 386,
+    "url": "https://docs.astral.sh/ruff/rules/error-suffix-on-exception-name"
+  },
+  {
+    "cell": null,
+    "code": "N818",
+    "end_location": {
+      "column": 28,
+      "row": 390
+    },
+    "filename": "/home/ahmeed/Documents/KSIU/GRAD/SOLO/tmp_repos/aiohttp/aiohttp/web_exceptions.py",
+    "fix": null,
+    "location": {
+      "column": 7,
+      "row": 390
+    },
+    "message": "Exception name `HTTPExpectationFailed` should be named with an Error suffix",
+    "noqa_row": 390,
+    "url": "https://docs.astral.sh/ruff/rules/error-suffix-on-exception-name"
+  },
+  {
+    "cell": null,
+    "code": "N818",
+    "end_location": {
+      "column": 29,
+      "row": 394
+    },
+    "filename": "/home/ahmeed/Documents/KSIU/GRAD/SOLO/tmp_repos/aiohttp/aiohttp/web_exceptions.py",
+    "fix": null,
+    "location": {
+      "column": 7,
+      "row": 394
+    },
+    "message": "Exception name `HTTPMisdirectedRequest` should be named with an Error suffix",
+    "noqa_row": 394,
+    "url": "https://docs.astral.sh/ruff/rules/error-suffix-on-exception-name"
+  },
+  {
+    "cell": null,
+    "code": "N818",
+    "end_location": {
+      "column": 30,
+      "row": 398
+    },
+    "filename": "/home/ahmeed/Documents/KSIU/GRAD/SOLO/tmp_repos/aiohttp/aiohttp/web_exceptions.py",
+    "fix": null,
+    "location": {
+      "column": 7,
+      "row": 398
+    },
+    "message": "Exception name `HTTPUnprocessableEntity` should be named with an Error suffix",
+    "noqa_row": 398,
+    "url": "https://docs.astral.sh/ruff/rules/error-suffix-on-exception-name"
+  },
+  {
+    "cell": null,
+    "code": "N818",
+    "end_location": {
+      "column": 27,
+      "row": 402
+    },
+    "filename": "/home/ahmeed/Documents/KSIU/GRAD/SOLO/tmp_repos/aiohttp/aiohttp/web_exceptions.py",
+    "fix": null,
+    "location": {
+      "column": 7,
+      "row": 402
+    },
+    "message": "Exception name `HTTPFailedDependency` should be named with an Error suffix",
+    "noqa_row": 402,
+    "url": "https://docs.astral.sh/ruff/rules/error-suffix-on-exception-name"
+  },
+  {
+    "cell": null,
+    "code": "N818",
+    "end_location": {
+      "column": 26,
+      "row": 406
+    },
+    "filename": "/home/ahmeed/Documents/KSIU/GRAD/SOLO/tmp_repos/aiohttp/aiohttp/web_exceptions.py",
+    "fix": null,
+    "location": {
+      "column": 7,
+      "row": 406
+    },
+    "message": "Exception name `HTTPUpgradeRequired` should be named with an Error suffix",
+    "noqa_row": 406,
+    "url": "https://docs.astral.sh/ruff/rules/error-suffix-on-exception-name"
+  },
+  {
+    "cell": null,
+    "code": "N818",
+    "end_location": {
+      "column": 31,
+      "row": 410
+    },
+    "filename": "/home/ahmeed/Documents/KSIU/GRAD/SOLO/tmp_repos/aiohttp/aiohttp/web_exceptions.py",
+    "fix": null,
+    "location": {
+      "column": 7,
+      "row": 410
+    },
+    "message": "Exception name `HTTPPreconditionRequired` should be named with an Error suffix",
+    "noqa_row": 410,
+    "url": "https://docs.astral.sh/ruff/rules/error-suffix-on-exception-name"
+  },
+  {
+    "cell": null,
+    "code": "N818",
+    "end_location": {
+      "column": 26,
+      "row": 414
+    },
+    "filename": "/home/ahmeed/Documents/KSIU/GRAD/SOLO/tmp_repos/aiohttp/aiohttp/web_exceptions.py",
+    "fix": null,
+    "location": {
+      "column": 7,
+      "row": 414
+    },
+    "message": "Exception name `HTTPTooManyRequests` should be named with an Error suffix",
+    "noqa_row": 414,
+    "url": "https://docs.astral.sh/ruff/rules/error-suffix-on-exception-name"
+  },
+  {
+    "cell": null,
+    "code": "N818",
+    "end_location": {
+      "column": 38,
+      "row": 418
+    },
+    "filename": "/home/ahmeed/Documents/KSIU/GRAD/SOLO/tmp_repos/aiohttp/aiohttp/web_exceptions.py",
+    "fix": null,
+    "location": {
+      "column": 7,
+      "row": 418
+    },
+    "message": "Exception name `HTTPRequestHeaderFieldsTooLarge` should be named with an Error suffix",
+    "noqa_row": 418,
+    "url": "https://docs.astral.sh/ruff/rules/error-suffix-on-exception-name"
+  },
+  {
+    "cell": null,
+    "code": "N818",
+    "end_location": {
+      "column": 37,
+      "row": 422
+    },
+    "filename": "/home/ahmeed/Documents/KSIU/GRAD/SOLO/tmp_repos/aiohttp/aiohttp/web_exceptions.py",
+    "fix": null,
+    "location": {
+      "column": 7,
+      "row": 422
+    },
+    "message": "Exception name `HTTPUnavailableForLegalReasons` should be named with an Error suffix",
+    "noqa_row": 422,
+    "url": "https://docs.astral.sh/ruff/rules/error-suffix-on-exception-name"
+  },
+  {
+    "cell": null,
+    "code": "N818",
+    "end_location": {
+      "column": 25,
+      "row": 467
+    },
+    "filename": "/home/ahmeed/Documents/KSIU/GRAD/SOLO/tmp_repos/aiohttp/aiohttp/web_exceptions.py",
+    "fix": null,
+    "location": {
+      "column": 7,
+      "row": 467
+    },
+    "message": "Exception name `HTTPNotImplemented` should be named with an Error suffix",
+    "noqa_row": 467,
+    "url": "https://docs.astral.sh/ruff/rules/error-suffix-on-exception-name"
+  },
+  {
+    "cell": null,
+    "code": "N818",
+    "end_location": {
+      "column": 21,
+      "row": 471
+    },
+    "filename": "/home/ahmeed/Documents/KSIU/GRAD/SOLO/tmp_repos/aiohttp/aiohttp/web_exceptions.py",
+    "fix": null,
+    "location": {
+      "column": 7,
+      "row": 471
+    },
+    "message": "Exception name `HTTPBadGateway` should be named with an Error suffix",
+    "noqa_row": 471,
+    "url": "https://docs.astral.sh/ruff/rules/error-suffix-on-exception-name"
+  },
+  {
+    "cell": null,
+    "code": "N818",
+    "end_location": {
+      "column": 29,
+      "row": 475
+    },
+    "filename": "/home/ahmeed/Documents/KSIU/GRAD/SOLO/tmp_repos/aiohttp/aiohttp/web_exceptions.py",
+    "fix": null,
+    "location": {
+      "column": 7,
+      "row": 475
+    },
+    "message": "Exception name `HTTPServiceUnavailable` should be named with an Error suffix",
+    "noqa_row": 475,
+    "url": "https://docs.astral.sh/ruff/rules/error-suffix-on-exception-name"
+  },
+  {
+    "cell": null,
+    "code": "N818",
+    "end_location": {
+      "column": 25,
+      "row": 479
+    },
+    "filename": "/home/ahmeed/Documents/KSIU/GRAD/SOLO/tmp_repos/aiohttp/aiohttp/web_exceptions.py",
+    "fix": null,
+    "location": {
+      "column": 7,
+      "row": 479
+    },
+    "message": "Exception name `HTTPGatewayTimeout` should be named with an Error suffix",
+    "noqa_row": 479,
+    "url": "https://docs.astral.sh/ruff/rules/error-suffix-on-exception-name"
+  },
+  {
+    "cell": null,
+    "code": "N818",
+    "end_location": {
+      "column": 30,
+      "row": 483
+    },
+    "filename": "/home/ahmeed/Documents/KSIU/GRAD/SOLO/tmp_repos/aiohttp/aiohttp/web_exceptions.py",
+    "fix": null,
+    "location": {
+      "column": 7,
+      "row": 483
+    },
+    "message": "Exception name `HTTPVersionNotSupported` should be named with an Error suffix",
+    "noqa_row": 483,
+    "url": "https://docs.astral.sh/ruff/rules/error-suffix-on-exception-name"
+  },
+  {
+    "cell": null,
+    "code": "N818",
+    "end_location": {
+      "column": 32,
+      "row": 487
+    },
+    "filename": "/home/ahmeed/Documents/KSIU/GRAD/SOLO/tmp_repos/aiohttp/aiohttp/web_exceptions.py",
+    "fix": null,
+    "location": {
+      "column": 7,
+      "row": 487
+    },
+    "message": "Exception name `HTTPVariantAlsoNegotiates` should be named with an Error suffix",
+    "noqa_row": 487,
+    "url": "https://docs.astral.sh/ruff/rules/error-suffix-on-exception-name"
+  },
+  {
+    "cell": null,
+    "code": "N818",
+    "end_location": {
+      "column": 30,
+      "row": 491
+    },
+    "filename": "/home/ahmeed/Documents/KSIU/GRAD/SOLO/tmp_repos/aiohttp/aiohttp/web_exceptions.py",
+    "fix": null,
+    "location": {
+      "column": 7,
+      "row": 491
+    },
+    "message": "Exception name `HTTPInsufficientStorage` should be named with an Error suffix",
+    "noqa_row": 491,
+    "url": "https://docs.astral.sh/ruff/rules/error-suffix-on-exception-name"
+  },
+  {
+    "cell": null,
+    "code": "N818",
+    "end_location": {
+      "column": 22,
+      "row": 495
+    },
+    "filename": "/home/ahmeed/Documents/KSIU/GRAD/SOLO/tmp_repos/aiohttp/aiohttp/web_exceptions.py",
+    "fix": null,
+    "location": {
+      "column": 7,
+      "row": 495
+    },
+    "message": "Exception name `HTTPNotExtended` should be named with an Error suffix",
+    "noqa_row": 495,
+    "url": "https://docs.astral.sh/ruff/rules/error-suffix-on-exception-name"
+  },
+  {
+    "cell": null,
+    "code": "N818",
+    "end_location": {
+      "column": 40,
+      "row": 499
+    },
+    "filename": "/home/ahmeed/Documents/KSIU/GRAD/SOLO/tmp_repos/aiohttp/aiohttp/web_exceptions.py",
+    "fix": null,
+    "location": {
+      "column": 7,
+      "row": 499
+    },
+    "message": "Exception name `HTTPNetworkAuthenticationRequired` should be named with an Error suffix",
+    "noqa_row": 499,
+    "url": "https://docs.astral.sh/ruff/rules/error-suffix-on-exception-name"
+  },
+  {
+    "cell": null,
+    "code": "UP045",
+    "end_location": {
+      "column": 62,
+      "row": 34
+    },
+    "filename": "/home/ahmeed/Documents/KSIU/GRAD/SOLO/tmp_repos/aiohttp/aiohttp/web_fileresponse.py",
+    "fix": null,
+    "location": {
+      "column": 18,
+      "row": 34
+    },
+    "message": "Use `X | None` for type annotations",
+    "noqa_row": 34,
+    "url": "https://docs.astral.sh/ruff/rules/non-pep604-annotation-optional"
+  },
+  {
+    "cell": null,
+    "code": "UP035",
+    "end_location": {
+      "column": 38,
+      "row": 9
+    },
+    "filename": "/home/ahmeed/Documents/KSIU/GRAD/SOLO/tmp_repos/aiohttp/aiohttp/web_log.py",
+    "fix": {
+      "applicability": "safe",
+      "edits": [
+        {
+          "content": "from typing import ClassVar\nfrom collections.abc import Callable",
+          "end_location": {
+            "column": 38,
+            "row": 9
+          },
+          "location": {
+            "column": 1,
+            "row": 9
+          }
+        }
+      ],
+      "message": "Import from `collections.abc`"
+    },
+    "location": {
+      "column": 1,
+      "row": 9
+    },
+    "message": "Import from `collections.abc` instead: `Callable`",
+    "noqa_row": 9,
+    "url": "https://docs.astral.sh/ruff/rules/deprecated-import"
+  },
+  {
+    "cell": null,
+    "code": "UP031",
+    "end_location": {
+      "column": 65,
+      "row": 111
+    },
+    "filename": "/home/ahmeed/Documents/KSIU/GRAD/SOLO/tmp_repos/aiohttp/aiohttp/web_log.py",
+    "fix": {
+      "applicability": "unsafe",
+      "edits": [
+        {
+          "content": "\"_format_{}\".format(atom[0])",
+          "end_location": {
+            "column": 65,
+            "row": 111
+          },
+          "location": {
+            "column": 43,
+            "row": 111
+          }
+        }
+      ],
+      "message": "Replace with format specifiers"
+    },
+    "location": {
+      "column": 43,
+      "row": 111
+    },
+    "message": "Use format specifiers instead of percent format",
+    "noqa_row": 111,
+    "url": "https://docs.astral.sh/ruff/rules/printf-string-formatting"
+  },
+  {
+    "cell": null,
+    "code": "UP031",
+    "end_location": {
+      "column": 65,
+      "row": 115
+    },
+    "filename": "/home/ahmeed/Documents/KSIU/GRAD/SOLO/tmp_repos/aiohttp/aiohttp/web_log.py",
+    "fix": {
+      "applicability": "unsafe",
+      "edits": [
+        {
+          "content": "\"_format_{}\".format(atom[2])",
+          "end_location": {
+            "column": 65,
+            "row": 115
+          },
+          "location": {
+            "column": 43,
+            "row": 115
+          }
+        }
+      ],
+      "message": "Replace with format specifiers"
+    },
+    "location": {
+      "column": 43,
+      "row": 115
+    },
+    "message": "Use format specifiers instead of percent format",
+    "noqa_row": 115,
+    "url": "https://docs.astral.sh/ruff/rules/printf-string-formatting"
+  },
+  {
+    "cell": null,
+    "code": "UP031",
+    "end_location": {
+      "column": 36,
+      "row": 166
+    },
+    "filename": "/home/ahmeed/Documents/KSIU/GRAD/SOLO/tmp_repos/aiohttp/aiohttp/web_log.py",
+    "fix": {
+      "applicability": "unsafe",
+      "edits": [
+        {
+          "content": "\"<{}>\".format(os.getpid())",
+          "end_location": {
+            "column": 36,
+            "row": 166
+          },
+          "location": {
+            "column": 16,
+            "row": 166
+          }
+        }
+      ],
+      "message": "Replace with format specifiers"
+    },
+    "location": {
+      "column": 16,
+      "row": 166
+    },
+    "message": "Use format specifiers instead of percent format",
+    "noqa_row": 166,
+    "url": "https://docs.astral.sh/ruff/rules/printf-string-formatting"
+  },
+  {
+    "cell": null,
+    "code": "UP031",
+    "end_location": {
+      "column": 29,
+      "row": 186
+    },
+    "filename": "/home/ahmeed/Documents/KSIU/GRAD/SOLO/tmp_repos/aiohttp/aiohttp/web_log.py",
+    "fix": {
+      "applicability": "unsafe",
+      "edits": [
+        {
+          "content": "\"{:06f}\".format(time)",
+          "end_location": {
+            "column": 29,
+            "row": 186
+          },
+          "location": {
+            "column": 16,
+            "row": 186
+          }
+        }
+      ],
+      "message": "Replace with format specifiers"
+    },
+    "location": {
+      "column": 16,
+      "row": 186
+    },
+    "message": "Use format specifiers instead of percent format",
+    "noqa_row": 186,
+    "url": "https://docs.astral.sh/ruff/rules/printf-string-formatting"
+  },
+  {
+    "cell": null,
+    "code": "UP007",
+    "end_location": {
+      "column": 2,
+      "row": 59
+    },
+    "filename": "/home/ahmeed/Documents/KSIU/GRAD/SOLO/tmp_repos/aiohttp/aiohttp/web_protocol.py",
+    "fix": null,
+    "location": {
+      "column": 28,
+      "row": 56
+    },
+    "message": "Use `X | Y` for type annotations",
+    "noqa_row": 56,
+    "url": "https://docs.astral.sh/ruff/rules/non-pep604-annotation-union"
+  },
+  {
+    "cell": null,
+    "code": "UP041",
+    "end_location": {
+      "column": 66,
+      "row": 335
+    },
+    "filename": "/home/ahmeed/Documents/KSIU/GRAD/SOLO/tmp_repos/aiohttp/aiohttp/web_protocol.py",
+    "fix": {
+      "applicability": "safe",
+      "edits": [
+        {
+          "content": "(TimeoutError, asyncio.CancelledError)",
+          "end_location": {
+            "column": 66,
+            "row": 335
+          },
+          "location": {
+            "column": 20,
+            "row": 335
+          }
+        }
+      ],
+      "message": "Replace with builtin `TimeoutError`"
+    },
+    "location": {
+      "column": 20,
+      "row": 335
+    },
+    "message": "Replace aliased errors with `TimeoutError`",
+    "noqa_row": 335,
+    "url": "https://docs.astral.sh/ruff/rules/timeout-error-alias"
+  },
+  {
+    "cell": null,
+    "code": "UP041",
+    "end_location": {
+      "column": 62,
+      "row": 351
+    },
+    "filename": "/home/ahmeed/Documents/KSIU/GRAD/SOLO/tmp_repos/aiohttp/aiohttp/web_protocol.py",
+    "fix": {
+      "applicability": "safe",
+      "edits": [
+        {
+          "content": "(TimeoutError, asyncio.CancelledError)",
+          "end_location": {
+            "column": 62,
+            "row": 351
+          },
+          "location": {
+            "column": 16,
+            "row": 351
+          }
+        }
+      ],
+      "message": "Replace with builtin `TimeoutError`"
+    },
+    "location": {
+      "column": 16,
+      "row": 351
+    },
+    "message": "Replace aliased errors with `TimeoutError`",
+    "noqa_row": 351,
+    "url": "https://docs.astral.sh/ruff/rules/timeout-error-alias"
+  },
+  {
+    "cell": null,
+    "code": "UP041",
+    "end_location": {
+      "column": 36,
+      "row": 556
+    },
+    "filename": "/home/ahmeed/Documents/KSIU/GRAD/SOLO/tmp_repos/aiohttp/aiohttp/web_protocol.py",
+    "fix": {
+      "applicability": "safe",
+      "edits": [
+        {
+          "content": "TimeoutError",
+          "end_location": {
+            "column": 36,
+            "row": 556
+          },
+          "location": {
+            "column": 16,
+            "row": 556
+          }
+        }
+      ],
+      "message": "Replace `asyncio.TimeoutError` with builtin `TimeoutError`"
+    },
+    "location": {
+      "column": 16,
+      "row": 556
+    },
+    "message": "Replace aliased errors with `TimeoutError`",
+    "noqa_row": 556,
+    "url": "https://docs.astral.sh/ruff/rules/timeout-error-alias"
+  },
+  {
+    "cell": null,
+    "code": "UP041",
+    "end_location": {
+      "column": 78,
+      "row": 664
+    },
+    "filename": "/home/ahmeed/Documents/KSIU/GRAD/SOLO/tmp_repos/aiohttp/aiohttp/web_protocol.py",
+    "fix": {
+      "applicability": "safe",
+      "edits": [
+        {
+          "content": "(TimeoutError, asyncio.CancelledError)",
+          "end_location": {
+            "column": 78,
+            "row": 664
+          },
+          "location": {
+            "column": 32,
+            "row": 664
+          }
+        }
+      ],
+      "message": "Replace with builtin `TimeoutError`"
+    },
+    "location": {
+      "column": 32,
+      "row": 664
+    },
+    "message": "Replace aliased errors with `TimeoutError`",
+    "noqa_row": 664,
+    "url": "https://docs.astral.sh/ruff/rules/timeout-error-alias"
+  },
+  {
+    "cell": null,
+    "code": "UP036",
+    "end_location": {
+      "column": 31,
+      "row": 55
+    },
+    "filename": "/home/ahmeed/Documents/KSIU/GRAD/SOLO/tmp_repos/aiohttp/aiohttp/web_request.py",
+    "fix": {
+      "applicability": "unsafe",
+      "edits": [
+        {
+          "content": "from typing import Self",
+          "end_location": {
+            "column": 15,
+            "row": 58
+          },
+          "location": {
+            "column": 1,
+            "row": 55
+          }
+        }
+      ],
+      "message": "Remove outdated version block"
+    },
+    "location": {
+      "column": 4,
+      "row": 55
+    },
+    "message": "Version block is outdated for minimum Python version",
+    "noqa_row": 55,
+    "url": "https://docs.astral.sh/ruff/rules/outdated-version-block"
+  },
+  {
+    "cell": null,
+    "code": "B904",
+    "end_location": {
+      "column": 67,
+      "row": 579
+    },
+    "filename": "/home/ahmeed/Documents/KSIU/GRAD/SOLO/tmp_repos/aiohttp/aiohttp/web_request.py",
+    "fix": null,
+    "location": {
+      "column": 17,
+      "row": 579
+    },
+    "message": "Within an `except` clause, raise exceptions with `raise ... from err` or `raise ... from None` to distinguish them from errors in exception handling",
+    "noqa_row": 579,
+    "url": "https://docs.astral.sh/ruff/rules/raise-without-from-inside-except"
+  },
+  {
+    "cell": null,
+    "code": "B904",
+    "end_location": {
+      "column": 45,
+      "row": 652
+    },
+    "filename": "/home/ahmeed/Documents/KSIU/GRAD/SOLO/tmp_repos/aiohttp/aiohttp/web_request.py",
+    "fix": null,
+    "location": {
+      "column": 13,
+      "row": 652
+    },
+    "message": "Within an `except` clause, raise exceptions with `raise ... from err` or `raise ... from None` to distinguish them from errors in exception handling",
+    "noqa_row": 652,
+    "url": "https://docs.astral.sh/ruff/rules/raise-without-from-inside-except"
+  },
+  {
+    "cell": null,
+    "code": "UP031",
+    "end_location": {
+      "column": 70,
+      "row": 667
+    },
+    "filename": "/home/ahmeed/Documents/KSIU/GRAD/SOLO/tmp_repos/aiohttp/aiohttp/web_request.py",
+    "fix": {
+      "applicability": "unsafe",
+      "edits": [
+        {
+          "content": "\"Attempt to decode JSON with \"\n                        \"unexpected mimetype: {}\".format(self.content_type)",
+          "end_location": {
+            "column": 70,
+            "row": 667
+          },
+          "location": {
+            "column": 25,
+            "row": 666
+          }
+        }
+      ],
+      "message": "Replace with format specifiers"
+    },
+    "location": {
+      "column": 25,
+      "row": 666
+    },
+    "message": "Use format specifiers instead of percent format",
+    "noqa_row": 666,
+    "url": "https://docs.astral.sh/ruff/rules/printf-string-formatting"
+  },
+  {
+    "cell": null,
+    "code": "B904",
+    "end_location": {
+      "column": 53,
+      "row": 779
+    },
+    "filename": "/home/ahmeed/Documents/KSIU/GRAD/SOLO/tmp_repos/aiohttp/aiohttp/web_request.py",
+    "fix": null,
+    "location": {
+      "column": 21,
+      "row": 779
+    },
+    "message": "Within an `except` clause, raise exceptions with `raise ... from err` or `raise ... from None` to distinguish them from errors in exception handling",
+    "noqa_row": 779,
+    "url": "https://docs.astral.sh/ruff/rules/raise-without-from-inside-except"
+  },
+  {
+    "cell": null,
+    "code": "B007",
+    "end_location": {
+      "column": 22,
+      "row": 821
+    },
+    "filename": "/home/ahmeed/Documents/KSIU/GRAD/SOLO/tmp_repos/aiohttp/aiohttp/web_request.py",
+    "fix": {
+      "applicability": "unsafe",
+      "edits": [
+        {
+          "content": "_file_name",
+          "end_location": {
+            "column": 22,
+            "row": 821
+          },
+          "location": {
+            "column": 13,
+            "row": 821
+          }
+        }
+      ],
+      "message": "Rename unused `file_name` to `_file_name`"
+    },
+    "location": {
+      "column": 13,
+      "row": 821
+    },
+    "message": "Loop control variable `file_name` not used within loop body",
+    "noqa_row": 821,
+    "url": "https://docs.astral.sh/ruff/rules/unused-loop-control-variable"
+  },
+  {
+    "cell": null,
+    "code": "B018",
+    "end_location": {
+      "column": 26,
+      "row": 228
+    },
+    "filename": "/home/ahmeed/Documents/KSIU/GRAD/SOLO/tmp_repos/aiohttp/aiohttp/web_response.py",
+    "fix": null,
+    "location": {
+      "column": 9,
+      "row": 228
+    },
+    "message": "Found useless expression. Either assign it to a variable or remove it.",
+    "noqa_row": 228,
+    "url": "https://docs.astral.sh/ruff/rules/useless-expression"
+  },
+  {
+    "cell": null,
+    "code": "UP031",
+    "end_location": {
+      "column": 62,
+      "row": 453
+    },
+    "filename": "/home/ahmeed/Documents/KSIU/GRAD/SOLO/tmp_repos/aiohttp/aiohttp/web_response.py",
+    "fix": {
+      "applicability": "unsafe",
+      "edits": [
+        {
+          "content": "\"data argument must be byte-ish ({!r})\".format(type(data))",
+          "end_location": {
+            "column": 62,
+            "row": 453
+          },
+          "location": {
+            "column": 12,
+            "row": 453
+          }
+        }
+      ],
+      "message": "Replace with format specifiers"
+    },
+    "location": {
+      "column": 12,
+      "row": 453
+    },
+    "message": "Use format specifiers instead of percent format",
+    "noqa_row": 453,
+    "url": "https://docs.astral.sh/ruff/rules/printf-string-formatting"
+  },
+  {
+    "cell": null,
+    "code": "UP031",
+    "end_location": {
+      "column": 62,
+      "row": 475
+    },
+    "filename": "/home/ahmeed/Documents/KSIU/GRAD/SOLO/tmp_repos/aiohttp/aiohttp/web_response.py",
+    "fix": {
+      "applicability": "unsafe",
+      "edits": [
+        {
+          "content": "\"data argument must be byte-ish ({!r})\".format(type(data))",
+          "end_location": {
+            "column": 62,
+            "row": 475
+          },
+          "location": {
+            "column": 12,
+            "row": 475
+          }
+        }
+      ],
+      "message": "Replace with format specifiers"
+    },
+    "location": {
+      "column": 12,
+      "row": 475
+    },
+    "message": "Use format specifiers instead of percent format",
+    "noqa_row": 475,
+    "url": "https://docs.astral.sh/ruff/rules/printf-string-formatting"
+  },
+  {
+    "cell": null,
+    "code": "UP031",
+    "end_location": {
+      "column": 82,
+      "row": 575
+    },
+    "filename": "/home/ahmeed/Documents/KSIU/GRAD/SOLO/tmp_repos/aiohttp/aiohttp/web_response.py",
+    "fix": {
+      "applicability": "unsafe",
+      "edits": [
+        {
+          "content": "\"text argument must be str ({!r})\".format(type(text))",
+          "end_location": {
+            "column": 82,
+            "row": 575
+          },
+          "location": {
+            "column": 37,
+            "row": 575
+          }
+        }
+      ],
+      "message": "Replace with format specifiers"
+    },
+    "location": {
+      "column": 37,
+      "row": 575
+    },
+    "message": "Use format specifiers instead of percent format",
+    "noqa_row": 575,
+    "url": "https://docs.astral.sh/ruff/rules/printf-string-formatting"
+  },
+  {
+    "cell": null,
+    "code": "B904",
+    "end_location": {
+      "column": 74,
+      "row": 619
+    },
+    "filename": "/home/ahmeed/Documents/KSIU/GRAD/SOLO/tmp_repos/aiohttp/aiohttp/web_response.py",
+    "fix": null,
+    "location": {
+      "column": 17,
+      "row": 619
+    },
+    "message": "Within an `except` clause, raise exceptions with `raise ... from err` or `raise ... from None` to distinguish them from errors in exception handling",
+    "noqa_row": 619,
+    "url": "https://docs.astral.sh/ruff/rules/raise-without-from-inside-except"
+  },
+  {
+    "cell": null,
+    "code": "UP031",
+    "end_location": {
+      "column": 73,
+      "row": 619
+    },
+    "filename": "/home/ahmeed/Documents/KSIU/GRAD/SOLO/tmp_repos/aiohttp/aiohttp/web_response.py",
+    "fix": {
+      "applicability": "unsafe",
+      "edits": [
+        {
+          "content": "\"Unsupported body type {!r}\".format(type(body))",
+          "end_location": {
+            "column": 73,
+            "row": 619
+          },
+          "location": {
+            "column": 34,
+            "row": 619
+          }
+        }
+      ],
+      "message": "Replace with format specifiers"
+    },
+    "location": {
+      "column": 34,
+      "row": 619
+    },
+    "message": "Use format specifiers instead of percent format",
+    "noqa_row": 619,
+    "url": "https://docs.astral.sh/ruff/rules/printf-string-formatting"
+  },
+  {
+    "cell": null,
+    "code": "UP031",
+    "end_location": {
+      "column": 84,
+      "row": 646
+    },
+    "filename": "/home/ahmeed/Documents/KSIU/GRAD/SOLO/tmp_repos/aiohttp/aiohttp/web_response.py",
+    "fix": {
+      "applicability": "unsafe",
+      "edits": [
+        {
+          "content": "\"text argument must be str ({!r})\".format(type(text))",
+          "end_location": {
+            "column": 84,
+            "row": 646
+          },
+          "location": {
+            "column": 39,
+            "row": 646
+          }
+        }
+      ],
+      "message": "Replace with format specifiers"
+    },
+    "location": {
+      "column": 39,
+      "row": 646
+    },
+    "message": "Use format specifiers instead of percent format",
+    "noqa_row": 646,
+    "url": "https://docs.astral.sh/ruff/rules/printf-string-formatting"
+  },
+  {
+    "cell": null,
+    "code": "B028",
+    "end_location": {
+      "column": 26,
+      "row": 730
+    },
+    "filename": "/home/ahmeed/Documents/KSIU/GRAD/SOLO/tmp_repos/aiohttp/aiohttp/web_response.py",
+    "fix": {
+      "applicability": "unsafe",
+      "edits": [
+        {
+          "content": ", stacklevel=2",
+          "end_location": {
+            "column": 84,
+            "row": 734
+          },
+          "location": {
+            "column": 84,
+            "row": 734
+          }
+        }
+      ],
+      "message": "Set `stacklevel=2`"
+    },
+    "location": {
+      "column": 13,
+      "row": 730
+    },
+    "message": "No explicit `stacklevel` keyword argument found",
+    "noqa_row": 730,
+    "url": "https://docs.astral.sh/ruff/rules/no-explicit-stacklevel"
+  },
+  {
+    "cell": null,
+    "code": "UP007",
+    "end_location": {
+      "column": 50,
+      "row": 42
+    },
+    "filename": "/home/ahmeed/Documents/KSIU/GRAD/SOLO/tmp_repos/aiohttp/aiohttp/web_routedef.py",
+    "fix": null,
+    "location": {
+      "column": 16,
+      "row": 42
+    },
+    "message": "Use `X | Y` for type annotations",
+    "noqa_row": 42,
+    "url": "https://docs.astral.sh/ruff/rules/non-pep604-annotation-union"
+  },
+  {
+    "cell": null,
+    "code": "UP031",
+    "end_location": {
+      "column": 75,
+      "row": 305
+    },
+    "filename": "/home/ahmeed/Documents/KSIU/GRAD/SOLO/tmp_repos/aiohttp/aiohttp/web_urldispatcher.py",
+    "fix": {
+      "applicability": "unsafe",
+      "edits": [
+        {
+          "content": "\"Unknown Expect: {}\".format(expect)",
+          "end_location": {
+            "column": 75,
+            "row": 305
+          },
+          "location": {
+            "column": 46,
+            "row": 305
+          }
+        }
+      ],
+      "message": "Replace with format specifiers"
+    },
+    "location": {
+      "column": 46,
+      "row": 305
+    },
+    "message": "Use format specifiers instead of percent format",
+    "noqa_row": 305,
+    "url": "https://docs.astral.sh/ruff/rules/printf-string-formatting"
+  },
+  {
+    "cell": null,
+    "code": "UP036",
+    "end_location": {
+      "column": 31,
+      "row": 50
+    },
+    "filename": "/home/ahmeed/Documents/KSIU/GRAD/SOLO/tmp_repos/aiohttp/aiohttp/web_ws.py",
+    "fix": {
+      "applicability": "unsafe",
+      "edits": [
+        {
+          "content": "import asyncio as async_timeout\nfrom typing import Self",
+          "end_location": {
+            "column": 39,
+            "row": 55
+          },
+          "location": {
+            "column": 1,
+            "row": 50
+          }
+        }
+      ],
+      "message": "Remove outdated version block"
+    },
+    "location": {
+      "column": 4,
+      "row": 50
+    },
+    "message": "Version block is outdated for minimum Python version",
+    "noqa_row": 50,
+    "url": "https://docs.astral.sh/ruff/rules/outdated-version-block"
+  },
+  {
+    "cell": null,
+    "code": "UP035",
+    "end_location": {
+      "column": 39,
+      "row": 55
+    },
+    "filename": "/home/ahmeed/Documents/KSIU/GRAD/SOLO/tmp_repos/aiohttp/aiohttp/web_ws.py",
+    "fix": {
+      "applicability": "safe",
+      "edits": [
+        {
+          "content": "from typing import Self",
+          "end_location": {
+            "column": 39,
+            "row": 55
+          },
+          "location": {
+            "column": 5,
+            "row": 55
+          }
+        }
+      ],
+      "message": "Import from `typing`"
+    },
+    "location": {
+      "column": 5,
+      "row": 55
+    },
+    "message": "Import from `typing` instead: `Self`",
+    "noqa_row": 55,
+    "url": "https://docs.astral.sh/ruff/rules/deprecated-import"
+  },
+  {
+    "cell": null,
+    "code": "UP041",
+    "end_location": {
+      "column": 37,
+      "row": 235
+    },
+    "filename": "/home/ahmeed/Documents/KSIU/GRAD/SOLO/tmp_repos/aiohttp/aiohttp/web_ws.py",
+    "fix": {
+      "applicability": "safe",
+      "edits": [
+        {
+          "content": "TimeoutError",
+          "end_location": {
+            "column": 37,
+            "row": 235
+          },
+          "location": {
+            "column": 17,
+            "row": 235
+          }
+        }
+      ],
+      "message": "Replace `asyncio.TimeoutError` with builtin `TimeoutError`"
+    },
+    "location": {
+      "column": 17,
+      "row": 235
+    },
+    "message": "Replace aliased errors with `TimeoutError`",
+    "noqa_row": 235,
+    "url": "https://docs.astral.sh/ruff/rules/timeout-error-alias"
+  },
+  {
+    "cell": null,
+    "code": "UP031",
+    "end_location": {
+      "column": 74,
+      "row": 464
+    },
+    "filename": "/home/ahmeed/Documents/KSIU/GRAD/SOLO/tmp_repos/aiohttp/aiohttp/web_ws.py",
+    "fix": {
+      "applicability": "unsafe",
+      "edits": [
+        {
+          "content": "\"data argument must be str ({!r})\".format(type(data))",
+          "end_location": {
+            "column": 74,
+            "row": 464
+          },
+          "location": {
+            "column": 29,
+            "row": 464
+          }
+        }
+      ],
+      "message": "Replace with format specifiers"
+    },
+    "location": {
+      "column": 29,
+      "row": 464
+    },
+    "message": "Use format specifiers instead of percent format",
+    "noqa_row": 464,
+    "url": "https://docs.astral.sh/ruff/rules/printf-string-formatting"
+  },
+  {
+    "cell": null,
+    "code": "UP031",
+    "end_location": {
+      "column": 79,
+      "row": 473
+    },
+    "filename": "/home/ahmeed/Documents/KSIU/GRAD/SOLO/tmp_repos/aiohttp/aiohttp/web_ws.py",
+    "fix": {
+      "applicability": "unsafe",
+      "edits": [
+        {
+          "content": "\"data argument must be byte-ish ({!r})\".format(type(data))",
+          "end_location": {
+            "column": 79,
+            "row": 473
+          },
+          "location": {
+            "column": 29,
+            "row": 473
+          }
+        }
+      ],
+      "message": "Replace with format specifiers"
+    },
+    "location": {
+      "column": 29,
+      "row": 473
+    },
+    "message": "Use format specifiers instead of percent format",
+    "noqa_row": 473,
+    "url": "https://docs.astral.sh/ruff/rules/printf-string-formatting"
+  },
+  {
+    "cell": null,
+    "code": "UP041",
+    "end_location": {
+      "column": 62,
+      "row": 525
+    },
+    "filename": "/home/ahmeed/Documents/KSIU/GRAD/SOLO/tmp_repos/aiohttp/aiohttp/web_ws.py",
+    "fix": {
+      "applicability": "safe",
+      "edits": [
+        {
+          "content": "(TimeoutError, asyncio.CancelledError)",
+          "end_location": {
+            "column": 62,
+            "row": 525
+          },
+          "location": {
+            "column": 16,
+            "row": 525
+          }
+        }
+      ],
+      "message": "Replace with builtin `TimeoutError`"
+    },
+    "location": {
+      "column": 16,
+      "row": 525
+    },
+    "message": "Replace aliased errors with `TimeoutError`",
+    "noqa_row": 525,
+    "url": "https://docs.astral.sh/ruff/rules/timeout-error-alias"
+  },
+  {
+    "cell": null,
+    "code": "UP041",
+    "end_location": {
+      "column": 40,
+      "row": 629
+    },
+    "filename": "/home/ahmeed/Documents/KSIU/GRAD/SOLO/tmp_repos/aiohttp/aiohttp/web_ws.py",
+    "fix": {
+      "applicability": "safe",
+      "edits": [
+        {
+          "content": "TimeoutError",
+          "end_location": {
+            "column": 40,
+            "row": 629
+          },
+          "location": {
+            "column": 20,
+            "row": 629
+          }
+        }
+      ],
+      "message": "Replace `asyncio.TimeoutError` with builtin `TimeoutError`"
+    },
+    "location": {
+      "column": 20,
+      "row": 629
+    },
+    "message": "Replace aliased errors with `TimeoutError`",
+    "noqa_row": 629,
+    "url": "https://docs.astral.sh/ruff/rules/timeout-error-alias"
   }
 ]

@@ -645,3 +645,97 @@ class TestCLILanguageRouting:
         assert "no-eval" in config_content
         assert "security/detect-eval-with-expression" in config_content
         assert "eslint-plugin-security" in config_content
+
+
+# ──────────────────────────────────────────────────────────────────────────────
+# v3.0.2 Coverage: New Security Rules (SECURITY-061, SECURITY-063, SECURITY-064)
+# ──────────────────────────────────────────────────────────────────────────────
+
+
+class TestV302NewRuleCoverage:
+    """Verify v3.0.2 gap-closing additions: SQLi, XXE, EJS XSS, TypeScript, taint rules."""
+
+    def test_ejs_extension_in_file_extensions(self, tmp_path: Path) -> None:
+        """file_extensions must include .ejs for EJS template scanning."""
+        adapter = JavaScriptAdapter(target_dir=str(tmp_path))
+        assert ".ejs" in adapter.file_extensions, ".ejs must be in file_extensions for template XSS detection"
+
+    def test_typescript_extension_in_file_extensions(self, tmp_path: Path) -> None:
+        """file_extensions must include .ts and .tsx for TypeScript support."""
+        adapter = JavaScriptAdapter(target_dir=str(tmp_path))
+        exts = adapter.file_extensions
+        assert ".ts" in exts, ".ts must be supported"
+        assert ".tsx" in exts, ".tsx must be supported"
+
+    def test_security_061_sqli_in_rule_mapping(self) -> None:
+        """SECURITY-061 (Sequelize raw query / SQL injection) must be in JS_RULE_MAPPING."""
+        assert "js-sequelize-raw-query" in JS_RULE_MAPPING
+        assert JS_RULE_MAPPING["js-sequelize-raw-query"] == "SECURITY-061"
+
+    def test_security_063_xxe_in_rule_mapping(self) -> None:
+        """SECURITY-063 (XXE — libxmljs with noent:true) must be in JS_RULE_MAPPING."""
+        assert "js-xxe-libxmljs" in JS_RULE_MAPPING
+        assert JS_RULE_MAPPING["js-xxe-libxmljs"] == "SECURITY-063"
+
+    def test_security_064_ejs_xss_in_rule_mapping(self) -> None:
+        """SECURITY-064 (XSS via EJS unescaped output) must be in JS_RULE_MAPPING."""
+        assert "js-ejs-unescaped-output" in JS_RULE_MAPPING
+        assert JS_RULE_MAPPING["js-ejs-unescaped-output"] == "SECURITY-064"
+
+    def test_taint_rules_mapped_to_canonical_ids(self) -> None:
+        """Taint rule IDs (js-taint-*) must map to canonical security IDs, not CUSTOM-*."""
+        assert "js-taint-sql-injection" in JS_RULE_MAPPING
+        assert JS_RULE_MAPPING["js-taint-sql-injection"] == "SECURITY-061"
+        assert "js-taint-command-injection" in JS_RULE_MAPPING
+        assert JS_RULE_MAPPING["js-taint-command-injection"] == "SECURITY-062"
+        assert "js-taint-eval-injection" in JS_RULE_MAPPING
+        # taint eval maps to SECURITY-001 (same canonical as js-eval-injection)
+        assert JS_RULE_MAPPING["js-taint-eval-injection"] == "SECURITY-001"
+
+    def test_semgrep_js_rules_yml_exists_and_has_new_rules(self) -> None:
+        """js-rules.yml must exist and contain the new rule IDs."""
+        rules_path = Path(__file__).parent.parent / "TOOLS" / "semgrep" / "js-rules.yml"
+        assert rules_path.exists(), "TOOLS/semgrep/js-rules.yml must exist"
+        content = rules_path.read_text()
+        assert "js-sequelize-raw-query" in content, "js-sequelize-raw-query must be in js-rules.yml"
+        assert "js-xxe-libxmljs" in content, "js-xxe-libxmljs must be in js-rules.yml"
+        assert "js-ejs-unescaped-output" in content, "js-ejs-unescaped-output must be in js-rules.yml"
+
+    def test_semgrep_taint_rules_yml_exists(self) -> None:
+        """js-taint-rules.yml must exist for architecture documentation."""
+        taint_path = Path(__file__).parent.parent / "TOOLS" / "semgrep" / "js-taint-rules.yml"
+        assert taint_path.exists(), "TOOLS/semgrep/js-taint-rules.yml must exist"
+        content = taint_path.read_text()
+        assert "mode: taint" in content, "Taint rules must use mode: taint"
+        assert "pattern-sources" in content, "Taint rules must define pattern-sources"
+        assert "pattern-sinks" in content, "Taint rules must define pattern-sinks"
+
+    def test_semgrep_xxe_yml_exists(self) -> None:
+        """js-xxe.yml must exist."""
+        xxe_path = Path(__file__).parent.parent / "TOOLS" / "semgrep" / "js-xxe.yml"
+        assert xxe_path.exists(), "TOOLS/semgrep/js-xxe.yml must exist"
+
+    def test_semgrep_ejs_xss_yml_exists(self) -> None:
+        """js-ejs-xss.yml must exist."""
+        ejs_path = Path(__file__).parent.parent / "TOOLS" / "semgrep" / "js-ejs-xss.yml"
+        assert ejs_path.exists(), "TOOLS/semgrep/js-ejs-xss.yml must exist"
+
+    def test_xxe_rule_in_mapping_with_both_variants(self) -> None:
+        """Both XXE rule variants must be in JS_RULE_MAPPING."""
+        assert "js-xxe-libxmljs-noent" in JS_RULE_MAPPING
+        assert JS_RULE_MAPPING["js-xxe-libxmljs-noent"] == "SECURITY-063"
+        assert "js-xxe-libxmljs-variable" in JS_RULE_MAPPING
+        assert JS_RULE_MAPPING["js-xxe-libxmljs-variable"] == "SECURITY-063"
+
+    def test_all_new_ids_exceed_60(self) -> None:
+        """All new canonical IDs (SECURITY-06x) are above the previous max (SECURITY-060)."""
+        new_ids = [
+            JS_RULE_MAPPING.get("js-taint-sql-injection"),
+            JS_RULE_MAPPING.get("js-taint-command-injection"),
+            JS_RULE_MAPPING.get("js-xxe-libxmljs-noent"),
+            JS_RULE_MAPPING.get("js-ejs-unescaped-output"),
+        ]
+        for cid in new_ids:
+            if cid and cid.startswith("SECURITY-"):
+                num = int(cid.split("-")[1])
+                assert num >= 61 or num == 1, f"{cid} should be SECURITY-61+ or SECURITY-001 (eval reuse)"

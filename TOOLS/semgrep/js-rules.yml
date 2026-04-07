@@ -218,6 +218,7 @@ rules:
       category: style
       canonical_rule_id: STYLE-007
 
+
   - id: js-global-variable
     pattern: var $X = $VAL
     message: |
@@ -227,3 +228,62 @@ rules:
     metadata:
       category: style
       canonical_rule_id: STYLE-017
+
+  # ── Sequelize SQL Injection ───────────────────────────────────────────────────
+  - id: js-sequelize-raw-query
+    pattern-either:
+      - patterns:
+          - pattern: $DB.sequelize.query($QUERY, ...)
+          - pattern-not: $DB.sequelize.query("...", ...)
+      - patterns:
+          - pattern: sequelize.query($QUERY, ...)
+          - pattern-not: sequelize.query("...", ...)
+    message: |
+      Raw Sequelize query with a non-literal query string — possible SQL injection.
+      If the query is built by concatenating user input, an attacker can manipulate
+      the SQL. Use parameterized queries or Sequelize ORM methods instead:
+        db.User.findOne({ where: { login: req.body.login } })
+    severity: ERROR
+    languages: [javascript, typescript]
+    metadata:
+      category: security
+      canonical_rule_id: SECURITY-061
+      owasp: A03:2021 - Injection
+      cwe: CWE-89
+
+  # ── XXE: libxmljs with noent:true ─────────────────────────────────────────────
+  - id: js-xxe-libxmljs
+    pattern-either:
+      - pattern: libxmljs.parseXmlString($X, {noent:true, ...})
+      - pattern: libxmljs.parseXmlString($X, {noent:true})
+      - pattern: libxmljs.parseXml($X, {noent:true, ...})
+      - pattern: libxmljs.parseXml($X, {noent:true})
+    message: |
+      XML External Entity (XXE) injection: libxmljs is parsing XML with noent:true.
+      This enables external entity resolution — an attacker can read arbitrary files
+      (e.g., /etc/passwd) or trigger SSRF via a crafted XML document.
+      Fix: set noent:false (safe default):
+        libxmljs.parseXmlString(data, { noent: false, noblanks: true })
+    severity: ERROR
+    languages: [javascript, typescript]
+    metadata:
+      category: security
+      canonical_rule_id: SECURITY-063
+      owasp: A05:2021 - Security Misconfiguration
+      cwe: CWE-611
+
+  # ── EJS Unescaped Output (XSS) ────────────────────────────────────────────────
+  - id: js-ejs-unescaped-output
+    pattern: '<%- $EXPR %>'
+    message: |
+      EJS unescaped output: <%- %> renders content without HTML escaping.
+      If $EXPR contains user-controlled data, this is stored or reflected XSS (CWE-79).
+      Use <%= %> for HTML-safe output. Only use <%- %> for trusted, internal content.
+    severity: WARNING
+    languages: [generic]
+    metadata:
+      category: security
+      canonical_rule_id: SECURITY-064
+      owasp: A03:2021 - Injection
+      cwe: CWE-79
+

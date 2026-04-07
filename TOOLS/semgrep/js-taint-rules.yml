@@ -1,0 +1,99 @@
+rules:
+  # ============================================================
+  # ACR-QA JavaScript Taint Analysis Rules
+  # Mode: taint — intraprocedural data-flow within single function
+  # Sources: req.body, req.query, req.params (Express.js request inputs)
+  # These rules track user-controlled input to dangerous sinks,
+  # catching vulnerabilities that pure pattern-matching misses.
+  # ============================================================
+
+  - id: js-taint-sql-injection
+    mode: taint
+    pattern-sources:
+      - pattern: req.body.$FIELD
+      - pattern: req.query.$FIELD
+      - pattern: req.params.$FIELD
+      - pattern: req.body
+      - pattern: req.query
+      - pattern: req.params
+    pattern-sinks:
+      - pattern: $DB.sequelize.query($QUERY, ...)
+      - pattern: sequelize.query($QUERY, ...)
+      - pattern: db.query($QUERY, ...)
+      - pattern: connection.query($QUERY, ...)
+      - pattern: pool.query($QUERY, ...)
+      - pattern: knex.raw($QUERY, ...)
+      - pattern: $DB.query($QUERY, ...)
+    message: |
+      Taint analysis: user-controlled input flows into a raw SQL query.
+      This is SQL injection (CWE-89). Use parameterized queries:
+        db.query('SELECT * FROM users WHERE id = ?', [req.body.id])
+      or Sequelize's ORM methods:
+        db.User.findOne({ where: { login: req.body.login } })
+    severity: ERROR
+    languages: [javascript, typescript]
+    metadata:
+      category: security
+      canonical_rule_id: SECURITY-061
+      owasp: A03:2021 - Injection
+      cwe: CWE-89
+      taint: true
+
+  - id: js-taint-command-injection
+    mode: taint
+    pattern-sources:
+      - pattern: req.body.$FIELD
+      - pattern: req.query.$FIELD
+      - pattern: req.params.$FIELD
+      - pattern: req.body
+      - pattern: req.query
+      - pattern: req.params
+    pattern-sinks:
+      - pattern: exec($CMD, ...)
+      - pattern: execSync($CMD, ...)
+      - pattern: spawn($CMD, ...)
+      - pattern: spawnSync($CMD, ...)
+      - pattern: child_process.exec($CMD, ...)
+      - pattern: child_process.execSync($CMD, ...)
+    message: |
+      Taint analysis: user-controlled input flows into a shell command.
+      This is command injection (CWE-78). Use execFile() with an argument
+      array instead of string concatenation:
+        execFile('ping', ['-c', '2', req.body.address], callback)
+    severity: ERROR
+    languages: [javascript, typescript]
+    metadata:
+      category: security
+      canonical_rule_id: SECURITY-062
+      owasp: A03:2021 - Injection
+      cwe: CWE-78
+      taint: true
+
+  - id: js-taint-eval-injection
+    mode: taint
+    pattern-sources:
+      - pattern: req.body.$FIELD
+      - pattern: req.query.$FIELD
+      - pattern: req.params.$FIELD
+      - pattern: req.body
+      - pattern: req.query
+      - pattern: req.params
+    pattern-sinks:
+      - pattern: eval($CODE)
+      - pattern: new Function($CODE)
+      - pattern: setTimeout($CODE, ...)
+      - pattern: setInterval($CODE, ...)
+      - pattern: vm.runInThisContext($CODE)
+      - pattern: vm.runInNewContext($CODE, ...)
+    message: |
+      Taint analysis: user-controlled input flows into dynamic code execution.
+      This is remote code execution (CWE-95). Never pass user input to eval(),
+      Function(), or vm.run* functions.
+    severity: ERROR
+    languages: [javascript, typescript]
+    metadata:
+      category: security
+      canonical_rule_id: SECURITY-001
+      owasp: A03:2021 - Injection
+      cwe: CWE-95
+      taint: true

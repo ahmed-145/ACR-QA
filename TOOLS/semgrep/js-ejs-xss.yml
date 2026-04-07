@@ -1,0 +1,38 @@
+rules:
+  # ============================================================
+  # ACR-QA EJS Template XSS Detection Rules
+  # Detects unescaped output in EJS template files.
+  # <%-  outputs raw unescaped HTML (XSS risk)
+  # <%=  outputs HTML-escaped (safe)
+  # ============================================================
+
+  - id: js-ejs-unescaped-output
+    pattern: '<%- $EXPR %>'
+    message: |
+      EJS unescaped output: <%- %> renders content without HTML escaping.
+      If $EXPR contains user-controlled data this is a stored or reflected XSS
+      (CWE-79). Use <%= %> for HTML-safe output, or sanitize with DOMPurify
+      before rendering. Only use <%- %> for content you fully control.
+    severity: WARNING
+    languages: [generic]
+    metadata:
+      category: security
+      canonical_rule_id: SECURITY-064
+      owasp: A03:2021 - Injection
+      cwe: CWE-79
+
+  - id: js-ejs-innerHTML-template
+    pattern-either:
+      - pattern: "$EL.innerHTML = ..."
+      - pattern: "document.write(...)"
+    message: |
+      JavaScript in EJS template sets innerHTML or calls document.write(),
+      which can lead to DOM XSS if any part contains user-controlled data.
+      Use textContent instead of innerHTML for plain text output.
+    severity: WARNING
+    languages: [generic]
+    metadata:
+      category: security
+      canonical_rule_id: SECURITY-045
+      owasp: A03:2021 - Injection
+      cwe: CWE-79

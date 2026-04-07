@@ -159,6 +159,11 @@ class SeverityScorer:
         "SECURITY-046": "high",  # SSRF via requests with user-controlled URL (CWE-918)
         "SECURITY-047": "critical",  # JWT none algorithm — signature bypass (CWE-347)
         "SECURITY-048": "medium",  # Open redirect via user-controlled URL (CWE-601)
+        # ── Taint analysis & new JS rules ──
+        "SECURITY-061": "high",  # Taint: req.* → SQL query (SQLi via taint tracking)
+        "SECURITY-062": "high",  # Taint: req.* → exec/spawn (command injection)
+        "SECURITY-063": "high",  # XXE: libxmljs with noent:true (file read / SSRF)
+        "SECURITY-064": "high",  # XSS: EJS <%- unescaped output (CWE-79)
     }
 
     # Context-based severity adjustments

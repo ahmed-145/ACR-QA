@@ -84,6 +84,19 @@ JS_RULE_MAPPING: dict[str, str] = {
     "npm-audit-critical": "SECURITY-059",  # npm CVE critical
     "npm-audit-high": "SECURITY-059",  # npm CVE high
     "npm-audit-moderate": "SECURITY-060",  # npm CVE moderate
+    # ── Taint analysis rules (js-taint-rules.yml) ─────────────────────────────
+    "js-taint-sql-injection": "SECURITY-061",  # req.* → sequelize.query/db.query (SQLi)
+    "js-taint-command-injection": "SECURITY-062",  # req.* → exec/spawn (cmd injection)
+    "js-taint-eval-injection": "SECURITY-001",  # req.* → eval/Function (RCE)
+    # ── XXE rules (js-xxe.yml) ────────────────────────────────────────────────
+    "js-xxe-libxmljs-noent": "SECURITY-063",  # libxmljs with noent:true
+    "js-xxe-libxmljs-variable": "SECURITY-063",  # libxmljs noent via variable
+    "js-xxe-libxmljs": "SECURITY-063",  # libxmljs in js-rules.yml (pattern form)
+    # ── EJS template XSS rules (js-ejs-xss.yml) ──────────────────────────────
+    "js-ejs-unescaped-output": "SECURITY-064",  # <%- unescaped EJS output
+    "js-ejs-innerHTML-template": "SECURITY-045",  # innerHTML in EJS template
+    # ── Pattern-based SQLi / XXE rules (js-rules.yml) ─────────────────────────
+    "js-sequelize-raw-query": "SECURITY-061",  # db.sequelize.query(var) — SQLi
 }
 
 
@@ -110,7 +123,7 @@ class JavaScriptAdapter(LanguageAdapter):
     @property
     def file_extensions(self) -> list[str]:
         """Return supported file extensions."""
-        return [".js", ".jsx", ".ts", ".tsx", ".mjs", ".cjs"]
+        return [".js", ".jsx", ".ts", ".tsx", ".mjs", ".cjs", ".ejs"]
 
     def get_tools(self) -> list[dict[str, Any]]:
         """Return list of tools used by this adapter."""
@@ -311,18 +324,21 @@ export default [
 
     def _run_semgrep_js(self, output_file: Path, results: dict[str, Any]) -> None:
         """Run Semgrep with JS-specific rules."""
-        # Use ACR-QA's custom JS rules if they exist, else fall back to semgrep registry
-        custom_rules = Path(__file__).parent.parent.parent / "TOOLS" / "semgrep" / "js-rules.yml"
-        if custom_rules.exists():
-            rules_arg = str(custom_rules)
-        else:
+        # Load all js-*.yml rule files from TOOLS/semgrep/ for comprehensive coverage
+        semgrep_dir = Path(__file__).parent.parent.parent / "TOOLS" / "semgrep"
+        js_rule_files = sorted(semgrep_dir.glob("js-*.yml"))
+        if not js_rule_files:
             # Fallback: use semgrep's built-in JS security rules
-            rules_arg = "p/javascript"
+            js_rule_files = []
+            rules_args = ["--config", "p/javascript"]
+        else:
+            rules_args = []
+            for rule_file in js_rule_files:
+                rules_args.extend(["--config", str(rule_file)])
 
         cmd = [
             "semgrep",
-            "--config",
-            rules_arg,
+            *rules_args,
             "--json",
             "--quiet",
             "--include",
@@ -335,6 +351,8 @@ export default [
             "*.tsx",
             "--include",
             "*.mjs",
+            "--include",
+            "*.ejs",
             str(self.target_dir),
         ]
 
@@ -554,7 +572,10 @@ export default [
         target = Path(target_dir)
         py_files = list(target.rglob("*.py"))
         js_files = [
-            f for ext in (".js", ".ts", ".jsx", ".tsx") for f in target.rglob(f"*{ext}") if "node_modules" not in str(f)
+            f
+            for ext in (".js", ".ts", ".jsx", ".tsx", ".ejs")
+            for f in target.rglob(f"*{ext}")
+            if "node_modules" not in str(f)
         ]
         has_package_json = (target / "package.json").exists()
         has_setup_py = (target / "setup.py").exists() or (target / "pyproject.toml").exists()

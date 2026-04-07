@@ -1,0 +1,46 @@
+rules:
+  # ============================================================
+  # ACR-QA JavaScript XXE Detection Rules
+  # Detects XML External Entity injection in JS/TS codebases
+  # Target: libxmljs (most common Node.js XML parser)
+  # ============================================================
+
+  - id: js-xxe-libxmljs-noent
+    pattern-either:
+      - pattern: libxmljs.parseXmlString($X, {noent:true, ...})
+      - pattern: libxmljs.parseXmlString($X, {noent:true})
+      - pattern: libxmljs.parseXml($X, {noent:true, ...})
+      - pattern: libxmljs.parseXml($X, {noent:true})
+    message: |
+      XML External Entity (XXE) injection: libxmljs is parsing XML with noent:true,
+      which enables external entity resolution. An attacker can supply a crafted XML
+      document that reads arbitrary files (e.g. /etc/passwd) or triggers SSRF.
+      Fix: set noent:false (the safe default):
+        libxmljs.parseXmlString(data, { noent: false, noblanks: true })
+    severity: ERROR
+    languages: [javascript, typescript]
+    metadata:
+      category: security
+      canonical_rule_id: SECURITY-063
+      owasp: A05:2021 - Security Misconfiguration
+      cwe: CWE-611
+
+  - id: js-xxe-libxmljs-variable
+    patterns:
+      - pattern: libxmljs.parseXmlString($X, $OPTS)
+      - metavariable-pattern:
+          metavariable: $OPTS
+          pattern-either:
+            - pattern: "{ noent: true, ... }"
+            - pattern: "{ noent:true, ... }"
+            - pattern: "{ noent:true }"
+    message: |
+      XML External Entity (XXE) injection: options object with noent:true passed
+      to libxmljs.parseXmlString(). Disable external entity resolution with noent:false.
+    severity: ERROR
+    languages: [javascript, typescript]
+    metadata:
+      category: security
+      canonical_rule_id: SECURITY-063
+      owasp: A05:2021 - Security Misconfiguration
+      cwe: CWE-611
