@@ -233,8 +233,8 @@ python3 CORE/main.py --target-dir /path/to/DVNA --lang javascript --json --no-ai
 
 ### Round 6 Test Results — ACR-QA on DVNA (April 7, 2026)
 
-**Target:** [DVNA](https://github.com/appsecco/dvna) (900+ ★, intentionally vulnerable Node.js app)  
-**Scan:** `python3 CORE/main.py --target-dir /tmp/dvna --lang javascript --no-ai`  
+**Target:** [DVNA](https://github.com/appsecco/dvna) (900+ ★, intentionally vulnerable Node.js app)
+**Scan:** `python3 CORE/main.py --target-dir /tmp/dvna --lang javascript --no-ai`
 **Scan time:** ~6s
 
 | Metric | Value |
@@ -294,9 +294,9 @@ curl -u YOUR_TOKEN: \
 | Metric | ACR-QA v3.0.1 | SonarQube CE |
 |--------|--------------|-------------|
 | Scan target | DVNA (15 JS files) | DVNA (15 JS files) |
-| Total findings | **946** | *(run runbook above)* |
-| Critical/Blocker | **2** | *(run runbook above)* |
-| Scan time | **~6s** | ~30–60s |
+| Total findings | **946** | 71 |
+| Critical/Blocker | **2** | 49 |
+| Scan time | **~6s** | ~15.5s |
 | AI explanations | **✅ per finding** | ❌ |
 | Autofix suggestions | **✅** | ❌ |
 | PR bot integration | **✅** | ❌ (paid) |
