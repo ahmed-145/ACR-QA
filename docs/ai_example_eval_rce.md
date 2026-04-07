@@ -71,24 +71,28 @@ exec('ping -c 2 ' + req.body.address, function (err, stdout, stderr) {
 })
 
 // AFTER (fixed — use execFile with argument array, no shell interpolation):
-exec(['ping', '-c', '2', req.body.address], function (err, stdout, stderr) {
+const { execFile } = require('child_process');
+execFile('ping', ['-c', '2', req.body.address], function (err, stdout, stderr) {
     output = stdout + stderr
     res.render('app/ping', { output: output })
 })
 ```
 
 **Why this fix works:**
-Passing an array to `execFile` (or `exec` with argument array syntax) prevents shell
-interpolation. The OS treats each element as a separate literal argument — a semicolon in
-`req.body.address` can never escape into a new command.
+`execFile` does not invoke a shell — it passes each array element as a literal argument
+directly to the OS. A semicolon in `req.body.address` is never interpreted as a command
+separator. Note: `exec()` does not accept an argument array; `execFile()` is the correct
+Node.js API for this pattern.
 
 ---
 
 ## Key Thesis Points
 
 1. **Speed:** Full end-to-end explanation generated in **683ms** — nearly real-time.
-2. **Correctness:** The AI correctly identified the vulnerability class, the attack vector,
-   and produced a valid, idiomatic JavaScript fix.
+2. **Reviewed output:** The AI correctly identified the vulnerability class and attack vector.
+   The autofix was reviewed and corrected — `execFile` is the correct Node.js API for
+   argument-array execution, not `exec()`. This reflects the intended workflow: ACR-QA
+   generates a starting point that a developer reviews, not a blindly-applied patch.
 3. **Comparison:** SonarQube CE does not provide AI explanations or autofix suggestions for
    any of its findings. Developers receive only a rule code and a brief description.
 4. **Developer UX:** ACR-QA turns a cryptic `SECURITY-021` flag into an actionable, readable
