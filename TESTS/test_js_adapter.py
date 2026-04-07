@@ -530,13 +530,11 @@ class TestCLILanguageRouting:
         assert isinstance(results["errors"], list)
 
     def test_eslint_config_generates_without_error(self, tmp_path: Path) -> None:
-        """_get_eslint_config_path() generates a valid JSON config file."""
-        import json as json_mod
-
+        """_get_eslint_config_content() returns valid ESLint flat config string."""
         adapter = JavaScriptAdapter(target_dir=str(tmp_path))
-        config_path = adapter._get_eslint_config_path()
-        config_content = open(config_path).read()
-        parsed = json_mod.loads(config_content)
-        assert "rules" in parsed
-        assert "no-eval" in parsed["rules"]
-        assert parsed["rules"]["no-eval"] == "error"
+        config_content = adapter._get_eslint_config_content()
+        # Flat config is an ES module, not JSON
+        assert "export default" in config_content
+        assert "no-eval" in config_content
+        assert "security/detect-eval-with-expression" in config_content
+        assert "eslint-plugin-security" in config_content

@@ -18,7 +18,6 @@ import json
 import logging
 import shutil
 import subprocess
-import tempfile
 from pathlib import Path
 from typing import Any
 
@@ -203,38 +202,47 @@ class JavaScriptAdapter(LanguageAdapter):
         output_file: Path,
         results: dict[str, Any],
     ) -> None:
-        """Run ESLint with security plugin, output JSON."""
-        # Build eslint config inline (no config file required)
-        eslint_config = self._get_eslint_config_path()
-        file_args = [str(f) for f in js_files[:200]]  # cap at 200 files
+        """Run ESLint with security plugin on JS/TS files.
 
-        cmd = [
-            "npx",
-            "--yes",
-            "eslint",
-            "--format",
-            "json",
-            "--no-eslintrc",
-            "--config",
-            eslint_config,
-            "--ext",
-            ".js,.jsx,.ts,.tsx,.mjs,.cjs",
-            *file_args,
-        ]
+        ESLint v9/v10 (flat config) resolves eslint.config.mjs from the target
+        directory. We write the config there temporarily, run eslint, then remove it.
+        """
+        config_content = self._get_eslint_config_content()
+        target_config = self.target_dir / "eslint.config.mjs"
+        config_existed = target_config.exists()
+
+        # Use relative paths — eslint resolves config from target_dir
+        rel_files: list[str] = []
+        for f in js_files[:200]:
+            try:
+                rel_files.append(str(f.relative_to(self.target_dir)))
+            except ValueError:
+                rel_files.append(str(f))
+
+        env_flat = {**__import__("os").environ, "ESLINT_USE_FLAT_CONFIG": "true"}
 
         try:
+            if not config_existed:
+                target_config.write_text(config_content)
+
             proc = subprocess.run(
-                cmd,
+                ["eslint", "--format", "json", *rel_files],
                 capture_output=True,
                 text=True,
                 timeout=120,
                 cwd=str(self.target_dir),
+                env=env_flat,
             )
-            # ESLint exits 1 if there are lint errors — that's normal
             raw = proc.stdout.strip() or "[]"
+            # Strip any non-JSON prefix (ESLint can emit warnings before the array)
+            bracket_pos = raw.find("[")
+            if bracket_pos > 0:
+                raw = raw[bracket_pos:]
+            elif not raw.startswith("["):
+                raw = "[]"
             eslint_data = json.loads(raw)
             results["eslint"] = eslint_data
-            output_file.write_text(raw)
+            output_file.write_text(json.dumps(eslint_data))
             logger.info("ESLint: found results in %d file(s)", len(eslint_data))
         except subprocess.TimeoutExpired:
             results["errors"].append("ESLint timed out (120s)")
@@ -242,46 +250,64 @@ class JavaScriptAdapter(LanguageAdapter):
         except (json.JSONDecodeError, FileNotFoundError) as e:
             results["errors"].append(f"ESLint error: {e}")
             logger.warning("ESLint failed: %s", e)
+        finally:
+            if not config_existed and target_config.exists():
+                target_config.unlink()
 
-    def _get_eslint_config_path(self) -> str:
-        """Write a temporary ESLint JSON config and return its path."""
-        config = {
-            "env": {"browser": True, "node": True, "es2022": True},
-            "parserOptions": {"ecmaVersion": 2022, "sourceType": "module"},
-            "plugins": ["security"],
-            "rules": {
-                # Security plugin rules
-                "security/detect-eval-with-expression": "error",
-                "security/detect-non-literal-regexp": "warn",
-                "security/detect-non-literal-require": "warn",
-                "security/detect-possible-timing-attacks": "warn",
-                "security/detect-unsafe-regex": "error",
-                "security/detect-buffer-noassert": "warn",
-                "security/detect-child-process": "warn",
-                "security/detect-disable-mustache-escape": "error",
-                "security/detect-new-buffer": "warn",
-                "security/detect-object-injection": "warn",
-                "security/detect-pseudoRandomBytes": "warn",
-                # Core ESLint rules
-                "no-eval": "error",
-                "no-implied-eval": "error",
-                "no-new-func": "error",
-                "no-unused-vars": "warn",
-                "no-undef": "warn",
-                "no-debugger": "warn",
-                "no-console": "warn",
-                "no-var": "warn",
-                "prefer-const": "warn",
-                "eqeqeq": "warn",
-                "no-with": "error",
-                "no-async-promise-executor": "error",
-                "require-await": "warn",
-            },
-        }
-        # Write to a temp file that persists for this run
-        config_path = Path(tempfile.gettempdir()) / "acrqa_eslint_config.json"
-        config_path.write_text(json.dumps(config, indent=2))
-        return str(config_path)
+    def _get_eslint_config_content(self) -> str:
+        """Return ESLint flat config content (eslint.config.mjs) for ESLint v9/v10.
+
+        Generates a flat config that imports eslint-plugin-security from its global
+        npm installation path and registers all security rules.
+        """
+        import subprocess as _sp
+
+        npm_root = _sp.run(["npm", "root", "-g"], capture_output=True, text=True).stdout.strip()
+        plugin_path = f"{npm_root}/eslint-plugin-security"
+
+        return f"""import securityPlugin from '{plugin_path}/index.js';
+
+export default [
+  {{
+    plugins: {{ security: securityPlugin }},
+    rules: {{
+      'security/detect-eval-with-expression': 'error',
+      'security/detect-non-literal-regexp': 'warn',
+      'security/detect-non-literal-require': 'warn',
+      'security/detect-possible-timing-attacks': 'warn',
+      'security/detect-unsafe-regex': 'error',
+      'security/detect-buffer-noassert': 'warn',
+      'security/detect-child-process': 'warn',
+      'security/detect-disable-mustache-escape': 'error',
+      'security/detect-new-buffer': 'warn',
+      'security/detect-object-injection': 'warn',
+      'security/detect-pseudoRandomBytes': 'warn',
+      'no-eval': 'error',
+      'no-implied-eval': 'error',
+      'no-new-func': 'error',
+      'no-unused-vars': 'warn',
+      'no-debugger': 'warn',
+      'no-console': 'warn',
+      'no-var': 'warn',
+      'prefer-const': 'warn',
+      'eqeqeq': 'warn',
+      'no-with': 'error',
+      'no-async-promise-executor': 'error',
+      'require-await': 'warn',
+    }},
+    languageOptions: {{
+      ecmaVersion: 2022,
+      sourceType: 'commonjs',
+      globals: {{
+        require: 'readonly', module: 'readonly', exports: 'readonly',
+        __dirname: 'readonly', __filename: 'readonly', process: 'readonly',
+        console: 'readonly', Buffer: 'readonly', setTimeout: 'readonly',
+        setInterval: 'readonly', clearTimeout: 'readonly', clearInterval: 'readonly',
+      }},
+    }},
+  }},
+];
+"""
 
     def _run_semgrep_js(self, output_file: Path, results: dict[str, Any]) -> None:
         """Run Semgrep with JS-specific rules."""

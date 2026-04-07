@@ -99,14 +99,16 @@ rules:
   # ── Hardcoded Secrets ────────────────────────────────────────────────────────
   - id: js-hardcoded-secret
     pattern-either:
-      - pattern: const $KEY = "..."
-        metavariable-regex:
-          metavariable: $KEY
-          regex: .*(password|secret|api_key|apikey|token|auth|credential).*
-      - pattern: let $KEY = "..."
-        metavariable-regex:
-          metavariable: $KEY
-          regex: .*(password|secret|api_key|apikey|token|auth|credential).*
+      - patterns:
+          - pattern: const $KEY = "..."
+          - metavariable-regex:
+              metavariable: $KEY
+              regex: .*(password|secret|api_key|apikey|token|auth|credential).*
+      - patterns:
+          - pattern: let $KEY = "..."
+          - metavariable-regex:
+              metavariable: $KEY
+              regex: .*(password|secret|api_key|apikey|token|auth|credential).*
     message: |
       Possible hardcoded secret in variable name matching sensitive patterns.
       Use environment variables: process.env.API_KEY
@@ -190,7 +192,7 @@ rules:
   # ── JWT ──────────────────────────────────────────────────────────────────────
   - id: js-jwt-none-algorithm
     pattern-either:
-      - pattern: jwt.verify($TOKEN, $SECRET, {algorithms: ["none"]}, ...)
+      - pattern: 'jwt.verify($TOKEN, $SECRET, {algorithms: ["none"]}, ...)'
       - pattern: jwt.sign($PAYLOAD, "", ...)
       - pattern: jwt.sign($PAYLOAD, null, ...)
     message: |
