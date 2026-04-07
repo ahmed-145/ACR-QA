@@ -241,13 +241,13 @@ python3 CORE/main.py --target-dir /path/to/DVNA --lang javascript --json --no-ai
 |--------|-------|
 | JS files analyzed | 15 |
 | Raw tool findings (before dedup) | 946 |
-| **Total findings (after dedup)** | **112** |
+| **Total findings (after dedup)** | **939** |
 | 🔴 HIGH | **1** (command injection via exec) |
 | 🟡 MEDIUM | **58** (object-injection, child-process) |
 | 🟢 LOW | **53** (console.log, open-redirect) |
 | ESLint findings (raw) | 891 (15 files) |
 | Semgrep custom findings (raw) | 55 |
-| Duplicates removed by dedup | **834** (same file+line+rule across ESLint + Semgrep) |
+| Duplicates removed by dedup | **7** (same file+line+column+rule across tools) |
 | npm audit CVEs | 0 |
 
 **Key findings:**
@@ -261,8 +261,8 @@ python3 CORE/main.py --target-dir /path/to/DVNA --lang javascript --json --no-ai
 > 2. **CUSTOM-* Semgrep mapping bug:** `normalize_semgrep_js` was delegating to the Python
 >    normalizer which used Python `RULE_MAPPING`. Fix: inlined normalization using `JS_RULE_MAPPING`.
 >    Before: 56 `CUSTOM-js-global-variable` / `CUSTOM-js-console-log`. After: correctly mapped.
-> 3. **Deduplication:** added (file, line, canonical_rule_id) dedup in `get_all_findings`.
->    Removed 834 duplicates where ESLint `no-var` + Semgrep `js-global-variable` flagged same line.
+> 3. **Deduplication:** added `(file, line, column, canonical_rule_id)` dedup in `get_all_findings`.
+>    Removed 7 exact duplicates. (Refined from earlier over-aggressive line-only dedup).
 
 ---
 
@@ -301,7 +301,7 @@ curl -u YOUR_TOKEN: \
 | Metric | ACR-QA v3.0.1 | SonarQube CE |
 |--------|--------------|-------------|
 | Scan target | DVNA (15 JS files) | DVNA (15 JS files) |
-| Total findings (after dedup) | **112** | 71 |
+| Total findings (after dedup) | **939** | 71 |
 | Critical/Blocker/High | **1** | 49 |
 | Unique security rules triggered | **8** | 1 |
 | Scan time | **~6s** | ~15.5s |
