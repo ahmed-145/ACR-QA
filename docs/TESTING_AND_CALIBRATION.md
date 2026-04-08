@@ -1,7 +1,7 @@
 # ACR-QA Testing & Calibration Report
 
-**Latest Run:** April 6, 2026 · **Version:** v3.0.1
-**Unit Tests:** 418 passed · **Coverage:** quality\_gate 93%, severity\_scorer 62%, total CORE ~40%+
+**Latest Run:** April 8, 2026 · **Version:** v3.0.2
+**Unit Tests:** 436 passed · **Coverage:** quality\_gate 93%, severity\_scorer 62%, total CORE ~56%
 
 ---
 

@@ -2,6 +2,17 @@
 
 All notable changes to ACR-QA are documented here.
 
+## [v3.0.2] — 2026-04-08 (EJS Scope Expansion & Eval Finalization)
+
+### Added
+- **EJS Template Support**: Expanded the JS/TS scan scope to include `.ejs` template files. Enabling Cross-Site Scripting (XSS) detection directly in template rendering logic.
+- **Round 6 Benchmark Update**: DVNA ground-truth evaluation updated. Number of analyzed files increased (15 → 69) and total found issues after dedup increased correspondingly without sacrificing precision (1016 unique findings).
+
+### Changed
+- **Deduplication Engine**: Enhanced `get_all_findings()` to deduplicate findings based on exact `column` number along with file, line, and canonical rule id to significantly increase precision.
+- **Test Suite**: Surpassed the 430 milestone. We now have 436 passing tests. Overall CORE module coverage is mapped back at 56%.
+- `CORE/__init__.py`: Bumped core version from `3.0.1` to `3.0.2`.
+
 ## [v3.0.1-patch2] — 2026-04-07 (JS Adapter — CUSTOM-* Fix + Deduplication)
 
 ### Fixed

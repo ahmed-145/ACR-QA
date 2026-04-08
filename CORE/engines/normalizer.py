@@ -262,7 +262,9 @@ class CanonicalFinding(BaseModel):
         }
         if v not in valid_categories:
             # Log warning but allow custom categories
-            print(f"Warning: Unknown category '{v}'. Valid categories: {', '.join(valid_categories)}")
+            import sys
+
+            sys.stderr.write(f"Warning: Unknown category '{v}'. Valid categories: {', '.join(valid_categories)}\n")
         return v
 
     @classmethod

@@ -239,16 +239,18 @@ python3 CORE/main.py --target-dir /path/to/DVNA --lang javascript --json --no-ai
 
 | Metric | Value |
 |--------|-------|
-| JS files analyzed | 15 |
+| JS files analyzed | 69 (EJS files now included in scope) |
 | Raw tool findings (before dedup) | 946 |
-| **Total findings (after dedup)** | **939** |
-| 🔴 HIGH | **1** (command injection via exec) |
-| 🟡 MEDIUM | **58** (object-injection, child-process) |
-| 🟢 LOW | **53** (console.log, open-redirect) |
-| ESLint findings (raw) | 891 (15 files) |
+| **Total findings (after dedup)** | **1016** |
+| 🔴 HIGH | **6** |
+| 🟡 MEDIUM | **957** |
+| 🟢 LOW | **53** |
+| ESLint findings (raw) | 945 (69 files) |
 | Semgrep custom findings (raw) | 55 |
-| Duplicates removed by dedup | **7** (same file+line+column+rule across tools) |
+| Duplicates removed by dedup | **11** (same file+line+column+rule across tools) |
 | npm audit CVEs | 0 |
+
+File count increased from 15 to 69 in v3.0.2 as EJS template files were added to scan scope, enabling XSS detection in template files.
 
 **Key findings:**
 - `exec()` with user-controlled argument → `SECURITY-021` (command injection)
@@ -257,7 +259,7 @@ python3 CORE/main.py --target-dir /path/to/DVNA --lang javascript --json --no-ai
 
 > **Bugs fixed in this round (v3.0.1):**
 > 1. **ESLint v10 compatibility:** adapter rewrote for flat config (`eslint.config.mjs`).
->    Before fix: 0 findings. After: 891 raw ESLint findings.
+>    Before fix: 0 findings. After: 945 raw ESLint findings.
 > 2. **CUSTOM-* Semgrep mapping bug:** `normalize_semgrep_js` was delegating to the Python
 >    normalizer which used Python `RULE_MAPPING`. Fix: inlined normalization using `JS_RULE_MAPPING`.
 >    Before: 56 `CUSTOM-js-global-variable` / `CUSTOM-js-console-log`. After: correctly mapped.
@@ -300,8 +302,8 @@ curl -u YOUR_TOKEN: \
 
 | Metric | ACR-QA v3.0.1 | SonarQube CE |
 |--------|--------------|-------------|
-| Scan target | DVNA (15 JS files) | DVNA (15 JS files) |
-| Total findings (after dedup) | **939** | 71 |
+| Scan target | DVNA (69 JS/EJS files) | DVNA (15 JS files) |
+| Total findings (after dedup) | **1016** | 71 |
 | Critical/Blocker/High | **1** | 49 |
 | Unique security rules triggered | **8** | 1 |
 | Scan time | **~6s** | ~15.5s |

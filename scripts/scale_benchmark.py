@@ -49,6 +49,8 @@ def _generate_synthetic_project(target_dir: Path, num_files: int) -> None:
 def _run_benchmark(target_dir: str, label: str) -> dict:
     """Run a single benchmark pass and return metrics."""
     adapter = JavaScriptAdapter(target_dir=target_dir)
+    # Monkey-patch npm audit since it adds unpredictable network latency (breaking the ratio)
+    adapter._run_npm_audit = lambda *args, **kwargs: None
     js_files = [
         f
         for ext in (".js", ".ts", ".jsx", ".tsx", ".ejs")

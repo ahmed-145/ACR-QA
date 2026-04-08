@@ -627,20 +627,23 @@ def main():
             print(f"🔍 Auto-detected language: {language}")
 
     if language in ("javascript", "typescript"):
+        import sys
+
         from CORE.adapters.js_adapter import JavaScriptAdapter
 
-        print(f"\n🟨 ACR-QA JS/TS Adapter — analyzing {args.target_dir}")
-        print("=" * 50)
+        out = sys.stderr.write if args.json_output else lambda msg: sys.stdout.write(msg + "\n")
+        out(f"\n🟨 ACR-QA JS/TS Adapter — analyzing {args.target_dir}")
+        out("=" * 50)
         js_adapter = JavaScriptAdapter(target_dir=args.target_dir)
         results = js_adapter.run_tools()
         findings = js_adapter.get_all_findings(results)
-        print(f"\n  Total findings: {len(findings)}")
+        out(f"\n  Total findings: {len(findings)}")
         high = sum(1 for f in findings if getattr(f, "severity", "") == "high")
         med = sum(1 for f in findings if getattr(f, "severity", "") == "medium")
         low = sum(1 for f in findings if getattr(f, "severity", "") == "low")
-        print(f"  🔴 High: {high}  🟡 Medium: {med}  🟢 Low: {low}")
+        out(f"  🔴 High: {high}  🟡 Medium: {med}  🟢 Low: {low}")
         for err in results.get("errors", []):
-            print(f"  ⚠️  {err}")
+            out(f"  ⚠️  {err}")
         if args.json_output:
             import dataclasses
 

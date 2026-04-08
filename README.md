@@ -7,8 +7,8 @@
 
 [![Python 3.11+](https://img.shields.io/badge/Python-3.11+-3776ab?logo=python&logoColor=white)](https://www.python.org/)
 [![CI Tests](https://github.com/ahmed-145/ACR-QA/actions/workflows/tests.yml/badge.svg)](https://github.com/ahmed-145/ACR-QA/actions/workflows/tests.yml)
-[![Tests](https://img.shields.io/badge/Tests-421%20passing-22c55e?logo=pytest&logoColor=white)](./TESTS/)
-[![Version](https://img.shields.io/badge/Version-3.0.1-blue)](CHANGELOG.md)
+[![Tests](https://img.shields.io/badge/Tests-436%20passing-22c55e?logo=pytest&logoColor=white)](./TESTS/)
+[![Version](https://img.shields.io/badge/Version-3.0.2-blue)](CHANGELOG.md)
 [![PostgreSQL 15](https://img.shields.io/badge/PostgreSQL-15+-336791?logo=postgresql&logoColor=white)](https://postgresql.org/)
 [![Prometheus](https://img.shields.io/badge/Prometheus-monitored-e6522c?logo=prometheus&logoColor=white)](https://prometheus.io/)
 [![Rules](https://img.shields.io/badge/Rules-299%20mapped-8b5cf6?logo=shield&logoColor=white)](./docs/evaluation/PER_TOOL_EVALUATION.md)
@@ -372,7 +372,7 @@ make init-config
 
 ## 🟨 JavaScript / TypeScript Support
 
-ACR-QA v3.0.1 ships with a **full JS/TS language adapter** — no configuration required.
+ACR-QA v3.0.2 ships with a **full JS/TS language adapter** — no configuration required.
 
 ### How It Works
 
@@ -619,7 +619,7 @@ make test-e2e          # End-to-end with Docker
 - [x] ~~Deep-code audit + 98 tests + bug fixes~~ (v2.6)
 - [x] ~~Competitive features: test gap analyzer, OWASP compliance, policy engine, feedback tuner, confidence filtering~~ (v2.7)
 - [x] ~~God-mode testing: 273 tests across 11 test suites~~ (v2.7)
-- [x] ~~JavaScript / TypeScript language adapter~~ (v3.0.1) — ESLint, Semgrep JS, npm audit, 55 rule mappings
+- [x] ~~JavaScript / TypeScript language adapter~~ (v3.0.2) — ESLint, Semgrep JS, npm audit, 55 rule mappings
 - [ ] User study (8–10 participants)
 - [ ] Precision / recall evaluation against ground-truth labels
 - [ ] ☁️ Cloud deployment on DigitalOcean ($200 free credit via GitHub Student Pack)
