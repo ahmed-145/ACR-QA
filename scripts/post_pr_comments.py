@@ -215,7 +215,7 @@ def main():
     comment = format_pr_comment(findings)
 
     # Post to GitHub
-    github_token = os.getenv("GITHUB_TOKEN")
+    github_token = os.getenv("GITHUB_TOKEN", "").strip()
     if not github_token:
         print("❌ GITHUB_TOKEN not set")
         sys.exit(1)
