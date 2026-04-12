@@ -286,3 +286,22 @@ rules:
       canonical_rule_id: SECURITY-064
       owasp: A03:2021 - Injection
       cwe: CWE-79
+
+  # ── Hardcoded Session Secret ──────────────────────────────────────────────────
+  - id: express-session-hardcoded-secret
+    pattern-either:
+      - pattern: |
+          session({..., secret: "$SECRET", ...})
+      - pattern: |
+          session({secret: '...', ...})
+    message: |
+      Hardcoded secret in express-session configuration (CWE-259).
+      A static string secret means session tokens are predictable if the source is
+      leaked. Use an environment variable: secret: process.env.SESSION_SECRET
+    severity: ERROR
+    languages: [javascript, typescript]
+    metadata:
+      category: security
+      canonical_rule_id: HARDCODE-001
+      owasp: A02:2021 - Cryptographic Failures
+      cwe: CWE-259

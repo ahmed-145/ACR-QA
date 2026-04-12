@@ -333,8 +333,11 @@ export default [
         semgrep_dir = Path(__file__).parent.parent.parent / "TOOLS" / "semgrep"
         js_rule_files = sorted(semgrep_dir.glob("js-*.yml"))
 
-        # Always run built-in javascript rules
-        rules_args = ["--config", "p/javascript"]
+        # Use only version-controlled custom rules (TOOLS/semgrep/js-*.yml).
+        # p/javascript is intentionally excluded — it is a floating reference that
+        # updates over time and breaks evaluation reproducibility. All security
+        # rules relevant to the thesis evaluation are in our custom rule files.
+        rules_args: list[str] = []
 
         for rule_file in js_rule_files:
             rules_args.extend(["--config", str(rule_file)])
