@@ -238,7 +238,7 @@ class JavaScriptAdapter(LanguageAdapter):
 
         # Use relative paths — eslint resolves config from target_dir
         rel_files: list[str] = []
-        for f in js_files[:200]:
+        for f in js_files:
             try:
                 rel_files.append(str(f.relative_to(self.target_dir)))
             except ValueError:

@@ -15,6 +15,7 @@ import os
 import shutil
 import subprocess
 import tempfile
+import time
 
 from CORE.config_loader import ConfigLoader
 from CORE.engines.explainer import ExplanationEngine
@@ -118,27 +119,54 @@ class AnalysisPipeline:
         print("[4/5] Generating AI explanations (Cerebras API)...")
 
         redis_client = rate_limiter.redis if rate_limiter and rate_limiter.redis else None
-        ExplanationEngine(redis_client=redis_client)
+        self.explainer = ExplanationEngine(redis_client=redis_client)
 
         # Cap explanations using config
         max_explanations = self.config.get("ai", {}).get("max_explanations", 50)
         effective_limit = min(limit, max_explanations) if limit else max_explanations
         findings_to_process = findings[:effective_limit] if effective_limit else findings
 
-        for i, finding in enumerate(findings_to_process, 1):
-            print(
-                f"      [{i}/{len(findings_to_process)}] {finding.get('canonical_rule_id', finding.get('rule_id', 'UNKNOWN'))}",
-                end=" ",
+        findings_with_snippets = []
+        for f in findings_to_process:
+            f["_db_id"] = self.db.insert_finding(run_id, f)
+            snippet = extract_code_snippet(
+                f["file_path"] if "file_path" in f else f["file"], f["line"], context_lines=3
             )
+            findings_with_snippets.append({"finding": f, "snippet": snippet})
 
-            try:
-                finding_id = self.db.insert_finding(run_id, finding)
-                snippet = extract_code_snippet(finding["file"], finding["line"], context_lines=3)
-                explanation = self.explainer.generate_explanation(finding, snippet)
-                self.db.insert_explanation(finding_id, explanation)
-                print(f"✓ ({explanation['latency_ms']}ms)")
-            except Exception as e:
-                print(f"✗ Error: {e}")
+        print(f"      Batching {len(findings_with_snippets)} explanations...", end=" ")
+
+        start_time = time.time()
+        explanations = self.explainer.generate_explanation_batch(findings_with_snippets)
+        total_time = int((time.time() - start_time) * 1000)
+
+        print(f"✓ ({total_time}ms total)")
+
+        for i, (f_data, expl) in enumerate(zip(findings_with_snippets, explanations, strict=False), 1):
+            f = f_data["finding"]
+            rule_id = f.get("canonical_rule_id", f.get("rule_id", "UNKNOWN"))
+
+            # If gather caught an exception, it might be an Exception object
+            if isinstance(expl, Exception):
+                print(f"      [{i}/{len(findings_to_process)}] {rule_id} ✗ Error: {expl}")
+                # Provide a fallback
+                fallback_expl = {
+                    "model_name": self.explainer.model,
+                    "prompt_filled": "",
+                    "response_text": self.explainer.get_fallback_explanation(f),
+                    "temperature": self.explainer.temperature,
+                    "max_tokens": self.explainer.max_tokens,
+                    "tokens_used": None,
+                    "latency_ms": 0,
+                    "cost_usd": 0,
+                    "status": "fallback",
+                    "error": str(expl),
+                }
+                self.db.insert_explanation(f["_db_id"], fallback_expl)
+            else:
+                latency = expl.get("latency_ms", 0)
+                print(f"      [{i}/{len(findings_to_process)}] {rule_id} ✓ ({latency}ms)")
+                self.db.insert_explanation(f["_db_id"], expl)
 
         # Mark run as complete
         self.db.complete_analysis_run(run_id, total_findings)
@@ -581,8 +609,16 @@ def main():
     )
     parser.add_argument(
         "--no-ai",
-        action="store_true",
+        action="store_false",
+        dest="ai",
         help="Skip AI explanation step (faster; useful for CI or large repos)",
+    )
+    parser.add_argument(
+        "--ai",
+        action="store_true",
+        dest="ai",
+        default=True,
+        help="Force AI explanation step",
     )
     parser.add_argument(
         "--json",
@@ -650,10 +686,47 @@ def main():
         # Convert findings to dictionaries
         findings = [dataclasses.asdict(f) if hasattr(f, "__dataclass_fields__") else vars(f) for f in findings_obj]
 
-        out(f"\n[2/2] Found {len(findings)} issues. Integrating with database...")
+        out(f"\n[2/3] Found {len(findings)} issues. Integrating with database...")
         for finding in findings:
             finding["category"] = "security" if finding.get("severity") in ("high", "medium") else "style"
-            db.insert_finding(run_id, finding)
+            finding["_db_id"] = db.insert_finding(run_id, finding)
+
+        if args.ai:
+            out("\n[3/3] Generating AI explanations (Cerebras API) for HIGH issues...")
+            from CORE.engines.explainer import ExplanationEngine
+            from CORE.utils.code_extractor import extract_code_snippet
+
+            explainer = ExplanationEngine()
+
+            high_findings = [f for f in findings if f.get("severity") == "high"]
+            out(f"      Batching {len(high_findings)} HIGH severity explanations...")
+
+            import time
+
+            start_time = time.time()
+
+            findings_with_snippets = []
+            for f in high_findings:
+                fp = f.get("file_path", f.get("file", ""))
+                try:
+                    line = int(f.get("line_number", f.get("line", 0)))
+                except (ValueError, TypeError):
+                    line = 0
+                snippet = extract_code_snippet(fp, line, context_lines=3)
+                findings_with_snippets.append({"finding": f, "snippet": snippet})
+
+            explanations = explainer.generate_explanation_batch(findings_with_snippets)
+            total_time = int((time.time() - start_time) * 1000)
+            out(f"✓ ({total_time}ms total)")
+
+            for f_data, expl in zip(findings_with_snippets, explanations, strict=False):
+                f = f_data["finding"]
+                rule_id = f.get("canonical_rule_id", f.get("rule_id", "UNKNOWN"))
+                if isinstance(expl, Exception):
+                    out(f"      ✗ {rule_id}: {expl}")
+                else:
+                    db.insert_explanation(f["_db_id"], expl)
+                    # out(f"      ✓ {rule_id} ({expl.get('latency_ms', 0)}ms)")
 
         db.complete_analysis_run(run_id, len(findings))
 

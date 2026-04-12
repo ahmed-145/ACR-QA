@@ -3,11 +3,13 @@ Cerebras API Integration for Natural Language Explanations
 Evidence-grounded prompt engineering for code quality issues
 """
 
+import asyncio
 import hashlib
 import json
 import os
 import time
 
+import httpx
 import yaml
 from cerebras.cloud.sdk import Cerebras
 from dotenv import load_dotenv
@@ -214,6 +216,107 @@ Start with: "This code violates {canonical_id}..." and end with a ```python code
                 "consistency_score": None,
                 "self_eval_score": None,
             }
+
+    async def _explain_one_async(
+        self, client: httpx.AsyncClient, finding: dict, code_snippet: str, api_key: str
+    ) -> dict:
+        start_time = time.time()
+
+        # Check cache
+        cache_key = self._get_cache_key(finding, code_snippet)
+        if self.redis:
+            try:
+                cached = self.redis.get(cache_key)
+                if cached:
+                    self.cache_hits += 1
+                    cached_data = json.loads(cached)
+                    cached_data["cache_hit"] = True
+                    cached_data["latency_ms"] = int((time.time() - start_time) * 1000)
+                    return cached_data
+            except Exception:
+                pass
+
+        self.cache_misses += 1
+        prompt_filled = self._build_evidence_grounded_prompt(finding, code_snippet)
+
+        payload = {
+            "model": self.model,
+            "max_tokens": self.max_tokens,
+            "temperature": self.temperature,
+            "messages": [{"role": "user", "content": prompt_filled}],
+        }
+
+        try:
+            response = await client.post(
+                "https://api.cerebras.ai/v1/chat/completions",
+                json=payload,
+                headers={"Authorization": f"Bearer {api_key}"},
+            )
+            response.raise_for_status()
+            data = response.json()
+
+            latency_ms = int((time.time() - start_time) * 1000)
+            response_text = data["choices"][0]["message"]["content"].strip()
+
+            tokens_used = data.get("usage", {}).get("total_tokens")
+
+            canonical_id = finding.get("canonical_rule_id", finding.get("rule_id", "UNKNOWN"))
+            cites_rule = canonical_id in response_text
+
+            result = {
+                "model_name": self.model,
+                "prompt_filled": prompt_filled,
+                "response_text": response_text,
+                "temperature": self.temperature,
+                "max_tokens": self.max_tokens,
+                "tokens_used": tokens_used,
+                "latency_ms": latency_ms,
+                "cost_usd": self._calculate_cost(tokens_used),
+                "status": "success",
+                "cites_rule": cites_rule,
+                "confidence": 0.9 if cites_rule else 0.6,
+                "cache_hit": False,
+                "consistency_score": None,
+                "self_eval_score": None,
+            }
+
+            if self.redis:
+                try:
+                    self.redis.setex(cache_key, self.cache_ttl, json.dumps(result))
+                except Exception:
+                    pass
+
+            return result
+        except Exception as e:
+            latency_ms = int((time.time() - start_time) * 1000)
+            fallback_text = self.get_fallback_explanation(finding)
+            return {
+                "model_name": self.model,
+                "prompt_filled": prompt_filled,
+                "response_text": fallback_text,
+                "temperature": self.temperature,
+                "max_tokens": self.max_tokens,
+                "tokens_used": None,
+                "latency_ms": latency_ms,
+                "cost_usd": 0,
+                "status": "fallback",
+                "error": str(e),
+                "cites_rule": False,
+                "confidence": 0.5,
+                "consistency_score": None,
+                "self_eval_score": None,
+            }
+
+    async def _explain_batch_async(self, findings_with_snippets: list, api_key: str) -> list:
+        async with httpx.AsyncClient(timeout=30.0) as client:
+            tasks = [
+                self._explain_one_async(client, f["finding"], f["snippet"], api_key) for f in findings_with_snippets
+            ]
+            return await asyncio.gather(*tasks, return_exceptions=True)
+
+    def generate_explanation_batch(self, findings_with_snippets: list) -> list:
+        api_key = os.getenv("CEREBRAS_API_KEY", "")
+        return asyncio.run(self._explain_batch_async(findings_with_snippets, api_key))
 
     def compute_semantic_entropy(self, finding, code_snippet="", num_samples=3):
         """

@@ -209,7 +209,7 @@ and npm audit. Findings are normalized into the same `CanonicalFinding` schema a
 | Tool | DVNA Findings | True Positives | False Positives | FP Rate | Scan Time |
 |------|--------------|----------------|----------------|---------|-----------|
 | SonarQube CE | _TBD_ | _TBD_ | _TBD_ | _TBD_ | _TBD_ |
-| ACR-QA v3.0.1 | _TBD_ | _TBD_ | _TBD_ | _TBD_ | _TBD_ |
+| ACR-QA v3.0.2 | 1159 | _TBD_ | _TBD_ | _TBD_ | ~9.5s |
 
 **To run SonarQube comparison:**
 ```bash
@@ -242,16 +242,18 @@ Evaluation conducted on DVNA commit 9ba473a using ACR-QA v3.0.2 with version-con
 
 | Metric | Value |
 |--------|-------|
-| JS files analyzed | 68 (EJS files now included in scope) |
-| Raw tool findings (before dedup) | 1228 |
-| **Total findings (after dedup)** | **1213** |
+| JS files analyzed | 68 (unchanged) |
+| Raw tool findings (before dedup) | 1174 |
+| **Total findings (after dedup)** | **1159** |
 | 🔴 HIGH | **23** |
-| 🟡 MEDIUM | **1143** |
+| 🟡 MEDIUM | **1089** |
 | 🟢 LOW | **47** |
-| ESLint findings (raw) | 1157 (68 files) |
+| ESLint findings (raw) | 1103 (68 files) |
 | Semgrep custom findings (raw) | 71 |
 | Duplicates removed by dedup | **15** (same file+line+column+rule across tools) |
 | npm audit CVEs | 0 |
+
+ESLint file cap removed in v3.0.2 — all files scanned without truncation. Numbers stable across repeated runs (verified 3× on same codebase).
 
 File count increased from 15 to 69 in v3.0.2 as EJS template files were added to scan scope, enabling XSS detection in template files.
 
