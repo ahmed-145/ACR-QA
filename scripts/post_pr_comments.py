@@ -26,10 +26,15 @@ def clean_file_path(raw_path: str) -> str:
         "/tmp/",
     ]
     path = raw_path
+
+    if "target-repo/" in path:
+        return path.split("target-repo/")[-1]
+
     for prefix in prefixes_to_strip:
         if path.startswith(prefix):
             path = path[len(prefix) :]
             break
+
     return path
 
 

@@ -175,6 +175,24 @@ rules:
       cwe: CWE-601
 
   # ── Weak Cryptography ─────────────────────────────────────────────────────────
+  - id: js-weak-crypto
+    pattern-either:
+      - pattern: crypto.createHash('md5')
+      - pattern: crypto.createHash("md5")
+      - pattern: crypto.createHash('sha1')
+      - pattern: crypto.createHash("sha1")
+    message: |
+      Weak cryptographic algorithm detected (MD5 or SHA1). These algorithms are known
+      to be vulnerable to collision attacks. Use SHA256 or stronger instead:
+      crypto.createHash('sha256')
+    severity: ERROR
+    languages: [javascript, typescript]
+    metadata:
+      category: security
+      canonical_rule_id: SECURITY-033
+      owasp: A02:2021 - Cryptographic Failures
+      cwe: CWE-328
+
   - id: js-insecure-random
     pattern-either:
       - pattern: Math.random()
