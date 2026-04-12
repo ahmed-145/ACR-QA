@@ -627,33 +627,48 @@ def main():
             print(f"🔍 Auto-detected language: {language}")
 
     if language in ("javascript", "typescript"):
+        import dataclasses
         import sys
 
         from CORE.adapters.js_adapter import JavaScriptAdapter
+        from DATABASE.database import Database
 
         out = sys.stderr.write if args.json_output else lambda msg: sys.stdout.write(msg + "\n")
         out(f"\n🟨 ACR-QA JS/TS Adapter — analyzing {args.target_dir}")
         out("=" * 50)
+
+        # Initialize database and create run
+        db = Database()
+        repo_name = os.path.basename(os.path.abspath(args.target_dir))
+        run_id = db.create_analysis_run(repo_name=repo_name, pr_number=args.pr_number)
+        out(f"\n[1/2] Created database run ID: {run_id}")
+
         js_adapter = JavaScriptAdapter(target_dir=args.target_dir)
         results = js_adapter.run_tools()
-        findings = js_adapter.get_all_findings(results)
+        findings_obj = js_adapter.get_all_findings(results)
+
+        # Convert findings to dictionaries
+        findings = [dataclasses.asdict(f) if hasattr(f, "__dataclass_fields__") else vars(f) for f in findings_obj]
+
+        out(f"\n[2/2] Found {len(findings)} issues. Integrating with database...")
+        for finding in findings:
+            finding["category"] = "security" if finding.get("severity") in ("high", "medium") else "style"
+            db.insert_finding(run_id, finding)
+
+        db.complete_analysis_run(run_id, len(findings))
+
         out(f"\n  Total findings: {len(findings)}")
-        high = sum(1 for f in findings if getattr(f, "severity", "") == "high")
-        med = sum(1 for f in findings if getattr(f, "severity", "") == "medium")
-        low = sum(1 for f in findings if getattr(f, "severity", "") == "low")
+        high = sum(1 for f in findings if f.get("severity", "") == "high")
+        med = sum(1 for f in findings if f.get("severity", "") == "medium")
+        low = sum(1 for f in findings if f.get("severity", "") == "low")
         out(f"  🔴 High: {high}  🟡 Medium: {med}  🟢 Low: {low}")
+
         for err in results.get("errors", []):
             out(f"  ⚠️  {err}")
-        if args.json_output:
-            import dataclasses
 
-            print(
-                json.dumps(
-                    [dataclasses.asdict(f) if hasattr(f, "__dataclass_fields__") else vars(f) for f in findings],
-                    indent=2,
-                    default=str,
-                )
-            )
+        if args.json_output:
+            print(json.dumps(findings, indent=2, default=str))
+
         return  # Skip Python pipeline
 
     # --no-ai: override limit to 0 to skip AI explanation step entirely
