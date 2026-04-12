@@ -62,7 +62,9 @@ class Database:
                 cur.execute(query, params)
 
                 if fetch:
-                    return cur.fetchall()
+                    res = cur.fetchall()
+                    self.conn.commit()
+                    return res
 
                 self.conn.commit()
 
