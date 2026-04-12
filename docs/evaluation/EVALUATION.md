@@ -231,23 +231,26 @@ python3 CORE/main.py --target-dir /path/to/DVNA --lang javascript --json --no-ai
 # 4. Compare: count HIGH/MEDIUM findings, assess true positives vs FP
 ```
 
-### Round 6 Test Results — ACR-QA on DVNA (April 7, 2026, v3.0.1 post-fix)
+### Round 6 Test Results — ACR-QA on DVNA (April 7, 2026, v3.0.2 post-fix)
 
 **Target:** [DVNA](https://github.com/appsecco/dvna) (900+ ★, intentionally vulnerable Node.js app)
+**DVNA commit:** 9ba473add536f66ac9007966acb2a775dd31277a (master, April 2026)
 **Scan:** `python3 CORE/main.py --target-dir /tmp/dvna --lang javascript --no-ai`
 **Scan time:** ~6s
 
+Evaluation conducted on DVNA commit 9ba473a using ACR-QA v3.0.2 with version-controlled custom rules only (TOOLS/semgrep/js-*.yml), ensuring full reproducibility.
+
 | Metric | Value |
 |--------|-------|
-| JS files analyzed | 69 (EJS files now included in scope) |
-| Raw tool findings (before dedup) | 946 |
-| **Total findings (after dedup)** | **1016** |
-| 🔴 HIGH | **6** |
-| 🟡 MEDIUM | **957** |
-| 🟢 LOW | **53** |
-| ESLint findings (raw) | 945 (69 files) |
-| Semgrep custom findings (raw) | 55 |
-| Duplicates removed by dedup | **11** (same file+line+column+rule across tools) |
+| JS files analyzed | 68 (EJS files now included in scope) |
+| Raw tool findings (before dedup) | 1228 |
+| **Total findings (after dedup)** | **1213** |
+| 🔴 HIGH | **23** |
+| 🟡 MEDIUM | **1143** |
+| 🟢 LOW | **47** |
+| ESLint findings (raw) | 1157 (68 files) |
+| Semgrep custom findings (raw) | 71 |
+| Duplicates removed by dedup | **15** (same file+line+column+rule across tools) |
 | npm audit CVEs | 0 |
 
 File count increased from 15 to 69 in v3.0.2 as EJS template files were added to scan scope, enabling XSS detection in template files.

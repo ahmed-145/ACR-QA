@@ -407,6 +407,10 @@ export default [
         for file_result in eslint_data:
             file_path = file_result.get("filePath", "unknown")
             for msg in file_result.get("messages", []):
+                # Suppress purely informational "File ignored" warnings
+                if msg.get("ruleId") is None and "File ignored" in msg.get("message", ""):
+                    continue
+
                 rule_id = msg.get("ruleId") or "eslint-unknown"
                 canonical_rule_id = JS_RULE_MAPPING.get(rule_id, f"CUSTOM-{rule_id}")
                 severity_raw = msg.get("severity", 1)
