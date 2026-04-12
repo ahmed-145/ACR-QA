@@ -43,6 +43,17 @@ def format_severity_emoji(severity):
     return {"high": "🔴", "medium": "🟡", "low": "🟢"}.get(severity, "⚪")
 
 
+def format_inline_comment(finding):
+    """Format a single finding into a short inline comment"""
+    sev = finding.get("canonical_severity", "low")
+    emoji = format_severity_emoji(sev)
+    return (
+        f"{emoji} **{finding['canonical_rule_id']}** — {finding.get('category', 'security')}\n"
+        f"> {finding['message']}\n"
+        f"{sev.title()} Severity | [ACR-QA]"
+    )
+
+
 def format_pr_comment(findings):
     """
     Format findings as a single PR comment with severity sections
@@ -152,14 +163,15 @@ def format_pr_comment(findings):
     return "\n".join(lines)
 
 
-def post_to_github(repo_name, pr_number, comment_body, github_token):
+def post_to_github(repo_name, pr_number, findings, summary_body, github_token):
     """
-    Post comment to GitHub PR
+    Post comment to GitHub PR as an inline review
 
     Args:
         repo_name: Repository name (e.g., "user/repo")
         pr_number: Pull request number
-        comment_body: Markdown comment text
+        findings: List of finding dicts
+        summary_body: Markdown text for the overall review body
         github_token: GitHub API token
     """
     try:
@@ -167,10 +179,27 @@ def post_to_github(repo_name, pr_number, comment_body, github_token):
         repo = g.get_repo(repo_name)
         pr = repo.get_pull(pr_number)
 
-        # Post comment
-        pr.create_issue_comment(comment_body)
+        # Get high findings for inline comments
+        high_findings = [f for f in findings if f.get("canonical_severity", "low") == "high"]
 
-        print(f"✅ Posted comment to PR #{pr_number}")
+        review_comments = []
+        for finding in high_findings:
+            try:
+                line_no = int(finding["line_number"])
+            except (ValueError, TypeError):
+                continue
+
+            review_comments.append(
+                {"path": clean_file_path(finding["file_path"]), "line": line_no, "body": format_inline_comment(finding)}
+            )
+
+        # Post review comment
+        commits = pr.get_commits()
+        last_commit = commits[commits.totalCount - 1]
+
+        pr.create_review(commit=last_commit, body=summary_body, event="COMMENT", comments=review_comments)
+
+        print(f"✅ Posted review to PR #{pr_number} with {len(review_comments)} inline comments")
         return True
 
     except Exception as e:
@@ -225,7 +254,7 @@ def main():
         print("❌ GITHUB_TOKEN not set")
         sys.exit(1)
 
-    success = post_to_github(args.repo, args.pr_number, comment, github_token)
+    success = post_to_github(args.repo, args.pr_number, findings, comment, github_token)
 
     if success:
         print("✅ PR comment posted successfully")
