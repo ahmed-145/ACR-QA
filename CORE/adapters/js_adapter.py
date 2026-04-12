@@ -16,6 +16,7 @@ Usage:
 
 import json
 import logging
+import os
 import shutil
 import subprocess
 from pathlib import Path
@@ -182,6 +183,12 @@ class JavaScriptAdapter(LanguageAdapter):
         """Check if target_dir has a package.json (npm project)."""
         return (self.target_dir / "package.json").exists()
 
+    def __init__(self, target_dir: str | Path):
+        super().__init__(str(target_dir))
+        # Ensure target_dir is always resolved to an absolute path
+        # to avoid CWD issues across subprocess calls (ESLint, Semgrep).
+        self.target_dir = Path(os.path.abspath(str(self.target_dir)))
+
     def run_tools(self, output_dir: str = "DATA/outputs") -> dict[str, Any]:
         """
         Run ESLint, Semgrep JS rules, and npm audit on the target directory.
@@ -330,8 +337,9 @@ export default [
     def _run_semgrep_js(self, output_file: Path, results: dict[str, Any]) -> None:
         """Run Semgrep with JS-specific rules."""
         # Load all js-*.yml rule files from TOOLS/semgrep/ for comprehensive coverage
-        semgrep_dir = Path(__file__).parent.parent.parent / "TOOLS" / "semgrep"
-        js_rule_files = sorted(semgrep_dir.glob("js-*.yml"))
+        # Must resolve to absolute path since we change cwd for the subprocess!
+        semgrep_dir = (Path(__file__).resolve().parent.parent.parent / "TOOLS" / "semgrep").resolve()
+        js_rule_files = sorted(semgrep_dir.glob("js-*.*yml"))
 
         # Use only version-controlled custom rules (TOOLS/semgrep/js-*.yml).
         # p/javascript is intentionally excluded — it is a floating reference that
@@ -359,11 +367,14 @@ export default [
             "*.mjs",
             "--include",
             "*.ejs",
+            "--no-git-ignore",  # Crucial for scanning checked out repos outside the core git tree
             str(self.target_dir),
         ]
 
         try:
-            proc = subprocess.run(cmd, capture_output=True, text=True, timeout=180)
+            # We use cwd=str(self.target_dir) for consistency so it runs with the
+            # correct root context.
+            proc = subprocess.run(cmd, capture_output=True, text=True, timeout=180, cwd=str(self.target_dir))
             raw = proc.stdout.strip() or "{}"
             semgrep_data = json.loads(raw)
             results["semgrep"] = semgrep_data
