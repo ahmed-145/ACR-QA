@@ -290,7 +290,86 @@ class JavaScriptAdapter(LanguageAdapter):
         npm_root = _sp.run(["npm", "root", "-g"], capture_output=True, text=True).stdout.strip()
         plugin_path = f"{npm_root}/eslint-plugin-security"
 
-        return f"""import securityPlugin from '{plugin_path}/index.js';
+        has_ts = any(self.target_dir.rglob("*.ts")) or any(self.target_dir.rglob("*.tsx"))
+
+        if has_ts:
+            ts_parser_path = f"{npm_root}/@typescript-eslint/parser"
+            ts_plugin_path = f"{npm_root}/@typescript-eslint/eslint-plugin"
+
+            return f"""import securityPlugin from '{plugin_path}/index.js';
+import tsParser from '{ts_parser_path}/dist/index.js';
+import tsPlugin from '{ts_plugin_path}/dist/index.js';
+
+export default [
+  {{
+    files: ['**/*.ts', '**/*.tsx'],
+    languageOptions: {{
+      parser: tsParser,
+      parserOptions: {{
+        ecmaVersion: 'latest',
+        sourceType: 'module',
+      }}
+    }},
+    plugins: {{
+      security: securityPlugin,
+      '@typescript-eslint': tsPlugin,
+    }},
+    rules: {{
+      'security/detect-eval-with-expression': 'error',
+      'security/detect-non-literal-regexp': 'warn',
+      'security/detect-non-literal-require': 'warn',
+      'security/detect-object-injection': 'warn',
+      'security/detect-child-process': 'warn',
+      'security/detect-unsafe-regex': 'warn',
+      'security/detect-pseudoRandomBytes': 'warn',
+      'security/detect-no-csrf-before-method-override': 'warn',
+      '@typescript-eslint/no-explicit-any': 'warn',
+      'no-eval': 'error',
+      'no-var': 'warn',
+      'no-console': 'warn',
+      'eqeqeq': 'warn',
+    }}
+  }},
+  {{
+    files: ['**/*.js', '**/*.jsx', '**/*.mjs', '**/*.cjs'],
+    plugins: {{ security: securityPlugin }},
+    rules: {{
+      'security/detect-eval-with-expression': 'error',
+      'security/detect-non-literal-regexp': 'warn',
+      'security/detect-non-literal-require': 'warn',
+      'security/detect-object-injection': 'warn',
+      'security/detect-child-process': 'warn',
+      'security/detect-unsafe-regex': 'warn',
+      'security/detect-pseudoRandomBytes': 'warn',
+      'security/detect-no-csrf-before-method-override': 'warn',
+      'no-eval': 'error',
+      'no-implied-eval': 'error',
+      'no-new-func': 'error',
+      'no-unused-vars': 'warn',
+      'no-debugger': 'warn',
+      'no-console': 'warn',
+      'no-var': 'warn',
+      'prefer-const': 'warn',
+      'eqeqeq': 'warn',
+      'no-with': 'error',
+      'no-async-promise-executor': 'error',
+      'require-await': 'warn',
+    }},
+    languageOptions: {{
+      ecmaVersion: 2022,
+      sourceType: 'commonjs',
+      globals: {{
+        require: 'readonly', module: 'readonly', exports: 'readonly',
+        __dirname: 'readonly', __filename: 'readonly', process: 'readonly',
+        console: 'readonly', Buffer: 'readonly', setTimeout: 'readonly',
+        setInterval: 'readonly', clearTimeout: 'readonly', clearInterval: 'readonly',
+      }},
+    }},
+  }}
+];
+"""
+        else:
+            return f"""import securityPlugin from '{plugin_path}/index.js';
 
 export default [
   {{
@@ -330,7 +409,7 @@ export default [
         setInterval: 'readonly', clearTimeout: 'readonly', clearInterval: 'readonly',
       }},
     }},
-  }},
+  }}
 ];
 """
 

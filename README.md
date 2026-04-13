@@ -370,7 +370,7 @@ make init-config
 
 ---
 
-## 🟨 JavaScript / TypeScript Support
+## 🟨 JavaScript / TypeScript Support (Verified)
 
 ACR-QA v3.0.2 ships with a **full JS/TS language adapter** — no configuration required.
 
