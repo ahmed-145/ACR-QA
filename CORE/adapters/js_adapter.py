@@ -175,9 +175,24 @@ class JavaScriptAdapter(LanguageAdapter):
         files: list[Path] = []
         for ext in self.file_extensions:
             files.extend(self.target_dir.rglob(f"*{ext}"))
-        # Exclude node_modules, dist, build, .next
-        exclude = {"node_modules", "dist", "build", ".next", ".nuxt", "coverage", "__pycache__"}
-        return [f for f in files if not any(part in exclude for part in f.parts)]
+        # Exclude node_modules, dist, build, vendor etc
+        exclude = {
+            "node_modules", "dist", "build", ".next", ".nuxt", "coverage", "__pycache__",
+            "vendor", "bower_components", "min", "minified"
+        }
+        
+        filtered_files: list[Path] = []
+        for f in files:
+            # Skip if file path contains excluded folder parts
+            if any(part in exclude for part in f.parts):
+                continue
+            # Skip minified files
+            if f.stem.endswith('.min'):
+                continue
+                
+            filtered_files.append(f)
+            
+        return filtered_files
 
     def _has_package_json(self) -> bool:
         """Check if target_dir has a package.json (npm project)."""
