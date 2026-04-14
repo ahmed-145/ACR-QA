@@ -372,7 +372,7 @@ make init-config
 
 ## 🟨 JavaScript / TypeScript Support (Verified)
 
-ACR-QA v3.0.2 ships with a **full JS/TS language adapter** — no configuration required.
+ACR-QA v3.0.3 ships with a **full JS/TS language adapter** — no configuration required.
 
 ### How It Works
 
@@ -384,7 +384,7 @@ JS/TS Project
     └── npm audit                          → CVE dependency scan → SECURITY-059/SECURITY-060
          │
          ▼
-    Normalizer → 55 rule mappings → CanonicalFinding (same schema as Python)
+    Normalizer → 56 rule mappings → CanonicalFinding (same schema as Python)
          │
          ▼
     Severity Scorer + Quality Gate + AI Explanations
@@ -619,7 +619,7 @@ make test-e2e          # End-to-end with Docker
 - [x] ~~Deep-code audit + 98 tests + bug fixes~~ (v2.6)
 - [x] ~~Competitive features: test gap analyzer, OWASP compliance, policy engine, feedback tuner, confidence filtering~~ (v2.7)
 - [x] ~~God-mode testing: 273 tests across 11 test suites~~ (v2.7)
-- [x] ~~JavaScript / TypeScript language adapter~~ (v3.0.2) — ESLint, Semgrep JS, npm audit, 55 rule mappings
+- [x] ~~JavaScript / TypeScript language adapter~~ (v3.0.3) — ESLint, Semgrep JS, npm audit, 56 rule mappings
 - [ ] User study (8–10 participants)
 - [ ] Precision / recall evaluation against ground-truth labels
 - [ ] ☁️ Cloud deployment on DigitalOcean ($200 free credit via GitHub Student Pack)

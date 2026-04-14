@@ -1,6 +1,6 @@
 # ACR-QA Testing & Calibration Report
 
-**Latest Run:** April 8, 2026 · **Version:** v3.0.2
+**Latest Run:** April 14, 2026 · **Version:** v3.0.3
 **Unit Tests:** 436 passed · **Coverage:** quality\_gate 93%, severity\_scorer 62%, total CORE ~56%
 
 ---
@@ -586,7 +586,7 @@ Adjusted recall (excl. logic/auth flaws): **5/8 = 62.5%**.
 
 ---
 
-### Scale Benchmark (v3.0.2, `scripts/scale_benchmark.py`)
+### Scale Benchmark (v3.0.3, `scripts/scale_benchmark.py`)
 
 Synthetic JS projects of increasing size, measuring pipeline wall time:
 

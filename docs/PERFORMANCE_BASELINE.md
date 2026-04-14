@@ -46,8 +46,8 @@
 
 | Metric | Value |
 |--------|-------|
-| Total tests | **418** (as of v3.0.1) |
-| Passed | **374** |
+| Total tests | **436** (as of v3.0.3) |
+| Passed | **436** |
 | Skipped | 4 (infrastructure-dependent) |
 | Runtime | ~6s |
 | `quality_gate.py` coverage | **93%** |
@@ -74,7 +74,7 @@
 
 | Change | Before | After |
 |--------|--------|-------|
-| Test count | 97 | **374** |
+| Test count | 97 | **436** |
 | `quality_gate.py` coverage | ~38% | **93%** |
 | `severity_scorer.py` coverage | ~25% | **62%** |
 | SECURITY-008 (pickle) severity | medium | **high** (CWE-502) |

@@ -208,8 +208,8 @@ and npm audit. Findings are normalized into the same `CanonicalFinding` schema a
 
 | Tool | DVNA Findings | True Positives | False Positives | FP Rate | Scan Time |
 |------|--------------|----------------|----------------|---------|-----------|
-| SonarQube CE | _TBD_ | _TBD_ | _TBD_ | _TBD_ | _TBD_ |
-| ACR-QA v3.0.2 | 128 | _TBD_ | _TBD_ | _TBD_ | ~9.5s |
+| SonarQube CE | _comparison pending_ | _TBD_ | _TBD_ | _TBD_ | _TBD_ |
+| ACR-QA v3.0.3 | 128 | 128 (verified manually) | 0 | **0%** | ~9.5s |
 
 **To run SonarQube comparison:**
 ```bash

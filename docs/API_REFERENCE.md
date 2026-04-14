@@ -1,7 +1,7 @@
 # ACR-QA REST API Reference
 
 **Base URL:** `http://localhost:5000`
-**Version:** v3.0.0
+**Version:** v3.0.3
 **Format:** All responses are `application/json`
 
 > This document covers all 22 REST endpoints exposed by `FRONTEND/app.py`.
@@ -159,7 +159,7 @@ Health check — returns database + Redis connectivity status.
 
 **Response:**
 ```json
-{"status": "ok", "db": "connected", "redis": "connected", "version": "3.0.0"}
+{"status": "ok", "db": "connected", "redis": "connected", "version": "3.0.3"}
 ```
 
 #### `GET /api/fix-confidence/<rule_id>`
@@ -275,4 +275,4 @@ console.log(`Found ${data.total} issues`);
 
 ---
 
-*Last updated: April 5, 2026 — ACR-QA v3.0.0*
+*Last updated: April 14, 2026 — ACR-QA v3.0.3*

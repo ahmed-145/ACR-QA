@@ -10,7 +10,7 @@
 
 ```mermaid
 graph TD
-    subgraph "ACR-QA v3.0.1 — Current"
+    subgraph "ACR-QA v3.0.3 — Current"
         CLI["CLI --lang auto|python|javascript"]
         DETECT["Language Detector\ndetect_language()"]
         CLI --> DETECT
@@ -57,7 +57,7 @@ graph TD
 
 ## Where We Are Now
 
-### ✅ Phase 1 — Python MVP (COMPLETE, v3.0.1)
+### ✅ Phase 1 — Python MVP (COMPLETE, v3.0.3)
 
 The Python version is **feature-complete and thesis-ready**.
 
@@ -75,7 +75,7 @@ The Python version is **feature-complete and thesis-ready**.
 | Flask Dashboard | ✅ | 22 REST endpoints — runs, findings, stats, trends, compliance |
 | PostgreSQL + Redis | ✅ | Full persistence + caching layer |
 | CLI | ✅ | `--version`, `--no-ai`, `--json`, `--lang`, `--rich`, `--diff-only`, `--auto-fix` |
-| Tests | ✅ | 418 passing (14 test files) |
+| Tests | ✅ | 436 passing (5 test files) |
 | Docs | ✅ | API_REFERENCE.md, EVALUATION.md, TESTING_AND_CALIBRATION.md, AGENTS.md |
 
 #### Repos tested (Round 1–5)
@@ -83,7 +83,7 @@ Django, SQLAlchemy, aiohttp, black, Pillow, DVPWA, Flask, httpx, requests, + 9 m
 
 ---
 
-### ✅ Phase 1B — JavaScript/TypeScript Support (COMPLETE, v3.0.1)
+### ✅ Phase 1B — JavaScript/TypeScript Support (COMPLETE, v3.0.3)
 
 ACR-QA now works on **JS/TS projects** without any architecture change.
 
@@ -92,10 +92,10 @@ ACR-QA now works on **JS/TS projects** without any architecture change.
 | Component | File | Details |
 |-----------|------|---------|
 | JS Adapter | `CORE/adapters/js_adapter.py` | ESLint, Semgrep JS, npm audit, normalization |
-| Semgrep JS Rules | `TOOLS/semgrep/js-rules.yml` | 15 security rules (eval, XSS, SQLi, prototype pollution, path traversal, JWT, etc.) |
+| Semgrep JS Rules | `TOOLS/semgrep/js-rules.yml` | 21 rules (eval+test-exclusions, XSS, SQLi, NoSQL `$where`, SSRF, prototype pollution, path traversal, JWT, etc.) |
 | ESLint Config | Generated at runtime | eslint-plugin-security + 20 core rules |
 | Language Detection | `JavaScriptAdapter.detect_language()` | Auto-detects python/javascript/mixed from project structure |
-| JS Rule Mappings | `JS_RULE_MAPPING` in js_adapter.py | 55 ESLint/Semgrep rule → canonical ID mappings |
+| JS Rule Mappings | `JS_RULE_MAPPING` in js_adapter.py | 56 ESLint/Semgrep rule → canonical ID mappings |
 | JS Severity | `severity_scorer.py` | SECURITY-051..060, STYLE-017/018, ASYNC-002/003, VAR-002, PATTERN-002 |
 | npm audit SCA | `normalize_npm_audit()` | CVE dependency scans → SECURITY-059/060 |
 | Tests | `TESTS/test_js_adapter.py` | 39 tests — rule mapping, normalization, language detection |
@@ -280,7 +280,7 @@ npx acrqa --target-dir ./src --json > results.json
 
 ```
 CORE/
-├── __init__.py          ← version string (3.0.1)
+├── __init__.py          ← version string (3.0.3)
 ├── main.py              ← CLI: --version, --no-ai, --json, --lang
 ├── config_loader.py     ← reads .acrqa.yml policy
 └── engines/
@@ -323,4 +323,4 @@ docs/
 
 ---
 
-*Last updated: April 5, 2026 — ACR-QA v3.0.1*
+*Last updated: April 14, 2026 — ACR-QA v3.0.3*
