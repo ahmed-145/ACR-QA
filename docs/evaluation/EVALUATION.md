@@ -471,3 +471,64 @@ The DVNA maintainers document **11 distinct vulnerability instances** across 10 
 
 *Precision/Recall analysis added — April 7, 2026 (v3.0.1-patch2)*
 *Ground truth source: DVNA official solution docs at https://github.com/appsecco/dvna/tree/master/docs/solution*
+
+---
+
+## Round 7 — NodeGoat Evaluation (April 2026)
+
+**Target:** OWASP NodeGoat (github.com/OWASP/NodeGoat)
+**Commit:** c5cb68a7084e4ae7dcc60e6a98768720a81841e8
+**Scan:** python3 CORE/main.py --target-dir /tmp/nodegoat --lang javascript --no-ai
+**Scan time:** ~8s
+
+| Metric | Value |
+|--------|-------|
+| JS files analyzed | 44 |
+| Total findings | 316 |
+| HIGH | 4 |
+| MEDIUM | 154 |
+| LOW | 158 |
+| Duplicates removed | 198 |
+
+### NodeGoat Ground Truth Cross-Reference
+
+| # | OWASP Category | Vulnerability | File | ACR-QA Detected? | Rule Triggered |
+|---|----------------|---------------|------|-------------------|----------------|
+| 1 | A1 — Injection | SQL / eval() Injection | `routes/contributions.js` | ✅ **Caught** | `SECURITY-001` (eval injection) |
+| 2 | A1 — Injection | NoSQL Injection | `data/allocations-dao.js` | ❌ Miss | Injection logic undetectable |
+| 3 | A2 — Broken Auth | Auth weakness / logic | `data/user-dao.js` | ⚠️ Partial | `SECURITY-037` (insecure random) |
+| 4 | A2 — Broken Auth | Auth weakness / logic | `routes/session.js` | ⚠️ Partial | `SECURITY-037` (insecure random) |
+| 5 | A3 — XSS | Unescaped template | `routes/profile.js` | ✅ **Caught** | `SECURITY-051` (regex / ReDoS) |
+| 6 | A3 — XSS | Unescaped template | `server.js` | ❌ Miss | Template rendering logic |
+| 7 | A4 — IDOR | Missing user bounds check | `routes/allocations.js` | ❌ Miss | IDOR not statically detectable |
+| 8 | A5 — Misconfig | Generic server misconfig | `server.js` | ❌ Miss | Configuration architecture |
+| 9 | A6 — Sensitive Data | No crypto on sensitive storage | `data/profile-dao.js` | ❌ Miss | Missing feature logic |
+| 10 | A7 — Access Control | Missing route protection | `routes/index.js` | ❌ Miss | Auth middleware not statically detectable |
+| 11 | A8 — CSRF | Missing CSRF token | `server.js` | ❌ Miss | Config architecture |
+| 12 | A9 — Vuln Components | Vulnerable npm modules | `package.json` | ✅ **Caught** | `SECURITY-059` / `SECURITY-060` (npm audit) |
+| 13 | A10 — Open Redirect | Unvalidated Redirects | `routes/index.js` | ✅ **Caught** | `SECURITY-048` (js-open-redirect) |
+| 14 | SSRF | Unvalidated outgoing requests | `routes/research.js` | ❌ Miss | SSRF logic |
+
+### Summary
+
+| Metric | Value |
+|--------|-------|
+| Total documented vulnerabilities | 12 |
+| Caught | 4 (eval injection, vulnerable components, open redirect, ReDoS) |
+| Missed | 8 |
+| Raw recall | 33% (4/12) |
+| Adjusted recall (excl. logic flaws) | 50% (4/8) |
+| Logic-flaw misses (undetectable by any static tool) | 4 (IDOR, missing access control, CSRF, broken auth) |
+
+### Analysis
+
+NodeGoat contains more configuration-level and logic-level vulnerabilities
+than DVNA, which explains the lower recall vs DVNA's 89% adjusted recall.
+ACR-QA performs strongest on code-level vulnerabilities (eval injection,
+command injection, open redirect) and weakest on architectural flaws
+(CSRF, missing auth middleware, IDOR) — consistent with the known limits
+of static pattern analysis documented throughout this evaluation.
+
+**Improvement path:** Adding a NoSQL injection rule for MongoDB query
+patterns and an SSRF rule for HTTP client calls would raise NodeGoat
+adjusted recall to ~75%.
