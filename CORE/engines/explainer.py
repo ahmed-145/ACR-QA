@@ -280,6 +280,46 @@ Start with: "This code violates {canonical_id}..." and end with a ```python code
                 "self_eval_score": None,
             }
 
+            # --- Feature 1: Validated Autofix Loop ---
+            # Extract the first ```...``` code block from the AI response and
+            # validate it with the appropriate linter before surfacing the fix.
+            try:
+                import re as _re
+
+                from CORE.engines.autofix import validate_fix
+
+                code_match = _re.search(
+                    r"```(?:python|javascript|js|ts|typescript)?\s*\n(.*?)```",
+                    response_text,
+                    _re.DOTALL,
+                )
+                fix_code = code_match.group(1).strip() if code_match else None
+
+                if fix_code:
+                    lang = finding.get("language", "python")
+                    rule_id = finding.get("canonical_rule_id", finding.get("rule_id", ""))
+                    validation = validate_fix(
+                        original_code=code_snippet,
+                        fixed_code=fix_code,
+                        language=lang,
+                        rule_id=rule_id,
+                    )
+                    result["fix_validated"] = validation["valid"]
+                    result["fix_confidence"] = validation["confidence"]
+                    result["fix_validation_note"] = validation["validation_note"]
+                    if not validation["valid"]:
+                        result["fix_warning"] = f"⚠️ AI fix requires review: {validation['validation_note']}"
+                else:
+                    result["fix_validated"] = None
+                    result["fix_confidence"] = None
+                    result["fix_validation_note"] = "No code block in AI response"
+            except Exception:
+                # Never let validation crash the explanation pipeline
+                result["fix_validated"] = None
+                result["fix_confidence"] = None
+                result["fix_validation_note"] = "Validation unavailable"
+            # -----------------------------------------
+
             if self.redis:
                 try:
                     self.redis.setex(cache_key, self.cache_ttl, json.dumps(result))
@@ -287,6 +327,7 @@ Start with: "This code violates {canonical_id}..." and end with a ```python code
                     pass
 
             return result
+
         except Exception as e:
             latency_ms = int((time.time() - start_time) * 1000)
             fallback_text = self.get_fallback_explanation(finding)

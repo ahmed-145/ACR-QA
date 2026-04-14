@@ -381,6 +381,148 @@ def verify_fix(fix_result: dict) -> dict:
         return {"verified": False, "error": str(e), "remaining_issues": []}
 
 
+def validate_fix(
+    original_code: str,
+    fixed_code: str,
+    language: str,
+    rule_id: str,
+) -> dict:
+    """
+    Validate an AI-generated fix by running the appropriate linter on it.
+
+    Unlike ``verify_fix()`` (which operates on file-level patches), this
+    function accepts raw code *strings* — suitable for validating AI-generated
+    snippets that haven't been written to the repo yet.
+
+    Args:
+        original_code: The original (unfixed) code snippet.
+        fixed_code: The AI-suggested replacement code.
+        language: ``"python"`` or ``"javascript"`` / ``"typescript"``.
+        rule_id: The canonical rule ID that triggered the finding.
+
+    Returns:
+        Dict with keys:
+            valid (bool), confidence (str), issues_found (list[str]),
+            validated_fix (str | None), validation_note (str)
+    """
+    import json as _json
+    import os
+    import subprocess
+    import tempfile
+
+    if not fixed_code or not fixed_code.strip():
+        return {
+            "valid": False,
+            "confidence": "unknown",
+            "issues_found": [],
+            "validated_fix": None,
+            "validation_note": "No fix code provided",
+        }
+
+    suffix = ".py" if language == "python" else ".js"
+
+    with tempfile.NamedTemporaryFile(
+        suffix=suffix,
+        mode="w",
+        delete=False,
+        encoding="utf-8",
+    ) as f:
+        f.write(fixed_code)
+        temp_path = f.name
+
+    try:
+        issues: list[str] = []
+        still_vulnerable = False
+
+        if language == "python":
+            result = subprocess.run(
+                [
+                    "ruff",
+                    "check",
+                    temp_path,
+                    "--output-format=json",
+                    "--quiet",
+                    "--ignore=I,D,ANN,CPY,F821,F811",  # skip isort / docstring / annotation / undefined-name in snippets
+                ],
+                capture_output=True,
+                text=True,
+                timeout=10,
+            )
+            if result.stdout.strip():
+                try:
+                    ruff_output = _json.loads(result.stdout)
+                    issues = [r["code"] for r in ruff_output if r.get("code")]
+                except (ValueError, KeyError):
+                    pass
+
+            # Check if the vulnerability rule itself still fires
+            still_vulnerable = any(rule_id.lower() in issue.lower() for issue in issues)
+
+        else:  # javascript / typescript
+            result = subprocess.run(
+                [
+                    "eslint",
+                    temp_path,
+                    "--format=json",
+                    "--no-eslintrc",
+                    "--rule",
+                    '{"no-eval": "error", "no-new-func": "error"}',
+                ],
+                capture_output=True,
+                text=True,
+                timeout=10,
+            )
+            if result.stdout.strip():
+                try:
+                    eslint_output = _json.loads(result.stdout)
+                    for file_result in eslint_output:
+                        issues = [m["ruleId"] for m in file_result.get("messages", []) if m.get("ruleId")]
+                except (ValueError, KeyError):
+                    pass
+
+        valid = len(issues) == 0 and not still_vulnerable
+        if valid:
+            confidence = "high"
+        elif len(issues) < 3:
+            confidence = "medium"
+        else:
+            confidence = "low"
+
+        return {
+            "valid": valid,
+            "confidence": confidence,
+            "issues_found": issues,
+            "validated_fix": fixed_code if valid else None,
+            "validation_note": (
+                "Passed linter validation" if valid else f"Linter found {len(issues)} issue(s) in suggested fix"
+            ),
+        }
+
+    except subprocess.TimeoutExpired:
+        return {
+            "valid": False,
+            "confidence": "unknown",
+            "issues_found": [],
+            "validated_fix": None,
+            "validation_note": "Validation timed out",
+        }
+    except FileNotFoundError as e:
+        # Linter not installed — degrade gracefully
+        tool = "ruff" if language == "python" else "eslint"
+        return {
+            "valid": False,
+            "confidence": "unknown",
+            "issues_found": [],
+            "validated_fix": None,
+            "validation_note": f"{tool} not found: {e}",
+        }
+    finally:
+        try:
+            os.unlink(temp_path)
+        except OSError:
+            pass
+
+
 if __name__ == "__main__":
     # Example usage
     engine = AutoFixEngine()
