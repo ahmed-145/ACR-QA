@@ -17,6 +17,15 @@ rules:
       This allows arbitrary code execution if user input reaches this call.
     severity: ERROR
     languages: [javascript, typescript]
+    paths:
+      exclude:
+        - "*.test.js"
+        - "*.spec.js"
+        - "*.test.ts"
+        - "*.spec.ts"
+        - "__tests__/**"
+        - "test/**"
+        - "tests/**"
     metadata:
       category: security
       canonical_rule_id: SECURITY-001
@@ -334,6 +343,25 @@ rules:
       - pattern: '$MODEL.find({$KEY: req.body.$Y})'
       - pattern: '$MODEL.findOne({$KEY: req.body.$Y})'
     message: "NoSQL injection: user-controlled input in MongoDB query"
+    languages: [javascript]
+    severity: ERROR
+    metadata:
+      category: security
+      canonical_rule_id: SECURITY-058
+      owasp: A01:2021 - Injection
+      cwe: CWE-943
+
+  - id: js-nosql-where-injection
+    pattern-either:
+      - pattern: |
+          {$where: `...${$REQ.params.$X}...`}
+      - pattern: |
+          {$where: `...${$REQ.body.$X}...`}
+      - pattern: |
+          {$where: `...${$REQ.query.$X}...`}
+      - pattern: |
+          {$where: `...${$VAR}...`}
+    message: "NoSQL $where injection: template literal in MongoDB $where allows arbitrary JS execution on server"
     languages: [javascript]
     severity: ERROR
     metadata:

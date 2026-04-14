@@ -79,6 +79,7 @@ JS_RULE_MAPPING: dict[str, str] = {
     "js-sql-injection": "SECURITY-027",
     "js-nosql-injection": "SECURITY-058",
     "js-nosql-injection-mongodb": "SECURITY-058",
+    "js-nosql-where-injection": "SECURITY-058",
     "js-ssrf-request": "SECURITY-065",
     "js-path-traversal": "SECURITY-049",
     "js-command-injection": "SECURITY-021",
