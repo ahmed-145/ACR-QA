@@ -323,3 +323,54 @@ rules:
       canonical_rule_id: HARDCODE-001
       owasp: A02:2021 - Cryptographic Failures
       cwe: CWE-259
+
+  # ── NoSQL Injection (MongoDB) ───────────────────────────────────────────────
+  - id: js-nosql-injection-mongodb
+    pattern-either:
+      - pattern: '$COLLECTION.find({$KEY: req.$X.$Y})'
+      - pattern: '$COLLECTION.findOne({$KEY: req.$X.$Y})'
+      - pattern: '$COLLECTION.find({username: req.$X.$Y})'
+      - pattern: '$COLLECTION.findOne({username: req.$X.$Y})'
+      - pattern: '$MODEL.find({$KEY: req.body.$Y})'
+      - pattern: '$MODEL.findOne({$KEY: req.body.$Y})'
+    message: "NoSQL injection: user-controlled input in MongoDB query"
+    languages: [javascript]
+    severity: ERROR
+    metadata:
+      category: security
+      canonical_rule_id: SECURITY-058
+      owasp: A01:2021 - Injection
+      cwe: CWE-943
+
+  # ── Server-Side Request Forgery (SSRF) ──────────────────────────────────────
+  - id: js-ssrf-request
+    patterns:
+      - pattern-either:
+          - pattern: 'axios.get($INPUT, ...)'
+          - pattern: 'axios.post($INPUT, ...)'
+          - pattern: 'fetch($INPUT, ...)'
+          - pattern: 'needle.get($INPUT, ...)'
+          - pattern: 'needle.post($INPUT, ...)'
+          - pattern: 'got.get($INPUT, ...)'
+          - pattern: 'superagent.get($INPUT, ...)'
+      - pattern-not: |
+          fetch("https://...")
+      - pattern-not: |
+          fetch("http://...")
+    paths:
+      exclude:
+        - "*.test.js"
+        - "*.spec.js"
+        - "*.test.ts"
+        - "*.spec.ts"
+        - "__tests__/**"
+        - "test/**"
+        - "tests/**"
+    message: "SSRF: user-controlled URL in HTTP request"
+    languages: [javascript]
+    severity: ERROR
+    metadata:
+      category: security
+      canonical_rule_id: SECURITY-065
+      owasp: A10:2021 - Server-Side Request Forgery
+      cwe: CWE-918

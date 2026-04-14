@@ -78,6 +78,8 @@ JS_RULE_MAPPING: dict[str, str] = {
     "js-hardcoded-secret": "SECURITY-005",
     "js-sql-injection": "SECURITY-027",
     "js-nosql-injection": "SECURITY-058",
+    "js-nosql-injection-mongodb": "SECURITY-058",
+    "js-ssrf-request": "SECURITY-065",
     "js-path-traversal": "SECURITY-049",
     "js-command-injection": "SECURITY-021",
     "js-insecure-random": "SECURITY-037",
@@ -177,21 +179,30 @@ class JavaScriptAdapter(LanguageAdapter):
             files.extend(self.target_dir.rglob(f"*{ext}"))
         # Exclude node_modules, dist, build, vendor etc
         exclude = {
-            "node_modules", "dist", "build", ".next", ".nuxt", "coverage", "__pycache__",
-            "vendor", "bower_components", "min", "minified"
+            "node_modules",
+            "dist",
+            "build",
+            ".next",
+            ".nuxt",
+            "coverage",
+            "__pycache__",
+            "vendor",
+            "bower_components",
+            "min",
+            "minified",
         }
-        
+
         filtered_files: list[Path] = []
         for f in files:
             # Skip if file path contains excluded folder parts
             if any(part in exclude for part in f.parts):
                 continue
             # Skip minified files
-            if f.stem.endswith('.min'):
+            if f.stem.endswith(".min"):
                 continue
-                
+
             filtered_files.append(f)
-            
+
         return filtered_files
 
     def _has_package_json(self) -> bool:
