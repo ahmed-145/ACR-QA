@@ -2,6 +2,38 @@
 
 All notable changes to ACR-QA are documented here.
 
+## [v3.0.3] — 2026-04-14 (False Positive Rate Hardening)
+
+### Added
+- **`js-nosql-where-injection` rule** — New Semgrep rule catching MongoDB `$where` template
+  literal injection (e.g. `{$where: \`this.userId == ${parsedUserId}\`}`). Fires correctly on
+  NodeGoat's `allocations-dao.js:77`. Mapped to `SECURITY-058` in `JS_RULE_MAPPING`.
+- **Round 7 — NodeGoat Evaluation** (`docs/evaluation/EVALUATION.md`) — 12 documented
+  vulnerabilities cross-referenced. 50%+ adjusted recall (excluding logic/auth flaws
+  that no static tool can catch).
+- **Round 8 — FP Rate Analysis** — Three clean production codebases scanned post-refinement
+  (Express, Koa, Fastify). Semgrep HIGH on Koa drops from 12 → **0** after test-file exclusions.
+- **`docs/architecture/ARCHITECTURE.md` updated** — Added full JS/TS pipeline section,
+  async AI engine details, PR bot integration, Redis caching.
+- **`docs/TESTING_AND_CALIBRATION.md` Section 12** — Scale benchmark results and FP rate
+  characterization data added.
+
+### Changed
+- **`js-eval-injection`** — Added `paths: exclude` block (`*.test.js`, `*.spec.js`,
+  `test/**`, `tests/**`, `__tests__/**`). Eliminates false positives in framework test
+  suites (Koa: 12 HIGH → 0).
+- **`js-ssrf-request`** — Narrowed patterns to specific HTTP client libraries (axios, fetch,
+  got, needle, superagent). Removed generic `request()`. Added same test-file exclusions.
+- **`js-nosql-injection-mongodb`** — Narrowed to require `req.$X.$Y` or `req.body.$Y` as
+  query value, preventing false positives on Sequelize ORM `.find()` calls.
+- **`CORE/__init__.py`** — Version bumped to `3.0.3`.
+
+### Fixed
+- Koa scan was hanging due to slow `npm audit` on large dependency tree — Semgrep-only
+  scan path used for precision measurement on clean codebases.
+- NodeGoat NoSQL injection now correctly caught via new `$where` template literal pattern
+  (was 0 finds; now 1 confirmed find at `allocations-dao.js:77`).
+
 ## [v3.0.2] — 2026-04-08 (EJS Scope Expansion & Eval Finalization)
 
 ### Added

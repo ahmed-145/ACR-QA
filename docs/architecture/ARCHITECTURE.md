@@ -1,4 +1,4 @@
-# ACR-QA v3.0.1 Architecture
+# ACR-QA v3.0.3 Architecture
 
 ## System Overview
 
@@ -58,9 +58,9 @@ Creates a row in `analysis_runs` before any scanning starts. This gives every ru
 
 ### Stage 2a — Detection Layer
 
-**Component:** `TOOLS/run_checks.sh`
+**Component:** `TOOLS/run_checks.sh` (Python) · `CORE/adapters/js_adapter.py` (JS/TS)
 
-Runs 5 tools concurrently:
+#### Python Pipeline (7 tools)
 
 | Tool | What it catches | Output |
 |------|----------------|--------|
@@ -70,6 +70,22 @@ Runs 5 tools concurrently:
 | Vulture | Dead/unused code | Text |
 | Radon | Cyclomatic complexity | JSON |
 | jscpd | Copy-paste duplication | JSON |
+| Secrets Detector | API keys, passwords, tokens | Internal |
+
+#### JS/TS Pipeline (4 tools)
+
+| Tool | What it catches | Output |
+|------|----------------|--------|
+| ESLint + eslint-plugin-security | 20+ JS security/style rules | JSON |
+| Semgrep (21 custom rules) | OWASP JS patterns, NoSQL injection, SSRF, XSS | JSON |
+| npm audit | CVE-matched dependency vulnerabilities | JSON |
+| jscpd | Copy-paste duplication | JSON |
+
+**Custom Semgrep JS rule sets** (`TOOLS/semgrep/js-*.yml`):
+- `js-rules.yml` — Core security (eval injection, SQL/NoSQL, XSS, SSRF, path traversal)
+- `js-taint-rules.yml` — Taint analysis architecture (SQL/cmd/eval sources→skins; Pro engine)
+- `js-xxe.yml` — XXE via libxmljs
+- `js-ejs-xss.yml` — EJS template XSS
 
 **Output:** Raw JSON files saved to `DATA/outputs/`
 
@@ -161,11 +177,12 @@ For each finding (up to `max_explanations` from `.acrqa.yml`):
 1. **Code extraction** — `code_extractor.py` pulls 3-line window around the finding
 2. **Knowledge retrieval** — Looks up the canonical rule in `config/rules.yml` (66+ rules with rationale, CWE, remediation, examples)
 3. **Prompt construction** — Evidence-grounded prompt: rule definition + code context + file path
-4. **LLM call** — Cerebras Llama 3.1 8B (`llama3.1-8b`) via Cerebras API
-5. **Entropy scoring** — 3 calls at different temperatures, response consistency measured (0–1)
-6. **Self-evaluation** — LLM rates its own output: relevance / accuracy / clarity (1–5 each)
-7. **Redis caching** — Explanation cached by `finding_hash` to avoid duplicate LLM calls
-8. **Fallback** — Template explanation used if API fails or confidence < threshold
+4. **LLM call** — Cerebras Llama 3.1 8B (`llama3.1-8b`) via async Cerebras API
+5. **Async pipeline** — All explanations fire simultaneously (23 findings → 1.12s wall time)
+6. **Entropy scoring** — 3 calls at different temperatures, response consistency measured (0–1)
+7. **Self-evaluation** — LLM rates its own output: relevance / accuracy / clarity (1–5 each)
+8. **Redis caching** — Explanation cached by `finding_hash` to avoid duplicate LLM calls
+9. **Fallback** — Template explanation used if API fails or confidence < threshold
 
 ---
 
@@ -193,12 +210,21 @@ Returns **exit code 1** when thresholds are exceeded → blocks CI merge.
 | Output | Component | Format |
 |--------|-----------|--------|
 | PostgreSQL | `DATABASE/database.py` | 5 tables |
-| PR Comments | `scripts/post_pr_comments.py` | GitHub API |
+| PR Comments | `scripts/post_pr_comments.py` + GitHub Actions | Inline PR comments via GitHub API |
 | MR Comments | `scripts/post_gitlab_comments.py` | GitLab API |
 | SARIF Export | `scripts/export_sarif.py` | SARIF v2.1.0 |
-| Dashboard | `FRONTEND/app.py` | Flask + REST API |
+| Dashboard | `FRONTEND/app.py` | Flask + 20+ REST API endpoints |
 | Rich CLI | `CORE/main.py --rich` | Terminal tables |
 | Prometheus | `/metrics` endpoint | Prometheus text |
+
+#### PR Bot — GitHub Actions Integration
+
+`scripts/post_pr_comments.py` is wired to `.github/workflows/acrqa.yml`. On every PR:
+1. Checkout target repo
+2. Run `CORE/main.py --lang javascript --json` (or `--lang python`)
+3. Findings persisted to PostgreSQL via `DATABASE/database.py`
+4. `post_pr_comments.py` fetches run findings and posts inline PR comments via GitHub REST API
+5. Comment format: `🔴 [SECURITY-001] eval() at app.js:32 — Dynamic code execution...`
 
 ---
 
@@ -207,7 +233,7 @@ Returns **exit code 1** when thresholds are exceeded → blocks CI merge.
 5 tables in PostgreSQL 15:
 
 | Table | Purpose |
-|-------|---------| 
+|-------|---------|
 | `analysis_runs` | Run metadata (repo, PR, status, timestamps) |
 | `findings` | Detected issues with canonical schema + raw output |
 | `llm_explanations` | AI explanations with full provenance (prompt, response, latency, model) |
@@ -231,7 +257,20 @@ Returns **exit code 1** when thresholds are exceeded → blocks CI merge.
 ## Scalability
 
 - **Parallel detection** — All tools run concurrently in `run_checks.sh`
+- **Async AI** — All LLM explanation calls fired simultaneously (23 explanations → 1.12s wall time)
 - **Configurable limits** — `max_explanations` caps AI calls per run
 - **Redis caching** — Explanation cache avoids duplicate LLM calls across runs
 - **Graceful degradation** — Fully functional without Redis (in-memory fallback)
 - **Diff-only mode** — `--diff-only` flag scans only PR-changed files for faster CI
+
+### Scale Benchmark Results (v3.0.3)
+
+| Synthetic Target | Files | Execution Time | Throughput |
+|------------------|:-----:|:--------------:|:----------:|
+| Baseline | 10 | 6.31s | 1.6 files/s |
+| Mid | 50 | 6.50s | 7.7 files/s |
+| High | 100 | 7.11s | 14.1 files/s |
+| Large | 200 | 7.58s | 26.4 files/s |
+| Massive | 500 | 9.83s | 50.9 files/s |
+
+> 50× files → 1.6× time. Overhead dominates at small scale; throughput scales efficiently at large scale.

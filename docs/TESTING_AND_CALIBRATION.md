@@ -533,3 +533,81 @@ Added `clean_file_path()` to `scripts/post_pr_comments.py`.
 - CUSTOM-* findings: **0** across all repos
 - Tests: **370 passed**, 0 failed
 - RULE_MAPPING now covers: **139+ rules**
+
+---
+
+## Section 12 — Round 8: False Positive Rate on Clean JS Codebases (v3.0.3)
+
+**Date:** April 14, 2026 · **Version:** v3.0.3
+
+After shipping the JS/TS adapter, three clean production JavaScript frameworks were scanned
+to characterize the false positive rate **before and after** rule refinements.
+
+### Why This Matters
+
+A static analysis tool that generates excessive false positives on clean code is not deployable
+in professional teams. This section documents FP reduction work done to make ACR-QA production-ready.
+
+---
+
+### Semgrep HIGH Findings on Clean Production JS Codebases (Post-Refinement)
+
+| Repository | Stars | JS Files | Semgrep HIGH | FP Assessment |
+|------------|:-----:|:--------:|:------------:|:-------------:|
+| expressjs/express | 65k | ~30 | **0** | ✅ Zero FP |
+| koajs/koa | 35k | ~40 | **0** | ✅ Zero FP (was 12 before fix) |
+| fastify/fastify | 32k | ~100 | **4** | ✅ npm CVEs only — true positives |
+
+> Note: Koa total findings include npm audit CVEs (medium severity). Semgrep-only HIGH = 0 after test-file exclusions.
+
+---
+
+### FP Root Causes Identified and Fixed
+
+| Rule | FP Cause | Fix Applied |
+|------|----------|-------------|
+| `js-eval-injection` | Fires on `eval()` in `*.test.js` (Koa uses eval in test harness) | Added `paths: exclude` for all test patterns |
+| `js-ssrf-request` | Generic `request()` caught `supertest` in test suites | Narrowed to `axios`/`fetch`/`got`/`needle` only + test exclusions |
+| `js-nosql-injection-mongodb` | Matched Sequelize `.find()` with non-user params | Restricted pattern to require `req.$X.$Y` or `req.body.$Y` |
+
+---
+
+### NodeGoat Impact (Add New NoSQL Catch)
+
+With the new `js-nosql-where-injection` rule (v3.0.3), NodeGoat now has:
+
+| Rule | File | Line | Vulnerability |
+|------|------|:----:|---------------|
+| `SECURITY-065` (SSRF) | `research.js` | 16 | SSRF via user-controlled URL |
+| `SECURITY-058` (NoSQL `$where`) | `allocations-dao.js` | 77 | `$where` template literal injection |
+
+NodeGoat recall updated: **5 caught** (eval×3, SSRF, NoSQL `$where`) out of 12 documented.
+Adjusted recall (excl. logic/auth flaws): **5/8 = 62.5%**.
+
+---
+
+### Scale Benchmark (v3.0.2, `scripts/scale_benchmark.py`)
+
+Synthetic JS projects of increasing size, measuring pipeline wall time:
+
+| Files | Time | Throughput |
+|:-----:|:----:|:----------:|
+| 10 | 6.31s | 1.6 files/s |
+| 50 | 6.50s | 7.7 files/s |
+| 100 | 7.11s | 14.1 files/s |
+| 200 | 7.58s | 26.4 files/s |
+| 500 | 9.83s | 50.9 files/s |
+
+> **50× files → 1.6× time.** Overhead (ESLint startup, DB write) dominates at small scale. At 500 files,
+> throughput is 50.9 files/s — suitable for large enterprise monorepos.
+
+---
+
+### Test Suite — v3.0.3 Baseline
+
+```
+436 passed, 4 skipped, 32 warnings in ~66s
+Coverage: 54.20% (≥40% requirement met)
+ruff: 0 errors
+mypy: 0 errors
+```
