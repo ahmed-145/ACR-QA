@@ -53,6 +53,7 @@ All findings from all 7 tools are normalized to this universal format before sto
 | `description` | string | No | Extended description |
 | `confidence` | float | No | Confidence score (0.0–1.0) |
 | `evidence` | object | No | Code context around the finding |
+| `cbom_metadata` | object | No | CBoM specific metadata (algorithm, quantum-safety status, category, replacement) |
 | `tool_raw` | object | Yes | Original tool output (preserved for provenance) |
 
 ## Categories

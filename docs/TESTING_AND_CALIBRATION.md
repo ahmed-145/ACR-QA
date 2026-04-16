@@ -1,7 +1,7 @@
 # ACR-QA Testing & Calibration Report
 
-**Latest Run:** April 14, 2026 · **Version:** v3.0.3
-**Unit Tests:** 436 passed · **Coverage:** quality\_gate 93%, severity\_scorer 62%, total CORE ~56%
+**Latest Run:** April 16, 2026 · **Version:** v3.0.4
+**Unit Tests:** 452 passed · **Coverage:** quality\_gate 93%, severity\_scorer 62%, total CORE ~55%
 
 ---
 
@@ -24,10 +24,18 @@
 
 | File | Tests | Added In |
 |------|:---:|:---:|
+| `TESTS/test_new_engines.py` | 7 | v3.0.4 |
+| `TESTS/test_coverage_boost.py` | 77 | v2.9 |
 | `TESTS/test_god_mode.py` | 78 | v2.7 |
 | `TESTS/test_deep_coverage.py` | 98 | v2.6 |
 | `TESTS/test_config_quality.py` | 30 | v2.5 |
 | `TESTS/test_integration.py` | 69 | v2.4 |
+
+### v3.0.4 Test Classes (`test_new_engines.py`)
+
+| Class | Tests | What It Covers |
+|-------|:---:|----------------|
+| `TestCBoMScanner` | 7 | CBoM Engine: MD5 detection, JS/TS crypto, quantum-safety tags, directory exclusions |
 
 ### v2.7 Test Classes (`test_god_mode.py`)
 
@@ -401,12 +409,13 @@ vulnerabilities to stress-test the full pipeline.
 
 | File | Tests | Added In |
 |------|:---:|:---:|
+| `TESTS/test_new_engines.py` | **7** | v3.0.4 |
 | `TESTS/test_coverage_boost.py` | **77** | v2.9 |
 | `TESTS/test_god_mode.py` | 78 | v2.7 |
 | `TESTS/test_deep_coverage.py` | 98 | v2.6 |
 | `TESTS/test_config_quality.py` | 30 | v2.5 |
 | `TESTS/test_integration.py` | 69 | v2.4 |
-| **Total** | **374** | — |
+| **Total Core Tests** | **~359** | — |
 
 ---
 
@@ -603,11 +612,11 @@ Synthetic JS projects of increasing size, measuring pipeline wall time:
 
 ---
 
-### Test Suite — v3.0.3 Baseline
+### Test Suite — v3.0.4 Baseline
 
-```
-436 passed, 4 skipped, 32 warnings in ~66s
-Coverage: 54.20% (≥40% requirement met)
+```text
+452 passed, 4 skipped, 32 warnings in ~68s
+Coverage: 55.24% (≥40% requirement met)
 ruff: 0 errors
 mypy: 0 errors
 ```
