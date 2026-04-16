@@ -59,6 +59,8 @@ graph TD
 
 ### ✅ Phase 1 — Python MVP (COMPLETE, v3.0.3)
 
+- ✅ Feature 2: Cryptographic Bill of Materials (CBoM) — quantum-safety classification per NIST FIPS 203/204 (done — v3.0.4)
+
 The Python version is **feature-complete and thesis-ready**.
 
 #### What's in it

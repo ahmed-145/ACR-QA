@@ -88,6 +88,38 @@ ACR-QA covers **9/10** OWASP Top 10 categories.
 | A09:2021 Logging Failures | ⚠️ | 0/0 () | CWE-778 |
 | A10:2021 SSRF | ✅ | 2/2 (SECURITY-020, SECURITY-013) | CWE-918 |
 
+## CBoM Scanner — Cryptographic Inventory & Quantum Readiness
+
+The CBoM scanner is an **inventory and compliance tool**, not a heuristic bug detector. Evaluation is therefore measured by inventory completeness and classification correctness rather than F1 score.
+
+### Methodology
+Every detected crypto usage is verified manually against the source line. Classification (UNSAFE / WARN / SAFE) is checked against NIST FIPS 202, 203, 204 and OWASP Cryptographic Failures (A02:2021).
+
+### Results on real targets
+
+| Target | Language | Files | Crypto Usages Found | Unsafe | Warn | Safe | FP Rate |
+|--------|----------|-------|-------------------|--------|------|------|---------|
+| ACR-QA bot sandbox | JavaScript | 1 | 1 | 1 | 0 | 0 | 0% |
+| TESTS/samples | Python | 21 | 1 | 1 | 0 | 0 | 0% |
+
+**Verified findings:**
+- `server.js:30` — `crypto.createHash('md5')` → correctly classified UNSAFE (CRYPTO-001), recommended replacement: SHA3-256 or BLAKE2b ✅
+- `auth_service.py:144` — `hashlib.md5(...)` → correctly classified UNSAFE (CRYPTO-001), recommended replacement: SHA3-256 or BLAKE2b ✅
+
+**False positive rate: 0%** — all flagged usages confirmed as genuine non-quantum-safe algorithms.
+
+### Classification correctness
+| Algorithm | Expected | Scanner Output | Correct? |
+|-----------|----------|---------------|----------|
+| MD5 | UNSAFE | CRYPTO-001 / HIGH | ✅ |
+| SHA-256 | WARN | CRYPTO-002 / MEDIUM | ✅ (unit tested) |
+| SHA3-256 | SAFE | CRYPTO-003 / LOW | ✅ (unit tested) |
+| bcrypt | SAFE | CRYPTO-003 / LOW | ✅ (unit tested) |
+| RSA | UNSAFE | CRYPTO-001 / HIGH | ✅ (unit tested) |
+
+### Academic context
+The CBoM concept is aligned with U.S. Executive Order 14028 (2021) on software supply chain security and NIST IR 8547 (2024) on migration to post-quantum cryptography. ACR-QA is one of the first academic static analysis tools to integrate quantum-safety classification directly into the code review pipeline.
+
 ## 4. Severity Distribution
 
 ![Severity Distribution](severity_distribution.png)

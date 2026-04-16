@@ -8,7 +8,7 @@
 [![Python 3.11+](https://img.shields.io/badge/Python-3.11+-3776ab?logo=python&logoColor=white)](https://www.python.org/)
 [![CI Tests](https://github.com/ahmed-145/ACR-QA/actions/workflows/tests.yml/badge.svg)](https://github.com/ahmed-145/ACR-QA/actions/workflows/tests.yml)
 [![Tests](https://img.shields.io/badge/Tests-436%20passing-22c55e?logo=pytest&logoColor=white)](./TESTS/)
-[![Version](https://img.shields.io/badge/Version-3.0.3-blue)](CHANGELOG.md)
+[![Version](https://img.shields.io/badge/Version-3.0.4-blue)](CHANGELOG.md)
 [![PostgreSQL 15](https://img.shields.io/badge/PostgreSQL-15+-336791?logo=postgresql&logoColor=white)](https://postgresql.org/)
 [![Prometheus](https://img.shields.io/badge/Prometheus-monitored-e6522c?logo=prometheus&logoColor=white)](https://prometheus.io/)
 [![Rules](https://img.shields.io/badge/Rules-299%20mapped-8b5cf6?logo=shield&logoColor=white)](./docs/evaluation/PER_TOOL_EVALUATION.md)
@@ -52,6 +52,8 @@ ACR-QA is a **provenance-first, AI-augmented code review platform**. It runs **7
 | **Radon** | Cyclomatic complexity, maintainability index | JSON |
 | **Secrets Detector** | API keys, passwords, JWTs, tokens, private keys | Custom |
 | **SCA Scanner** | Known-vulnerable dependency versions | Custom |
+
+- **Cryptographic Bill of Materials (CBoM)** — inventories all cryptographic API usage across Python and JS/TS, classifies every algorithm by quantum-safety status per NIST FIPS 203/204 (2024 PQC standards), and flags non-quantum-safe algorithms (MD5, SHA1, RSA, ECDSA, DES) with post-quantum replacements (ML-KEM, ML-DSA, SHA3, BLAKE2)
 
 All outputs are normalized into a **canonical schema** → deduplicated → severity-scored → stored in PostgreSQL.
 

@@ -100,6 +100,24 @@ Run after the main tool sweep as a second detection pass:
 - **Secrets Detector** — Finds hardcoded credentials, API keys, tokens. Uses regex + entropy analysis.
 - **SCA Scanner** — Parses `requirements.txt` / `pyproject.toml` and checks against OSV/PyPI vulnerability database.
 
+### CBoM Scanner (`CORE/engines/cbom_scanner.py`)
+
+The Cryptographic Bill of Materials scanner inventories all cryptographic API usage in a codebase and classifies each algorithm by quantum-safety status, aligned with NIST's 2024 Post-Quantum Cryptography standardization (FIPS 203 ML-KEM, FIPS 204 ML-DSA).
+
+**Classification tiers:**
+- `CRYPTO-001` (HIGH): Non-quantum-safe algorithms — MD5, SHA1, RSA, ECDSA, DH, DSA, DES, RC4. Vulnerable to Shor's algorithm on quantum computers.
+- `CRYPTO-002` (MEDIUM): Classically secure but not post-quantum-safe — SHA-256, SHA-512, AES-128, HMAC-SHA256, PBKDF2. Safe today, migration recommended.
+- `CRYPTO-003` (LOW): Quantum-resistant — SHA3-256/384/512, BLAKE2b/s, AES-256, ChaCha20, bcrypt, Argon2, scrypt.
+
+**Detection coverage:**
+- Python: `hashlib`, `hmac`, `pycryptodome`, `cryptography` library, `bcrypt`, `argon2`, JWT libraries
+- JavaScript/TypeScript: `node:crypto` (`createHash`, `createCipheriv`, `createSign`, `generateKeyPair`), WebCrypto `subtle` API, `bcrypt`, JWT
+
+**Pipeline integration:**
+The scanner runs inside `run_extra_scanners()` and emits canonical ACR-QA findings with a `cbom_metadata` field carrying algorithm name, quantum-safety status, category, and recommended replacement. A cross-tool deduplication group (`weak-hash-md5`) prevents double-reporting when Bandit (`SECURITY-009`) and CBoM (`CRYPTO-001`) both flag the same `hashlib.md5` call.
+
+**Algorithm registry:** 28 entries covering hash, symmetric, asymmetric, KDF, MAC, and JWT algorithm families.
+
 Both produce findings in the same canonical format and are merged into the main findings list before normalization.
 
 ---

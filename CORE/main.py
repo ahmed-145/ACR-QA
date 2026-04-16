@@ -375,6 +375,7 @@ class AnalysisPipeline:
             "eval-exec": {"SECURITY-001", "CUSTOM-dangerous-eval-usage"},
             "hardcoded-password": {"SECURITY-005", "CUSTOM-hardcoded-password", "HARDCODE-001"},
             "sql-injection": {"SECURITY-027", "CUSTOM-sql-injection"},
+            "weak-hash-md5": {"SECURITY-009", "CRYPTO-001"},
             "bare-except": {"EXCEPT-001", "CUSTOM-bare-except"},
         }
 
@@ -505,7 +506,7 @@ class AnalysisPipeline:
         return results
 
     def run_extra_scanners(self, target_dir):
-        """Run secrets detection and SCA scanning as part of the pipeline."""
+        """Run secrets detection, SCA scanning, and CBoM as part of the pipeline."""
         extra_findings = []
 
         try:
@@ -536,6 +537,23 @@ class AnalysisPipeline:
                 print("        → Clean (no known vulnerabilities)")
         except Exception as e:
             print(f"        ✗ SCA scan error: {e}")
+
+        try:
+            from CORE.engines.cbom_scanner import CBoMScanner
+
+            print("      - CBoM Scanner (cryptographic bill of materials)")
+            cbom = CBoMScanner(target_dir=target_dir)
+            report = cbom.scan()
+            cbom_findings = cbom.to_findings(report)
+            extra_findings.extend(cbom_findings)
+            unsafe = report.unsafe_count
+            warn = report.warn_count
+            safe = report.safe_count
+            algos = ", ".join(f"{k}×{v}" for k, v in report.algorithms_found.items()) or "none"
+            print(f"        → {report.total_usages} crypto usages: 🔴{unsafe} unsafe  🟡{warn} warn  🟢{safe} safe")
+            print(f"        → Algorithms: {algos}")
+        except Exception as e:
+            print(f"        ✗ CBoM scan error: {e}")
 
         return extra_findings
 

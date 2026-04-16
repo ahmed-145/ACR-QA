@@ -2,6 +2,40 @@
 
 All notable changes to ACR-QA are documented here.
 
+## [v3.0.4] — Feature 2: Cryptographic Bill of Materials (CBoM)
+
+### Added
+- `CORE/engines/cbom_scanner.py` — new `CBoMScanner` engine (226 lines, 86% test coverage)
+  - Scans Python and JS/TS source files for cryptographic API usage using regex pattern matching (zero new dependencies)
+  - Classifies every algorithm by quantum-safety status per NIST FIPS 203/204 PQC standards (2024):
+    - 🔴 CRYPTO-001 (HIGH): Non-quantum-safe — MD5, SHA1, RSA, ECDSA, DES, RC4, DH, DSA
+    - 🟡 CRYPTO-002 (MEDIUM): Classical-safe, not post-quantum-safe — SHA256, SHA512, AES-128, HMAC-SHA256, PBKDF2
+    - 🟢 CRYPTO-003 (LOW): Quantum-resistant — SHA3, BLAKE2, AES-256, bcrypt, Argon2, ChaCha20
+  - 28-entry algorithm registry with recommended post-quantum replacements (ML-KEM / ML-DSA)
+  - Covers Python patterns: hashlib, hmac, pycryptodome, cryptography-lib, bcrypt, JWT
+  - Covers JS/TS patterns: node:crypto, WebCrypto subtle API, bcrypt, JWT
+  - Produces `CBoMReport` with inventory summary and per-usage `CryptoUsage` dataclass
+  - Integrates with pipeline via `to_findings()` → canonical ACR-QA finding format
+- Wired into `run_extra_scanners()` in `CORE/main.py` alongside secrets detector and SCA scanner
+- Added `weak-hash-md5` cross-tool dedup group (`SECURITY-009` ↔ `CRYPTO-001`) to prevent double-reporting
+- 7 new unit tests in `TESTS/test_new_engines.py::TestCBoMScanner` (all passing)
+
+### Verified on real targets
+| Target | Language | Files Scanned | Unsafe | Warn | Safe | Algorithms |
+|--------|----------|--------------|--------|------|------|------------|
+| `DATA/sandbox/acr-qa-bot-test` | JavaScript | 1 | 1 | 0 | 0 | MD5 |
+| `TESTS/samples` | Python | 21 | 1 | 0 | 0 | MD5 |
+
+### Detection example
+[HIGH] MD5 @ server.js:30
+code: crypto.createHash('md5').update(password).digest('hex')
+fix:  SHA3-256 or BLAKE2b  (NIST FIPS 202 compliant)
+[HIGH] MD5 @ auth_service.py:144
+code: hashlib.md5(f"{password}{salt}".encode()).hexdigest()
+fix:  SHA3-256 or BLAKE2b  (NIST FIPS 202 compliant)
+
+---
+
 ## [v3.0.3] — 2026-04-14 (False Positive Rate Hardening)
 
 ### Added

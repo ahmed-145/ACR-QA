@@ -375,3 +375,126 @@ class TestValidateFix:
         )
         assert not result["valid"]
         assert result["validated_fix"] is None
+
+
+class TestCBoMScanner:
+    """Tests for Cryptographic Bill of Materials scanner."""
+
+    def test_detects_hashlib_md5(self, tmp_path):
+        """MD5 via hashlib must be flagged as HIGH / not quantum-safe."""
+        f = tmp_path / "crypto_test.py"
+        f.write_text("import hashlib\nhash = hashlib.md5(b'data').hexdigest()\n")
+        from CORE.engines.cbom_scanner import CBoMScanner
+
+        scanner = CBoMScanner(target_dir=str(tmp_path))
+        report = scanner.scan()
+        assert report.total_usages >= 1
+        assert report.unsafe_count >= 1
+        u = report.usages[0]
+        assert u.algorithm == "md5"
+        assert u.quantum_safe is False
+        assert u.severity == "high"
+        assert u.rule_id == "CRYPTO-001"
+
+    def test_detects_js_createhash_md5(self, tmp_path):
+        """JS crypto.createHash('md5') must be flagged."""
+        f = tmp_path / "server.js"
+        f.write_text("const crypto = require('crypto');\nlet h = crypto.createHash('md5').digest('hex');\n")
+        from CORE.engines.cbom_scanner import CBoMScanner
+
+        scanner = CBoMScanner(target_dir=str(tmp_path))
+        report = scanner.scan()
+        assert report.unsafe_count >= 1
+        assert any(u.algorithm == "md5" for u in report.usages)
+
+    def test_sha3_is_safe(self, tmp_path):
+        """SHA3-256 must be classified as quantum-safe (low severity)."""
+        f = tmp_path / "safe_crypto.py"
+        f.write_text("import hashlib\nhash = hashlib.sha3_256(b'data').hexdigest()\n")
+        from CORE.engines.cbom_scanner import CBoMScanner
+
+        scanner = CBoMScanner(target_dir=str(tmp_path))
+        report = scanner.scan()
+        assert report.total_usages >= 1
+        assert report.safe_count >= 1
+        assert report.unsafe_count == 0
+        u = next(u for u in report.usages if u.algorithm == "sha3_256")
+        assert u.quantum_safe is True
+        assert u.severity == "low"
+
+    def test_sha256_is_warn(self, tmp_path):
+        """SHA-256 must be classified as warn (medium severity)."""
+        f = tmp_path / "warn_crypto.py"
+        f.write_text("import hashlib\nhash = hashlib.sha256(b'data').hexdigest()\n")
+        from CORE.engines.cbom_scanner import CBoMScanner
+
+        scanner = CBoMScanner(target_dir=str(tmp_path))
+        report = scanner.scan()
+        assert report.warn_count >= 1
+        u = next(u for u in report.usages if u.algorithm == "sha256")
+        assert u.quantum_safe == "warn"
+        assert u.severity == "medium"
+        assert u.rule_id == "CRYPTO-002"
+
+    def test_to_finding_has_required_keys(self, tmp_path):
+        """to_finding() must produce a dict with all pipeline-required keys."""
+        f = tmp_path / "check.py"
+        f.write_text("import hashlib\nhashlib.md5(b'x')\n")
+        from CORE.engines.cbom_scanner import CBoMScanner
+
+        scanner = CBoMScanner(target_dir=str(tmp_path))
+        report = scanner.scan()
+        assert report.total_usages >= 1
+        finding = report.usages[0].to_finding()
+        required_keys = {
+            "tool",
+            "rule_id",
+            "canonical_rule_id",
+            "canonical_severity",
+            "severity",
+            "category",
+            "file",
+            "file_path",
+            "line",
+            "line_number",
+            "message",
+            "language",
+            "cbom_metadata",
+        }
+        assert required_keys.issubset(finding.keys())
+        assert finding["tool"] == "cbom"
+        assert finding["category"] == "security"
+        assert "cbom_metadata" in finding
+        assert finding["cbom_metadata"]["algorithm"] == "md5"
+
+    def test_excludes_node_modules(self, tmp_path):
+        """node_modules must be excluded from scans."""
+        nm = tmp_path / "node_modules" / "somelib"
+        nm.mkdir(parents=True)
+        (nm / "index.js").write_text("crypto.createHash('md5')\n")
+        src = tmp_path / "app.js"
+        src.write_text("// clean file\n")
+        from CORE.engines.cbom_scanner import CBoMScanner
+
+        scanner = CBoMScanner(target_dir=str(tmp_path))
+        report = scanner.scan()
+        assert report.unsafe_count == 0
+
+    def test_report_summary_keys(self, tmp_path):
+        """CBoMReport.summary() must contain all expected keys."""
+        f = tmp_path / "a.py"
+        f.write_text("import hashlib\nhashlib.sha256(b'x')\n")
+        from CORE.engines.cbom_scanner import CBoMScanner
+
+        report = CBoMScanner(target_dir=str(tmp_path)).scan()
+        s = report.summary()
+        for key in (
+            "scanned_files",
+            "total_usages",
+            "unsafe_count",
+            "warn_count",
+            "safe_count",
+            "algorithms_found",
+            "quantum_safe_percentage",
+        ):
+            assert key in s, f"Missing key: {key}"
