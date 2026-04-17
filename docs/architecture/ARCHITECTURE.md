@@ -214,12 +214,13 @@ Configurable thresholds (from `.acrqa.yml`):
 
 | Threshold | Default | Behavior |
 |-----------|:-------:|---------|
+| `mode` | `block` | `block` exits 1 to prevent merge; `warn` always exits 0 |
 | `max_high` | 0 | Any high-severity finding fails the gate |
 | `max_medium` | 10 | More than 10 medium findings fail |
 | `max_total` | 100 | Total findings cap |
 | `max_security` | 0 | Any security finding fails the gate |
 
-Returns **exit code 1** when thresholds are exceeded → blocks CI merge.
+Returns **exit code 1** when thresholds are exceeded and `mode: block` is set → blocks CI merge. In `warn` mode, threshold failures are reported but CI passes.
 
 ---
 
@@ -237,11 +238,12 @@ Returns **exit code 1** when thresholds are exceeded → blocks CI merge.
 
 #### PR Bot — GitHub Actions Integration
 
-`scripts/post_pr_comments.py` is wired to `.github/workflows/acrqa.yml`. On every PR:
+`scripts/post_gate_comment.py` is wired to `.github/workflows/acrqa.yml`. On every PR:
 1. Checkout target repo
 2. Run `CORE/main.py --lang javascript --json` (or `--lang python`)
 3. Findings persisted to PostgreSQL via `DATABASE/database.py`
-4. `post_pr_comments.py` fetches run findings and posts inline PR comments via GitHub REST API
+4. Quality gate evaluated using `mode: block` or `warn`
+5. `post_gate_comment.py` fetches the run results and posts an inline summary comment via GitHub REST API, automatically deleting old duplicates
 5. Comment format: `🔴 [SECURITY-001] eval() at app.js:32 — Dynamic code execution...`
 
 ---

@@ -132,9 +132,10 @@ The CBoM concept is aligned with U.S. Executive Order 14028 (2021) on software s
 
 | Metric | Value |
 |--------|:-----:|
-| Test Suite | **374 tests** (pytest) — ↑ from 293 |
-| Code Coverage | `quality_gate.py` **93%**, `severity_scorer.py` **62%** (v2.9) |
+| Test Suite | **381 tests** (pytest) — 7 new Quality Gate mode tests (v3.0.5) |
+| Code Coverage | `quality_gate.py` **96%**, `severity_scorer.py` **62%** |
 | CI/CD | GitHub Actions (test + lint + coverage) |
+| Quality Gates | **block / warn** merge modes + CI integration comment |
 | Docker | Dockerfile + docker-compose.yml |
 | API Endpoints | 20+ REST endpoints |
 | AI Quality | 797/797 explanations generated (100%) |

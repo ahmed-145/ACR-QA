@@ -2,6 +2,23 @@
 
 All notable changes to ACR-QA are documented here.
 
+## [v3.0.5] — Feature 3: Configurable Merge-Blocking Quality Gate
+
+### Added
+- `mode: block | warn` field in `.acrqa.yml` quality_gate section
+  - `block` (default): gate failure exits CI with code 1 and prevents merge
+  - `warn`: gate evaluates and posts comment but always allows merge (useful for onboarding new repos)
+- `QualityGate.should_block(result)` — respects mode, returns False in warn mode even when thresholds exceeded
+- `QualityGate.format_gate_comment(result)` — renders a markdown PR comment with severity table, per-check results, and merge verdict
+- `scripts/post_gate_comment.py` — handles PR comment lifecycle (posting summary, deleting duplicates)
+- 7 new configuration integration tests in `TESTS/test_new_engines.py`
+
+### Changed
+- GitHub workflow `.github/workflows/acr-qa.yml` updated to use the new script and post the quality gate summary to pending PRs
+- `CORE/__init__.py` — Version bumped to `3.0.5`.
+
+---
+
 ## [v3.0.4] — Feature 2: Cryptographic Bill of Materials (CBoM)
 
 ### Added
