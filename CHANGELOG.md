@@ -2,6 +2,23 @@
 
 All notable changes to ACR-QA are documented here.
 
+## [v3.0.6] — Architecture: Unified JS/TS Pipeline
+
+### Changed
+- Merged JS/TS CLI code path into `AnalysisPipeline.run_js()` — JS projects now go through the same 5-step pipeline as Python: rate limiting → tool execution → extra scanners (CBoM) → config filters → dedup → sort → AI explanations → quality gate → DB storage
+- Removed duplicated pipeline logic from `main()` CLI function — JS routing is now a single `pipeline.run_js()` call
+- JS findings now properly preserve categories from `_infer_category()` instead of being overwritten with `"security"` or `"style"`
+- Fixed `_infer_category()` invalid category mappings: `"pattern"` → `"best-practice"`, `"imports"` → `"best-practice"`, `"async"` → `"best-practice"`, `"other"` → `"best-practice"`
+- Added `clone_eval_repos.sh` — reproducible evaluation corpus setup script that pins DVNA to exact commit `9ba473a`
+
+### Verified
+- DVNA: 128 findings, 4 HIGH, 77 medium, 47 low — baseline stable ✅
+- NodeGoat: 310 findings (319 − 9 deduped), 7 HIGH — first full pipeline run ✅
+- AI explanations: 4 HIGH findings explained in 1292ms (DVNA), 7 in 2299ms (NodeGoat) ✅
+- 459 tests passing, ruff clean ✅
+
+---
+
 ## [v3.0.5] — Feature 3: Configurable Merge-Blocking Quality Gate
 
 ### Added
