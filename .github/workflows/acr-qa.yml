@@ -152,12 +152,32 @@ jobs:
             --pr-number ${{ github.event.pull_request.number }} \
             --run-id-file /tmp/acr_run_id.txt
 
+      - name: Post Quality Gate Summary
+        if: steps.changed-files.outputs.any_changed == 'true' || github.event_name == 'issue_comment'
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          DB_HOST: localhost
+          DB_PORT: 5432
+          DB_NAME: acrqa_test
+          DB_USER: postgres
+          DB_PASSWORD: postgres
+        run: |
+          python3 scripts/post_gate_comment.py \
+            --repo "${{ github.repository }}" \
+            --pr-number ${{ github.event.pull_request.number || github.event.issue.number }} \
+            --run-id-file /tmp/acr_run_id.txt
+
       - name: Enforce Quality Gate
         if: steps.analysis.outcome == 'failure'
         run: |
-          echo "❌ Quality Gate failed — blocking merge"
-          echo "Review findings in the PR comments above"
-          exit 1
+          echo "❌ Quality Gate failed — checking mode..."
+          python3 -c "
+          import yaml, sys
+          cfg = yaml.safe_load(open('.acrqa.yml')) if __import__('os').path.exists('.acrqa.yml') else {}
+          mode = cfg.get('quality_gate', {}).get('mode', 'block')
+          print(f'Gate mode: {mode}')
+          sys.exit(0 if mode == 'warn' else 1)
+          "
 
   # ─── Job 2: Manual trigger via "acr-qa review" comment ────────────────
   manual-trigger:
@@ -258,12 +278,32 @@ jobs:
             --pr-number ${{ github.event.issue.number }} \
             --run-id-file /tmp/acr_run_id.txt
 
+      - name: Post Quality Gate Summary
+        if: steps.changed-files.outputs.any_changed == 'true' || github.event_name == 'issue_comment'
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          DB_HOST: localhost
+          DB_PORT: 5432
+          DB_NAME: acrqa_test
+          DB_USER: postgres
+          DB_PASSWORD: postgres
+        run: |
+          python3 scripts/post_gate_comment.py \
+            --repo "${{ github.repository }}" \
+            --pr-number ${{ github.event.pull_request.number || github.event.issue.number }} \
+            --run-id-file /tmp/acr_run_id.txt
+
       - name: Enforce Quality Gate
         if: steps.analysis.outcome == 'failure'
         run: |
-          echo "❌ Quality Gate failed — blocking merge"
-          echo "Review findings in the PR comments above"
-          exit 1
+          echo "❌ Quality Gate failed — checking mode..."
+          python3 -c "
+          import yaml, sys
+          cfg = yaml.safe_load(open('.acrqa.yml')) if __import__('os').path.exists('.acrqa.yml') else {}
+          mode = cfg.get('quality_gate', {}).get('mode', 'block')
+          print(f'Gate mode: {mode}')
+          sys.exit(0 if mode == 'warn' else 1)
+          "
 
       - name: React to completion
         if: always()

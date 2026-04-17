@@ -9,7 +9,7 @@ rules:
   disabled_rules: []
   #   - IMPORT-001
   #   - VAR-001
-  
+
   # Override severity for specific rules:
   severity_overrides: {}
   #   SECURITY-001: high
@@ -40,3 +40,10 @@ ai:
   enabled: true
   max_explanations: 50
   model: llama-3.1-8b-instant
+
+quality_gate:
+  mode: block          # block = fail CI and prevent merge | warn = post comment but allow merge
+  max_high: 0          # zero tolerance for high severity
+  max_medium: 20       # allow up to 20 medium findings
+  max_total: 200       # total findings cap
+  max_security: 3      # max security-category findings

@@ -498,3 +498,72 @@ class TestCBoMScanner:
             "quantum_safe_percentage",
         ):
             assert key in s, f"Missing key: {key}"
+
+
+class TestQualityGateMode:
+    """Tests for Feature 3 — configurable block vs warn mode."""
+
+    def _high_finding(self):
+        return {"canonical_severity": "high", "category": "security", "canonical_rule_id": "SECURITY-001"}
+
+    def test_block_mode_should_block_on_failure(self):
+        from CORE.engines.quality_gate import QualityGate
+
+        gate = QualityGate(config={"quality_gate": {"mode": "block", "max_high": 0}})
+        result = gate.evaluate([self._high_finding()])
+        assert result["passed"] is False
+        assert gate.should_block(result) is True
+
+    def test_warn_mode_never_blocks(self):
+        from CORE.engines.quality_gate import QualityGate
+
+        gate = QualityGate(config={"quality_gate": {"mode": "warn", "max_high": 0}})
+        result = gate.evaluate([self._high_finding()])
+        assert result["passed"] is False
+        assert gate.should_block(result) is False
+
+    def test_block_mode_passes_clean_code(self):
+        from CORE.engines.quality_gate import QualityGate
+
+        gate = QualityGate(config={"quality_gate": {"mode": "block", "max_high": 0}})
+        result = gate.evaluate([])
+        assert result["passed"] is True
+        assert gate.should_block(result) is False
+
+    def test_default_mode_is_block(self):
+        from CORE.engines.quality_gate import QualityGate
+
+        gate = QualityGate()
+        result = gate.evaluate([self._high_finding()])
+        assert gate.should_block(result) is True
+
+    def test_format_gate_comment_block_mode_contains_required_sections(self):
+        from CORE.engines.quality_gate import QualityGate
+
+        gate = QualityGate(config={"quality_gate": {"mode": "block", "max_high": 0}})
+        result = gate.evaluate([self._high_finding()])
+        comment = gate.format_gate_comment(result)
+        assert "🚦 ACR-QA Quality Gate" in comment
+        assert "BLOCKING" in comment
+        assert "Merge blocked" in comment
+        assert "High" in comment
+        assert "❌" in comment
+
+    def test_format_gate_comment_warn_mode_allows_merge(self):
+        from CORE.engines.quality_gate import QualityGate
+
+        gate = QualityGate(config={"quality_gate": {"mode": "warn", "max_high": 0}})
+        result = gate.evaluate([self._high_finding()])
+        comment = gate.format_gate_comment(result)
+        assert "WARN-ONLY" in comment
+        assert "merge is allowed" in comment
+        assert "Merge blocked" not in comment
+
+    def test_format_gate_comment_passed_says_safe_to_merge(self):
+        from CORE.engines.quality_gate import QualityGate
+
+        gate = QualityGate(config={"quality_gate": {"mode": "block", "max_high": 0}})
+        result = gate.evaluate([])
+        comment = gate.format_gate_comment(result)
+        assert "safe to merge" in comment.lower()
+        assert "✅" in comment

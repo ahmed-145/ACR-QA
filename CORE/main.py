@@ -195,7 +195,8 @@ class AnalysisPipeline:
             print(f"   Export SARIF: python3 scripts/export_sarif.py --run-id {run_id}")
 
         # Return exit code info
-        self._gate_passed = gate_result["passed"]
+        self._gate_passed = not gate.should_block(gate_result)
+        self._gate_comment = gate.format_gate_comment(gate_result)
         return run_id
 
     def _print_rich_output(self, findings, gate_result, run_id, num_explained):

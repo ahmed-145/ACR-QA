@@ -7,6 +7,7 @@ Enforces configurable thresholds to pass/fail CI pipelines.
 from typing import Any
 
 DEFAULT_THRESHOLDS = {
+    "mode": "block",  # "block" = fail CI | "warn" = post comment only, allow merge
     "max_high": 0,  # Zero tolerance for high-severity findings (SQL injection, XSS, etc.)
     "max_medium": 20,  # Allow up to 20 medium issues (realistic for large codebases)
     "max_total": 200,  # Realistic cap for medium-sized codebases
@@ -67,7 +68,7 @@ class QualityGate:
         passed = True
 
         # Check: max high severity
-        max_high = self.thresholds.get("max_high", 0)
+        max_high = int(str(self.thresholds.get("max_high", 0)))
         high_ok = counts["high"] <= max_high
         checks.append(
             {
@@ -82,7 +83,7 @@ class QualityGate:
             passed = False
 
         # Check: max medium severity
-        max_medium = self.thresholds.get("max_medium", 10)
+        max_medium = int(str(self.thresholds.get("max_medium", 10)))
         med_ok = counts["medium"] <= max_medium
         checks.append(
             {
@@ -97,7 +98,7 @@ class QualityGate:
             passed = False
 
         # Check: max total findings
-        max_total = self.thresholds.get("max_total", 100)
+        max_total = int(str(self.thresholds.get("max_total", 100)))
         total_ok = counts["total"] <= max_total
         checks.append(
             {
@@ -112,7 +113,7 @@ class QualityGate:
             passed = False
 
         # Check: max security findings
-        max_security = self.thresholds.get("max_security", 0)
+        max_security = int(str(self.thresholds.get("max_security", 0)))
         security_count = category_counts.get("security", 0)
         sec_ok = security_count <= max_security
         checks.append(
@@ -141,6 +142,57 @@ class QualityGate:
             "counts": counts,
             "category_counts": category_counts,
         }
+
+    def should_block(self, result: dict) -> bool:
+        """
+        Return True if CI should exit 1 and block the merge.
+
+        In 'warn' mode the gate always returns False (never blocks),
+        even when thresholds are exceeded — findings are still posted
+        as PR comments for visibility.
+
+        In 'block' mode (default) returns True when gate failed.
+        """
+        mode = str(self.thresholds.get("mode", "block")).lower()
+        if mode == "warn":
+            return False
+        return not result["passed"]
+
+    def format_gate_comment(self, result: dict) -> str:
+        """
+        Format quality gate result as a GitHub PR comment (markdown).
+        Posted as a top-level PR comment summarising the gate outcome.
+        """
+        mode = str(self.thresholds.get("mode", "block")).lower()
+        mode_label = "🛑 BLOCKING" if mode == "block" else "⚠️ WARN-ONLY"
+        counts = result["counts"]
+
+        lines = [
+            f"## 🚦 ACR-QA Quality Gate — {result['status']}",
+            f"**Mode:** {mode_label}",
+            "",
+            "| Severity | Count |",
+            "|----------|-------|",
+            f"| 🔴 High   | {counts['high']} |",
+            f"| 🟡 Medium | {counts['medium']} |",
+            f"| 🟢 Low    | {counts['low']} |",
+            f"| **Total** | **{counts['total']}** |",
+            "",
+            "### Checks",
+        ]
+        for check in result["checks"]:
+            icon = "✅" if check["passed"] else "❌"
+            lines.append(f"- {icon} {check['message']}")
+
+        if not result["passed"]:
+            if mode == "block":
+                lines += ["", "---", "❌ **Merge blocked** — fix the findings above to proceed."]
+            else:
+                lines += ["", "---", "⚠️ **Warn-only mode** — merge is allowed but findings need attention."]
+        else:
+            lines += ["", "---", "✅ **All checks passed** — safe to merge."]
+
+        return "\n".join(lines)
 
     def print_report(self, result: dict) -> None:
         """Print a formatted quality gate report to stdout."""
