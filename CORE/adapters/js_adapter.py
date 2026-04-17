@@ -673,21 +673,23 @@ export default [
         """Infer category from canonical ID prefix (must match CanonicalFinding.validate_category values)."""
         prefix_map = {
             "SECURITY": "security",
+            "HARDCODE": "security",
             "STYLE": "style",
             "VAR": "dead-code",
             "DEAD": "dead-code",
-            "PATTERN": "pattern",
-            "IMPORT": "imports",
+            "PATTERN": "best-practice",
+            "IMPORT": "best-practice",
             "DUP": "duplication",
-            "COMPLEXITY": "complexity",
-            "ASYNC": "async",
+            "COMPLEXITY": "design",
+            "ASYNC": "best-practice",
             "BEST-PRACTICE": "best-practice",
-            "NAMING": "naming",
+            "NAMING": "style",
+            "CUSTOM": "security",
         }
         for prefix, category in prefix_map.items():
             if canonical_id.startswith(prefix):
                 return category
-        return "other"
+        return "best-practice"
 
     @staticmethod
     def detect_language(target_dir: str) -> str:

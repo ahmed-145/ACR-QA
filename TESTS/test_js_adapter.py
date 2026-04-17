@@ -358,13 +358,13 @@ class TestCategoryInference:
         assert JavaScriptAdapter._infer_category("DEAD-001") == "dead-code"
 
     def test_async_prefix(self) -> None:
-        assert JavaScriptAdapter._infer_category("ASYNC-002") == "async"
+        assert JavaScriptAdapter._infer_category("ASYNC-002") == "best-practice"
 
     def test_import_prefix(self) -> None:
-        assert JavaScriptAdapter._infer_category("IMPORT-004") == "imports"
+        assert JavaScriptAdapter._infer_category("IMPORT-004") == "best-practice"
 
     def test_unknown_prefix(self) -> None:
-        assert JavaScriptAdapter._infer_category("UNKNOWN-999") == "other"
+        assert JavaScriptAdapter._infer_category("UNKNOWN-999") == "best-practice"
 
 
 # ──────────────────────────────────────────────────────────────────────────────

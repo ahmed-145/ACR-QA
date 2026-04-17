@@ -705,9 +705,39 @@ def main():
         # Convert findings to dictionaries
         findings = [dataclasses.asdict(f) if hasattr(f, "__dataclass_fields__") else vars(f) for f in findings_obj]
 
+        # Apply canonical field aliases expected by the rest of the pipeline
+        for f in findings:
+            f.setdefault("canonical_rule_id", f.get("rule_id", "UNKNOWN"))
+            f.setdefault("canonical_severity", f.get("severity", "low"))
+            # Preserve the category computed by _infer_category — do NOT overwrite it
+            # (the old code forced everything to "security" or "style" which was wrong)
+
+        # Sort: security/high first — same as Python pipeline
+        sev_order = {"high": 0, "medium": 1, "low": 2}
+        cat_order = {"security": 0, "design": 1, "best-practice": 2, "dead-code": 3, "style": 4, "duplication": 5}
+        findings.sort(
+            key=lambda f: (
+                sev_order.get(f.get("canonical_severity", "low"), 3),
+                cat_order.get(f.get("category", "style"), 6),
+            )
+        )
+
+        # Run CBoM scanner on JS target
+        try:
+            from CORE.engines.cbom_scanner import CBoMScanner
+
+            cbom = CBoMScanner(target_dir=str(args.target_dir))
+            cbom_report = cbom.scan()
+            cbom_findings = cbom.to_findings(cbom_report)
+            findings.extend(cbom_findings)
+            out(
+                f"      - CBoM: {cbom_report.total_usages} crypto usages — 🔴{cbom_report.unsafe_count} unsafe  🟡{cbom_report.warn_count} warn  🟢{cbom_report.safe_count} safe"
+            )
+        except Exception as e:
+            out(f"      - CBoM scan error: {e}")
+
         out(f"\n[2/3] Found {len(findings)} issues. Integrating with database...")
         for finding in findings:
-            finding["category"] = "security" if finding.get("severity") in ("high", "medium") else "style"
             finding["_db_id"] = db.insert_finding(run_id, finding)
 
         if args.ai:
