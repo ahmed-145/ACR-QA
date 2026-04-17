@@ -461,7 +461,157 @@ class AnalysisPipeline:
 
         return sorted(findings, key=sort_key)
 
-    def run_autofix(self, findings):
+    def run_js(self, repo_name="local", pr_number=None, limit=None, rich_output=False) -> int | None:
+        """
+        Run the full JS/TS analysis pipeline through AnalysisPipeline.
+        Mirrors run() but uses JavaScriptAdapter instead of shell-based Python tools.
+        Goes through the same pipeline steps: extra scanners, config filters,
+        dedup, cap, sort, AI explanations, quality gate.
+        """
+        import dataclasses
+
+        from CORE.adapters.js_adapter import JavaScriptAdapter
+
+        print(f"\n🟨 ACR-QA JS/TS Adapter — analyzing {self.target_dir}")
+        print("=" * 50)
+
+        # Step 0: Rate limit
+        import os
+
+        from CORE.utils.rate_limiter import get_rate_limiter
+
+        redis_host = os.getenv("REDIS_HOST", "localhost")
+        redis_port = int(os.getenv("REDIS_PORT", 6379))
+        rate_limiter = get_rate_limiter(redis_host=redis_host, redis_port=redis_port)
+        allowed, retry_after = rate_limiter.check_rate_limit(repo_name, pr_number)
+        if not allowed:
+            print(f"      ✗ RATE LIMITED — retry after {retry_after:.1f}s")
+            return None
+
+        # Step 1: Create analysis run
+        run_id = self.db.create_analysis_run(repo_name=repo_name, pr_number=pr_number)
+        print(f"\n[1/5] Created database run ID: {run_id}")
+
+        # Step 2: Run JS tools
+        print("\n[2/5] Running JS/TS detection tools...")
+        js_adapter = JavaScriptAdapter(target_dir=self.target_dir)
+        results = js_adapter.run_tools()
+        findings_obj = js_adapter.get_all_findings(results)
+
+        # Convert to dicts and set canonical field aliases
+        findings = [dataclasses.asdict(f) if hasattr(f, "__dataclass_fields__") else vars(f) for f in findings_obj]
+        for f in findings:
+            f.setdefault("canonical_rule_id", f.get("rule_id", "UNKNOWN"))
+            f.setdefault("canonical_severity", f.get("severity", "low"))
+            f.setdefault("file_path", f.get("file", ""))
+            f.setdefault("line_number", f.get("line", 0))
+
+        print(f"      ✓ {len(findings)} raw findings from JS tools")
+
+        # Step 2b: Extra scanners (CBoM — secrets/SCA not applicable for JS targets)
+        print("\n[2b/5] Running extra scanners...")
+        try:
+            from CORE.engines.cbom_scanner import CBoMScanner
+
+            cbom = CBoMScanner(target_dir=str(self.target_dir))
+            cbom_report = cbom.scan()
+            cbom_findings = cbom.to_findings(cbom_report)
+            findings.extend(cbom_findings)
+            print(
+                f"      - CBoM: {cbom_report.total_usages} crypto usages — "
+                f"🔴{cbom_report.unsafe_count} unsafe  "
+                f"🟡{cbom_report.warn_count} warn  "
+                f"🟢{cbom_report.safe_count} safe"
+            )
+        except Exception as e:
+            print(f"      - CBoM scan error: {e}")
+
+        # Step 3: Apply same pipeline filters as Python path
+        print("\n[3/5] Filtering and normalizing findings...")
+        findings = self._apply_config_filters(findings)
+        findings = self._deduplicate_findings(findings)
+        findings = self._sort_by_priority(findings)
+        total_findings = len(findings)
+        print(f"      ✓ {total_findings} issues after filtering & dedup")
+
+        # Step 4: AI explanations
+        print("\n[4/5] Generating AI explanations (Cerebras API)...")
+        redis_client = rate_limiter.redis if rate_limiter and rate_limiter.redis else None
+        self.explainer = ExplanationEngine(redis_client=redis_client)
+
+        max_explanations = self.config.get("ai", {}).get("max_explanations", 50)
+        effective_limit = min(limit, max_explanations) if limit else max_explanations
+        # For JS: only explain HIGH findings by default to keep latency low
+        high_findings = [f for f in findings if f.get("canonical_severity") == "high"]
+        findings_to_explain = high_findings[:effective_limit] if effective_limit else high_findings
+
+        findings_with_snippets = []
+        for f in findings:
+            f["_db_id"] = self.db.insert_finding(run_id, f)
+            if f in findings_to_explain:
+                snippet = extract_code_snippet(
+                    f.get("file_path", f.get("file", "")),
+                    f.get("line", 0),
+                    context_lines=3,
+                )
+                findings_with_snippets.append({"finding": f, "snippet": snippet})
+
+        if findings_with_snippets:
+            print(f"      Batching {len(findings_with_snippets)} HIGH explanations...", end=" ")
+            import time as _time
+
+            start_time = _time.time()
+            explanations = self.explainer.generate_explanation_batch(findings_with_snippets)
+            total_time = int((_time.time() - start_time) * 1000)
+            print(f"✓ ({total_time}ms total)")
+            for f_data, expl in zip(findings_with_snippets, explanations, strict=False):
+                f = f_data["finding"]
+                rule_id = f.get("canonical_rule_id", "UNKNOWN")
+                if isinstance(expl, Exception):
+                    print(f"      ✗ {rule_id}: {expl}")
+                else:
+                    self.db.insert_explanation(f["_db_id"], expl)
+        else:
+            print("      (no HIGH findings to explain)")
+
+        # Mark run complete
+        self.db.complete_analysis_run(run_id, total_findings)
+
+        # Save run ID for GitHub Actions
+        try:
+            with open("/tmp/acr_run_id.txt", "w") as fh:
+                fh.write(str(run_id))
+        except OSError:
+            pass
+
+        # Step 5: Quality gate
+        print("\n[5/5] Quality Gate evaluation...")
+        gate = QualityGate(config=self.config)
+        gate_result = gate.evaluate(findings)
+
+        if rich_output:
+            self._print_rich_output(findings, gate_result, run_id, len(findings_with_snippets))
+        else:
+            gate.print_report(gate_result)
+            print(f"\n   Run ID: {run_id}")
+            print(f"   Explanations Generated: {len(findings_with_snippets)}")
+            print("\nNext Steps:")
+            print("   View dashboard: python3 FRONTEND/app.py")
+            print(f"   Generate report: python3 scripts/generate_report.py {run_id}")
+
+        self._gate_passed = not gate.should_block(gate_result)
+        self._gate_comment = gate.format_gate_comment(gate_result)
+
+        # Print summary
+        high = sum(1 for f in findings if f.get("canonical_severity") == "high")
+        med = sum(1 for f in findings if f.get("canonical_severity") == "medium")
+        low = sum(1 for f in findings if f.get("canonical_severity") == "low")
+        print(f"\n  Total findings: {total_findings}")
+        print(f"  🔴 High: {high}  🟡 Medium: {med}  🟢 Low: {low}")
+        for err in results.get("errors", []):
+            print(f"  ⚠️  {err}")
+
+        return run_id
         """Run autofix engine on findings and display diffs."""
         from CORE.engines.autofix import AutoFixEngine
 
@@ -682,116 +832,23 @@ def main():
             print(f"🔍 Auto-detected language: {language}")
 
     if language in ("javascript", "typescript"):
-        import dataclasses
-        import sys
-
-        from CORE.adapters.js_adapter import JavaScriptAdapter
-        from DATABASE.database import Database
-
-        out = sys.stderr.write if args.json_output else lambda msg: sys.stdout.write(msg + "\n")
-        out(f"\n🟨 ACR-QA JS/TS Adapter — analyzing {args.target_dir}")
-        out("=" * 50)
-
-        # Initialize database and create run
-        db = Database()
-        repo_name = os.path.basename(os.path.abspath(args.target_dir))
-        run_id = db.create_analysis_run(repo_name=repo_name, pr_number=args.pr_number)
-        out(f"\n[1/2] Created database run ID: {run_id}")
-
-        js_adapter = JavaScriptAdapter(target_dir=args.target_dir)
-        results = js_adapter.run_tools()
-        findings_obj = js_adapter.get_all_findings(results)
-
-        # Convert findings to dictionaries
-        findings = [dataclasses.asdict(f) if hasattr(f, "__dataclass_fields__") else vars(f) for f in findings_obj]
-
-        # Apply canonical field aliases expected by the rest of the pipeline
-        for f in findings:
-            f.setdefault("canonical_rule_id", f.get("rule_id", "UNKNOWN"))
-            f.setdefault("canonical_severity", f.get("severity", "low"))
-            # Preserve the category computed by _infer_category — do NOT overwrite it
-            # (the old code forced everything to "security" or "style" which was wrong)
-
-        # Sort: security/high first — same as Python pipeline
-        sev_order = {"high": 0, "medium": 1, "low": 2}
-        cat_order = {"security": 0, "design": 1, "best-practice": 2, "dead-code": 3, "style": 4, "duplication": 5}
-        findings.sort(
-            key=lambda f: (
-                sev_order.get(f.get("canonical_severity", "low"), 3),
-                cat_order.get(f.get("category", "style"), 6),
-            )
+        run_id = pipeline.run_js(
+            repo_name=args.repo_name,
+            pr_number=args.pr_number,
+            limit=args.limit if args.ai else 0,
+            rich_output=args.rich,
         )
-
-        # Run CBoM scanner on JS target
-        try:
-            from CORE.engines.cbom_scanner import CBoMScanner
-
-            cbom = CBoMScanner(target_dir=str(args.target_dir))
-            cbom_report = cbom.scan()
-            cbom_findings = cbom.to_findings(cbom_report)
-            findings.extend(cbom_findings)
-            out(
-                f"      - CBoM: {cbom_report.total_usages} crypto usages — 🔴{cbom_report.unsafe_count} unsafe  🟡{cbom_report.warn_count} warn  🟢{cbom_report.safe_count} safe"
-            )
-        except Exception as e:
-            out(f"      - CBoM scan error: {e}")
-
-        out(f"\n[2/3] Found {len(findings)} issues. Integrating with database...")
-        for finding in findings:
-            finding["_db_id"] = db.insert_finding(run_id, finding)
-
-        if args.ai:
-            out("\n[3/3] Generating AI explanations (Cerebras API) for HIGH issues...")
-            from CORE.engines.explainer import ExplanationEngine
-            from CORE.utils.code_extractor import extract_code_snippet
-
-            explainer = ExplanationEngine()
-
-            high_findings = [f for f in findings if f.get("severity") == "high"]
-            out(f"      Batching {len(high_findings)} HIGH severity explanations...")
-
-            import time
-
-            start_time = time.time()
-
-            findings_with_snippets = []
-            for f in high_findings:
-                fp = f.get("file_path", f.get("file", ""))
-                try:
-                    line = int(f.get("line_number", f.get("line", 0)))
-                except (ValueError, TypeError):
-                    line = 0
-                snippet = extract_code_snippet(fp, line, context_lines=3)
-                findings_with_snippets.append({"finding": f, "snippet": snippet})
-
-            explanations = explainer.generate_explanation_batch(findings_with_snippets)
-            total_time = int((time.time() - start_time) * 1000)
-            out(f"✓ ({total_time}ms total)")
-
-            for f_data, expl in zip(findings_with_snippets, explanations, strict=False):
-                f = f_data["finding"]
-                rule_id = f.get("canonical_rule_id", f.get("rule_id", "UNKNOWN"))
-                if isinstance(expl, Exception):
-                    out(f"      ✗ {rule_id}: {expl}")
-                else:
-                    db.insert_explanation(f["_db_id"], expl)
-                    # out(f"      ✓ {rule_id} ({expl.get('latency_ms', 0)}ms)")
-
-        db.complete_analysis_run(run_id, len(findings))
-
-        out(f"\n  Total findings: {len(findings)}")
-        high = sum(1 for f in findings if f.get("severity", "") == "high")
-        med = sum(1 for f in findings if f.get("severity", "") == "medium")
-        low = sum(1 for f in findings if f.get("severity", "") == "low")
-        out(f"  🔴 High: {high}  🟡 Medium: {med}  🟢 Low: {low}")
-
-        for err in results.get("errors", []):
-            out(f"  ⚠️  {err}")
-
-        if args.json_output:
-            print(json.dumps(findings, indent=2, default=str))
-
-        return  # Skip Python pipeline
+        if args.json_output and run_id:
+            findings_path = Path("DATA/outputs/findings.json")
+            if findings_path.exists():
+                with open(findings_path) as fp:
+                    print(fp.read())
+            else:
+                print("[]")
+        if run_id and hasattr(pipeline, "_gate_passed") and not pipeline._gate_passed:
+            print("\n❌ Exiting with code 1 (quality gate failed)")
+            sys.exit(1)
+        return
 
     # --no-ai: override limit to 0 to skip AI explanation step entirely
     effective_limit = 0 if args.no_ai else args.limit
