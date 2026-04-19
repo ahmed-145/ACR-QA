@@ -248,6 +248,26 @@ Returns **exit code 1** when thresholds are exceeded and `mode: block` is set �
 
 ---
 
+### Autofix PR Bot (`scripts/create_fix_pr.py`) — Feature 4
+
+After every analysis run, ACR-QA can automatically open a GitHub PR containing only AI-generated fixes that passed linter validation.
+
+**Fix validation chain:**
+1. `ExplanationEngine` extracts the first code block from the AI response via regex
+2. `validate_fix()` runs ruff (Python) or ESLint (JS) on the extracted code
+3. If linting passes: `fix_validated=True`, `fix_code` stored in `llm_explanations` DB table
+4. `create_fix_pr.py` calls `get_validated_fixes(run_id)` — only retrieves rows where `fix_validated=TRUE` and `fix_code IS NOT NULL`
+5. Fixes are grouped by file, applied as line-level patches (reverse line order to preserve indices), and committed to a new branch via GitHub API
+6. A PR is opened with a severity breakdown table and per-fix details including confidence level
+
+**Key design decisions:**
+- Uses GitHub API blobs — no local file manipulation required, works in any CI environment
+- Only validated fixes are PRed — zero unverified AI suggestions reach the PR
+- Previous autofix PRs for the same run are closed before creating a new one (no duplicate PRs)
+- Gracefully exits with code 0 if no validated fixes exist
+
+---
+
 ## Database Schema
 
 5 tables in PostgreSQL 15:

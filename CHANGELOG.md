@@ -2,6 +2,32 @@
 
 All notable changes to ACR-QA are documented here.
 
+## [v3.0.7] — Feature 4: Autofix PR Bot
+
+### Added
+- `scripts/create_fix_pr.py` — fully rewritten autofix PR bot
+  - Queries `get_validated_fixes()` from DB — only PRs fixes where `fix_validated=True` and `fix_code` is not null
+  - Uses GitHub API blobs to commit file changes — no local file manipulation
+  - Groups fixes by file, applies line-level patches sorted in reverse line order to preserve line numbers
+  - Deletes any existing open autofix PR for the same run before creating a new one
+  - Writes PR URL to `/tmp/acr_fix_pr_url.txt` for workflow summary
+- DB schema extended: 4 new columns on `llm_explanations` — `fix_validated`, `fix_confidence`, `fix_code`, `fix_validation_note`
+- `Database.insert_explanation()` now stores fix validation results from Feature 1's `validate_fix()`
+- `Database.get_findings_with_explanations()` now returns fix fields
+- `Database.get_validated_fixes(run_id)` — new method, returns only findings with validated AI fixes ready to apply
+- `CORE/engines/explainer.py` — fixed missing `validated_fix` key in result dict (fix code was validated but not stored)
+- GitHub Actions `acr-qa.yml` — new "Create Autofix PR" step runs after quality gate comment, before merge enforcement
+- 3 new unit tests in `TESTS/test_new_engines.py::TestFeature4AutofixPR` (all passing)
+
+### Fix validation chain
+AI response → regex extract code block → validate_fix() → fix_validated + fix_code stored in DB
+→ get_validated_fixes() → create_fix_pr.py → GitHub PR with only linter-verified fixes
+
+### Test count
+462 passed, 4 skipped — up from 459 (v3.0.6)
+
+---
+
 ## [v3.0.6] — Architecture: Unified JS/TS Pipeline
 
 ### Changed

@@ -61,6 +61,7 @@ graph TD
 
 - ✅ Feature 2: Cryptographic Bill of Materials (CBoM) — quantum-safety classification per NIST FIPS 203/204 (done — v3.0.4)
 - ✅ Feature 3: Configurable Merge-Blocking Quality Gate — `block` vs `warn` mode (done — v3.0.5)
+- ✅ Feature 4: Autofix PRs — bot opens PR with validated AI-generated fixes applied automatically (done — v3.0.7)
 
 The Python version is **feature-complete and thesis-ready**.
 
