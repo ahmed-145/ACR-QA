@@ -2,6 +2,37 @@
 
 All notable changes to ACR-QA are documented here.
 
+## [v3.0.9] — Feature 6: Triage Memory
+
+### Added
+- `CORE/engines/triage_memory.py` — new `TriageMemory` engine
+  - `learn_from_fp(finding_id, db)` — when user marks a finding as FP, extracts rule+file pattern and inserts a suppression rule into DB
+  - `should_suppress(finding, db)` — checks if a finding matches any active suppression rule using fnmatch pattern matching
+  - `suppress_findings(findings, db)` — filters a list of findings, removes suppressed ones, increments suppression counters
+  - `get_active_rules(db)` — returns all active suppression rules
+  - `_derive_pattern(file_path)` — derives a glob pattern from a file path (e.g. "tests/test_auth.py" → "tests/test_*.py")
+- `suppression_rules` DB table — stores learned FP patterns: canonical_rule_id, file_pattern, created_from_finding_id, is_active, suppression_count
+- `Database.insert_suppression_rule()` — inserts a new suppression rule
+- `Database.get_suppression_rules(active_only)` — retrieves suppression rules
+- `Database.increment_suppression_count(rule_id)` — tracks how many findings each rule has suppressed
+- `AnalysisPipeline._apply_config_filters()` — now calls `suppress_findings()` after config filters (Python path)
+- `AnalysisPipeline.run_js()` — now calls `suppress_findings()` after config filters (JS path)
+- `FRONTEND/app.py` — `mark_false_positive` endpoint now calls `learn_from_fp()` automatically after storing feedback
+- `GET /api/suppression-rules` — new endpoint returning all active suppression rules with suppression counts
+- 8 new unit tests in `TESTS/test_new_engines.py::TestTriageMemory` (all passing)
+
+### How it works
+1. User marks finding as FP via dashboard or API
+2. `learn_from_fp()` derives a file pattern and inserts a suppression rule
+3. On next scan, `suppress_findings()` checks every finding against active rules
+4. Matching findings are silently removed before AI explanation and DB insert
+5. `suppression_count` tracks effectiveness over time
+
+### Test count
+482 passed, 4 skipped — up from 474 (v3.0.8)
+
+---
+
 ## [v3.0.8] — Feature 5: Confidence Scoring
 
 ### Added

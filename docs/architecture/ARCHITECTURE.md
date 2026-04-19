@@ -292,9 +292,28 @@ Every finding receives a 0-100 integer confidence score computed at insert time 
 
 ---
 
+### Triage Memory (`CORE/engines/triage_memory.py`) — Feature 6
+
+The triage memory system learns from user feedback to automatically suppress recurring false positives in future scans.
+
+**How it works:**
+1. User marks a finding as FP via the dashboard or `POST /api/findings/<id>/false-positive`
+2. `learn_from_fp(finding_id, db)` extracts the finding's `canonical_rule_id` and derives a file glob pattern (e.g. `tests/test_auth.py` → `tests/test_*.py`)
+3. A suppression rule is inserted into the `suppression_rules` table
+4. On every subsequent scan, `suppress_findings()` runs after config filters and removes findings that match any active rule
+5. `suppression_count` is incremented each time a rule suppresses a finding — tracks effectiveness
+
+**Pattern derivation:** Test files (`test_*.py`, `*.spec.js`) are grouped by directory. Non-test files suppress on exact file path. This prevents overly broad suppression while still catching recurring FPs in test suites.
+
+**Pipeline integration:** Both `AnalysisPipeline.run()` (Python) and `AnalysisPipeline.run_js()` (JS/TS) call `suppress_findings()` after `_apply_config_filters()`.
+
+**API:** `GET /api/suppression-rules` returns all active rules with their suppression counts for dashboard visibility.
+
+---
+
 ## Database Schema
 
-5 tables in PostgreSQL 15:
+6 tables in PostgreSQL 15:
 
 | Table | Purpose |
 |-------|---------|
@@ -303,6 +322,7 @@ Every finding receives a 0-100 integer confidence score computed at insert time 
 | `llm_explanations` | AI explanations with full provenance (prompt, response, latency, model) |
 | `pr_comments` | Posted PR/MR comments |
 | `feedback` | User false-positive / helpfulness feedback |
+| `suppression_rules` | Learned FP suppression rules (Feature 6 — Triage Memory) |
 
 ---
 
