@@ -709,3 +709,150 @@ class TestFeature4AutofixPR:
         run_id = db.create_analysis_run(repo_name="test-feature4c", pr_number=None)
         fixes = db.get_validated_fixes(run_id)
         assert fixes == [] or fixes is not None
+
+
+class TestConfidenceScorer:
+    """Tests for Feature 5 — confidence scoring engine."""
+
+    def test_high_security_bandit_scores_very_high(self):
+        from CORE.engines.confidence_scorer import ConfidenceScorer
+
+        scorer = ConfidenceScorer()
+        finding = {
+            "canonical_severity": "high",
+            "category": "security",
+            "tool": "bandit",
+            "canonical_rule_id": "SECURITY-001",
+        }
+        score = scorer.score(finding, fix_validated=True)
+        assert score >= 90, f"Expected >= 90, got {score}"
+
+    def test_style_low_scores_very_low(self):
+        from CORE.engines.confidence_scorer import ConfidenceScorer
+
+        scorer = ConfidenceScorer()
+        finding = {
+            "canonical_severity": "low",
+            "category": "style",
+            "tool": "ruff",
+            "canonical_rule_id": "STYLE-007",
+        }
+        score = scorer.score(finding)
+        assert score <= 35, f"Expected <= 35, got {score}"
+
+    def test_fix_validated_bonus_applied(self):
+        from CORE.engines.confidence_scorer import ConfidenceScorer
+
+        scorer = ConfidenceScorer()
+        finding = {
+            "canonical_severity": "high",
+            "category": "security",
+            "tool": "semgrep",
+            "canonical_rule_id": "SECURITY-027",
+        }
+        score_no_fix = scorer.score(finding, fix_validated=False)
+        score_with_fix = scorer.score(finding, fix_validated=True)
+        assert score_with_fix == score_no_fix + 10
+
+    def test_score_clamped_to_100(self):
+        from CORE.engines.confidence_scorer import ConfidenceScorer
+
+        scorer = ConfidenceScorer()
+        finding = {
+            "canonical_severity": "critical",
+            "category": "security",
+            "tool": "bandit",
+            "canonical_rule_id": "SECURITY-047",
+        }
+        score = scorer.score(finding, fix_validated=True)
+        assert 0 <= score <= 100
+
+    def test_score_clamped_to_0(self):
+        from CORE.engines.confidence_scorer import ConfidenceScorer
+
+        scorer = ConfidenceScorer()
+        finding = {
+            "canonical_severity": "unknown",
+            "category": "unknown",
+            "tool": "unknown_tool",
+            "canonical_rule_id": "UNKNOWN-999",
+        }
+        score = scorer.score(finding)
+        assert score >= 0
+
+    def test_label_very_high(self):
+        from CORE.engines.confidence_scorer import ConfidenceScorer
+
+        assert ConfidenceScorer.label(95) == "very high"
+        assert ConfidenceScorer.label(90) == "very high"
+
+    def test_label_high(self):
+        from CORE.engines.confidence_scorer import ConfidenceScorer
+
+        assert ConfidenceScorer.label(85) == "high"
+        assert ConfidenceScorer.label(70) == "high"
+
+    def test_label_medium(self):
+        from CORE.engines.confidence_scorer import ConfidenceScorer
+
+        assert ConfidenceScorer.label(65) == "medium"
+        assert ConfidenceScorer.label(50) == "medium"
+
+    def test_label_low(self):
+        from CORE.engines.confidence_scorer import ConfidenceScorer
+
+        assert ConfidenceScorer.label(40) == "low"
+        assert ConfidenceScorer.label(30) == "low"
+
+    def test_label_very_low(self):
+        from CORE.engines.confidence_scorer import ConfidenceScorer
+
+        assert ConfidenceScorer.label(29) == "very low"
+        assert ConfidenceScorer.label(0) == "very low"
+
+    def test_score_batch(self):
+        from CORE.engines.confidence_scorer import ConfidenceScorer
+
+        scorer = ConfidenceScorer()
+        findings = [
+            {
+                "canonical_severity": "high",
+                "category": "security",
+                "tool": "bandit",
+                "canonical_rule_id": "SECURITY-001",
+            },
+            {
+                "canonical_severity": "low",
+                "category": "style",
+                "tool": "ruff",
+                "canonical_rule_id": "STYLE-007",
+            },
+        ]
+        scores = scorer.score_batch(findings)
+        assert len(scores) == 2
+        assert scores[0] > scores[1]
+
+    def test_db_stores_confidence_score(self):
+        """insert_finding must store a non-null confidence score."""
+        from DATABASE.database import Database
+
+        db = Database()
+        run_id = db.create_analysis_run(repo_name="test-confidence", pr_number=None)
+        db.insert_finding(
+            run_id,
+            {
+                "canonical_rule_id": "SECURITY-001",
+                "canonical_severity": "high",
+                "category": "security",
+                "file_path": "test.py",
+                "line_number": 1,
+                "message": "eval() usage",
+                "tool": "bandit",
+                "severity": "high",
+                "language": "python",
+            },
+        )
+        findings = db.get_findings(run_id=run_id)
+        assert len(findings) == 1
+        assert findings[0]["confidence_score"] is not None
+        assert 0 <= findings[0]["confidence_score"] <= 100
