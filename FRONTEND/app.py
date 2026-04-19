@@ -890,17 +890,40 @@ def mark_false_positive(finding_id):
         )
 
         if feedback_id:
+            # Feature 6 — Triage Memory: learn suppression rule from this FP
+            try:
+                from CORE.engines.triage_memory import TriageMemory
+
+                TriageMemory().learn_from_fp(finding_id, db)
+            except Exception as _tm_err:
+                app.logger.warning("TriageMemory.learn_from_fp failed: %s", _tm_err)
+
             return jsonify(
                 {
                     "success": True,
                     "feedback_id": feedback_id,
-                    "message": f"Finding {finding_id} marked as false positive",
+                    "message": f"Finding {finding_id} marked as false positive — suppression rule created",
                 }
             )
         else:
             return jsonify({"success": False, "error": "Failed to store feedback"}), 500
     except Exception as e:
         return jsonify({"success": False, "error": str(e)}), 500
+
+
+@app.route("/api/suppression-rules", methods=["GET"])
+@track_request("/api/suppression-rules")
+def get_suppression_rules():
+    """Return all active suppression rules learned from FP feedback (Feature 6)."""
+    try:
+        rules = db.get_suppression_rules(active_only=True)
+        # Convert datetime to string for JSON serialisation
+        for r in rules:
+            if r.get("created_at"):
+                r["created_at"] = r["created_at"].isoformat()
+        return jsonify({"rules": rules, "count": len(rules)})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
 
 
 @app.route("/api/findings/<int:finding_id>/feedback", methods=["POST"])

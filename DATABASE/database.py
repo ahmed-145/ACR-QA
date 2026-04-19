@@ -422,6 +422,54 @@ class Database:
 
         return results[0] if results else {}
 
+    # ===== SUPPRESSION RULES (Feature 6 — Triage Memory) =====
+
+    def insert_suppression_rule(
+        self,
+        canonical_rule_id: str,
+        file_pattern: str | None,
+        finding_id: int | None,
+    ) -> int | None:
+        """Insert a learned suppression rule derived from an FP-marked finding."""
+        query = """
+            INSERT INTO suppression_rules
+                (canonical_rule_id, file_pattern, created_from_finding_id)
+            VALUES (%s, %s, %s)
+            RETURNING id
+        """
+        result = self.execute(query, (canonical_rule_id, file_pattern, finding_id), fetch=True)
+        return result[0]["id"] if result else None
+
+    def get_suppression_rules(self, active_only: bool = True) -> list[dict]:
+        """Return suppression rules, optionally filtered to active-only."""
+        if active_only:
+            query = """
+                SELECT id, canonical_rule_id, file_pattern,
+                       created_from_finding_id, created_at,
+                       is_active, suppression_count
+                FROM suppression_rules
+                WHERE is_active = TRUE
+                ORDER BY created_at DESC
+            """
+            results = self.execute(query, fetch=True)
+        else:
+            query = """
+                SELECT id, canonical_rule_id, file_pattern,
+                       created_from_finding_id, created_at,
+                       is_active, suppression_count
+                FROM suppression_rules
+                ORDER BY created_at DESC
+            """
+            results = self.execute(query, fetch=True)
+        return [dict(r) for r in results] if results else []
+
+    def increment_suppression_count(self, rule_id: int) -> None:
+        """Increment the suppression counter for a given rule."""
+        self.execute(
+            "UPDATE suppression_rules SET suppression_count = suppression_count + 1 WHERE id = %s",
+            (rule_id,),
+        )
+
     # ===== ANALYTICS =====
 
     def get_run_summary(self, run_id):

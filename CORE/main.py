@@ -103,6 +103,13 @@ class AnalysisPipeline:
         # Apply config filters: disabled rules, ignored paths, min severity
         findings = self._apply_config_filters(findings)
 
+        # Triage Memory: suppress findings that match learned FP rules (Feature 6)
+        from CORE.engines.triage_memory import TriageMemory
+
+        findings, suppressed = TriageMemory().suppress_findings(findings, self.db)
+        if suppressed:
+            print(f"      - Triage Memory: suppressed {suppressed} known false positive(s)")
+
         # Deduplicate findings (same file+line+rule from different tools)
         findings = self._deduplicate_findings(findings)
 
@@ -529,6 +536,14 @@ class AnalysisPipeline:
         # Step 3: Apply same pipeline filters as Python path
         print("\n[3/5] Filtering and normalizing findings...")
         findings = self._apply_config_filters(findings)
+
+        # Triage Memory: suppress findings that match learned FP rules (Feature 6)
+        from CORE.engines.triage_memory import TriageMemory
+
+        findings, suppressed = TriageMemory().suppress_findings(findings, self.db)
+        if suppressed:
+            print(f"      - Triage Memory: suppressed {suppressed} known false positive(s)")
+
         findings = self._deduplicate_findings(findings)
         findings = self._sort_by_priority(findings)
         total_findings = len(findings)

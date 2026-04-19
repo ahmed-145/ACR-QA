@@ -99,3 +99,18 @@ COMMENT ON TABLE findings IS 'Individual code issues detected by tools';
 COMMENT ON TABLE llm_explanations IS 'AI-generated explanations for findings';
 COMMENT ON TABLE pr_comments IS 'Comments posted to PRs/MRs';
 COMMENT ON TABLE feedback IS 'User feedback for evaluation';
+COMMENT ON TABLE suppression_rules IS 'Learned suppression rules from FP feedback (Feature 6 — Triage Memory)';
+
+-- Suppression rules: learned from FP feedback, applied to future scans
+CREATE TABLE IF NOT EXISTS suppression_rules (
+    id SERIAL PRIMARY KEY,
+    canonical_rule_id VARCHAR(100) NOT NULL,
+    file_pattern VARCHAR(500),
+    created_from_finding_id INTEGER REFERENCES findings(id) ON DELETE SET NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    is_active BOOLEAN DEFAULT TRUE,
+    suppression_count INTEGER DEFAULT 0
+);
+
+CREATE INDEX IF NOT EXISTS idx_suppression_rules_rule_id ON suppression_rules(canonical_rule_id);
+CREATE INDEX IF NOT EXISTS idx_suppression_rules_active ON suppression_rules(is_active);
