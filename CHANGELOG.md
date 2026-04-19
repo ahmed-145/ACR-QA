@@ -2,14 +2,37 @@
 
 All notable changes to ACR-QA are documented here.
 
-## [v3.0.8] — Feature 5: Confidence Scoring Engine
+## [v3.0.8] — Feature 5: Confidence Scoring
 
 ### Added
-- `CORE/engines/confidence_scorer.py` — New Scoring Engine to calculate confidence scores (0-100) dynamically based on rule citation, detection tool reliability, semantic rule matching, and structural complexity of the finding context.
-- Database Schema update: Added `confidence_score` (INTEGER 0-100 defaults to NULL) to `findings` table.
-- Extended database interface (`insert_finding()`, `get_findings_with_explanations()`, `get_validated_fixes()`) to correctly persist and query `confidence_score`.
-- Flask API integration: The `/api/runs/<run_id>/findings` endpoint now primarily sources confidence from the database with seamless fallback to an augmented heuristic for legacy data.
-- User Dashboard: Added dynamic confidence slider in the filter section to dynamically trim noise and control finding quality out-of-the-box. Includes complete visual parity to match existing UI.
+- `CORE/engines/confidence_scorer.py` — new `ConfidenceScorer` engine
+  - Computes 0-100 integer confidence score per finding using 5 weighted signals:
+    1. Severity — high=40, medium=25, low=10
+    2. Category — security=20, design=10, best-practice=5, style=0
+    3. Tool reliability — bandit/semgrep=15, eslint=10, ruff=8, vulture=5
+    4. Rule specificity — known registry rule=10, CUSTOM-=5, unmapped=0
+    5. Fix validated (Feature 1) — validated AI fix exists=10
+  - `score(finding, fix_validated)` → integer 0-100
+  - `score_batch(findings)` → list of scores
+  - `label(score)` → "very high" / "high" / "medium" / "low" / "very low"
+- `findings.confidence_score` — new INTEGER column (0-100) in DB, set at insert time
+- `Database.insert_finding()` now calls `ConfidenceScorer` on every finding before DB insert
+- `Database.get_findings()` and `get_findings_with_explanations()` return `confidence_score`
+- `FRONTEND/app.py` — `_calculate_confidence()` uses DB-stored score first, falls back to heuristic for legacy findings
+- Dashboard confidence slider — filters findings by minimum confidence threshold in real time
+- 12 new unit tests in `TESTS/test_new_engines.py::TestConfidenceScorer` (all passing)
+
+### Score examples (run 954)
+| Finding | Tool | Score | Label |
+|---------|------|-------|-------|
+| SECURITY-001 + validated fix | bandit | 95 | very high |
+| CUSTOM-sql-injection | semgrep | 85 | high |
+| COMPLEXITY-001 | radon | 65 | medium |
+| SOLID-001 | ruff | 53 | medium |
+| STYLE-007 | ruff | 28 | very low |
+
+### Test count
+474 passed, 4 skipped — up from 462 (v3.0.7)
 
 ---
 

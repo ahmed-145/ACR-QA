@@ -268,6 +268,30 @@ After every analysis run, ACR-QA can automatically open a GitHub PR containing o
 
 ---
 
+### Confidence Scorer (`CORE/engines/confidence_scorer.py`) — Feature 5
+
+Every finding receives a 0-100 integer confidence score computed at insert time by `ConfidenceScorer`. Higher scores indicate higher likelihood of a true positive.
+
+**Scoring signals (5 weighted components):**
+
+| Signal | Max Points | Rationale |
+|--------|-----------|-----------|
+| Severity | 40 | High-severity findings are more likely actionable |
+| Category | 20 | Security findings are higher confidence than style |
+| Tool reliability | 15 | Bandit/Semgrep > Ruff > Vulture for security findings |
+| Rule specificity | 10 | Known registry rules are better calibrated than unknown |
+| Fix validated | 10 | If AI fix passed linting, finding is likely real |
+
+**Score labels:** 90-100 = very high, 70-89 = high, 50-69 = medium, 30-49 = low, 0-29 = very low
+
+**Pipeline integration:**
+- `Database.insert_finding()` calls `ConfidenceScorer().score(finding)` before every DB insert
+- Score stored in `findings.confidence_score` (INTEGER 0-100)
+- Dashboard slider filters findings by minimum confidence threshold
+- `GET /api/runs/<id>/findings?min_confidence=70` returns only high-confidence findings
+
+---
+
 ## Database Schema
 
 5 tables in PostgreSQL 15:

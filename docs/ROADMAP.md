@@ -57,13 +57,15 @@ graph TD
 
 ## Where We Are Now
 
-### ✅ Phase 1 — Python MVP (COMPLETE, v3.0.5)
+### ✅ Phase 1 — Python MVP (COMPLETE, v3.0.8)
 
 - ✅ Feature 2: Cryptographic Bill of Materials (CBoM) — quantum-safety classification per NIST FIPS 203/204 (done — v3.0.4)
 - ✅ Feature 3: Configurable Merge-Blocking Quality Gate — `block` vs `warn` mode (done — v3.0.5)
 - ✅ Feature 4: Autofix PRs — bot opens PR with validated AI-generated fixes applied automatically (done — v3.0.7)
+- ✅ Feature 5: Confidence scoring — every finding gets 0-100 score, threshold slider in dashboard (done — v3.0.8)
 
 The Python version is **feature-complete and thesis-ready**.
+
 
 #### What's in it
 
