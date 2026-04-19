@@ -856,3 +856,148 @@ class TestConfidenceScorer:
         assert len(findings) == 1
         assert findings[0]["confidence_score"] is not None
         assert 0 <= findings[0]["confidence_score"] <= 100
+
+
+class TestTriageMemory:
+    """Tests for Feature 6 — triage memory and FP suppression."""
+
+    def _make_finding(self, rule_id="SECURITY-001", file_path="src/app.py", severity="high"):
+        """Helper: build a minimal finding dict."""
+        return {
+            "canonical_rule_id": rule_id,
+            "canonical_severity": severity,
+            "category": "security",
+            "file_path": file_path,
+            "file": file_path,
+            "line_number": 10,
+            "line": 10,
+            "message": "test finding",
+            "tool": "bandit",
+            "severity": severity,
+            "language": "python",
+        }
+
+    def test_import(self):
+        from CORE.engines.triage_memory import TriageMemory
+
+        tm = TriageMemory()
+        assert tm is not None
+
+    def test_should_suppress_no_rules(self):
+        """With no suppression rules, nothing should be suppressed."""
+        from CORE.engines.triage_memory import TriageMemory
+        from DATABASE.database import Database
+
+        db = Database()
+        tm = TriageMemory()
+        finding = self._make_finding()
+        assert tm.should_suppress(finding, db) is False
+
+    def test_suppress_findings_empty_list(self):
+        """suppress_findings on empty list returns empty list."""
+        from CORE.engines.triage_memory import TriageMemory
+        from DATABASE.database import Database
+
+        db = Database()
+        tm = TriageMemory()
+        kept, suppressed = tm.suppress_findings([], db)
+        assert kept == []
+        assert suppressed == 0
+
+    def test_suppress_findings_no_rules(self):
+        """With no rules, all findings are kept."""
+        from CORE.engines.triage_memory import TriageMemory
+        from DATABASE.database import Database
+
+        db = Database()
+        tm = TriageMemory()
+        findings = [self._make_finding(), self._make_finding(rule_id="STYLE-007")]
+        kept, suppressed = tm.suppress_findings(findings, db)
+        assert len(kept) == 2
+        assert suppressed == 0
+
+    def test_get_active_rules_returns_list(self):
+        """get_active_rules must return a list."""
+        from CORE.engines.triage_memory import TriageMemory
+        from DATABASE.database import Database
+
+        db = Database()
+        tm = TriageMemory()
+        rules = tm.get_active_rules(db)
+        assert isinstance(rules, list)
+
+    def test_learn_from_fp_creates_suppression_rule(self):
+        """learn_from_fp must insert a suppression rule for the finding's rule+file."""
+        from CORE.engines.triage_memory import TriageMemory
+        from DATABASE.database import Database
+
+        db = Database()
+        tm = TriageMemory()
+
+        run_id = db.create_analysis_run(repo_name="test-triage", pr_number=None)
+        finding_id = db.insert_finding(
+            run_id,
+            self._make_finding(
+                rule_id="SECURITY-037",
+                file_path="tests/test_auth.py",
+            ),
+        )
+
+        rules_before = db.get_suppression_rules(active_only=True)
+        count_before = len(rules_before)
+
+        tm.learn_from_fp(finding_id, db)
+
+        rules_after = db.get_suppression_rules(active_only=True)
+        assert len(rules_after) > count_before
+
+        new_rules = [r for r in rules_after if r["canonical_rule_id"] == "SECURITY-037"]
+        assert len(new_rules) >= 1
+
+    def test_suppress_after_learning(self):
+        """After learn_from_fp, should_suppress returns True for matching finding."""
+        from CORE.engines.triage_memory import TriageMemory
+        from DATABASE.database import Database
+
+        db = Database()
+        tm = TriageMemory()
+
+        run_id = db.create_analysis_run(repo_name="test-triage2", pr_number=None)
+        finding_id = db.insert_finding(
+            run_id,
+            self._make_finding(
+                rule_id="SECURITY-009",
+                file_path="tests/test_crypto.py",
+            ),
+        )
+        tm.learn_from_fp(finding_id, db)
+
+        similar_finding = self._make_finding(
+            rule_id="SECURITY-009",
+            file_path="tests/test_crypto.py",
+        )
+        assert tm.should_suppress(similar_finding, db) is True
+
+    def test_different_rule_not_suppressed(self):
+        """A different rule on the same file must not be suppressed."""
+        from CORE.engines.triage_memory import TriageMemory
+        from DATABASE.database import Database
+
+        db = Database()
+        tm = TriageMemory()
+
+        run_id = db.create_analysis_run(repo_name="test-triage3", pr_number=None)
+        finding_id = db.insert_finding(
+            run_id,
+            self._make_finding(
+                rule_id="SECURITY-001",
+                file_path="utils/helper.py",
+            ),
+        )
+        tm.learn_from_fp(finding_id, db)
+
+        different_rule = self._make_finding(
+            rule_id="SECURITY-008",
+            file_path="utils/helper.py",
+        )
+        assert tm.should_suppress(different_rule, db) is False
