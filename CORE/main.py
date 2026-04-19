@@ -851,7 +851,7 @@ def main():
         return
 
     # --no-ai: override limit to 0 to skip AI explanation step entirely
-    effective_limit = 0 if args.no_ai else args.limit
+    effective_limit = 0 if not args.ai else args.limit
 
     run_id = pipeline.run(
         repo_name=args.repo_name,

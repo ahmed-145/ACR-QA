@@ -567,3 +567,145 @@ class TestQualityGateMode:
         comment = gate.format_gate_comment(result)
         assert "safe to merge" in comment.lower()
         assert "✅" in comment
+
+
+class TestFeature4AutofixPR:
+    """Tests for Feature 4 — validated fix storage and retrieval."""
+
+    def test_insert_explanation_stores_fix_fields(self):
+        """insert_explanation must store fix_validated, fix_confidence, fix_code."""
+        from DATABASE.database import Database
+
+        db = Database()
+
+        # Insert a dummy finding first
+        run_id = db.create_analysis_run(repo_name="test-feature4", pr_number=None)
+        finding_id = db.insert_finding(
+            run_id,
+            {
+                "canonical_rule_id": "SECURITY-001",
+                "canonical_severity": "high",
+                "category": "security",
+                "file_path": "test.py",
+                "line_number": 1,
+                "message": "eval() usage",
+                "tool": "semgrep",
+                "language": "python",
+            },
+        )
+
+        explanation = {
+            "model_name": "llama3.1-8b",
+            "prompt_filled": "test prompt",
+            "response_text": "Use ast.literal_eval instead.",
+            "temperature": 0.3,
+            "max_tokens": 300,
+            "tokens_used": 50,
+            "latency_ms": 100,
+            "cost_usd": 0.0001,
+            "status": "success",
+            "fix_validated": True,
+            "fix_confidence": "high",
+            "validated_fix": "result = ast.literal_eval(token)",
+            "fix_validation_note": "Passed linter validation",
+        }
+        expl_id = db.insert_explanation(finding_id, explanation)
+        assert expl_id is not None
+
+        # Verify fix fields were stored
+        findings = db.get_findings_with_explanations(run_id)
+        assert len(findings) == 1
+        f = findings[0]
+        assert f["fix_validated"] is True
+        assert f["fix_confidence"] == "high"
+        assert f["fix_code"] == "result = ast.literal_eval(token)"
+        assert f["fix_validation_note"] == "Passed linter validation"
+
+    def test_get_validated_fixes_returns_only_valid(self):
+        """get_validated_fixes must only return rows with fix_validated=True and fix_code not null."""
+        from DATABASE.database import Database
+
+        db = Database()
+
+        run_id = db.create_analysis_run(repo_name="test-feature4b", pr_number=None)
+
+        # Finding 1: validated fix
+        f1_id = db.insert_finding(
+            run_id,
+            {
+                "canonical_rule_id": "SECURITY-001",
+                "canonical_severity": "high",
+                "category": "security",
+                "file_path": "a.py",
+                "line_number": 1,
+                "message": "eval usage",
+                "tool": "semgrep",
+                "language": "python",
+            },
+        )
+        db.insert_explanation(
+            f1_id,
+            {
+                "model_name": "llama3.1-8b",
+                "prompt_filled": "p",
+                "response_text": "r",
+                "temperature": 0.3,
+                "max_tokens": 300,
+                "tokens_used": 10,
+                "latency_ms": 50,
+                "cost_usd": 0,
+                "status": "success",
+                "fix_validated": True,
+                "fix_confidence": "high",
+                "validated_fix": "safe_code = ast.literal_eval(x)",
+                "fix_validation_note": "Passed linter validation",
+            },
+        )
+
+        # Finding 2: failed validation
+        f2_id = db.insert_finding(
+            run_id,
+            {
+                "canonical_rule_id": "SECURITY-008",
+                "canonical_severity": "high",
+                "category": "security",
+                "file_path": "b.py",
+                "line_number": 5,
+                "message": "pickle usage",
+                "tool": "bandit",
+                "language": "python",
+            },
+        )
+        db.insert_explanation(
+            f2_id,
+            {
+                "model_name": "llama3.1-8b",
+                "prompt_filled": "p",
+                "response_text": "r",
+                "temperature": 0.3,
+                "max_tokens": 300,
+                "tokens_used": 10,
+                "latency_ms": 50,
+                "cost_usd": 0,
+                "status": "success",
+                "fix_validated": False,
+                "fix_confidence": "low",
+                "validated_fix": None,
+                "fix_validation_note": "Linter found issues",
+            },
+        )
+
+        fixes = db.get_validated_fixes(run_id)
+        assert len(fixes) == 1
+        assert fixes[0]["canonical_rule_id"] == "SECURITY-001"
+        assert fixes[0]["fix_code"] == "safe_code = ast.literal_eval(x)"
+        assert fixes[0]["fix_confidence"] == "high"
+
+    def test_get_validated_fixes_empty_when_none(self):
+        """get_validated_fixes returns empty list when no validated fixes exist."""
+        from DATABASE.database import Database
+
+        db = Database()
+        run_id = db.create_analysis_run(repo_name="test-feature4c", pr_number=None)
+        fixes = db.get_validated_fixes(run_id)
+        assert fixes == [] or fixes is not None

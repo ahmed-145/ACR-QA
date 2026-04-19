@@ -229,14 +229,53 @@ class Database:
                 f.ground_truth,
                 e.response_text as explanation_text,
                 e.latency_ms,
-                e.model_name
+                e.model_name,
+                e.fix_validated,
+                e.fix_confidence,
+                e.fix_code,
+                e.fix_validation_note
             FROM findings f
             LEFT JOIN llm_explanations e ON f.id = e.finding_id
             WHERE f.run_id = %s
             ORDER BY
-                CASE f.severity
-                    WHEN 'error' THEN 1
-                    WHEN 'warning' THEN 2
+                CASE f.canonical_severity
+                    WHEN 'high' THEN 1
+                    WHEN 'medium' THEN 2
+                    ELSE 3
+                END,
+                f.file_path,
+                f.line_number
+        """
+        return self.execute(query, (run_id,), fetch=True)
+
+    def get_validated_fixes(self, run_id):
+        """
+        Return findings that have a validated AI fix ready to apply.
+        Only returns rows where fix_validated=True and fix_code is not null.
+        Used by create_fix_pr.py to build the autofix PR.
+        """
+        query = """
+            SELECT
+                f.id as finding_id,
+                f.canonical_rule_id,
+                f.file_path,
+                f.line_number,
+                f.canonical_severity,
+                f.message,
+                e.fix_code,
+                e.fix_confidence,
+                e.fix_validation_note,
+                e.response_text as explanation_text
+            FROM findings f
+            JOIN llm_explanations e ON f.id = e.finding_id
+            WHERE f.run_id = %s
+              AND e.fix_validated = TRUE
+              AND e.fix_code IS NOT NULL
+              AND e.fix_code != ''
+            ORDER BY
+                CASE f.canonical_severity
+                    WHEN 'high' THEN 1
+                    WHEN 'medium' THEN 2
                     ELSE 3
                 END,
                 f.file_path,
@@ -259,17 +298,18 @@ class Database:
     # ===== LLM EXPLANATIONS =====
 
     def insert_explanation(self, finding_id, explanation_dict):
-        """Store LLM explanation with full provenance"""
+        """Store LLM explanation with full provenance including fix validation."""
         query = """
             INSERT INTO llm_explanations (
                 finding_id, model_name, prompt_filled, response_text,
                 temperature, max_tokens, tokens_used,
-                latency_ms, cost_usd, status
+                latency_ms, cost_usd, status,
+                fix_validated, fix_confidence, fix_code, fix_validation_note
             ) VALUES (
-                %s, %s, %s, %s, %s, %s, %s, %s, %s, %s
+                %s, %s, %s, %s, %s, %s, %s, %s, %s, %s,
+                %s, %s, %s, %s
             ) RETURNING id
         """
-
         params = (
             finding_id,
             explanation_dict.get("model_name", "unknown"),
@@ -281,8 +321,11 @@ class Database:
             explanation_dict.get("latency_ms", 0),
             explanation_dict.get("cost_usd", 0),
             explanation_dict.get("status", "success"),
+            explanation_dict.get("fix_validated"),
+            explanation_dict.get("fix_confidence"),
+            explanation_dict.get("validated_fix"),
+            explanation_dict.get("fix_validation_note"),
         )
-
         result = self.execute(query, params, fetch=True)
         return result[0]["id"] if result else None
 

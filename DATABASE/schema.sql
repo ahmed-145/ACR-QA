@@ -51,6 +51,10 @@ CREATE TABLE IF NOT EXISTS llm_explanations (
     confidence_score FLOAT DEFAULT 0.6,
     self_eval_score INTEGER CHECK (self_eval_score BETWEEN 1 AND 5),
     consistency_score FLOAT,
+    fix_validated BOOLEAN DEFAULT NULL,
+    fix_confidence VARCHAR(20) DEFAULT NULL,
+    fix_code TEXT DEFAULT NULL,
+    fix_validation_note TEXT DEFAULT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 

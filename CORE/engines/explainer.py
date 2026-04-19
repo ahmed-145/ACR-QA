@@ -307,6 +307,7 @@ Start with: "This code violates {canonical_id}..." and end with a ```python code
                     result["fix_validated"] = validation["valid"]
                     result["fix_confidence"] = validation["confidence"]
                     result["fix_validation_note"] = validation["validation_note"]
+                    result["validated_fix"] = validation.get("validated_fix")
                     if not validation["valid"]:
                         result["fix_warning"] = f"⚠️ AI fix requires review: {validation['validation_note']}"
                 else:

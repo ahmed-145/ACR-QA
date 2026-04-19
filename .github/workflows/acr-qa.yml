@@ -152,6 +152,22 @@ jobs:
             --pr-number ${{ github.event.pull_request.number }} \
             --run-id-file /tmp/acr_run_id.txt
 
+      - name: Create Autofix PR
+        if: steps.changed-files.outputs.any_changed == 'true' || github.event_name == 'issue_comment'
+        continue-on-error: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          DB_HOST: localhost
+          DB_PORT: 5432
+          DB_NAME: acrqa_test
+          DB_USER: postgres
+          DB_PASSWORD: postgres
+        run: |
+          python3 scripts/create_fix_pr.py \
+            --repo "${{ github.repository }}" \
+            --run-id-file /tmp/acr_run_id.txt \
+            --base-branch "${{ github.event.pull_request.base.ref || 'main' }}"
+
       - name: Post Quality Gate Summary
         if: steps.changed-files.outputs.any_changed == 'true' || github.event_name == 'issue_comment'
         env:
@@ -166,6 +182,27 @@ jobs:
             --repo "${{ github.repository }}" \
             --pr-number ${{ github.event.pull_request.number || github.event.issue.number }} \
             --run-id-file /tmp/acr_run_id.txt
+
+      - name: Create Autofix PR
+        if: steps.changed-files.outputs.any_changed == 'true' && steps.analysis.outcome != 'cancelled'
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          DB_HOST: localhost
+          DB_PORT: 5432
+          DB_NAME: acrqa_test
+          DB_USER: postgres
+          DB_PASSWORD: postgres
+        run: |
+          RUN_ID=$(cat /tmp/acr_run_id.txt 2>/dev/null || echo "")
+          if [ -z "$RUN_ID" ]; then
+            echo "No run ID found — skipping autofix PR"
+            exit 0
+          fi
+          python3 scripts/create_fix_pr.py \
+            --run-id "$RUN_ID" \
+            --repo "${{ github.repository }}" \
+            --base-branch "${{ github.event.pull_request.base.ref }}" \
+            || echo "Autofix PR creation skipped (no validated fixes or PR already exists)"
 
       - name: Enforce Quality Gate
         if: steps.analysis.outcome == 'failure'
@@ -277,6 +314,22 @@ jobs:
             --repo "${{ github.repository }}" \
             --pr-number ${{ github.event.issue.number }} \
             --run-id-file /tmp/acr_run_id.txt
+
+      - name: Create Autofix PR
+        if: steps.changed-files.outputs.any_changed == 'true' || github.event_name == 'issue_comment'
+        continue-on-error: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          DB_HOST: localhost
+          DB_PORT: 5432
+          DB_NAME: acrqa_test
+          DB_USER: postgres
+          DB_PASSWORD: postgres
+        run: |
+          python3 scripts/create_fix_pr.py \
+            --repo "${{ github.repository }}" \
+            --run-id-file /tmp/acr_run_id.txt \
+            --base-branch "${{ github.event.pull_request.base.ref || 'main' }}"
 
       - name: Post Quality Gate Summary
         if: steps.changed-files.outputs.any_changed == 'true' || github.event_name == 'issue_comment'
