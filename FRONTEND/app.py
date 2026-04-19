@@ -29,7 +29,7 @@ db = Database()
 
 def _calculate_confidence(finding):
     """
-    Calculate a confidence score (0.0-1.0) for a finding.
+    Fallback heuristic confidence calculation for legacy data.
 
     Factors:
     - Rule citation in explanation: +0.2
@@ -135,7 +135,8 @@ def get_run_findings(run_id):
                     continue
 
             # Calculate confidence score
-            confidence = _calculate_confidence(f)
+            db_conf = f.get("confidence_score")
+            confidence = db_conf if db_conf is not None else _calculate_confidence(f)
 
             # Confidence filter (noise control)
             if min_confidence is not None and confidence < min_confidence:
@@ -154,11 +155,7 @@ def get_run_findings(run_id):
                     "model_name": f.get("model_name"),
                     "latency_ms": f.get("latency_ms"),
                     "tool": f.get("tool"),
-                    # LOW Priority: Display confidence score (calculated based on rule citation)
-                    "confidence": 0.9
-                    if f.get("explanation_text")
-                    and f.get("canonical_rule_id", "") in str(f.get("explanation_text", ""))
-                    else 0.6,
+                    "confidence": confidence,
                     "ground_truth": f.get("ground_truth"),  # For Phase 2 evaluation
                 }
             )

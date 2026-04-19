@@ -146,20 +146,27 @@ class Database:
     # ===== FINDINGS =====
 
     def insert_finding(self, run_id, finding_dict):
-        """Insert a normalized finding"""
+        """Insert a normalized finding with confidence score."""
+        from CORE.engines.confidence_scorer import ConfidenceScorer
+
+        scorer = ConfidenceScorer()
+        confidence = scorer.score(finding_dict)
+
         query = """
             INSERT INTO findings (
                 run_id, tool, rule_id, canonical_rule_id, canonical_severity,
                 file_path, line_number, column_number,
-                severity, category, message, evidence, raw_output
+                severity, category, message, evidence, raw_output,
+                confidence_score
             ) VALUES (
-                %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s
+                %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s
             ) RETURNING id
         """
-
-        params = (
+        values = (
             run_id,
-            finding_dict.get("tool_raw", {}).get("tool_name", "unknown"),
+            finding_dict.get("tool_raw", {}).get("tool_name", "unknown")
+            if not finding_dict.get("tool")
+            else finding_dict.get("tool"),
             finding_dict.get("original_rule_id")
             or finding_dict.get("rule_id")
             or finding_dict.get("canonical_rule_id", "UNKNOWN"),
@@ -173,9 +180,9 @@ class Database:
             finding_dict.get("message", ""),
             Json(finding_dict.get("evidence", {})),
             Json(finding_dict.get("tool_raw", {})),
+            confidence,
         )
-
-        result = self.execute(query, params, fetch=True)
+        result = self.execute(query, values, fetch=True)
         return result[0]["id"] if result else None
 
     def get_findings(self, run_id=None, severity=None, category=None, limit=100):
@@ -227,6 +234,7 @@ class Database:
                 f.message,
                 f.tool,
                 f.ground_truth,
+                f.confidence_score,
                 e.response_text as explanation_text,
                 e.latency_ms,
                 e.model_name,
@@ -262,6 +270,7 @@ class Database:
                 f.line_number,
                 f.canonical_severity,
                 f.message,
+                f.confidence_score,
                 e.fix_code,
                 e.fix_confidence,
                 e.fix_validation_note,

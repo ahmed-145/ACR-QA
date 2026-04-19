@@ -31,6 +31,7 @@ CREATE TABLE IF NOT EXISTS findings (
     canonical_severity VARCHAR(20),
     evidence JSONB,
     ground_truth VARCHAR(10) CHECK (ground_truth IN ('TP', 'FP', 'TN', 'FN')),
+    confidence_score INTEGER DEFAULT NULL CHECK (confidence_score BETWEEN 0 AND 100),
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 

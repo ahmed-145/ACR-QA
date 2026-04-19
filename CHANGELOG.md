@@ -2,6 +2,17 @@
 
 All notable changes to ACR-QA are documented here.
 
+## [v3.0.8] — Feature 5: Confidence Scoring Engine
+
+### Added
+- `CORE/engines/confidence_scorer.py` — New Scoring Engine to calculate confidence scores (0-100) dynamically based on rule citation, detection tool reliability, semantic rule matching, and structural complexity of the finding context.
+- Database Schema update: Added `confidence_score` (INTEGER 0-100 defaults to NULL) to `findings` table.
+- Extended database interface (`insert_finding()`, `get_findings_with_explanations()`, `get_validated_fixes()`) to correctly persist and query `confidence_score`.
+- Flask API integration: The `/api/runs/<run_id>/findings` endpoint now primarily sources confidence from the database with seamless fallback to an augmented heuristic for legacy data.
+- User Dashboard: Added dynamic confidence slider in the filter section to dynamically trim noise and control finding quality out-of-the-box. Includes complete visual parity to match existing UI.
+
+---
+
 ## [v3.0.7] — Feature 4: Autofix PR Bot
 
 ### Added
