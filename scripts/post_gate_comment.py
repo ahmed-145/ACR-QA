@@ -2,6 +2,7 @@
 """
 Post ACR-QA quality gate result as a top-level GitHub PR comment.
 """
+
 import argparse
 import os
 import sys

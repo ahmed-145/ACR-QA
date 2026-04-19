@@ -5,6 +5,7 @@ Opens a GitHub PR containing only AI-generated fixes that passed linter validati
 Fix code is read from the database (fix_validated=True, fix_code not null).
 Uses GitHub API blobs — no local file manipulation required.
 """
+
 from __future__ import annotations
 
 import argparse
@@ -85,9 +86,11 @@ def create_fix_pr(run_id: int, github_token: str, repo_name: str, base_branch: s
 
     print(f"Found {len(fixes)} validated fix(es)")
     for f in fixes:
-        print(f"  {f['canonical_severity'].upper()} {f['canonical_rule_id']} "
-              f"@ {f['file_path']}:{f['line_number']} "
-              f"(confidence: {f['fix_confidence']})")
+        print(
+            f"  {f['canonical_severity'].upper()} {f['canonical_rule_id']} "
+            f"@ {f['file_path']}:{f['line_number']} "
+            f"(confidence: {f['fix_confidence']})"
+        )
 
     gh = Github(github_token)
     try:
