@@ -7,8 +7,8 @@
 
 [![Python 3.11+](https://img.shields.io/badge/Python-3.11+-3776ab?logo=python&logoColor=white)](https://www.python.org/)
 [![CI Tests](https://github.com/ahmed-145/ACR-QA/actions/workflows/tests.yml/badge.svg)](https://github.com/ahmed-145/ACR-QA/actions/workflows/tests.yml)
-[![Tests](https://img.shields.io/badge/Tests-436%20passing-22c55e?logo=pytest&logoColor=white)](./TESTS/)
-[![Version](https://img.shields.io/badge/Version-3.0.5-blue)](CHANGELOG.md)
+[![Tests](https://img.shields.io/badge/Tests-474%20passing-22c55e?logo=pytest&logoColor=white)](./TESTS/)
+[![Version](https://img.shields.io/badge/Version-3.0.8-blue)](CHANGELOG.md)
 [![PostgreSQL 15](https://img.shields.io/badge/PostgreSQL-15+-336791?logo=postgresql&logoColor=white)](https://postgresql.org/)
 [![Prometheus](https://img.shields.io/badge/Prometheus-monitored-e6522c?logo=prometheus&logoColor=white)](https://prometheus.io/)
 [![Rules](https://img.shields.io/badge/Rules-299%20mapped-8b5cf6?logo=shield&logoColor=white)](./docs/evaluation/PER_TOOL_EVALUATION.md)
@@ -298,7 +298,7 @@ acr-qa/
 │   ├── test_api.py              # All Flask API endpoints
 │   ├── test_explainer.py        # RAG + LLM integration
 │   ├── test_normalizer.py       # Multi-tool normalization
-│   ├── test_new_engines.py      # Secrets, SCA, autofix
+│   ├── test_new_engines.py      # Secrets, SCA, autofix, confidence scorer (Feature 5)
 │   ├── test_config_quality.py   # ConfigLoader + QualityGate
 │   ├── test_pydantic_validation.py  # Schema validation
 │   ├── test_rate_limiting.py    # Redis rate limiter
@@ -375,7 +375,7 @@ make init-config
 
 ## 🟨 JavaScript / TypeScript Support (Verified)
 
-ACR-QA v3.0.3 ships with a **full JS/TS language adapter** — no configuration required.
+ACR-QA v3.0.8 ships with a **full JS/TS language adapter** — no configuration required.
 
 ### How It Works
 
@@ -501,27 +501,30 @@ Pre-built dashboard with **6 panels** at **http://localhost:3000** (admin/admin)
 ## 🧪 Testing
 
 ```bash
-make test-all          # Full pytest suite (273 tests)
+make test-all          # Full pytest suite (474 tests)
 make test              # Acceptance tests only
 make run               # Run analysis on sample files
 make test-e2e          # End-to-end with Docker
 ```
 
-**273 tests passing** in 5.97s, 4 skipped (infrastructure-dependent):
+**474 tests passing**, 4 skipped (infrastructure-dependent):
 
 | Test File | # | Coverage |
 |-----------|:-:|----------|
 | `test_acceptance.py` | 4 | Pipeline E2E with mocked LLM |
 | `test_api.py` | 9 | All Flask API endpoints |
-| `test_explainer.py` | 5 | RAG + entropy + self-eval |
+| `test_explainer.py` | 9 | RAG + entropy + self-eval |
 | `test_normalizer.py` | 7 | Ruff / Bandit / Semgrep normalization |
-| `test_new_engines.py` | 18 | Secrets detector, SCA, autofix |
-| `test_config_quality.py` | 24 | ConfigLoader + QualityGate |
+| `test_new_engines.py` | 56 | Secrets, SCA, autofix, CBoM, quality gate, Feature 4 & 5 |
+| `test_config_quality.py` | 23 | ConfigLoader + QualityGate |
 | `test_pydantic_validation.py` | 8 | Canonical schema validation |
 | `test_rate_limiting.py` | 8 | Redis rate limiter (token bucket) |
-| `test_deep_coverage.py` | 98 | 12-module deep coverage (v2.6) |
-| `test_god_mode.py` | 78 | All new features + regression + edge cases (v2.7) |
-| `test_integration_benchmarks.py` | 14 | Performance benchmarks |
+| `test_deep_coverage.py` | 100 | 12-module deep coverage (v2.6) |
+| `test_god_mode.py` | 84 | All new features + regression + edge cases |
+| `test_integration_benchmarks.py` | 15 | Performance benchmarks |
+| `test_js_adapter.py` | 63 | JS/TS adapter, E2E pipeline, CLI routing |
+| `test_coverage_boost.py` | 77 | quality_gate + severity_scorer paths |
+| `test_user_study.py` | 18 | User study module |
 
 ---
 
@@ -619,10 +622,11 @@ make test-e2e          # End-to-end with Docker
 ### Phase 2 Roadmap (Feb–Jun 2026)
 
 - [x] ~~Quality gates, per-repo config, inline suppression, dedup~~ (v1.0)
-- [x] ~~Deep-code audit + 98 tests + bug fixes~~ (v2.6)
+- [x] ~~Deep-code audit + 100 tests + bug fixes~~ (v2.6)
 - [x] ~~Competitive features: test gap analyzer, OWASP compliance, policy engine, feedback tuner, confidence filtering~~ (v2.7)
-- [x] ~~God-mode testing: 273 tests across 11 test suites~~ (v2.7)
+- [x] ~~God-mode testing: 474 tests across 14 test suites~~ (v3.0.8)
 - [x] ~~JavaScript / TypeScript language adapter~~ (v3.0.3) — ESLint, Semgrep JS, npm audit, 56 rule mappings
+- [x] ~~Confidence Scoring Engine — 0-100 score per finding, DB-stored, dashboard slider~~ (v3.0.8)
 - [ ] User study (8–10 participants)
 - [ ] Precision / recall evaluation against ground-truth labels
 - [ ] ☁️ Cloud deployment on DigitalOcean ($200 free credit via GitHub Student Pack)
