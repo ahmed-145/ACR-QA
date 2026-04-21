@@ -2,6 +2,59 @@
 
 All notable changes to ACR-QA are documented here.
 
+## [v3.1.2] — Feature 9: Cross-Language Vulnerability Correlator
+
+### Added
+- `CORE/engines/cross_language_correlator.py` — new `CrossLanguageCorrelator` engine
+  - Inspired by CHARON (CISPA/NDSS) — cross-language vulnerability detection
+  - Detects vulnerability chains spanning Python backend + Jinja2/HTML templates + JS frontend
+  - 4 correlation types:
+    - `SQLI_TO_TEMPLATE` — SQL injection in DAO, result rendered in template (confidence +20)
+    - `TEMPLATE_INJECTION` — autoescape=False or |safe filter + backend security findings (confidence +15)
+    - `XSS_CHAIN` — Python XSS finding + template unsafe output pattern (confidence +15)
+    - `ROUTE_JS_CHAIN` — Python security finding + JS file in same feature directory (confidence +10)
+  - `correlate(findings)` → list of CorrelationGroup objects
+  - `enrich_findings(findings)` → tags findings with correlation metadata + boosts confidence scores
+  - `scan_project()` → standalone scan using synthetic findings from regex patterns
+  - Supports: aiohttp + aiohttp_jinja2, Flask + Jinja2, Django templates
+- Wired into both `AnalysisPipeline.run()` and `run_js()` — runs before quality gate
+- 10 new unit tests in `TESTS/test_new_engines.py::TestCrossLanguageCorrelator` (all passing)
+
+### Verified on DVPWA
+2 correlation groups detected:
+- `[HIGH] SQLI_TO_TEMPLATE`: SQL injection in `dao/student.py` → `evaluate.jinja2`, `student.jinja2`, `index.jinja2`
+- `[HIGH] TEMPLATE_INJECTION`: `autoescape=False` in `app.py` → all templates at XSS risk
+
+### Academic citation
+Implements cross-language vulnerability correlation inspired by **CHARON** (CISPA/NDSS) — detecting vulnerability chains that span multiple languages and layers in the same application.
+
+### Test count
+518 passed, 4 skipped — up from 508 (v3.1.1)
+
+---
+
+## [v3.1.1] — Feature 8: Dependency Reachability
+
+
+### Added
+- `CORE/engines/dependency_reachability.py` — new `DependencyReachabilityChecker` engine
+  - Scans JS/TS source files for `require()` and `import` statements using regex
+  - Classifies each vulnerable npm package as DIRECT / TRANSITIVE / UNKNOWN
+  - DIRECT (penalty=0): package is explicitly imported in source — real risk
+  - TRANSITIVE (penalty=-15): package installed but never directly imported — lower real risk
+  - UNKNOWN (penalty=-5): not in package.json and not imported — likely false positive
+  - `check(package_name)` → `ReachabilityResult` with level, penalty, import locations
+  - `check_batch(packages)` → dict of results
+  - `enrich_findings(findings)` → adds reachability metadata and adjusts confidence scores
+  - Normalises scoped packages (`@org/pkg/subpath` → `@org/pkg`) and subpath imports
+  - Excludes node_modules, dist, build directories from scanning
+- Wired into `AnalysisPipeline.run_js()` — runs after CBoM scanner on every JS/TS scan
+- Verified on NodeGoat: `ansi-regex` CVE correctly classified as UNKNOWN (never directly imported)
+- 11 new unit tests in `TESTS/test_new_engines.py::TestDependencyReachability` (all passing)
+
+### Test count
+508 passed, 4 skipped — up from 497 (v3.1.0)
+
 ## [v3.1.0] — Feature 7: AI Path Feasibility Validator
 
 ### Added

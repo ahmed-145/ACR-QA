@@ -1318,3 +1318,153 @@ class TestDependencyReachability:
         result = checker.check("express")
         assert result.level in ("UNKNOWN", "TRANSITIVE")
         assert result.confidence_penalty in (-5, -15)
+
+
+class TestCrossLanguageCorrelator:
+    """Tests for Feature 9 — cross-language vulnerability correlation."""
+
+    def test_import(self):
+        from CORE.engines.cross_language_correlator import CrossLanguageCorrelator
+
+        assert CrossLanguageCorrelator is not None
+
+    def test_correlate_empty_findings(self, tmp_path):
+        from CORE.engines.cross_language_correlator import CrossLanguageCorrelator
+
+        c = CrossLanguageCorrelator(str(tmp_path))
+        groups = c.correlate([])
+        assert groups == []
+
+    def test_sqli_to_template_correlation(self, tmp_path):
+        """SQL injection finding + route that renders template → SQLI_TO_TEMPLATE group."""
+        from CORE.engines.cross_language_correlator import CrossLanguageCorrelator
+
+        # Create a views.py with template decorator
+        views = tmp_path / "views.py"
+        views.write_text(
+            "from aiohttp_jinja2 import template\n" "@template('index.jinja2')\n" "async def index(request): pass\n"
+        )
+        # Create a dao.py with SQL injection
+        dao = tmp_path / "dao.py"
+        dao.write_text("q = \"SELECT * FROM users WHERE name = '%s'\" % name\n")
+        # Create a template
+        tmpl = tmp_path / "index.jinja2"
+        tmpl.write_text("<html>{{ name }}</html>")
+
+        c = CrossLanguageCorrelator(str(tmp_path))
+        sqli_finding = {
+            "canonical_rule_id": "SECURITY-027",
+            "canonical_severity": "high",
+            "category": "security",
+            "file_path": str(dao),
+            "file": str(dao),
+            "line_number": 1,
+            "message": "SQL injection via string formatting",
+            "tool": "semgrep",
+            "language": "python",
+        }
+        groups = c.correlate([sqli_finding])
+        sqli_groups = [g for g in groups if g.correlation_type == "SQLI_TO_TEMPLATE"]
+        assert len(sqli_groups) >= 1
+        assert sqli_groups[0].combined_severity == "high"
+        assert sqli_groups[0].confidence_boost == 20
+
+    def test_template_injection_autoescape_false(self, tmp_path):
+        """autoescape=False in Python file → TEMPLATE_INJECTION group."""
+        from CORE.engines.cross_language_correlator import CrossLanguageCorrelator
+
+        app_py = tmp_path / "app.py"
+        app_py.write_text("import aiohttp_jinja2\n" "aiohttp_jinja2.setup(app, autoescape=False)\n")
+        security_finding = {
+            "canonical_rule_id": "SECURITY-045",
+            "canonical_severity": "high",
+            "category": "security",
+            "file_path": str(app_py),
+            "file": str(app_py),
+            "line_number": 2,
+            "message": "autoescape disabled",
+            "tool": "semgrep",
+            "language": "python",
+        }
+        c = CrossLanguageCorrelator(str(tmp_path))
+        groups = c.correlate([security_finding])
+        tmpl_groups = [g for g in groups if g.correlation_type == "TEMPLATE_INJECTION"]
+        assert len(tmpl_groups) >= 1
+
+    def test_enrich_findings_adds_correlation_metadata(self, tmp_path):
+        """enrich_findings adds cross_language_correlation key to matched findings."""
+        from CORE.engines.cross_language_correlator import CrossLanguageCorrelator
+
+        app_py = tmp_path / "app.py"
+        app_py.write_text("aiohttp_jinja2.setup(app, autoescape=False)\n")
+
+        finding = {
+            "canonical_rule_id": "SECURITY-045",
+            "canonical_severity": "high",
+            "category": "security",
+            "file_path": str(app_py),
+            "file": str(app_py),
+            "line_number": 1,
+            "message": "autoescape disabled",
+            "tool": "semgrep",
+            "language": "python",
+            "confidence_score": 70,
+        }
+        c = CrossLanguageCorrelator(str(tmp_path))
+        enriched, groups = c.enrich_findings([finding])
+
+        if groups:
+            assert "cross_language_correlation" in enriched[0]
+            assert enriched[0]["confidence_score"] >= 70
+
+    def test_is_python_detection(self):
+        from CORE.engines.cross_language_correlator import CrossLanguageCorrelator
+
+        assert CrossLanguageCorrelator._is_python({"file_path": "app.py"}) is True
+        assert CrossLanguageCorrelator._is_python({"language": "python"}) is True
+        assert CrossLanguageCorrelator._is_python({"file_path": "app.js"}) is False
+
+    def test_is_js_detection(self):
+        from CORE.engines.cross_language_correlator import CrossLanguageCorrelator
+
+        assert CrossLanguageCorrelator._is_js({"file_path": "app.js"}) is True
+        assert CrossLanguageCorrelator._is_js({"language": "javascript"}) is True
+        assert CrossLanguageCorrelator._is_js({"file_path": "app.py"}) is False
+
+    def test_is_template_detection(self):
+        from CORE.engines.cross_language_correlator import CrossLanguageCorrelator
+
+        assert CrossLanguageCorrelator._is_template({"file_path": "index.jinja2"}) is True
+        assert CrossLanguageCorrelator._is_template({"file_path": "base.html"}) is True
+        assert CrossLanguageCorrelator._is_template({"file_path": "app.py"}) is False
+
+    def test_correlation_group_to_dict(self):
+        from CORE.engines.cross_language_correlator import CorrelationGroup
+
+        g = CorrelationGroup(
+            correlation_type="SQLI_TO_TEMPLATE",
+            chain_description="SQL injection chain",
+            combined_severity="high",
+            confidence_boost=20,
+            template_file="index.jinja2",
+        )
+        d = g.to_dict()
+        assert d["correlation_type"] == "SQLI_TO_TEMPLATE"
+        assert d["combined_severity"] == "high"
+        assert d["confidence_boost"] == 20
+        assert d["finding_count"] == 0
+
+    def test_dvpwa_real_scan(self):
+        """Integration test: DVPWA must produce at least 1 correlation group."""
+        import os
+
+        from CORE.engines.cross_language_correlator import CrossLanguageCorrelator
+
+        dvpwa_path = "tmp_repos/DVPWA"
+        if not os.path.exists(dvpwa_path):
+            return  # Skip if not cloned
+        c = CrossLanguageCorrelator(dvpwa_path)
+        groups = c.scan_project()
+        assert len(groups) >= 1
+        types = {g.correlation_type for g in groups}
+        assert "SQLI_TO_TEMPLATE" in types or "TEMPLATE_INJECTION" in types

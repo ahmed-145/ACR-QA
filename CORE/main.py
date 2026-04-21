@@ -202,6 +202,19 @@ class AnalysisPipeline:
             print(f"   Export SARIF: python3 scripts/export_sarif.py --run-id {run_id}")
 
         # Return exit code info
+        # Feature 9: Cross-language correlation
+        try:
+            from CORE.engines.cross_language_correlator import CrossLanguageCorrelator
+
+            correlator = CrossLanguageCorrelator(str(self.target_dir))
+            findings, corr_groups = correlator.enrich_findings(findings)
+            if corr_groups:
+                print(f"\n[+] Cross-language correlations: {len(corr_groups)} chain(s) detected")
+                for g in corr_groups:
+                    print(f"    [{g.combined_severity.upper()}] {g.correlation_type}: {g.chain_description[:80]}")
+        except Exception:
+            pass  # Never crash the main pipeline
+
         self._gate_passed = not gate.should_block(gate_result)
         self._gate_comment = gate.format_gate_comment(gate_result)
         return run_id
@@ -632,6 +645,19 @@ class AnalysisPipeline:
             print("\nNext Steps:")
             print("   View dashboard: python3 FRONTEND/app.py")
             print(f"   Generate report: python3 scripts/generate_report.py {run_id}")
+
+        # Feature 9: Cross-language correlation
+        try:
+            from CORE.engines.cross_language_correlator import CrossLanguageCorrelator
+
+            correlator = CrossLanguageCorrelator(str(self.target_dir))
+            findings, corr_groups = correlator.enrich_findings(findings)
+            if corr_groups:
+                print(f"\n[+] Cross-language correlations: {len(corr_groups)} chain(s) detected")
+                for g in corr_groups:
+                    print(f"    [{g.combined_severity.upper()}] {g.correlation_type}: {g.chain_description[:80]}")
+        except Exception:
+            pass  # Never crash the main pipeline
 
         self._gate_passed = not gate.should_block(gate_result)
         self._gate_comment = gate.format_gate_comment(gate_result)
