@@ -65,6 +65,7 @@ graph TD
 - ✅ Feature 5: Confidence scoring — every finding gets 0-100 score, threshold slider in dashboard (done — v3.0.8)
 - ✅ Feature 6: Triage memory — FP marking auto-suppresses similar findings in future scans (done — v3.0.9)
 - ✅ Feature 7: AI path feasibility validator — second AI call validates execution path reachability, cites LLM4PFA (done — v3.1.0)
+- ✅ Feature 8: Dependency reachability — checks if vulnerable npm package is actually called in source (done — v3.1.1)
 
 The Python version is **feature-complete and thesis-ready**.
 

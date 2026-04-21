@@ -46,7 +46,7 @@
 
 | Metric | Value |
 |--------|-------|
-| Total tests | **497** (as of v3.1.0) |
+| Total tests | **508** (as of v3.1.1) |
 | Passed | **436** |
 | Skipped | 4 (infrastructure-dependent) |
 | Runtime | ~6s |
@@ -100,3 +100,4 @@
 | Feasibility check latency | ~80-150ms per finding |
 | Confidence scoring | <1ms per finding (no network call) |
 | Triage memory suppression check | <5ms per finding (single DB query) |
+| Feature 8 reachability check | <2ms per npm finding (regex scan, cached) |

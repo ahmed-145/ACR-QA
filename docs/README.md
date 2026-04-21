@@ -69,4 +69,4 @@ During analysis runs, ACR-QA generates:
 
 ---
 
-**Last Updated:** April 21, 2026 · **Version:** 3.1.0
+**Last Updated:** April 21, 2026 · **Version:** 3.1.1

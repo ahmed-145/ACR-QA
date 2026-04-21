@@ -1,7 +1,7 @@
 # ACR-QA REST API Reference
 
 **Base URL:** `http://localhost:5000`
-**Version:** v3.1.0
+**Version:** v3.1.1
 **Format:** All responses are `application/json`
 
 > This document covers all 22 REST endpoints exposed by `FRONTEND/app.py`.

@@ -1,4 +1,4 @@
-# ACR-QA v3.1.0 Architecture
+# ACR-QA v3.1.1 Architecture
 
 ## System Overview
 
@@ -329,6 +329,24 @@ For HIGH and CRITICAL security findings, a second AI call validates whether the 
 - No sequential latency — feasibility check runs in the existing async context
 - Results stored in `llm_explanations`: `feasibility_verdict`, `feasibility_confidence`, `feasibility_reasoning`, `feasibility_latency_ms`, `feasibility_penalty`
 - Temperature set to 0.1 for deterministic verdicts (vs 0.3 for explanations)
+
+### Dependency Reachability (`CORE/engines/dependency_reachability.py`) — Feature 8
+
+For npm audit findings, ACR-QA checks whether the vulnerable package is actually imported in the application's source code or only present as a transitive dependency.
+
+**Reachability levels:**
+- `DIRECT` — package is explicitly `require()`d or `import`ed → confidence unchanged, full risk
+- `TRANSITIVE` — package installed but never directly imported → confidence -15 (harder to exploit)
+- `UNKNOWN` — not found in package.json or source → confidence -5 (likely transitive noise)
+
+**How it works:**
+1. Parses `package.json` to get declared dependencies
+2. Scans all `.js/.ts/.jsx/.tsx/.mjs/.cjs` files (excluding `node_modules`, `dist`, `build`)
+3. Extracts `require('pkg')` and `import ... from 'pkg'` using regex
+4. Normalises scoped packages and subpath imports (`@org/pkg/utils` → `@org/pkg`)
+5. `enrich_findings()` adds `reachability_level`, `reachability_penalty`, `reachability_direct_imports` to each npm finding and adjusts `confidence_score`
+
+**Verified on NodeGoat:** `ansi-regex` CVE flagged by npm audit — correctly classified as `UNKNOWN` since NodeGoat never directly imports it (it enters via a transitive dependency chain).
 
 ---
 

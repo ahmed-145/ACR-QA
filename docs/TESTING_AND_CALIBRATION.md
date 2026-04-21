@@ -1,7 +1,7 @@
 # ACR-QA Testing & Calibration Report
 
-**Latest Run:** April 21, 2026 · **Version:** v3.1.0
-**Unit Tests:** 497 passed · **Coverage:** quality\_gate 93%, severity\_scorer 62%, total CORE ~56%
+**Latest Run:** April 21, 2026 · **Version:** v3.1.1
+**Unit Tests:** 508 passed · **Coverage:** quality\_gate 93%, severity\_scorer 62%, total CORE ~56%
 
 ---
 
@@ -24,7 +24,7 @@
 
 | File | Tests | Added In |
 |------|:---:|:---:|
-| `TESTS/test_new_engines.py` | 81 | v3.1.0 — Features 4-7 |
+| `TESTS/test_new_engines.py` | 92 | v3.1.1 — Features 4-8 |
 | `TESTS/test_coverage_boost.py` | 77 | v2.9 |
 | `TESTS/test_god_mode.py` | 78 | v2.7 |
 | `TESTS/test_deep_coverage.py` | 98 | v2.6 |
@@ -409,7 +409,7 @@ vulnerabilities to stress-test the full pipeline.
 
 | File | Tests | Added In |
 |------|:---:|:---:|
-| `TESTS/test_new_engines.py` | **81** | v3.1.0 — Features 4-7 |
+| `TESTS/test_new_engines.py` | **92** | v3.1.1 — Features 4-8 |
 | `TESTS/test_coverage_boost.py` | **77** | v2.9 |
 | `TESTS/test_god_mode.py` | 78 | v2.7 |
 | `TESTS/test_deep_coverage.py` | 98 | v2.6 |
@@ -615,7 +615,7 @@ Synthetic JS projects of increasing size, measuring pipeline wall time:
 ### Test Suite — v3.0.4 Baseline
 
 ```text
-497 passed, 4 skipped, 32 warnings in ~73s
+508 passed, 4 skipped, 32 warnings in ~62s
 Coverage: 55.26% (≥40% requirement met)
 ruff: 0 errors
 mypy: 0 errors
@@ -637,6 +637,7 @@ mypy: 0 errors
 | v3.0.8  | 474         | 55%      | Feature 5 confidence scoring |
 | v3.0.9  | 482         | 54%      | Feature 6 triage memory |
 | v3.1.0  | 497         | 56%      | Feature 7 path feasibility |
+| v3.1.1  | 508         | 57%      | Feature 8 dependency reachability |
 
 ### Bugs Found and Fixed This Round
 
