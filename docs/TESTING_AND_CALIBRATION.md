@@ -1,7 +1,7 @@
 # ACR-QA Testing & Calibration Report
 
-**Latest Run:** April 21, 2026 · **Version:** v3.1.1
-**Unit Tests:** 508 passed · **Coverage:** quality\_gate 93%, severity\_scorer 62%, total CORE ~56%
+**Latest Run:** April 22, 2026 · **Version:** v3.1.2
+**Unit Tests:** 518 passed · **Coverage:** quality\_gate 93%, severity\_scorer 62%, total CORE ~58%
 
 ---
 
@@ -24,7 +24,7 @@
 
 | File | Tests | Added In |
 |------|:---:|:---:|
-| `TESTS/test_new_engines.py` | 92 | v3.1.1 — Features 4-8 |
+| `TESTS/test_new_engines.py` | 102 | v3.1.2 — Features 4-9 |
 | `TESTS/test_coverage_boost.py` | 77 | v2.9 |
 | `TESTS/test_god_mode.py` | 78 | v2.7 |
 | `TESTS/test_deep_coverage.py` | 98 | v2.6 |

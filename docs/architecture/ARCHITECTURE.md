@@ -1,4 +1,4 @@
-# ACR-QA v3.1.1 Architecture
+# ACR-QA v3.1.2 Architecture
 
 ## System Overview
 
@@ -347,6 +347,25 @@ For npm audit findings, ACR-QA checks whether the vulnerable package is actually
 5. `enrich_findings()` adds `reachability_level`, `reachability_penalty`, `reachability_direct_imports` to each npm finding and adjusts `confidence_score`
 
 **Verified on NodeGoat:** `ansi-regex` CVE flagged by npm audit — correctly classified as `UNKNOWN` since NodeGoat never directly imports it (it enters via a transitive dependency chain).
+
+---
+
+### Cross-Language Correlator (`CORE/engines/cross_language_correlator.py`) — Feature 9
+
+Detects vulnerability chains that span Python backend code, Jinja2/HTML templates, and JavaScript frontend files in the same project. Inspired by CHARON (CISPA/NDSS).
+
+**Correlation types:**
+
+| Type | Trigger | Confidence Boost |
+|------|---------|------------------|
+| `SQLI_TO_TEMPLATE` | SQL injection in DAO + route renders result in template | +20 |
+| `TEMPLATE_INJECTION` | `autoescape=False` or `\|safe` filter + backend security findings | +15 |
+| `XSS_CHAIN` | Python XSS finding + template unsafe output | +15 |
+| `ROUTE_JS_CHAIN` | Python security finding + JS file in same feature directory | +10 |
+
+**Pipeline integration:** Runs in both `run()` and `run_js()` before the quality gate assignment. Calls `enrich_findings()` which tags correlated findings with `cross_language_correlation`, `correlation_chain`, and `correlation_severity` fields, and boosts `confidence_score` for findings that are part of a chain.
+
+**Verified on DVPWA:** 2 chains detected — SQL injection in `dao/student.py` chained to 7 Jinja2 templates, and `autoescape=False` in `app.py` flagged as global XSS risk across all templates.
 
 ---
 

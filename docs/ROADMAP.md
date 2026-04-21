@@ -10,7 +10,7 @@
 
 ```mermaid
 graph TD
-    subgraph "ACR-QA v3.1.0 — Current"
+    subgraph "ACR-QA v3.1.2 — Current"
         CLI["CLI --lang auto|python|javascript"]
         DETECT["Language Detector\ndetect_language()"]
         CLI --> DETECT
@@ -66,6 +66,7 @@ graph TD
 - ✅ Feature 6: Triage memory — FP marking auto-suppresses similar findings in future scans (done — v3.0.9)
 - ✅ Feature 7: AI path feasibility validator — second AI call validates execution path reachability, cites LLM4PFA (done — v3.1.0)
 - ✅ Feature 8: Dependency reachability — checks if vulnerable npm package is actually called in source (done — v3.1.1)
+- ✅ Feature 9: Cross-language vulnerability correlation — Python Flask → JS/template taint tracking, cites CHARON (done — v3.1.2)
 
 The Python version is **feature-complete and thesis-ready**.
 
