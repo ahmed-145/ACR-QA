@@ -10,7 +10,7 @@
 
 ```mermaid
 graph TD
-    subgraph "ACR-QA v3.0.3 — Current"
+    subgraph "ACR-QA v3.1.0 — Current"
         CLI["CLI --lang auto|python|javascript"]
         DETECT["Language Detector\ndetect_language()"]
         CLI --> DETECT
@@ -333,4 +333,4 @@ docs/
 
 ---
 
-*Last updated: April 14, 2026 — ACR-QA v3.0.3*
+*Last updated: April 21, 2026 — ACR-QA v3.1.0*

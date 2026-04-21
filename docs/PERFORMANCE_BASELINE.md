@@ -46,7 +46,7 @@
 
 | Metric | Value |
 |--------|-------|
-| Total tests | **436** (as of v3.0.3) |
+| Total tests | **497** (as of v3.1.0) |
 | Passed | **436** |
 | Skipped | 4 (infrastructure-dependent) |
 | Runtime | ~6s |
