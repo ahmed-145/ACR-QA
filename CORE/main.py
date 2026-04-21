@@ -533,6 +533,25 @@ class AnalysisPipeline:
         except Exception as e:
             print(f"      - CBoM scan error: {e}")
 
+        # Dependency reachability enrichment
+        try:
+            from CORE.engines.dependency_reachability import DependencyReachabilityChecker
+
+            checker = DependencyReachabilityChecker(str(self.target_dir))
+            findings = checker.enrich_findings(findings)
+            # Count how many npm findings got reachability data
+            enriched = [f for f in findings if "reachability_level" in f]
+            if enriched:
+                direct = sum(1 for f in enriched if f.get("reachability_level") == "DIRECT")
+                transitive = sum(1 for f in enriched if f.get("reachability_level") == "TRANSITIVE")
+                unknown = sum(1 for f in enriched if f.get("reachability_level") == "UNKNOWN")
+                print(
+                    f"      - Reachability: {len(enriched)} npm findings — "
+                    f"🔴{direct} direct  🟡{transitive} transitive  ⚪{unknown} unknown"
+                )
+        except Exception as e:
+            print(f"      - Reachability check error: {e}")
+
         # Step 3: Apply same pipeline filters as Python path
         print("\n[3/5] Filtering and normalizing findings...")
         findings = self._apply_config_filters(findings)

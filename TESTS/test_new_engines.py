@@ -1160,3 +1160,161 @@ class TestPathFeasibility:
         assert rows[0]["feasibility_verdict"] == "UNREACHABLE"
         assert rows[0]["feasibility_confidence"] == "HIGH"
         assert rows[0]["feasibility_penalty"] == 30
+
+
+class TestDependencyReachability:
+    """Tests for Feature 8 — dependency reachability checker."""
+
+    def test_import(self):
+        from CORE.engines.dependency_reachability import DependencyReachabilityChecker
+
+        assert DependencyReachabilityChecker is not None
+
+    def test_direct_package_detected(self, tmp_path):
+        """A package that is require()'d in source is DIRECT."""
+        pkg_json = tmp_path / "package.json"
+        pkg_json.write_text('{"dependencies": {"express": "^4.0.0"}}')
+        src = tmp_path / "app.js"
+        src.write_text("const express = require('express');\nexpress();")
+        from CORE.engines.dependency_reachability import DependencyReachabilityChecker
+
+        checker = DependencyReachabilityChecker(str(tmp_path))
+        result = checker.check("express")
+        assert result.level == "DIRECT"
+        assert result.confidence_penalty == 0
+        assert result.is_reachable is True
+        assert any("app.js" in f for f in result.direct_imports)
+
+    def test_transitive_package_detected(self, tmp_path):
+        """A package in package.json but never imported is TRANSITIVE."""
+        pkg_json = tmp_path / "package.json"
+        pkg_json.write_text('{"dependencies": {"lodash": "^4.0.0"}}')
+        src = tmp_path / "app.js"
+        src.write_text("const x = 1;\nconsole.log(x);")
+        from CORE.engines.dependency_reachability import DependencyReachabilityChecker
+
+        checker = DependencyReachabilityChecker(str(tmp_path))
+        result = checker.check("lodash")
+        assert result.level == "TRANSITIVE"
+        assert result.confidence_penalty == -15
+        assert result.is_reachable is False
+
+    def test_unknown_package(self, tmp_path):
+        """A package not in package.json and not imported is UNKNOWN."""
+        pkg_json = tmp_path / "package.json"
+        pkg_json.write_text('{"dependencies": {}}')
+        from CORE.engines.dependency_reachability import DependencyReachabilityChecker
+
+        checker = DependencyReachabilityChecker(str(tmp_path))
+        result = checker.check("ansi-regex")
+        assert result.level == "UNKNOWN"
+        assert result.confidence_penalty == -5
+
+    def test_import_statement_detected(self, tmp_path):
+        """ES module import syntax is also detected."""
+        pkg_json = tmp_path / "package.json"
+        pkg_json.write_text('{"dependencies": {"axios": "^1.0.0"}}')
+        src = tmp_path / "client.ts"
+        src.write_text("import axios from 'axios';\naxios.get('/api');")
+        from CORE.engines.dependency_reachability import DependencyReachabilityChecker
+
+        checker = DependencyReachabilityChecker(str(tmp_path))
+        result = checker.check("axios")
+        assert result.level == "DIRECT"
+        assert result.is_reachable is True
+
+    def test_scoped_package_normalised(self, tmp_path):
+        """Scoped packages like @org/pkg are normalised correctly."""
+        pkg_json = tmp_path / "package.json"
+        pkg_json.write_text('{"dependencies": {"@typescript-eslint/parser": "^5.0.0"}}')
+        src = tmp_path / "index.js"
+        src.write_text("const p = require('@typescript-eslint/parser/dist/index');\np();")
+        from CORE.engines.dependency_reachability import DependencyReachabilityChecker
+
+        checker = DependencyReachabilityChecker(str(tmp_path))
+        result = checker.check("@typescript-eslint/parser")
+        assert result.level == "DIRECT"
+
+    def test_node_modules_excluded(self, tmp_path):
+        """node_modules files must not be scanned."""
+        pkg_json = tmp_path / "package.json"
+        pkg_json.write_text('{"dependencies": {"lodash": "^4.0.0"}}')
+        nm = tmp_path / "node_modules" / "some-pkg"
+        nm.mkdir(parents=True)
+        (nm / "index.js").write_text("const lodash = require('lodash');")
+        src = tmp_path / "app.js"
+        src.write_text("// no lodash here")
+        from CORE.engines.dependency_reachability import DependencyReachabilityChecker
+
+        checker = DependencyReachabilityChecker(str(tmp_path))
+        result = checker.check("lodash")
+        assert result.level == "TRANSITIVE"
+        assert "node_modules" not in str(result.direct_imports)
+
+    def test_enrich_findings_npm_audit(self, tmp_path):
+        """enrich_findings adds reachability data to npm audit findings."""
+        pkg_json = tmp_path / "package.json"
+        pkg_json.write_text('{"dependencies": {"marked": "^0.3.5"}}')
+        src = tmp_path / "server.js"
+        src.write_text("const marked = require('marked');\nmarked('# hello');")
+        from CORE.engines.dependency_reachability import DependencyReachabilityChecker
+
+        checker = DependencyReachabilityChecker(str(tmp_path))
+        findings = [
+            {
+                "canonical_rule_id": "SECURITY-059",
+                "tool": "npm-audit",
+                "message": "Vulnerable dependency: marked (high) — XSS vulnerability",
+                "confidence_score": 80,
+            }
+        ]
+        enriched = checker.enrich_findings(findings)
+        assert len(enriched) == 1
+        assert enriched[0]["reachability_level"] == "DIRECT"
+        assert enriched[0]["reachability_penalty"] == 0
+        assert enriched[0]["confidence_score"] == 80  # no penalty for DIRECT
+
+    def test_enrich_findings_transitive_reduces_confidence(self, tmp_path):
+        """Transitive dependencies reduce confidence score by 15."""
+        pkg_json = tmp_path / "package.json"
+        pkg_json.write_text('{"dependencies": {"ansi-regex": "^3.0.0"}}')
+        src = tmp_path / "app.js"
+        src.write_text("// no ansi-regex import here")
+        from CORE.engines.dependency_reachability import DependencyReachabilityChecker
+
+        checker = DependencyReachabilityChecker(str(tmp_path))
+        findings = [
+            {
+                "canonical_rule_id": "SECURITY-059",
+                "tool": "npm-audit",
+                "message": "Vulnerable dependency: ansi-regex (high) — ReDoS",
+                "confidence_score": 85,
+            }
+        ]
+        enriched = checker.enrich_findings(findings)
+        assert enriched[0]["reachability_level"] == "TRANSITIVE"
+        assert enriched[0]["confidence_score"] == 70  # 85 - 15
+
+    def test_check_batch(self, tmp_path):
+        """check_batch returns results for all packages."""
+        pkg_json = tmp_path / "package.json"
+        pkg_json.write_text('{"dependencies": {"express": "^4.0.0", "lodash": "^4.0.0"}}')
+        src = tmp_path / "app.js"
+        src.write_text("const express = require('express');")
+        from CORE.engines.dependency_reachability import DependencyReachabilityChecker
+
+        checker = DependencyReachabilityChecker(str(tmp_path))
+        results = checker.check_batch(["express", "lodash", "unknown-pkg"])
+        assert len(results) == 3
+        assert results["express"].level == "DIRECT"
+        assert results["lodash"].level == "TRANSITIVE"
+        assert results["unknown-pkg"].level == "UNKNOWN"
+
+    def test_no_package_json(self, tmp_path):
+        """Gracefully handles missing package.json."""
+        from CORE.engines.dependency_reachability import DependencyReachabilityChecker
+
+        checker = DependencyReachabilityChecker(str(tmp_path))
+        result = checker.check("express")
+        assert result.level in ("UNKNOWN", "TRANSITIVE")
+        assert result.confidence_penalty in (-5, -15)
