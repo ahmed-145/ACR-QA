@@ -56,6 +56,11 @@ CREATE TABLE IF NOT EXISTS llm_explanations (
     fix_confidence VARCHAR(20) DEFAULT NULL,
     fix_code TEXT DEFAULT NULL,
     fix_validation_note TEXT DEFAULT NULL,
+    feasibility_verdict VARCHAR(20) DEFAULT NULL,
+    feasibility_confidence VARCHAR(10) DEFAULT NULL,
+    feasibility_reasoning TEXT DEFAULT NULL,
+    feasibility_latency_ms INTEGER DEFAULT NULL,
+    feasibility_penalty INTEGER DEFAULT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 

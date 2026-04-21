@@ -1001,3 +1001,162 @@ class TestTriageMemory:
             file_path="utils/helper.py",
         )
         assert tm.should_suppress(different_rule, db) is False
+
+
+class TestPathFeasibility:
+    """Tests for Feature 7 — AI path feasibility validator."""
+
+    def test_parse_reachable(self):
+        from CORE.engines.path_feasibility import _parse_feasibility_response
+
+        v, c, r = _parse_feasibility_response(
+            "VERDICT: REACHABLE\nCONFIDENCE: HIGH\nREASONING: User input flows directly into eval."
+        )
+        assert v == "REACHABLE"
+        assert c == "HIGH"
+        assert "eval" in r
+
+    def test_parse_unreachable(self):
+        from CORE.engines.path_feasibility import _parse_feasibility_response
+
+        v, c, r = _parse_feasibility_response(
+            "VERDICT: UNREACHABLE\nCONFIDENCE: HIGH\nREASONING: Function is never called."
+        )
+        assert v == "UNREACHABLE"
+        assert c == "HIGH"
+
+    def test_parse_unknown_fallback(self):
+        from CORE.engines.path_feasibility import _parse_feasibility_response
+
+        v, c, r = _parse_feasibility_response("garbage response with no structure")
+        assert v == "UNKNOWN"
+        assert c == "LOW"
+
+    def test_parse_invalid_verdict_falls_back(self):
+        from CORE.engines.path_feasibility import _parse_feasibility_response
+
+        v, c, r = _parse_feasibility_response("VERDICT: MAYBE\nCONFIDENCE: HIGH\nREASONING: Not sure.")
+        assert v == "UNKNOWN"
+
+    def test_penalty_reachable_is_zero(self):
+        from CORE.engines.path_feasibility import PathFeasibilityResult
+
+        r = PathFeasibilityResult("REACHABLE", "HIGH", "flows to sink", 50, "SECURITY-001", "app.py", 1)
+        assert r.confidence_penalty == 0
+        assert r.is_unreachable is False
+
+    def test_penalty_unreachable_high(self):
+        from CORE.engines.path_feasibility import PathFeasibilityResult
+
+        r = PathFeasibilityResult("UNREACHABLE", "HIGH", "never called", 50, "SECURITY-001", "app.py", 1)
+        assert r.confidence_penalty == 30
+        assert r.is_unreachable is True
+
+    def test_penalty_unreachable_medium(self):
+        from CORE.engines.path_feasibility import PathFeasibilityResult
+
+        r = PathFeasibilityResult("UNREACHABLE", "MEDIUM", "guarded path", 50, "SECURITY-001", "app.py", 1)
+        assert r.confidence_penalty == 20
+
+    def test_penalty_unreachable_low(self):
+        from CORE.engines.path_feasibility import PathFeasibilityResult
+
+        r = PathFeasibilityResult("UNREACHABLE", "LOW", "unclear", 50, "SECURITY-001", "app.py", 1)
+        assert r.confidence_penalty == 10
+
+    def test_penalty_unknown_is_small(self):
+        from CORE.engines.path_feasibility import PathFeasibilityResult
+
+        r = PathFeasibilityResult("UNKNOWN", "LOW", "no context", 50, "SECURITY-001", "app.py", 1)
+        assert r.confidence_penalty == 5
+
+    def test_eligibility_high_security(self):
+        from CORE.engines.path_feasibility import PathFeasibilityValidator
+
+        v = PathFeasibilityValidator()
+        assert v.is_eligible({"canonical_severity": "high", "category": "security"}) is True
+
+    def test_eligibility_critical_security(self):
+        from CORE.engines.path_feasibility import PathFeasibilityValidator
+
+        v = PathFeasibilityValidator()
+        assert v.is_eligible({"canonical_severity": "critical", "category": "security"}) is True
+
+    def test_eligibility_medium_security_excluded(self):
+        from CORE.engines.path_feasibility import PathFeasibilityValidator
+
+        v = PathFeasibilityValidator()
+        assert v.is_eligible({"canonical_severity": "medium", "category": "security"}) is False
+
+    def test_eligibility_high_style_excluded(self):
+        from CORE.engines.path_feasibility import PathFeasibilityValidator
+
+        v = PathFeasibilityValidator()
+        assert v.is_eligible({"canonical_severity": "high", "category": "style"}) is False
+
+    def test_to_dict_has_required_keys(self):
+        from CORE.engines.path_feasibility import PathFeasibilityResult
+
+        r = PathFeasibilityResult("REACHABLE", "HIGH", "flows to sink", 120, "SECURITY-001", "app.py", 5)
+        d = r.to_dict()
+        required = {
+            "feasibility_verdict",
+            "feasibility_confidence",
+            "feasibility_reasoning",
+            "feasibility_latency_ms",
+            "feasibility_penalty",
+            "is_unreachable",
+        }
+        assert required.issubset(d.keys())
+        assert d["feasibility_verdict"] == "REACHABLE"
+        assert d["feasibility_penalty"] == 0
+
+    def test_db_stores_feasibility_fields(self):
+        """insert_explanation must persist feasibility fields."""
+        from DATABASE.database import Database
+
+        db = Database()
+        run_id = db.create_analysis_run(repo_name="test-feasibility", pr_number=None)
+        finding_id = db.insert_finding(
+            run_id,
+            {
+                "canonical_rule_id": "SECURITY-001",
+                "canonical_severity": "high",
+                "category": "security",
+                "file_path": "app.py",
+                "line_number": 10,
+                "message": "eval usage",
+                "tool": "bandit",
+                "severity": "high",
+                "language": "python",
+            },
+        )
+        db.insert_explanation(
+            finding_id,
+            {
+                "model_name": "llama3.1-8b",
+                "prompt_filled": "test",
+                "response_text": "Use ast.literal_eval instead.",
+                "temperature": 0.3,
+                "max_tokens": 300,
+                "tokens_used": 50,
+                "latency_ms": 100,
+                "cost_usd": 0,
+                "status": "success",
+                "feasibility_verdict": "UNREACHABLE",
+                "feasibility_confidence": "HIGH",
+                "feasibility_reasoning": "Function is never called from main.",
+                "feasibility_latency_ms": 80,
+                "feasibility_penalty": 30,
+            },
+        )
+        rows = db.execute(
+            "SELECT feasibility_verdict, feasibility_confidence, feasibility_penalty "
+            "FROM llm_explanations WHERE finding_id = %s",
+            (finding_id,),
+            fetch=True,
+        )
+        assert len(rows) == 1
+        assert rows[0]["feasibility_verdict"] == "UNREACHABLE"
+        assert rows[0]["feasibility_confidence"] == "HIGH"
+        assert rows[0]["feasibility_penalty"] == 30

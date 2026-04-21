@@ -307,16 +307,19 @@ class Database:
     # ===== LLM EXPLANATIONS =====
 
     def insert_explanation(self, finding_id, explanation_dict):
-        """Store LLM explanation with full provenance including fix validation."""
+        """Store LLM explanation with full provenance including fix validation and feasibility."""
         query = """
             INSERT INTO llm_explanations (
                 finding_id, model_name, prompt_filled, response_text,
                 temperature, max_tokens, tokens_used,
                 latency_ms, cost_usd, status,
-                fix_validated, fix_confidence, fix_code, fix_validation_note
+                fix_validated, fix_confidence, fix_code, fix_validation_note,
+                feasibility_verdict, feasibility_confidence,
+                feasibility_reasoning, feasibility_latency_ms, feasibility_penalty
             ) VALUES (
                 %s, %s, %s, %s, %s, %s, %s, %s, %s, %s,
-                %s, %s, %s, %s
+                %s, %s, %s, %s,
+                %s, %s, %s, %s, %s
             ) RETURNING id
         """
         params = (
@@ -334,6 +337,11 @@ class Database:
             explanation_dict.get("fix_confidence"),
             explanation_dict.get("validated_fix"),
             explanation_dict.get("fix_validation_note"),
+            explanation_dict.get("feasibility_verdict"),
+            explanation_dict.get("feasibility_confidence"),
+            explanation_dict.get("feasibility_reasoning"),
+            explanation_dict.get("feasibility_latency_ms"),
+            explanation_dict.get("feasibility_penalty"),
         )
         result = self.execute(query, params, fetch=True)
         return result[0]["id"] if result else None

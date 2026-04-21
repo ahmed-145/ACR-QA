@@ -321,6 +321,34 @@ Start with: "This code violates {canonical_id}..." and end with a ```python code
                 result["fix_validation_note"] = "Validation unavailable"
             # -----------------------------------------
 
+            # --- Feature 7: Path Feasibility Validation ---
+            # Run a second AI call for HIGH security findings to check
+            # if the execution path is actually reachable (LLM4PFA approach).
+            try:
+                from CORE.engines.path_feasibility import PathFeasibilityValidator
+
+                _pf_validator = PathFeasibilityValidator(
+                    model=self.model,
+                    max_tokens=150,
+                    temperature=0.1,
+                )
+                if _pf_validator.is_eligible(finding):
+                    _pf_result = await _pf_validator.validate_async(client, finding, code_snippet, api_key)
+                    result["feasibility_verdict"] = _pf_result.verdict
+                    result["feasibility_confidence"] = _pf_result.confidence
+                    result["feasibility_reasoning"] = _pf_result.reasoning
+                    result["feasibility_latency_ms"] = _pf_result.latency_ms
+                    result["feasibility_penalty"] = _pf_result.confidence_penalty
+                    result["feasibility_checked"] = True
+                else:
+                    result["feasibility_verdict"] = None
+                    result["feasibility_checked"] = False
+            except Exception:
+                # Never let feasibility check crash the explanation pipeline
+                result["feasibility_verdict"] = None
+                result["feasibility_checked"] = False
+            # ------------------------------------------------
+
             if self.redis:
                 try:
                     self.redis.setex(cache_key, self.cache_ttl, json.dumps(result))
