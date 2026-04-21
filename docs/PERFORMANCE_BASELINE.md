@@ -84,3 +84,19 @@
 | Rule mappings | 97 | 127 |
 
 **Pipeline timing unchanged** — normalization and severity scoring are pure in-memory operations; the new test coverage does not affect runtime performance.
+
+---
+
+## v3.1.0 Baseline (April 2026)
+
+| Metric | Value |
+|--------|-------|
+| Test suite | 497 passed, 4 skipped |
+| Coverage | 56% |
+| DVNA findings | 128 (stable across all versions) |
+| NodeGoat findings | 310 |
+| AI batch latency (4 HIGH findings) | ~1300ms |
+| AI batch latency (7 HIGH findings) | ~2300ms |
+| Feasibility check latency | ~80-150ms per finding |
+| Confidence scoring | <1ms per finding (no network call) |
+| Triage memory suppression check | <5ms per finding (single DB query) |

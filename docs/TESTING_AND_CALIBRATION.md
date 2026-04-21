@@ -620,3 +620,60 @@ Coverage: 55.26% (≥40% requirement met)
 ruff: 0 errors
 mypy: 0 errors
 ```
+
+---
+
+## Section 12 — Feature Validation Round (v3.0.4 → v3.1.0)
+*April 2026 — Features 2–7 + Architecture Cleanup*
+
+### Test Suite Progression
+
+| Version | Tests Passed | Coverage | Notes |
+|---------|-------------|----------|-------|
+| v3.0.4  | 452         | 55%      | Feature 2 CBoM baseline |
+| v3.0.5  | 459         | 55%      | Feature 3 quality gate |
+| v3.0.6  | 459         | 55%      | JS/TS pipeline unification |
+| v3.0.7  | 462         | 55%      | Feature 4 autofix PR |
+| v3.0.8  | 474         | 55%      | Feature 5 confidence scoring |
+| v3.0.9  | 482         | 54%      | Feature 6 triage memory |
+| v3.1.0  | 497         | 56%      | Feature 7 path feasibility |
+
+### Bugs Found and Fixed This Round
+
+| Bug | Symptom | Root Cause | Fix | Commit |
+|-----|---------|-----------|-----|--------|
+| JS categories invalid | `"pattern"`, `"other"`, `"imports"` warnings on every scan | `_infer_category()` mapped to non-canonical values | Remapped to valid categories: `best-practice`, `style`, `dead-code` | 31307d0 |
+| JS pipeline bypassed filters | Config filters, dedup, sort, CBoM skipped for JS targets | JS path was a separate CLI block, not routed through `AnalysisPipeline` | Merged JS path into `AnalysisPipeline.run_js()` | 53dd42a |
+| DVNA baseline regression | 39 findings instead of 128 after JS pipeline refactor | `cap_per_rule(max=5)` applied to JS path, capping BEST-PRACTICE-004 (47 hits) | Removed cap from JS CLI path | 31307d0 |
+| `fix_code` always NULL | `fix_validated=True` stored but `fix_code=NULL` in DB | `validated_fix` key missing from explainer result dict | Added `result["validated_fix"] = validation.get("validated_fix")` | e55bd33 |
+| `args.no_ai` AttributeError | CLI crash on `--no-ai` flag | `--no-ai` sets `dest="ai"` but code referenced `args.no_ai` | Changed to `not args.ai` | 2600c75 |
+| DATA/outputs committed to git | Generated JSON/txt files on every run | Missing from .gitignore | Added `DATA/outputs/` to .gitignore | 28e744f |
+| DVNA/NodeGoat dangling gitlinks | CI failure mode 160000 submodules | `git add` on uninitialized git repos | Removed from index, added clone_eval_repos.sh | 851d177 |
+| asyncio.coroutine dead code | mypy arg-type error | Dead branch using deprecated asyncio.coroutine | Removed dead branch | c80a2d5 |
+
+### New Engines Added This Round
+
+| Engine | File | Purpose | Tests |
+|--------|------|---------|-------|
+| CBoM Scanner | `CORE/engines/cbom_scanner.py` | Crypto inventory + quantum-safety classification | 7 |
+| Confidence Scorer | `CORE/engines/confidence_scorer.py` | 0-100 finding confidence score | 12 |
+| Triage Memory | `CORE/engines/triage_memory.py` | FP suppression via learned patterns | 8 |
+| Path Feasibility | `CORE/engines/path_feasibility.py` | AI execution path reachability check | 15 |
+
+### Architecture Changes This Round
+
+- JS/TS pipeline merged into `AnalysisPipeline.run_js()` — unified 5-step pipeline for both languages
+- `findings.confidence_score` — new DB column, computed at insert time by ConfidenceScorer
+- `suppression_rules` — new DB table for triage memory
+- `llm_explanations` extended with fix validation fields (Feature 1) and feasibility fields (Feature 7)
+- `clone_eval_repos.sh` — reproducible eval corpus setup with pinned DVNA commit hash
+
+### DVNA Baseline Verification (v3.1.0)
+Target: tmp_repos/DVNA (commit 9ba473a)
+Total findings: 128 | High: 4 | Medium: 77 | Low: 47
+Quality Gate: FAILED (4 HIGH > max 0) — expected for vulnerable app
+
+### NodeGoat First Full Pipeline Run (v3.1.0)
+Target: tmp_repos/NodeGoat
+Total findings: 310 (319 raw − 9 deduped) | High: 7 | Medium: 145 | Low: 158
+AI explanations: 7 HIGH findings in 2299ms
