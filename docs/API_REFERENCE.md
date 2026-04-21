@@ -159,7 +159,7 @@ Health check — returns database + Redis connectivity status.
 
 **Response:**
 ```json
-{"status": "ok", "db": "connected", "redis": "connected", "version": "3.1.0"}
+{"status": "ok", "db": "connected", "redis": "connected", "version": "3.1.1"}
 ```
 
 #### `GET /api/fix-confidence/<rule_id>`
@@ -275,4 +275,4 @@ console.log(`Found ${data.total} issues`);
 
 ---
 
-*Last updated: April 21, 2026 — ACR-QA v3.1.0*
+*Last updated: April 21, 2026 — ACR-QA v3.1.1*
