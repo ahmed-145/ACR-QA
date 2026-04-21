@@ -2,6 +2,31 @@
 
 All notable changes to ACR-QA are documented here.
 
+## [v3.1.0] — Feature 7: AI Path Feasibility Validator
+
+### Added
+- `CORE/engines/path_feasibility.py` — new `PathFeasibilityValidator` engine
+  - Inspired by LLM4PFA (arXiv) — LLM-based path feasibility analysis for FP elimination
+  - For HIGH/CRITICAL security findings only, runs a second async AI call asking: "Is this execution path actually reachable?"
+  - Returns structured verdict: REACHABLE | UNREACHABLE | UNKNOWN
+  - Confidence-weighted penalty system: UNREACHABLE+HIGH → -30, UNREACHABLE+MEDIUM → -20, UNKNOWN → -5
+  - Runs inside the existing async httpx pipeline — no added sequential latency
+  - `is_eligible(finding)` — only HIGH/CRITICAL security findings qualify (too expensive for medium/low)
+  - `validate_async()` — single finding async check
+  - `validate_batch_async()` — batch check for multiple findings
+- `ExplanationEngine._explain_one_async()` — feasibility check wired after fix validation; adds `feasibility_verdict`, `feasibility_confidence`, `feasibility_reasoning`, `feasibility_latency_ms`, `feasibility_penalty`, `feasibility_checked` to every explanation result
+- DB schema: 5 new columns on `llm_explanations` — `feasibility_verdict`, `feasibility_confidence`, `feasibility_reasoning`, `feasibility_latency_ms`, `feasibility_penalty`
+- `Database.insert_explanation()` — now persists all feasibility fields
+- 15 new unit tests in `TESTS/test_new_engines.py::TestPathFeasibility` (all passing)
+
+### Academic citation
+This feature implements the core idea from **LLM4PFA** (arXiv) — using LLMs to validate execution path feasibility and eliminate false positives in static analysis. ACR-QA applies this as a second-pass validator on HIGH severity security findings.
+
+### Test count
+497 passed, 4 skipped — up from 482 (v3.0.9)
+
+---
+
 ## [v3.0.9] — Feature 6: Triage Memory
 
 ### Added

@@ -311,6 +311,27 @@ The triage memory system learns from user feedback to automatically suppress rec
 
 ---
 
+### Path Feasibility Validator (`CORE/engines/path_feasibility.py`) — Feature 7
+
+For HIGH and CRITICAL security findings, a second AI call validates whether the flagged execution path is actually reachable at runtime. This reduces false positives by eliminating unreachable code paths before they reach the developer.
+
+**Academic basis:** Implements the core approach from LLM4PFA (arXiv) — using LLMs to validate path feasibility in static analysis pipelines.
+
+**Verdict system:**
+- `REACHABLE` — path is reachable, finding is likely a true positive (no penalty)
+- `UNREACHABLE` — path cannot be reached, likely a false positive (confidence penalty: HIGH=-30, MEDIUM=-20, LOW=-10)
+- `UNKNOWN` — insufficient context (small penalty: -5)
+
+**Eligibility:** Only HIGH/CRITICAL severity findings in the `security` category are validated. Medium/low findings and non-security categories are skipped to keep latency and cost manageable.
+
+**Pipeline integration:**
+- Runs inside `_explain_one_async()` after fix validation, using the same `httpx.AsyncClient` session
+- No sequential latency — feasibility check runs in the existing async context
+- Results stored in `llm_explanations`: `feasibility_verdict`, `feasibility_confidence`, `feasibility_reasoning`, `feasibility_latency_ms`, `feasibility_penalty`
+- Temperature set to 0.1 for deterministic verdicts (vs 0.3 for explanations)
+
+---
+
 ## Database Schema
 
 6 tables in PostgreSQL 15:

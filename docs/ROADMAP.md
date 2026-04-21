@@ -57,13 +57,14 @@ graph TD
 
 ## Where We Are Now
 
-### ✅ Phase 1 — Python MVP (COMPLETE, v3.0.9)
+### ✅ Phase 1 — Python MVP (COMPLETE, v3.1.0)
 
 - ✅ Feature 2: Cryptographic Bill of Materials (CBoM) — quantum-safety classification per NIST FIPS 203/204 (done — v3.0.4)
 - ✅ Feature 3: Configurable Merge-Blocking Quality Gate — `block` vs `warn` mode (done — v3.0.5)
 - ✅ Feature 4: Autofix PRs — bot opens PR with validated AI-generated fixes applied automatically (done — v3.0.7)
 - ✅ Feature 5: Confidence scoring — every finding gets 0-100 score, threshold slider in dashboard (done — v3.0.8)
 - ✅ Feature 6: Triage memory — FP marking auto-suppresses similar findings in future scans (done — v3.0.9)
+- ✅ Feature 7: AI path feasibility validator — second AI call validates execution path reachability, cites LLM4PFA (done — v3.1.0)
 
 The Python version is **feature-complete and thesis-ready**.
 
@@ -82,8 +83,9 @@ The Python version is **feature-complete and thesis-ready**.
 | Flask Dashboard | ✅ | 22 REST endpoints — runs, findings, stats, trends, compliance, suppression-rules |
 | PostgreSQL + Redis | ✅ | Full persistence + caching layer |
 | Triage Memory | ✅ | FP feedback auto-creates suppression rules; future scans skip matching findings |
+| Path Feasibility | ✅ | Second AI call validates execution path reachability for HIGH/CRITICAL findings (LLM4PFA) |
 | CLI | ✅ | `--version`, `--no-ai`, `--json`, `--lang`, `--rich`, `--diff-only`, `--auto-fix` |
-| Tests | ✅ | 482 passing (5 test files) |
+| Tests | ✅ | 497 passing (5 test files) |
 | Docs | ✅ | API_REFERENCE.md, EVALUATION.md, TESTING_AND_CALIBRATION.md, AGENTS.md |
 
 #### Repos tested (Round 1–5)
