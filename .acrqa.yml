@@ -26,6 +26,19 @@ analysis:
     - "*.pyc"
   file_extensions:
     - .py
+    - .js
+    - .ts
+    - .jsx
+    - .tsx
+    - .mjs
+    - .cjs
+
+language:
+  auto_detect: true   # auto-route to JS adapter when package.json is present
+  supported:
+    - python
+    - javascript
+    - typescript
 
 autofix:
   enabled: true

@@ -80,7 +80,7 @@ PYTHON_PATTERNS: list[tuple[str, str]] = [
     (r"from\s+cryptography\.hazmat\.primitives\s+import\s+(\w+)", "cryptography-lib"),
     (r"from\s+cryptography\.hazmat\.primitives\.asymmetric\s+import\s+(\w+)", "cryptography-asymmetric"),
     # RSA / ECDSA / DSA imports
-    (r"(?:import|from)\s+(?:rsa|ecdsa|dsa)\b", "crypto-lib-import"),
+    (r"(?:import|from)\s+(rsa|ecdsa|dsa)\b", "crypto-lib-import"),
     # bcrypt / argon2 / scrypt / pbkdf2
     (r"\b(bcrypt|argon2|scrypt|pbkdf2)\b", "kdf-usage"),
     # JWT
