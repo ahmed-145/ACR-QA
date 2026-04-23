@@ -7,8 +7,8 @@
 
 [![Python 3.11+](https://img.shields.io/badge/Python-3.11+-3776ab?logo=python&logoColor=white)](https://www.python.org/)
 [![CI Tests](https://github.com/ahmed-145/ACR-QA/actions/workflows/tests.yml/badge.svg)](https://github.com/ahmed-145/ACR-QA/actions/workflows/tests.yml)
-[![Tests](https://img.shields.io/badge/Tests-518%20passing-22c55e?logo=pytest&logoColor=white)](./TESTS/)
-[![Version](https://img.shields.io/badge/Version-3.1.2-blue)](CHANGELOG.md)
+[![Tests](https://img.shields.io/badge/Tests-526%20passing-22c55e?logo=pytest&logoColor=white)](./TESTS/)
+[![Version](https://img.shields.io/badge/Version-3.1.3-blue)](CHANGELOG.md)
 [![PostgreSQL 15](https://img.shields.io/badge/PostgreSQL-15+-336791?logo=postgresql&logoColor=white)](https://postgresql.org/)
 [![Prometheus](https://img.shields.io/badge/Prometheus-monitored-e6522c?logo=prometheus&logoColor=white)](https://prometheus.io/)
 [![Rules](https://img.shields.io/badge/Rules-299%20mapped-8b5cf6?logo=shield&logoColor=white)](./docs/evaluation/PER_TOOL_EVALUATION.md)
@@ -503,13 +503,13 @@ Pre-built dashboard with **6 panels** at **http://localhost:3000** (admin/admin)
 ## 🧪 Testing
 
 ```bash
-make test-all          # Full pytest suite (508 tests)
+make test-all          # Full pytest suite (526 tests)
 make test              # Acceptance tests only
 make run               # Run analysis on sample files
 make test-e2e          # End-to-end with Docker
 ```
 
-**508 tests passing**, 4 skipped (infrastructure-dependent):
+**526 tests passing**, 4 skipped (infrastructure-dependent):
 
 | Test File | # | Coverage |
 |-----------|:-:|----------|
@@ -626,7 +626,7 @@ make test-e2e          # End-to-end with Docker
 - [x] ~~Quality gates, per-repo config, inline suppression, dedup~~ (v1.0)
 - [x] ~~Deep-code audit + 100 tests + bug fixes~~ (v2.6)
 - [x] ~~Competitive features: test gap analyzer, OWASP compliance, policy engine, feedback tuner, confidence filtering~~ (v2.7)
-- [x] ~~God-mode testing: 474 tests across 14 test suites~~ (v3.0.8 → 508 tests at v3.1.1)
+- [x] ~~God-mode testing: 474 tests across 14 test suites~~ (v3.0.8 → 526 tests at v3.1.1)
 - [x] ~~JavaScript / TypeScript language adapter~~ (v3.0.3) — ESLint, Semgrep JS, npm audit, 56 rule mappings
 - [x] ~~Confidence Scoring Engine — 0-100 score per finding, DB-stored, dashboard slider~~ (v3.0.8)
 - [ ] User study (8–10 participants)

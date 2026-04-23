@@ -501,18 +501,20 @@ class Database:
         results = self.execute(query, (run_id,), fetch=True)
         return results[0] if results else None
 
-    def get_trend_data(self, limit=30):
+    def get_trend_data(self, limit=30, repo_name=None):
         """
         Get trend data for analytics dashboard.
-        Aggregates findings by severity and category across recent runs.
-
-        Args:
-            limit: Number of recent runs to include
-
-        Returns:
-            List of dicts with per-run aggregated data
+        Aggregates findings by severity, category, and confidence across recent runs.
+        Optionally filter by repo_name.
         """
-        query = """
+        where_clause = "WHERE ar.status = 'completed'"
+        params: list = []
+        if repo_name:
+            where_clause += " AND ar.repo_name = %s"
+            params.append(repo_name)
+        params.append(limit)
+
+        query = f"""
             SELECT
                 ar.id as run_id,
                 ar.repo_name,
@@ -523,16 +525,29 @@ class Database:
                 COALESCE(SUM(CASE WHEN f.canonical_severity = 'low' THEN 1 ELSE 0 END), 0) as low_count,
                 COALESCE(SUM(CASE WHEN f.category = 'security' THEN 1 ELSE 0 END), 0) as security_count,
                 COALESCE(SUM(CASE WHEN f.category = 'style' THEN 1 ELSE 0 END), 0) as style_count,
-                COALESCE(SUM(CASE WHEN f.category = 'complexity' THEN 1 ELSE 0 END), 0) as complexity_count,
-                COALESCE(SUM(CASE WHEN f.category = 'performance' THEN 1 ELSE 0 END), 0) as performance_count
+                COALESCE(SUM(CASE WHEN f.category = 'design' THEN 1 ELSE 0 END), 0) as design_count,
+                COALESCE(SUM(CASE WHEN f.category = 'best-practice' THEN 1 ELSE 0 END), 0) as best_practice_count,
+                COALESCE(AVG(f.confidence_score), 0) as avg_confidence,
+                COALESCE(SUM(CASE WHEN f.confidence_score >= 70 THEN 1 ELSE 0 END), 0) as high_confidence_count
             FROM analysis_runs ar
             LEFT JOIN findings f ON ar.id = f.run_id
-            WHERE ar.status = 'completed'
+            {where_clause}
             GROUP BY ar.id, ar.repo_name, ar.started_at, ar.total_findings
             ORDER BY ar.started_at DESC
             LIMIT %s
         """
-        return self.execute(query, (limit,), fetch=True)
+        return self.execute(query, tuple(params), fetch=True)
+
+    def get_repos_with_runs(self) -> list[str]:
+        """Get list of distinct repo names that have completed runs."""
+        query = """
+            SELECT DISTINCT repo_name
+            FROM analysis_runs
+            WHERE status = 'completed' AND repo_name NOT LIKE 'test-%'
+            ORDER BY repo_name
+        """
+        rows = self.execute(query, fetch=True)
+        return [r["repo_name"] for r in rows] if rows else []
 
     def close(self):
         """Close database connection"""

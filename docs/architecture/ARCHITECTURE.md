@@ -1,4 +1,4 @@
-# ACR-QA v3.1.2 Architecture
+# ACR-QA v3.1.3 Architecture
 
 ## System Overview
 
@@ -416,3 +416,18 @@ Detects vulnerability chains that span Python backend code, Jinja2/HTML template
 | Massive | 500 | 9.83s | 50.9 files/s |
 
 > 50× files → 1.6× time. Overhead dominates at small scale; throughput scales efficiently at large scale.
+
+### Vulnerability Trend Dashboard — Feature 10
+
+Time-series visualization of finding counts, severity distribution, and confidence scores across all historical ACR-QA scans stored in PostgreSQL.
+
+**API endpoints:**
+- `GET /api/trends?limit=30&repo=dvna` — returns time-series data for Chart.js rendering. Supports optional repo filter. Returns: `labels`, `severity_series` (high/medium/low), `category_series` (security/style/design/best_practice), `confidence_series` (avg per run), `total_series`, `repos` list.
+- `GET /api/repos` — returns distinct repo names with completed runs (excludes test- repos)
+
+**Dashboard charts (Chart.js 4.x):**
+- Severity trend — stacked line chart of HIGH/MEDIUM/LOW counts over time
+- Confidence trend — line chart of average confidence score per run
+- Category breakdown — doughnut chart of finding categories
+
+**Bug fixed:** `/api/trends` was reading `row.get("created_at")` but the DB returns `started_at` — labels were all "unknown". Fixed to `row.get("started_at")`.

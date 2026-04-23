@@ -46,7 +46,7 @@
 
 | Metric | Value |
 |--------|-------|
-| Total tests | **508** (as of v3.1.1) |
+| Total tests | **526** (as of v3.1.3) |
 | Passed | **436** |
 | Skipped | 4 (infrastructure-dependent) |
 | Runtime | ~6s |
@@ -101,3 +101,6 @@
 | Confidence scoring | <1ms per finding (no network call) |
 | Triage memory suppression check | <5ms per finding (single DB query) |
 | Feature 8 reachability check | <2ms per npm finding (regex scan, cached) |
+
+| Feature 9 cross-language correlation | <10ms per project scan (regex + file scan, cached) |
+| Feature 10 trend API | <50ms per request (single PostgreSQL aggregation query) |

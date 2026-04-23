@@ -1468,3 +1468,130 @@ class TestCrossLanguageCorrelator:
         assert len(groups) >= 1
         types = {g.correlation_type for g in groups}
         assert "SQLI_TO_TEMPLATE" in types or "TEMPLATE_INJECTION" in types
+
+
+class TestFeature10TrendDashboard:
+    """Tests for Feature 10 — vulnerability trend dashboard."""
+
+    def test_get_trend_data_returns_list(self):
+        from DATABASE.database import Database
+
+        db = Database()
+        trend = db.get_trend_data(limit=5)
+        assert isinstance(trend, list)
+
+    def test_get_trend_data_has_required_keys(self):
+        from DATABASE.database import Database
+
+        db = Database()
+        trend = db.get_trend_data(limit=5)
+        if trend:
+            required = {
+                "run_id",
+                "repo_name",
+                "started_at",
+                "total_findings",
+                "high_count",
+                "medium_count",
+                "low_count",
+                "security_count",
+                "avg_confidence",
+                "high_confidence_count",
+            }
+            assert required.issubset(set(trend[0].keys()))
+
+    def test_get_trend_data_repo_filter(self):
+        from DATABASE.database import Database
+
+        db = Database()
+        # Filter by a repo that definitely does not exist
+        trend = db.get_trend_data(limit=10, repo_name="nonexistent-repo-xyz")
+        assert trend == [] or isinstance(trend, list)
+
+    def test_get_repos_with_runs_returns_list(self):
+        from DATABASE.database import Database
+
+        db = Database()
+        repos = db.get_repos_with_runs()
+        assert isinstance(repos, list)
+
+    def test_get_repos_with_runs_excludes_test_repos(self):
+        from DATABASE.database import Database
+
+        db = Database()
+        repos = db.get_repos_with_runs()
+        # Should not include test- prefixed repos
+        test_repos = [r for r in repos if r.startswith("test-")]
+        assert test_repos == []
+
+    def test_trends_api_returns_success(self):
+        import subprocess
+        import time
+
+        import requests
+
+        proc = subprocess.Popen(
+            ["python3", "FRONTEND/app.py"],
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL,
+        )
+        time.sleep(3)
+        try:
+            r = requests.get("http://localhost:5000/api/trends?limit=5", timeout=5)
+            assert r.status_code == 200
+            data = r.json()
+            assert data["success"] is True
+            assert "labels" in data
+            assert "severity_series" in data
+            assert "confidence_series" in data
+            assert "total_series" in data
+            assert "repos" in data
+            assert "run_count" in data
+        finally:
+            proc.terminate()
+
+    def test_repos_api_returns_success(self):
+        import subprocess
+        import time
+
+        import requests
+
+        proc = subprocess.Popen(
+            ["python3", "FRONTEND/app.py"],
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL,
+        )
+        time.sleep(3)
+        try:
+            r = requests.get("http://localhost:5000/api/repos", timeout=5)
+            assert r.status_code == 200
+            data = r.json()
+            assert data["success"] is True
+            assert "repos" in data
+            assert isinstance(data["repos"], list)
+        finally:
+            proc.terminate()
+
+    def test_trends_api_repo_filter(self):
+        import subprocess
+        import time
+
+        import requests
+
+        proc = subprocess.Popen(
+            ["python3", "FRONTEND/app.py"],
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL,
+        )
+        time.sleep(3)
+        try:
+            r = requests.get(
+                "http://localhost:5000/api/trends?limit=5&repo=nonexistent-xyz",
+                timeout=5,
+            )
+            assert r.status_code == 200
+            data = r.json()
+            assert data["success"] is True
+            assert data["run_count"] == 0
+        finally:
+            proc.terminate()

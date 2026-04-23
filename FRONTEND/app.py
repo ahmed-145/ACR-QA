@@ -585,51 +585,68 @@ def get_fix_confidence(rule_id):
 def get_trends():
     """
     Get trend analytics data for dashboard visualization.
-    Returns time-series severity and category data across recent runs.
+    Returns time-series severity, category, and confidence data across recent runs.
+    Query params:
+        limit (int): number of runs to include (default 30)
+        repo (str): filter by repo name (optional)
     """
     try:
         limit = request.args.get("limit", 30, type=int)
-        trend_data = db.get_trend_data(limit=limit)
+        repo = request.args.get("repo", None)
+        trend_data = db.get_trend_data(limit=limit, repo_name=repo)
+        repos = db.get_repos_with_runs()
 
-        # Format for charting
         labels = []
         severity_series = {"high": [], "medium": [], "low": []}
-        category_series = {
-            "security": [],
-            "style": [],
-            "complexity": [],
-            "performance": [],
-        }
+        category_series = {"security": [], "style": [], "design": [], "best_practice": []}
+        confidence_series = []
         total_series = []
+        run_ids = []
 
         for row in reversed(trend_data):  # Chronological order
-            created = row.get("created_at")
-            label = str(created)[:10] if created else "unknown"
-            labels.append(label)
+            started = row.get("started_at")
+            label = str(started)[:10] if started else "unknown"
+            labels.append(f"{label} ({row.get('repo_name', '?')})")
+            run_ids.append(row.get("run_id"))
 
-            severity_series["high"].append(row.get("high_count", 0))
-            severity_series["medium"].append(row.get("medium_count", 0))
-            severity_series["low"].append(row.get("low_count", 0))
+            severity_series["high"].append(int(row.get("high_count", 0)))
+            severity_series["medium"].append(int(row.get("medium_count", 0)))
+            severity_series["low"].append(int(row.get("low_count", 0)))
 
-            category_series["security"].append(row.get("security_count", 0))
-            category_series["style"].append(row.get("style_count", 0))
-            category_series["complexity"].append(row.get("complexity_count", 0))
-            category_series["performance"].append(row.get("performance_count", 0))
+            category_series["security"].append(int(row.get("security_count", 0)))
+            category_series["style"].append(int(row.get("style_count", 0)))
+            category_series["design"].append(int(row.get("design_count", 0)))
+            category_series["best_practice"].append(int(row.get("best_practice_count", 0)))
 
-            total_series.append(row.get("total_findings", 0))
+            confidence_series.append(round(float(row.get("avg_confidence", 0)), 1))
+            total_series.append(int(row.get("total_findings", 0)))
 
         return jsonify(
             {
                 "success": True,
                 "labels": labels,
-                "severity": severity_series,
-                "categories": category_series,
-                "totals": total_series,
-                "data_points": len(labels),
+                "run_ids": run_ids,
+                "repos": repos,
+                "severity_series": severity_series,
+                "category_series": category_series,
+                "confidence_series": confidence_series,
+                "total_series": total_series,
+                "run_count": len(trend_data),
             }
         )
+
     except Exception as e:
         print(f"Error in /api/trends: {e}")
+        return jsonify({"success": False, "error": str(e)}), 500
+
+
+@app.route("/api/repos")
+def get_repos():
+    """Get list of repos that have completed analysis runs."""
+    try:
+        repos = db.get_repos_with_runs()
+        return jsonify({"success": True, "repos": repos})
+    except Exception as e:
         return jsonify({"success": False, "error": str(e)}), 500
 
 

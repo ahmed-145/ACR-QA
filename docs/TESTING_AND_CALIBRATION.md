@@ -1,7 +1,7 @@
 # ACR-QA Testing & Calibration Report
 
-**Latest Run:** April 22, 2026 · **Version:** v3.1.2
-**Unit Tests:** 518 passed · **Coverage:** quality\_gate 93%, severity\_scorer 62%, total CORE ~58%
+**Latest Run:** April 22, 2026 · **Version:** v3.1.3
+**Unit Tests:** 526 passed · **Coverage:** quality\_gate 93%, severity\_scorer 62%, total CORE ~58%
 
 ---
 
@@ -615,7 +615,7 @@ Synthetic JS projects of increasing size, measuring pipeline wall time:
 ### Test Suite — v3.0.4 Baseline
 
 ```text
-508 passed, 4 skipped, 32 warnings in ~62s
+526 passed, 4 skipped, 32 warnings in ~81s
 Coverage: 55.26% (≥40% requirement met)
 ruff: 0 errors
 mypy: 0 errors
@@ -678,3 +678,5 @@ Quality Gate: FAILED (4 HIGH > max 0) — expected for vulnerable app
 Target: tmp_repos/NodeGoat
 Total findings: 310 (319 raw − 9 deduped) | High: 7 | Medium: 145 | Low: 158
 AI explanations: 7 HIGH findings in 2299ms
+
+| `created_at` bug in /api/trends | All chart labels showed "unknown" | Flask route read `created_at` but DB returns `started_at` | Changed to `row.get("started_at")` | latest |

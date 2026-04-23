@@ -834,7 +834,7 @@ def main():
     parser.add_argument(
         "--version",
         action="version",
-        version="ACR-QA v3.1.1",
+        version="ACR-QA v3.1.3",
     )
     parser.add_argument(
         "--no-ai",

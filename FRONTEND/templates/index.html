@@ -213,14 +213,29 @@
                 </div>
 
                 <!-- Charts -->
-                <div class="lg:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div class="glass rounded-2xl p-6">
-                        <h2 class="text-base font-bold mb-4 flex items-center gap-2"><span>📈</span> Severity Trends</h2>
-                        <div style="height:220px"><canvas id="severityChart"></canvas></div>
+                <div class="lg:col-span-2 flex flex-col gap-6">
+                    <div class="glass rounded-2xl px-6 py-4 flex flex-col sm:flex-row items-center justify-between gap-4">
+                        <h2 class="text-base font-bold flex items-center gap-2"><span>📈</span> Trend Analytics</h2>
+                        <select id="trend-repo-filter" onchange="loadTrendCharts(this.value)" class="px-4 py-2 bg-slate-900 border border-slate-700 rounded-xl focus:ring-2 focus:ring-purple-500 text-white text-sm transition-all min-w-[200px]">
+                            <option value="">All Repositories</option>
+                        </select>
                     </div>
-                    <div class="glass rounded-2xl p-6">
-                        <h2 class="text-base font-bold mb-4 flex items-center gap-2"><span>🗂️</span> By Category</h2>
-                        <div style="height:220px"><canvas id="categoryChart"></canvas></div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div class="glass rounded-2xl p-6">
+                            <h2 class="text-base font-bold mb-4 flex items-center gap-2"><span>📈</span> Severity Trends</h2>
+                            <div style="height:220px"><canvas id="severityChart"></canvas></div>
+                        </div>
+                        <div class="glass rounded-2xl p-6">
+                            <h2 class="text-base font-bold mb-4 flex items-center gap-2"><span>🎯</span> Confidence Trend</h2>
+                            <div style="height:220px"><canvas id="confidenceChart"></canvas></div>
+                        </div>
+                        <div class="glass rounded-2xl p-6 md:col-span-2 flex flex-col items-center">
+                            <div class="w-full flex items-center mb-4">
+                                <h2 class="text-base font-bold flex items-center gap-2"><span>🗂️</span> By Category</h2>
+                            </div>
+                            <div style="height:220px; width:100%; max-width:400px"><canvas id="categoryChart"></canvas></div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -413,13 +428,28 @@
     ];
 
     // ─────────────────────────────────────────────────
-    // Init
+    // Init + Repos
     // ─────────────────────────────────────────────────
     async function loadDashboard() {
         renderPipeline();
         renderOWASP();
         renderToolBreakdown();
+        await loadRepos();
         await loadRuns();
+    }
+
+    async function loadRepos() {
+        try {
+            const resp = await fetch('/api/repos');
+            const data = await resp.json();
+            if (data.success && data.repos) {
+                const sel = document.getElementById('trend-repo-filter');
+                if (sel) {
+                    sel.innerHTML = '<option value="">All Repositories</option>' +
+                        data.repos.map(r => `<option value="${r}">${r}</option>`).join('');
+                }
+            }
+        } catch (e) { console.log('Could not load repos', e); }
     }
 
     // ─────────────────────────────────────────────────
@@ -436,7 +466,7 @@
             allRuns = data.runs;
             renderRunTabs(allRuns);
             selectRun(allRuns[0].id);
-            loadTrendCharts();
+            loadTrendCharts(document.getElementById('trend-repo-filter')?.value || null);
         } catch (e) {
             showError('Could not connect to API server. Make sure Flask is running on port 5000.');
         }
@@ -608,11 +638,20 @@
     // ─────────────────────────────────────────────────
     // Trend Charts
     // ─────────────────────────────────────────────────
-    async function loadTrendCharts() {
+    let confidenceChart = null;
+
+    async function loadTrendCharts(repoName = null) {
         try {
-            const resp = await fetch('/api/trends?limit=20');
+            let url = '/api/trends?limit=20';
+            if (repoName) {
+                url += `&repo=${encodeURIComponent(repoName)}`;
+            }
+
+            const resp = await fetch(url);
             const data = await resp.json();
-            if (!data.success || data.data_points === 0) return;
+
+            // If we have an empty repo result, still clear the charts, so don't return early unless data.success is totally false
+            if (!data.success) return;
 
             const chartDefaults = {
                 responsive: true, maintainAspectRatio: false,
@@ -626,11 +665,11 @@
                 severityChart = new Chart(sevCtx, {
                     type: 'line',
                     data: {
-                        labels: data.labels,
+                        labels: data.labels || [],
                         datasets: [
-                            { label: 'High', data: data.severity.high, borderColor: '#ef4444', backgroundColor: 'rgba(239,68,68,0.08)', tension: 0.4, fill: true, pointRadius: 3 },
-                            { label: 'Medium', data: data.severity.medium, borderColor: '#fbbf24', backgroundColor: 'rgba(251,191,36,0.08)', tension: 0.4, fill: true, pointRadius: 3 },
-                            { label: 'Low', data: data.severity.low, borderColor: '#34d399', backgroundColor: 'rgba(52,211,153,0.08)', tension: 0.4, fill: true, pointRadius: 3 },
+                            { label: 'High', data: (data.severity && data.severity.high) || [], borderColor: '#ef4444', backgroundColor: 'rgba(239,68,68,0.08)', tension: 0.4, fill: true, pointRadius: 3 },
+                            { label: 'Medium', data: (data.severity && data.severity.medium) || [], borderColor: '#fbbf24', backgroundColor: 'rgba(251,191,36,0.08)', tension: 0.4, fill: true, pointRadius: 3 },
+                            { label: 'Low', data: (data.severity && data.severity.low) || [], borderColor: '#34d399', backgroundColor: 'rgba(52,211,153,0.08)', tension: 0.4, fill: true, pointRadius: 3 },
                         ]
                     },
                     options: { ...chartDefaults, scales: {
@@ -640,12 +679,35 @@
                 });
             }
 
+            // Confidence Trend
+            if (confidenceChart) confidenceChart.destroy();
+            const confCtx = document.getElementById('confidenceChart');
+            if (confCtx) {
+                confidenceChart = new Chart(confCtx, {
+                    type: 'line',
+                    data: {
+                        labels: data.labels || [],
+                        datasets: [
+                            { label: 'Avg Confidence %', data: data.avg_confidence || [], borderColor: '#a855f7', backgroundColor: 'rgba(168,85,247,0.08)', tension: 0.4, fill: true, pointRadius: 3 },
+                        ]
+                    },
+                    options: { ...chartDefaults, scales: {
+                        x: { ticks: { color: '#475569', maxRotation: 30, font: { size: 10 } }, grid: { color: 'rgba(148,163,184,0.05)' } },
+                        y: { max: 100, ticks: { callback: function(val) { return val + '%'; }, color: '#475569', font: { size: 10 } }, grid: { color: 'rgba(148,163,184,0.05)' }, beginAtZero: true }
+                    }}
+                });
+            }
+
             // Category doughnut
             if (categoryChart) categoryChart.destroy();
             const catCtx = document.getElementById('categoryChart');
             if (catCtx) {
                 const catTotals = {};
-                for (const [cat, vals] of Object.entries(data.categories)) catTotals[cat] = vals.reduce((a, b) => a + b, 0);
+                if (data.categories) {
+                    for (const [cat, vals] of Object.entries(data.categories)) {
+                        catTotals[cat] = vals.reduce((a, b) => a + b, 0);
+                    }
+                }
                 const cats = Object.keys(catTotals).filter(c => catTotals[c] > 0);
                 const colors = { security: '#ef4444', style: '#a78bfa', complexity: '#fbbf24', performance: '#38bdf8' };
                 categoryChart = new Chart(catCtx, {

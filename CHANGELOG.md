@@ -2,6 +2,31 @@
 
 All notable changes to ACR-QA are documented here.
 
+## [v3.1.3] — Feature 10: Vulnerability Trend Dashboard + Feature 9 Cross-Language Correlator
+
+### Added (Feature 10)
+- Vulnerability trend dashboard — time-series view of findings across all historical scans
+  - `GET /api/trends?limit=N&repo=name` — returns severity series, category series, confidence series, total series per run
+  - `GET /api/repos` — returns list of repos with completed runs (for filter dropdown)
+  - `Database.get_trend_data(limit, repo_name)` — enhanced with `avg_confidence`, `high_confidence_count`, `design_count`, `best_practice_count`, repo filter support
+  - `Database.get_repos_with_runs()` — new method, excludes test- repos
+  - Dashboard: 3 Chart.js charts (severity trend, confidence trend, category breakdown) with repo filter dropdown
+- Fixed bug: `/api/trends` was reading `created_at` instead of `started_at` — all chart labels were "unknown"
+- 8 new unit tests in `TESTS/test_new_engines.py::TestFeature10TrendDashboard` (all passing)
+
+### Added (Feature 9 — committed separately)
+- `CORE/engines/cross_language_correlator.py` — cross-language vulnerability correlator (CHARON approach)
+- `CORE/engines/dependency_reachability.py` — npm dependency reachability checker
+- Both wired into `AnalysisPipeline.run()` and `run_js()`
+
+### Test count
+526 passed, 4 skipped — up from 508 (v3.1.1)
+
+### All 10 features complete
+Features 1-10 fully implemented, tested, and documented at v3.1.3.
+
+---
+
 ## [v3.1.2] — Feature 9: Cross-Language Vulnerability Correlator
 
 ### Added
