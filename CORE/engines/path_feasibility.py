@@ -131,7 +131,7 @@ class PathFeasibilityValidator:
     # Only validate HIGH severity findings — too expensive for medium/low
     ELIGIBLE_SEVERITIES = {"high", "critical"}
 
-    def __init__(self, model: str = "llama3.1-8b", max_tokens: int = 150, temperature: float = 0.1):
+    def __init__(self, model: str = "llama-3.1-8b-instant", max_tokens: int = 150, temperature: float = 0.1):
         self.model = model
         self.max_tokens = max_tokens
         self.temperature = temperature  # Low temp for deterministic verdict
@@ -174,7 +174,7 @@ class PathFeasibilityValidator:
 
         try:
             response = await client.post(
-                "https://api.cerebras.ai/v1/chat/completions",
+                "https://api.groq.com/openai/v1/chat/completions",
                 json=payload,
                 headers={"Authorization": f"Bearer {api_key}"},
                 timeout=15.0,

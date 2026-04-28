@@ -312,6 +312,9 @@ def scan_repo(target_dir, repo_name):
         "--limit",
         "200",
     ]
+    if os.environ.get("ACRQA_NO_AI") == "1":
+        cmd.append("--no-ai")
+
     env = os.environ.copy()
     subprocess.run(cmd, capture_output=True, text=True, env=env, cwd=str(Path(__file__).parent.parent))
 

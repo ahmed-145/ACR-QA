@@ -8,6 +8,11 @@ All notable changes to ACR-QA are documented here.
 - **`TESTS/test_code_extractor.py`** — 23 tests ensuring AST extraction robustness
 - **`TESTS/test_pipeline_helpers.py`** — 45 tests for `main.py` deduplication, capping, and config filtering
 - **`TESTS/test_flask_app.py`** — 107 tests simulating an entire client hitting `FRONTEND/app.py` REST APIs with DB mocks.
+- **GitHub SARIF Integration** — Added `.github/workflows/acr-qa.yml` step to upload native findings to GitHub Security Tab.
+- **GitHub Inline PR Suggestions** — Enhanced `scripts/post_pr_comments.py` to post `fix_code` blocks as one-click GitHub suggestions.
+- **`ACRQA_NO_AI` environment flag** — Allows `run_evaluation.py` to execute locally without burning API quotas.
+- **OWASP Go-SCP E2E Testing** — Successfully validated Go adapter against real-world vulnerabilities.
+- **Thesis Evaluation Completion** — Generated full precision/recall numbers with 90% OWASP Top 10 coverage.
 
 ### Metrics
 - **Total tests:** 1,699 (↑ +134 from v3.2.3)

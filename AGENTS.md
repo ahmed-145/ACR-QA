@@ -90,7 +90,7 @@ config/rules.yml      ← Knowledge base: every canonical rule → description +
 ## Environment
 
 - **Venv:** `.venv/` — always use `.venv/bin/python`, `.venv/bin/pytest`, etc.
-- **`.env` file:** exists at project root, gitignored. Contains `CEREBRAS_API_KEY`, `GITHUB_TOKEN`, `DATABASE_URL`.
+- **`.env` file:** exists at project root, gitignored. Contains `GROQ_API_KEY_1..4`, `GITHUB_TOKEN`, `DATABASE_URL`.
 - **Docker:** `docker compose up -d` → starts Postgres + Redis + App + Prometheus + Grafana
 - **Dashboard:** `python3 FRONTEND/app.py` → http://localhost:5000
 

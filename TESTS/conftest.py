@@ -1,6 +1,6 @@
 """
 Shared test fixtures for ACR-QA tests.
-Provides mock Redis and mock Cerebras clients.
+Provides mock Redis and mock Groq clients.
 """
 
 from unittest.mock import MagicMock, Mock, patch
@@ -35,11 +35,11 @@ def mock_redis_limiter(mock_redis):
 
 
 @pytest.fixture
-def mock_cerebras():
-    """Create a mock Cerebras client."""
-    with patch("CORE.engines.explainer.Cerebras") as MockCerebras:
+def mock_groq():
+    """Create a mock Groq client."""
+    with patch("CORE.engines.explainer.Groq") as MockGroq:
         mock_client = Mock()
-        MockCerebras.return_value = mock_client
+        MockGroq.return_value = mock_client
 
         mock_response = Mock()
         mock_response.choices = [

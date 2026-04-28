@@ -1,7 +1,7 @@
 """
 Integration tests for AnalysisPipeline orchestrator methods in CORE/main.py.
 
-Strategy: mock all external I/O (DB, Redis, Cerebras, subprocess, filesystem),
+Strategy: mock all external I/O (DB, Redis, Groq, subprocess, filesystem),
 then call run(), run_js(), and the main() auto-language routing end-to-end.
 
 Target: boost main.py coverage from ~31% to ~50%.
@@ -15,7 +15,7 @@ from unittest.mock import MagicMock, patch
 
 
 def _make_pipeline(target_dir="/tmp", config=None):
-    """Build AnalysisPipeline without touching DB, Cerebras, or Redis."""
+    """Build AnalysisPipeline without touching DB, Groq, or Redis."""
     mock_db = MagicMock()
     mock_db.create_analysis_run.return_value = 42
     mock_db.insert_finding.return_value = 99

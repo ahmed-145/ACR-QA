@@ -185,7 +185,7 @@ See [Policy Engine Documentation](docs/POLICY_ENGINE.md) for full reference.
 git clone https://github.com/ahmed-145/acr-qa.git && cd acr-qa
 
 # 2. Configure
-cp .env.example .env          # add your CEREBRAS_API_KEY
+cp .env.example .env          # add your GROQ_API_KEY_1..4
 
 # 3. Start everything
 make up
@@ -210,7 +210,7 @@ npm install -g jscpd
 createdb acrqa
 psql -d acrqa -f DATABASE/schema.sql
 
-cp .env.example .env   # fill in CEREBRAS_API_KEY
+cp .env.example .env   # fill in GROQ_API_KEY_1..4
 source .env
 python3 FRONTEND/app.py   # → http://localhost:5000
 ```
@@ -496,13 +496,14 @@ The `.github/workflows/acr-qa.yml` workflow triggers on every PR:
 1. Checks out PR diff
 2. Runs all 7 analysis tools on changed files (`--diff-only`)
 3. Normalizes, scores, and generates AI explanations
-4. Posts severity-sorted comments on the PR
-5. Enforces quality gate — **blocks merge** if thresholds exceeded
+4. Posts severity-sorted comments on the PR using dynamic GitHub `` ```suggestion `` blocks
+5. Uploads `findings.sarif` directly to the GitHub Security Tab natively
+6. Enforces quality gate — **blocks merge** if thresholds exceeded
 
-**Required secrets** (repo Settings → Secrets):
+**Required permissions and secrets** (repo Settings → Secrets):
 ```
-CEREBRAS_API_KEY   # For AI explanations
-GITHUB_TOKEN       # Automatically provided by Actions
+GROQ_API_KEY_1..4  # For AI explanations (key pool rotation)
+GITHUB_TOKEN       # Automatically provided by Actions with security-events: write
 ```
 
 ### Manual Trigger
@@ -515,7 +516,7 @@ The bot reacts with 👀 → runs analysis → posts results → reacts with �
 
 ### GitLab CI
 
-`.gitlab-ci.yml` provides equivalent functionality. Set `CEREBRAS_API_KEY` and `GITLAB_TOKEN` in CI/CD Variables.
+`.gitlab-ci.yml` provides equivalent functionality. Set `GROQ_API_KEY_1` and `GITLAB_TOKEN` in CI/CD Variables.
 
 ---
 

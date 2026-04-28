@@ -2,7 +2,7 @@
 God-mode tests for CORE/engines/explainer.py (target: 70%+)
 
 Strategy:
-  - Patch Cerebras and os.getenv at import time so __init__ never hits network
+  - Patch Groq and os.getenv at import time so __init__ never hits network
   - Test all pure-logic methods directly (no API calls)
   - Test generate_explanation() / _explain_one_async() with mocked client
   - Test redis cache hit/miss paths
@@ -23,20 +23,20 @@ FAKE_KEY = "test-key-123"
 
 
 def _make_engine(redis_client=None, rules_catalog=None):
-    """Return an ExplanationEngine with Cerebras + env fully mocked."""
-    mock_cerebras_cls = MagicMock()
-    mock_cerebras_instance = MagicMock()
-    mock_cerebras_cls.return_value = mock_cerebras_instance
+    """Return an ExplanationEngine with Groq + env fully mocked."""
+    mock_groq_cls = MagicMock()
+    mock_groq_instance = MagicMock()
+    mock_groq_cls.return_value = mock_groq_instance
 
-    with patch.dict("os.environ", {"CEREBRAS_API_KEY": FAKE_KEY}):
-        with patch("CORE.engines.explainer.Cerebras", mock_cerebras_cls):
+    with patch.dict("os.environ", {"GROQ_API_KEY_1": FAKE_KEY}):
+        with patch("CORE.engines.explainer.Groq", mock_groq_cls):
             with patch("builtins.open", side_effect=FileNotFoundError):
                 from CORE.engines.explainer import ExplanationEngine
 
                 engine = ExplanationEngine(redis_client=redis_client)
     if rules_catalog is not None:
         engine.rules_catalog = rules_catalog
-    return engine, mock_cerebras_instance
+    return engine, mock_groq_instance
 
 
 def _engine(rules_catalog=None):
@@ -76,10 +76,10 @@ class TestExplanationEngineInit:
     def test_raises_without_api_key(self):
         with patch.dict("os.environ", {}, clear=True):
             with patch("os.getenv", return_value=None):
-                with patch("CORE.engines.explainer.Cerebras"):
+                with patch("CORE.engines.explainer.Groq"):
                     from CORE.engines.explainer import ExplanationEngine
 
-                    with pytest.raises(ValueError, match="CEREBRAS_API_KEY"):
+                    with pytest.raises(ValueError, match="GROQ_API_KEY"):
                         ExplanationEngine()
 
     def test_model_is_llama(self):
@@ -97,9 +97,9 @@ class TestExplanationEngineInit:
     def test_rules_catalog_loaded_when_file_exists(self, tmp_path):
         rules_file = tmp_path / "rules.yml"
         rules_file.write_text("SECURITY-001:\n  name: SQL Injection\n")
-        mock_cerebras_cls = MagicMock()
-        with patch.dict("os.environ", {"CEREBRAS_API_KEY": FAKE_KEY}):
-            with patch("CORE.engines.explainer.Cerebras", mock_cerebras_cls):
+        mock_groq_cls = MagicMock()
+        with patch.dict("os.environ", {"GROQ_API_KEY_1": FAKE_KEY}):
+            with patch("CORE.engines.explainer.Groq", mock_groq_cls):
                 with patch("builtins.open", return_value=open(str(rules_file))):
                     from CORE.engines.explainer import ExplanationEngine
 
@@ -218,16 +218,16 @@ class TestCalculateCost:
     def test_0_tokens_returns_0(self):
         assert _engine()._calculate_cost(0) == 0
 
-    def test_1_million_tokens_is_60_cents(self):
+    def test_1_million_tokens_is_59_cents(self):
         cost = _engine()._calculate_cost(1_000_000)
-        assert abs(cost - 0.60) < 1e-9
+        assert abs(cost - 0.59) < 1e-9
 
     def test_cost_is_float(self):
         assert isinstance(_engine()._calculate_cost(500), float)
 
     def test_1000_tokens_cost(self):
         cost = _engine()._calculate_cost(1000)
-        assert cost == pytest.approx(0.00060)
+        assert cost == pytest.approx(0.00059)
 
 
 # ════════════════════════════════════════════════════════════
@@ -313,7 +313,7 @@ class TestGetFallbackExplanation:
 
 
 # ════════════════════════════════════════════════════════════
-#  generate_explanation — synchronous (mocked Cerebras client)
+#  generate_explanation — synchronous (mocked Groq client)
 # ════════════════════════════════════════════════════════════
 
 
@@ -329,8 +329,8 @@ def _mock_completion(
 
 class TestGenerateExplanation:
     def test_success_path_returns_dict(self):
-        eng, cerebras_client = _engine_with_mock_client()
-        cerebras_client.chat.completions.create.return_value = _mock_completion()
+        eng, groq_client = _engine_with_mock_client()
+        groq_client.chat.completions.create.return_value = _mock_completion()
         f = _finding(rule_id="SECURITY-001")
         result = eng.generate_explanation(f, "code snippet")
         assert result["status"] == "success"
@@ -338,8 +338,8 @@ class TestGenerateExplanation:
         assert "latency_ms" in result
 
     def test_cites_rule_true_when_rule_in_response(self):
-        eng, cerebras_client = _engine_with_mock_client()
-        cerebras_client.chat.completions.create.return_value = _mock_completion(
+        eng, groq_client = _engine_with_mock_client()
+        groq_client.chat.completions.create.return_value = _mock_completion(
             "This code violates SECURITY-001 because..."
         )
         result = eng.generate_explanation(_finding(rule_id="SECURITY-001"), "code")
@@ -347,43 +347,43 @@ class TestGenerateExplanation:
         assert result["confidence"] == 0.9
 
     def test_cites_rule_false_when_rule_absent(self):
-        eng, cerebras_client = _engine_with_mock_client()
-        cerebras_client.chat.completions.create.return_value = _mock_completion("There is a problem in your code.")
+        eng, groq_client = _engine_with_mock_client()
+        groq_client.chat.completions.create.return_value = _mock_completion("There is a problem in your code.")
         result = eng.generate_explanation(_finding(rule_id="SECURITY-001"), "code")
         assert result["cites_rule"] is False
         assert result["confidence"] == 0.6
 
     def test_fallback_on_exception(self):
-        eng, cerebras_client = _engine_with_mock_client()
-        cerebras_client.chat.completions.create.side_effect = Exception("API timeout")
+        eng, groq_client = _engine_with_mock_client()
+        groq_client.chat.completions.create.side_effect = Exception("API timeout")
         result = eng.generate_explanation(_finding(), "code")
         assert result["status"] == "fallback"
         assert "error" in result
         assert result["cost_usd"] == 0
 
     def test_tokens_used_none_when_no_usage(self):
-        eng, cerebras_client = _engine_with_mock_client()
+        eng, groq_client = _engine_with_mock_client()
         comp = _mock_completion()
         comp.usage = None
-        cerebras_client.chat.completions.create.return_value = comp
+        groq_client.chat.completions.create.return_value = comp
         result = eng.generate_explanation(_finding(), "code")
         assert result["tokens_used"] is None
 
     def test_tokens_used_populated(self):
-        eng, cerebras_client = _engine_with_mock_client()
-        cerebras_client.chat.completions.create.return_value = _mock_completion()
+        eng, groq_client = _engine_with_mock_client()
+        groq_client.chat.completions.create.return_value = _mock_completion()
         result = eng.generate_explanation(_finding(), "code")
         assert result["tokens_used"] == 150
 
     def test_cost_usd_calculated(self):
-        eng, cerebras_client = _engine_with_mock_client()
-        cerebras_client.chat.completions.create.return_value = _mock_completion()
+        eng, groq_client = _engine_with_mock_client()
+        groq_client.chat.completions.create.return_value = _mock_completion()
         result = eng.generate_explanation(_finding(), "code")
-        assert result["cost_usd"] == pytest.approx(150 / 1_000_000 * 0.60)
+        assert result["cost_usd"] == pytest.approx(150 / 1_000_000 * 0.59)
 
     def test_cache_miss_incremented(self):
-        eng, cerebras_client = _engine_with_mock_client()
-        cerebras_client.chat.completions.create.return_value = _mock_completion()
+        eng, groq_client = _engine_with_mock_client()
+        groq_client.chat.completions.create.return_value = _mock_completion()
         eng.generate_explanation(_finding(), "code")
         assert eng.cache_misses == 1
 
@@ -400,24 +400,24 @@ class TestGenerateExplanation:
     def test_redis_cache_miss_calls_api(self):
         redis = MagicMock()
         redis.get.return_value = None
-        eng, cerebras_client = _make_engine(redis_client=redis)
-        cerebras_client.chat.completions.create.return_value = _mock_completion()
+        eng, groq_client = _make_engine(redis_client=redis)
+        groq_client.chat.completions.create.return_value = _mock_completion()
         eng.generate_explanation(_finding(), "code")
-        cerebras_client.chat.completions.create.assert_called_once()
+        groq_client.chat.completions.create.assert_called_once()
 
     def test_redis_write_after_success(self):
         redis = MagicMock()
         redis.get.return_value = None
-        eng, cerebras_client = _make_engine(redis_client=redis)
-        cerebras_client.chat.completions.create.return_value = _mock_completion()
+        eng, groq_client = _make_engine(redis_client=redis)
+        groq_client.chat.completions.create.return_value = _mock_completion()
         eng.generate_explanation(_finding(), "code")
         redis.setex.assert_called_once()
 
     def test_redis_read_error_silenced(self):
         redis = MagicMock()
         redis.get.side_effect = Exception("Redis down")
-        eng, cerebras_client = _make_engine(redis_client=redis)
-        cerebras_client.chat.completions.create.return_value = _mock_completion()
+        eng, groq_client = _make_engine(redis_client=redis)
+        groq_client.chat.completions.create.return_value = _mock_completion()
         result = eng.generate_explanation(_finding(), "code")
         assert result["status"] == "success"
 
@@ -425,14 +425,14 @@ class TestGenerateExplanation:
         redis = MagicMock()
         redis.get.return_value = None
         redis.setex.side_effect = Exception("Redis down")
-        eng, cerebras_client = _make_engine(redis_client=redis)
-        cerebras_client.chat.completions.create.return_value = _mock_completion()
+        eng, groq_client = _make_engine(redis_client=redis)
+        groq_client.chat.completions.create.return_value = _mock_completion()
         result = eng.generate_explanation(_finding(), "code")
         assert result["status"] == "success"
 
     def test_rule_id_fallback_from_rule_id_key(self):
-        eng, cerebras_client = _engine_with_mock_client()
-        cerebras_client.chat.completions.create.return_value = _mock_completion("violates IMPORT-001")
+        eng, groq_client = _engine_with_mock_client()
+        groq_client.chat.completions.create.return_value = _mock_completion("violates IMPORT-001")
         f = {"rule_id": "IMPORT-001", "category": "style", "file": "x.py", "line": 1, "message": ""}
         result = eng.generate_explanation(f, "")
         assert result["cites_rule"] is True
@@ -562,9 +562,8 @@ class TestGenerateExplanationBatch:
             mock_ctx.__aenter__ = AsyncMock(return_value=MagicMock(post=AsyncMock(return_value=mock_resp)))
             mock_ctx.__aexit__ = AsyncMock(return_value=None)
             mock_cls.return_value = mock_ctx
-            with patch.dict("os.environ", {"CEREBRAS_API_KEY": FAKE_KEY}):
-                items = [{"finding": _finding(), "snippet": "code"}]
-                results = eng.generate_explanation_batch(items)
+            items = [{"finding": _finding(), "snippet": "code"}]
+            results = eng.generate_explanation_batch(items)
         assert isinstance(results, list)
         assert len(results) == 1
 
@@ -575,8 +574,7 @@ class TestGenerateExplanationBatch:
             mock_ctx.__aenter__ = AsyncMock(return_value=MagicMock())
             mock_ctx.__aexit__ = AsyncMock(return_value=None)
             mock_cls.return_value = mock_ctx
-            with patch.dict("os.environ", {"CEREBRAS_API_KEY": FAKE_KEY}):
-                results = eng.generate_explanation_batch([])
+            results = eng.generate_explanation_batch([])
         assert results == []
 
 
@@ -587,11 +585,11 @@ class TestGenerateExplanationBatch:
 
 class TestSelfEvaluateExplanation:
     def test_success_returns_scores(self):
-        eng, cerebras_client = _engine_with_mock_client()
+        eng, groq_client = _engine_with_mock_client()
         comp = MagicMock()
         comp.choices = [MagicMock()]
         comp.choices[0].message.content = "Relevance: 4\nAccuracy: 5\nClarity: 3"
-        cerebras_client.chat.completions.create.return_value = comp
+        groq_client.chat.completions.create.return_value = comp
         result = eng.self_evaluate_explanation("some explanation", _finding())
         assert result["status"] == "success"
         assert result["scores"]["relevance"] == 4
@@ -600,28 +598,28 @@ class TestSelfEvaluateExplanation:
         assert result["overall"] == pytest.approx(4.0)
 
     def test_error_returns_error_status(self):
-        eng, cerebras_client = _engine_with_mock_client()
-        cerebras_client.chat.completions.create.side_effect = Exception("API error")
+        eng, groq_client = _engine_with_mock_client()
+        groq_client.chat.completions.create.side_effect = Exception("API error")
         result = eng.self_evaluate_explanation("explanation", _finding())
         assert result["status"] == "error"
         assert "error" in result
 
     def test_malformed_scores_default_to_3(self):
-        eng, cerebras_client = _engine_with_mock_client()
+        eng, groq_client = _engine_with_mock_client()
         comp = MagicMock()
         comp.choices = [MagicMock()]
         comp.choices[0].message.content = "Relevance: X\nAccuracy: ?\nClarity: !"
-        cerebras_client.chat.completions.create.return_value = comp
+        groq_client.chat.completions.create.return_value = comp
         result = eng.self_evaluate_explanation("explanation", _finding())
         for v in result["scores"].values():
             assert v == 3
 
     def test_scores_clamped_to_1_5(self):
-        eng, cerebras_client = _engine_with_mock_client()
+        eng, groq_client = _engine_with_mock_client()
         comp = MagicMock()
         comp.choices = [MagicMock()]
         comp.choices[0].message.content = "Relevance: 9\nAccuracy: 0\nClarity: 5"
-        cerebras_client.chat.completions.create.return_value = comp
+        groq_client.chat.completions.create.return_value = comp
         result = eng.self_evaluate_explanation("explanation", _finding())
         if result["status"] == "success":
             for v in result["scores"].values():
@@ -635,37 +633,37 @@ class TestSelfEvaluateExplanation:
 
 class TestComputeSemanticEntropy:
     def test_returns_consistency_score(self):
-        eng, cerebras_client = _engine_with_mock_client()
+        eng, groq_client = _engine_with_mock_client()
         comp = MagicMock()
         comp.choices = [MagicMock()]
         comp.choices[0].message.content = "This code violates SECURITY-001 because SQL injection is dangerous."
-        cerebras_client.chat.completions.create.return_value = comp
+        groq_client.chat.completions.create.return_value = comp
         result = eng.compute_semantic_entropy(_finding(), "code", num_samples=3)
         assert result["status"] == "success"
         assert 0.0 <= result["consistency_score"] <= 1.0
 
     def test_single_sample_returns_insufficient(self):
-        eng, cerebras_client = _engine_with_mock_client()
+        eng, groq_client = _engine_with_mock_client()
         comp = MagicMock()
         comp.choices = [MagicMock()]
         comp.choices[0].message.content = "response"
-        cerebras_client.chat.completions.create.return_value = comp
+        groq_client.chat.completions.create.return_value = comp
         result = eng.compute_semantic_entropy(_finding(), "code", num_samples=1)
         assert result["status"] == "insufficient_samples"
 
     def test_identical_responses_score_1(self):
-        eng, cerebras_client = _engine_with_mock_client()
+        eng, groq_client = _engine_with_mock_client()
         comp = MagicMock()
         comp.choices = [MagicMock()]
         comp.choices[0].message.content = "a b c d e f g h i j k"
-        cerebras_client.chat.completions.create.return_value = comp
+        groq_client.chat.completions.create.return_value = comp
         result = eng.compute_semantic_entropy(_finding(), "code", num_samples=3)
         assert result["consistency_score"] == pytest.approx(1.0)
         assert result["is_likely_hallucination"] is False
 
     def test_api_error_in_sample_handled(self):
-        eng, cerebras_client = _engine_with_mock_client()
-        cerebras_client.chat.completions.create.side_effect = Exception("API error")
+        eng, groq_client = _engine_with_mock_client()
+        groq_client.chat.completions.create.side_effect = Exception("API error")
         result = eng.compute_semantic_entropy(_finding(), "code", num_samples=3)
         assert "status" in result
 
@@ -682,10 +680,10 @@ class TestExplanationEngineCompat:
     def engine(self):
         mock_redis = Mock()
         mock_redis.get.return_value = None
-        with patch.dict("os.environ", {"CEREBRAS_API_KEY": "test-key-for-ci"}):
-            with patch("CORE.engines.explainer.Cerebras") as mock_cerebras:
+        with patch.dict("os.environ", {"GROQ_API_KEY_1": "test-key-for-ci"}):
+            with patch("CORE.engines.explainer.Groq") as mock_groq:
                 mock_client = MagicMock()
-                mock_cerebras.return_value = mock_client
+                mock_groq.return_value = mock_client
                 from CORE.engines.explainer import ExplanationEngine
 
                 engine = ExplanationEngine(redis_client=mock_redis)
@@ -702,8 +700,8 @@ class TestExplanationEngineCompat:
     def test_cache_hit_returns_cached(self):
         mock_redis = Mock()
         mock_redis.get.return_value = '{"response_text": "cached", "cache_hit": false}'
-        with patch.dict("os.environ", {"CEREBRAS_API_KEY": "test-key-for-ci"}):
-            with patch("CORE.engines.explainer.Cerebras"):
+        with patch.dict("os.environ", {"GROQ_API_KEY_1": "test-key-for-ci"}):
+            with patch("CORE.engines.explainer.Groq"):
                 from CORE.engines.explainer import ExplanationEngine
 
                 engine = ExplanationEngine(redis_client=mock_redis)

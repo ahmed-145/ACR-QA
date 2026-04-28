@@ -31,7 +31,7 @@ def client(mock_db):
     with patch("DATABASE.database.Database"):
         with patch("CORE.utils.rate_limiter.redis.Redis") as mock_redis_cls:
             mock_redis_cls.return_value.ping.return_value = True
-            with patch("CORE.engines.explainer.Cerebras"):
+            with patch("CORE.engines.explainer.Groq"):
                 from FRONTEND.app import app
 
                 app.config["TESTING"] = True
@@ -48,7 +48,7 @@ def client(mock_db):
 class TestCalculateConfidence:
     def _conf(self, finding):
         with patch("DATABASE.database.Database"):
-            with patch("CORE.engines.explainer.Cerebras"):
+            with patch("CORE.engines.explainer.Groq"):
                 from FRONTEND.app import _calculate_confidence
 
                 return _calculate_confidence(finding)

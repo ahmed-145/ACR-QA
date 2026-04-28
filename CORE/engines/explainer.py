@@ -1,6 +1,7 @@
 """
-Cerebras API Integration for Natural Language Explanations
+Groq API Integration for Natural Language Explanations
 Evidence-grounded prompt engineering for code quality issues
+with automatic API key rotation across multiple accounts.
 """
 
 import asyncio
@@ -11,22 +12,68 @@ import time
 
 import httpx
 import yaml
-from cerebras.cloud.sdk import Cerebras
 from dotenv import load_dotenv
+from groq import Groq
 from tenacity import retry, stop_after_attempt, wait_exponential
 
 load_dotenv()
 
 
+class KeyPool:
+    """Round-robin API key rotation across multiple Groq accounts.
+
+    Loads keys from GROQ_API_KEY_1, GROQ_API_KEY_2, ... environment variables.
+    Falls back to a single GROQ_API_KEY if numbered keys are not found.
+    Automatically rotates to the next key on each request to distribute
+    load across multiple accounts and avoid per-account rate limits.
+    """
+
+    def __init__(self):
+        self._keys: list[str] = []
+        i = 1
+        while True:
+            key = os.getenv(f"GROQ_API_KEY_{i}")
+            if key:
+                self._keys.append(key)
+                i += 1
+            else:
+                break
+        # Fallback: single GROQ_API_KEY
+        if not self._keys:
+            single = os.getenv("GROQ_API_KEY")
+            if single:
+                self._keys.append(single)
+        if not self._keys:
+            raise ValueError(
+                "No GROQ_API_KEY found in environment. "
+                "Set GROQ_API_KEY_1, GROQ_API_KEY_2, ... or a single GROQ_API_KEY."
+            )
+        self._clients = [Groq(api_key=k) for k in self._keys]
+        self._index = 0
+
+    def next_client(self) -> Groq:
+        """Return next Groq SDK client (round-robin)."""
+        client = self._clients[self._index % len(self._clients)]
+        self._index += 1
+        return client
+
+    def next_key(self) -> str:
+        """Return next raw API key string (for async httpx calls)."""
+        key = self._keys[self._index % len(self._keys)]
+        self._index += 1
+        return key
+
+    @property
+    def pool_size(self) -> int:
+        """Number of API keys in the pool."""
+        return len(self._keys)
+
+
 class ExplanationEngine:
     def __init__(self, redis_client=None):
-        # Initialize Cerebras client
-        api_key = os.getenv("CEREBRAS_API_KEY")
-        if not api_key:
-            raise ValueError("CEREBRAS_API_KEY not found in environment")
-
-        self.client = Cerebras(api_key=api_key)
-        self.model = "llama3.1-8b"
+        # Initialize Groq key pool (round-robin across multiple accounts)
+        self.key_pool = KeyPool()
+        self.model = "llama-3.3-70b-versatile"
         self.temperature = 0.3
         self.max_tokens = 300
 
@@ -148,8 +195,9 @@ Start with: "This code violates {canonical_id}..." and end with a ```python code
         prompt_filled = self._build_evidence_grounded_prompt(finding, code_snippet)
 
         try:
-            # Call Cerebras API
-            completion = self.client.chat.completions.create(
+            # Call Groq API (round-robin key rotation)
+            client = self.key_pool.next_client()
+            completion = client.chat.completions.create(
                 messages=[{"role": "user", "content": prompt_filled}],
                 model=self.model,
                 max_tokens=self.max_tokens,
@@ -248,7 +296,7 @@ Start with: "This code violates {canonical_id}..." and end with a ```python code
 
         try:
             response = await client.post(
-                "https://api.cerebras.ai/v1/chat/completions",
+                "https://api.groq.com/openai/v1/chat/completions",
                 json=payload,
                 headers={"Authorization": f"Bearer {api_key}"},
             )
@@ -328,12 +376,14 @@ Start with: "This code violates {canonical_id}..." and end with a ```python code
                 from CORE.engines.path_feasibility import PathFeasibilityValidator
 
                 _pf_validator = PathFeasibilityValidator(
-                    model=self.model,
+                    model="llama-3.1-8b-instant",
                     max_tokens=150,
                     temperature=0.1,
                 )
                 if _pf_validator.is_eligible(finding):
-                    _pf_result = await _pf_validator.validate_async(client, finding, code_snippet, api_key)
+                    # Use a separate key for feasibility to spread load
+                    pf_key = self.key_pool.next_key()
+                    _pf_result = await _pf_validator.validate_async(client, finding, code_snippet, pf_key)
                     result["feasibility_verdict"] = _pf_result.verdict
                     result["feasibility_confidence"] = _pf_result.confidence
                     result["feasibility_reasoning"] = _pf_result.reasoning
@@ -385,7 +435,8 @@ Start with: "This code violates {canonical_id}..." and end with a ```python code
             return await asyncio.gather(*tasks, return_exceptions=True)
 
     def generate_explanation_batch(self, findings_with_snippets: list) -> list:
-        api_key = os.getenv("CEREBRAS_API_KEY", "")
+        """Generate explanations for a batch of findings using async Groq API."""
+        api_key = self.key_pool.next_key()
         return asyncio.run(self._explain_batch_async(findings_with_snippets, api_key))
 
     def compute_semantic_entropy(self, finding, code_snippet="", num_samples=3):
@@ -404,7 +455,8 @@ Start with: "This code violates {canonical_id}..." and end with a ```python code
 
         for _ in range(num_samples):
             try:
-                completion = self.client.chat.completions.create(
+                client = self.key_pool.next_client()
+                completion = client.chat.completions.create(
                     messages=[{"role": "user", "content": prompt}],
                     model=self.model,
                     max_tokens=self.max_tokens,
@@ -490,7 +542,8 @@ Accuracy: X
 Clarity: X"""
 
         try:
-            completion = self.client.chat.completions.create(
+            client = self.key_pool.next_client()
+            completion = client.chat.completions.create(
                 messages=[{"role": "user", "content": eval_prompt}],
                 model=self.model,
                 max_tokens=50,
@@ -522,13 +575,15 @@ Clarity: X"""
 
     def _calculate_cost(self, tokens):
         """
-        Calculate cost based on Cerebras pricing
-        Current rate: $0.60 per 1M tokens
+        Calculate cost based on Groq pricing
+        Current rate: Free tier (Llama models)
         """
         if not tokens:
             return 0
 
-        cost_per_million = 0.60
+        # Groq free tier: $0 for open-source models
+        # Paid tier: ~$0.59 per 1M tokens for llama-3.3-70b
+        cost_per_million = 0.59
         return (tokens / 1_000_000) * cost_per_million
 
     def get_fallback_explanation(self, finding):
@@ -595,6 +650,8 @@ if __name__ == "__main__":
 
     test_snippet = "def authenticate(user, password, token, session, db, cache):"
 
+    print(f"🔑 Key pool size: {engine.key_pool.pool_size}")
+    print(f"🤖 Model: {engine.model}")
     print("Testing explanation generation...")
     result = engine.generate_explanation(test_finding, test_snippet)
 

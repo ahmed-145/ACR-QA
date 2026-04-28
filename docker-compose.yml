@@ -51,7 +51,11 @@ services:
       DB_PASSWORD: ${DB_PASSWORD:-postgres}
       DB_HOST: postgres
       DB_PORT: 5432
-      CEREBRAS_API_KEY: ${CEREBRAS_API_KEY}
+      CEREBRAS_API_KEY: ${CEREBRAS_API_KEY:-}
+      GROQ_API_KEY_1: ${GROQ_API_KEY_1}
+      GROQ_API_KEY_2: ${GROQ_API_KEY_2:-}
+      GROQ_API_KEY_3: ${GROQ_API_KEY_3:-}
+      GROQ_API_KEY_4: ${GROQ_API_KEY_4:-}
       REDIS_HOST: redis
       REDIS_PORT: 6379
       GITHUB_TOKEN: ${GITHUB_TOKEN:-}

@@ -15,7 +15,7 @@ from unittest.mock import MagicMock, patch
 
 
 def _make_pipeline(target_dir="/tmp", config=None):
-    """Build AnalysisPipeline without touching DB, Cerebras, or Redis."""
+    """Build AnalysisPipeline without touching DB, Groq, or Redis."""
     mock_db = MagicMock()
     mock_explainer = MagicMock()
     mock_config_loader = MagicMock()

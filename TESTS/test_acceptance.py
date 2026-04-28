@@ -133,11 +133,11 @@ class TestAcceptance:
         """
         import os
 
-        with patch.dict(os.environ, {"CEREBRAS_API_KEY": "test-key-for-ci"}):
-            with patch("CORE.engines.explainer.Cerebras") as MockCerebras:
-                # Mock the Cerebras client
+        with patch.dict(os.environ, {"GROQ_API_KEY_1": "test-key-for-ci"}):
+            with patch("CORE.engines.explainer.Groq") as MockGroq:
+                # Mock the Groq client
                 mock_client = Mock()
-                MockCerebras.return_value = mock_client
+                MockGroq.return_value = mock_client
 
                 mock_response = Mock()
                 mock_response.choices = [

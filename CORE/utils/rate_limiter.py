@@ -81,8 +81,7 @@ class RateLimiter:
             logger.info(f"✓ Connected to Redis at {self.redis_host}:{self.redis_port}")
             return client
         except redis.ConnectionError as e:
-            logger.warning(f"⚠ Redis connection failed: {e}")
-            logger.warning("Rate limiting will be disabled (graceful degradation)")
+            logger.debug(f"Redis unavailable: {e} — rate limiting disabled")
             return None
         except Exception as e:
             logger.error(f"✗ Unexpected Redis error: {e}")
@@ -118,7 +117,7 @@ class RateLimiter:
         """
         # If Redis is unavailable, allow request (graceful degradation)
         if self.redis is None:
-            logger.warning("⚠ Redis unavailable, allowing request without rate limiting")
+            logger.debug("Redis unavailable — allowing request without rate limiting")
             return True, None
 
         bucket_key = self._get_bucket_key(repo_name, pr_number)

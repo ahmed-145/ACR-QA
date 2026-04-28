@@ -123,7 +123,7 @@ class AnalysisPipeline:
         print(f"      ✓ {total_findings} issues after filtering & dedup")
 
         # Step 4: Generate AI explanations (with caching)
-        print("[4/5] Generating AI explanations (Cerebras API)...")
+        print("[4/5] Generating AI explanations (Groq API)...")
 
         redis_client = rate_limiter.redis if rate_limiter and rate_limiter.redis else None
         self.explainer = ExplanationEngine(redis_client=redis_client)
@@ -582,7 +582,7 @@ class AnalysisPipeline:
         print(f"      ✓ {total_findings} issues after filtering & dedup")
 
         # Step 4: AI explanations
-        print("\n[4/5] Generating AI explanations (Cerebras API)...")
+        print("\n[4/5] Generating AI explanations (Groq API)...")
         redis_client = rate_limiter.redis if rate_limiter and rate_limiter.redis else None
         self.explainer = ExplanationEngine(redis_client=redis_client)
 

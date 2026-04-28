@@ -20,6 +20,7 @@ permissions:
   contents: read
   pull-requests: write
   issues: write
+  security-events: write
 
 jobs:
   # ─── Job 1: Auto-trigger on PR events ─────────────────────────────────
@@ -127,6 +128,12 @@ jobs:
             --pr-number ${{ github.event.pull_request.number }} \
             --limit 100 | tee /tmp/analysis_output.txt
           grep "Run ID:" /tmp/analysis_output.txt | awk '{print $NF}' > /tmp/acr_run_id.txt
+
+      - name: Upload SARIF findings to Security Tab
+        if: steps.changed-files.outputs.any_changed == 'true' && hashFiles('DATA/outputs/findings.sarif') != ''
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: DATA/outputs/findings.sarif
 
       - name: Post PR Comments
         if: steps.changed-files.outputs.any_changed == 'true'
@@ -286,6 +293,12 @@ jobs:
             --pr-number ${{ github.event.issue.number }} \
             --limit 100 | tee /tmp/analysis_output.txt
           grep "Run ID:" /tmp/analysis_output.txt | awk '{print $NF}' > /tmp/acr_run_id.txt
+
+      - name: Upload SARIF findings to Security Tab
+        if: hashFiles('DATA/outputs/findings.sarif') != ''
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: DATA/outputs/findings.sarif
 
       - name: Post PR Comments
         env:

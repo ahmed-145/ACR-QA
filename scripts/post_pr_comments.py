@@ -47,11 +47,19 @@ def format_inline_comment(finding):
     """Format a single finding into a short inline comment"""
     sev = finding.get("canonical_severity", "low")
     emoji = format_severity_emoji(sev)
-    return (
+
+    base_comment = (
         f"{emoji} **{finding['canonical_rule_id']}** — {finding.get('category', 'security')}\n"
         f"> {finding['message']}\n"
         f"{sev.title()} Severity | [ACR-QA]"
     )
+
+    fix_code = finding.get("fix_code")
+    if fix_code:
+        suggestion = f"\n```suggestion\n{fix_code.strip()}\n```\n"
+        return base_comment + "\n" + suggestion
+
+    return base_comment
 
 
 def format_pr_comment(findings):
