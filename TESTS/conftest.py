@@ -8,6 +8,13 @@ from unittest.mock import MagicMock, Mock, patch
 import pytest
 
 
+@pytest.fixture(autouse=True)
+def mock_env(monkeypatch):
+    """Automatically mock environment variables for all tests to prevent ValueError."""
+    monkeypatch.setenv("GROQ_API_KEY_1", "test_dummy_groq_key_1")
+    monkeypatch.setenv("GROQ_API_KEY", "test_dummy_groq_key")
+
+
 @pytest.fixture
 def mock_redis():
     """Create a mock Redis client for testing."""
