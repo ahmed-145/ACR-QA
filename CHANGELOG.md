@@ -2,6 +2,28 @@
 
 All notable changes to ACR-QA are documented here.
 
+## [v3.2.2] — God-Mode Coverage: explainer.py & autofix.py
+
+### Added
+- **`TESTS/test_explainer.py`** — 90+ tests for `ExplanationEngine` (11% → 93%)
+  - Full Cerebras API mocking (sync + async httpx paths)
+  - Redis cache hit/miss/error coverage
+  - `_get_cache_key`, `_build_evidence_grounded_prompt`, `_ngram_similarity`, `_calculate_cost`
+  - `get_fallback_explanation`, `self_evaluate_explanation`, `compute_semantic_entropy`
+  - `generate_explanation_batch`, all exception/fallback branches
+- **`TESTS/test_autofix.py`** — 70 tests for `AutoFixEngine` (0% → 96%)
+  - Every fix method: unused imports, unused variables, f-string conversion, boolean comparison, type hints, bare except, eval, dead code
+  - `apply_fixes`, `verify_fix`, `validate_fix` with full subprocess mocking
+  - Timeout handling, bad JSON, missing file, out-of-range line edge cases
+
+### Metrics
+- **Total tests:** 1,496 (↑ +119 from v3.2.1)
+- **Total coverage:** 73.65% (↑ from 66.64%)
+- `explainer.py`: 11% → **93%**
+- `autofix.py`: 0% → **96%**
+
+---
+
 ## [v3.2.1] — God-Mode Coverage Push
 
 ### Added
