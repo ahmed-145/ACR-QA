@@ -717,4 +717,6 @@ export default [
             return "mixed"
         if js_files:
             return "javascript"
-        return "python"
+        if py_files:
+            return "python"
+        return "unknown"

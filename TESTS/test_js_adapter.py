@@ -286,10 +286,10 @@ class TestLanguageDetection:
         result = JavaScriptAdapter.detect_language(str(tmp_path))
         assert result in ("javascript", "mixed")  # TS detected as JS-family
 
-    def test_detect_empty_dir_defaults_python(self, tmp_path: Path) -> None:
-        """Empty dir defaults to python."""
+    def test_detect_empty_dir_returns_unknown(self, tmp_path: Path) -> None:
+        """Empty dir defaults to unknown."""
         result = JavaScriptAdapter.detect_language(str(tmp_path))
-        assert result == "python"
+        assert result == "unknown"
 
     def test_detect_mixed_project(self, tmp_path: Path) -> None:
         """Mixed Python/JS project returns mixed."""
