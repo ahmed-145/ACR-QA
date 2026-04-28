@@ -1,21 +1,11 @@
 # =============================================================================
 # ACR-QA — Code Review Product Workflow
 # =============================================================================
-# PURPOSE: This IS the ACR-QA product — it analyzes Pull Request diffs,
-#          posts AI-powered review comments, and enforces quality gates.
-#          For internal testing of ACR-QA itself, see tests.yml.
-#
+# PURPOSE: Analyzes Pull Request diffs, posts AI-powered review comments,
+#          and enforces quality gates.
 # TRIGGERS:
-#   - Auto: Runs on every PR (opened, updated, reopened)
-#   - Manual: Comment "acr-qa review" on any PR to trigger a full scan
-#
-# WHAT IT DOES:
-#   1. Detects changed files in the PR
-#   2. Runs 6 static analysis tools (Ruff, Semgrep, Vulture, Radon, Bandit, jscpd)
-#   3. Normalizes findings into canonical schema
-#   4. Generates AI explanations via Cerebras (RAG-enhanced)
-#   5. Posts findings as inline PR comments
-#   6. Enforces quality gates — blocks merge if thresholds exceeded
+#   - Auto: Every PR (opened, updated, reopened)
+#   - Manual: Comment "acr-qa review" on any PR
 # =============================================================================
 
 name: ACR-QA Code Review
@@ -68,7 +58,7 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
         with:
-          fetch-depth: 0  # Full history for diff analysis
+          fetch-depth: 0
 
       - name: Set up Python
         uses: actions/setup-python@v5
@@ -82,6 +72,16 @@ jobs:
           pip install -r requirements.txt
           pip install ruff semgrep vulture radon bandit
           npm install -g jscpd
+
+      - name: Install Go tools
+        run: |
+          mkdir -p ~/.local/gopath/bin
+          wget -q https://github.com/securego/gosec/releases/download/v2.18.2/gosec_2.18.2_linux_amd64.tar.gz -O /tmp/gosec.tar.gz
+          tar -xzf /tmp/gosec.tar.gz -C ~/.local/gopath/bin/ gosec
+          wget -q "https://github.com/dominikh/go-tools/releases/download/2023.1.3/staticcheck_linux_amd64.tar.gz" -O /tmp/staticcheck.tar.gz
+          tar -xzf /tmp/staticcheck.tar.gz -C /tmp/
+          cp /tmp/staticcheck/staticcheck ~/.local/gopath/bin/
+          echo "$HOME/.local/gopath/bin" >> $GITHUB_PATH
 
       - name: Initialize database
         env:
@@ -97,7 +97,7 @@ jobs:
             **/*.py
             **/*.js
             **/*.ts
-            **/*.java
+            **/*.go
 
       - name: Run ACR-QA Analysis
         if: steps.changed-files.outputs.any_changed == 'true'
@@ -113,11 +113,7 @@ jobs:
           DB_PASSWORD: postgres
         run: |
           set -o pipefail
-
-          # Create temp directory for changed files
           mkdir -p /tmp/pr-files
-
-          # Copy only changed files
           echo "${{ steps.changed-files.outputs.all_changed_files }}" | tr ' ' '\n' > /tmp/changed_files.txt
           while IFS= read -r file; do
             if [ -f "$file" ]; then
@@ -125,16 +121,11 @@ jobs:
               cp "$file" "/tmp/pr-files/$file"
             fi
           done < /tmp/changed_files.txt
-
-          # Run analysis on changed files only
-          # Quality gate may exit 1 — we capture it and post comments first
           python3 CORE/main.py \
             --target-dir /tmp/pr-files \
             --repo-name "${{ github.repository }}" \
             --pr-number ${{ github.event.pull_request.number }} \
             --limit 100 | tee /tmp/analysis_output.txt
-
-          # Extract run ID from output
           grep "Run ID:" /tmp/analysis_output.txt | awk '{print $NF}' > /tmp/acr_run_id.txt
 
       - name: Post PR Comments
@@ -153,38 +144,8 @@ jobs:
             --run-id-file /tmp/acr_run_id.txt
 
       - name: Create Autofix PR
-        if: steps.changed-files.outputs.any_changed == 'true' || github.event_name == 'issue_comment'
-        continue-on-error: true
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          DB_HOST: localhost
-          DB_PORT: 5432
-          DB_NAME: acrqa_test
-          DB_USER: postgres
-          DB_PASSWORD: postgres
-        run: |
-          python3 scripts/create_fix_pr.py \
-            --repo "${{ github.repository }}" \
-            --run-id-file /tmp/acr_run_id.txt \
-            --base-branch "${{ github.event.pull_request.base.ref || 'main' }}"
-
-      - name: Post Quality Gate Summary
-        if: steps.changed-files.outputs.any_changed == 'true' || github.event_name == 'issue_comment'
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          DB_HOST: localhost
-          DB_PORT: 5432
-          DB_NAME: acrqa_test
-          DB_USER: postgres
-          DB_PASSWORD: postgres
-        run: |
-          python3 scripts/post_gate_comment.py \
-            --repo "${{ github.repository }}" \
-            --pr-number ${{ github.event.pull_request.number || github.event.issue.number }} \
-            --run-id-file /tmp/acr_run_id.txt
-
-      - name: Create Autofix PR
         if: steps.changed-files.outputs.any_changed == 'true' && steps.analysis.outcome != 'cancelled'
+        continue-on-error: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           DB_HOST: localhost
@@ -202,15 +163,29 @@ jobs:
             --run-id "$RUN_ID" \
             --repo "${{ github.repository }}" \
             --base-branch "${{ github.event.pull_request.base.ref }}" \
-            || echo "Autofix PR creation skipped (no validated fixes or PR already exists)"
+            || echo "Autofix PR skipped (no validated fixes or PR already exists)"
+
+      - name: Post Quality Gate Summary
+        if: steps.changed-files.outputs.any_changed == 'true'
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          DB_HOST: localhost
+          DB_PORT: 5432
+          DB_NAME: acrqa_test
+          DB_USER: postgres
+          DB_PASSWORD: postgres
+        run: |
+          python3 scripts/post_gate_comment.py \
+            --repo "${{ github.repository }}" \
+            --pr-number ${{ github.event.pull_request.number }} \
+            --run-id-file /tmp/acr_run_id.txt
 
       - name: Enforce Quality Gate
         if: steps.analysis.outcome == 'failure'
         run: |
-          echo "❌ Quality Gate failed — checking mode..."
           python3 -c "
-          import yaml, sys
-          cfg = yaml.safe_load(open('.acrqa.yml')) if __import__('os').path.exists('.acrqa.yml') else {}
+          import yaml, sys, os
+          cfg = yaml.safe_load(open('.acrqa.yml')) if os.path.exists('.acrqa.yml') else {}
           mode = cfg.get('quality_gate', {}).get('mode', 'block')
           print(f'Gate mode: {mode}')
           sys.exit(0 if mode == 'warn' else 1)
@@ -252,7 +227,7 @@ jobs:
           --health-retries 5
 
     steps:
-      - name: React to comment
+      - name: React to comment (eyes)
         uses: peter-evans/create-or-update-comment@v3
         with:
           comment-id: ${{ github.event.comment.id }}
@@ -275,6 +250,16 @@ jobs:
           pip install -r requirements.txt
           pip install ruff semgrep vulture radon bandit
           npm install -g jscpd
+
+      - name: Install Go tools
+        run: |
+          mkdir -p ~/.local/gopath/bin
+          wget -q https://github.com/securego/gosec/releases/download/v2.18.2/gosec_2.18.2_linux_amd64.tar.gz -O /tmp/gosec.tar.gz
+          tar -xzf /tmp/gosec.tar.gz -C ~/.local/gopath/bin/ gosec
+          wget -q "https://github.com/dominikh/go-tools/releases/download/2023.1.3/staticcheck_linux_amd64.tar.gz" -O /tmp/staticcheck.tar.gz
+          tar -xzf /tmp/staticcheck.tar.gz -C /tmp/
+          cp /tmp/staticcheck/staticcheck ~/.local/gopath/bin/
+          echo "$HOME/.local/gopath/bin" >> $GITHUB_PATH
 
       - name: Initialize database
         env:
@@ -300,6 +285,7 @@ jobs:
             --repo-name "${{ github.repository }}" \
             --pr-number ${{ github.event.issue.number }} \
             --limit 100 | tee /tmp/analysis_output.txt
+          grep "Run ID:" /tmp/analysis_output.txt | awk '{print $NF}' > /tmp/acr_run_id.txt
 
       - name: Post PR Comments
         env:
@@ -316,7 +302,7 @@ jobs:
             --run-id-file /tmp/acr_run_id.txt
 
       - name: Create Autofix PR
-        if: steps.changed-files.outputs.any_changed == 'true' || github.event_name == 'issue_comment'
+        if: steps.analysis.outcome != 'cancelled'
         continue-on-error: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -326,13 +312,18 @@ jobs:
           DB_USER: postgres
           DB_PASSWORD: postgres
         run: |
+          RUN_ID=$(cat /tmp/acr_run_id.txt 2>/dev/null || echo "")
+          if [ -z "$RUN_ID" ]; then
+            echo "No run ID found — skipping autofix PR"
+            exit 0
+          fi
           python3 scripts/create_fix_pr.py \
+            --run-id "$RUN_ID" \
             --repo "${{ github.repository }}" \
-            --run-id-file /tmp/acr_run_id.txt \
-            --base-branch "${{ github.event.pull_request.base.ref || 'main' }}"
+            --base-branch "main" \
+            || echo "Autofix PR skipped"
 
       - name: Post Quality Gate Summary
-        if: steps.changed-files.outputs.any_changed == 'true' || github.event_name == 'issue_comment'
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           DB_HOST: localhost
@@ -343,16 +334,15 @@ jobs:
         run: |
           python3 scripts/post_gate_comment.py \
             --repo "${{ github.repository }}" \
-            --pr-number ${{ github.event.pull_request.number || github.event.issue.number }} \
+            --pr-number ${{ github.event.issue.number }} \
             --run-id-file /tmp/acr_run_id.txt
 
       - name: Enforce Quality Gate
         if: steps.analysis.outcome == 'failure'
         run: |
-          echo "❌ Quality Gate failed — checking mode..."
           python3 -c "
-          import yaml, sys
-          cfg = yaml.safe_load(open('.acrqa.yml')) if __import__('os').path.exists('.acrqa.yml') else {}
+          import yaml, sys, os
+          cfg = yaml.safe_load(open('.acrqa.yml')) if os.path.exists('.acrqa.yml') else {}
           mode = cfg.get('quality_gate', {}).get('mode', 'block')
           print(f'Gate mode: {mode}')
           sys.exit(0 if mode == 'warn' else 1)
