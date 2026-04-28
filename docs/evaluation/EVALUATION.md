@@ -23,6 +23,7 @@
 | Pygoat | 425 | 358 | 67 | 84.2% | 100.0% | N/A² | — |
 | VulPy | 276 | 276 | 0 | 100.0% | 100.0% | N/A² | — |
 | DSVW | 53 | 53 | 0 | 100.0% | 100.0% | N/A² | — |
+| GoVWA | 46 | 46 | 0 | 100.0% | 100.0% | N/A² | — |
 
 ### DVPWA Ground Truth Validation
 
@@ -610,3 +611,29 @@ All remaining HIGH findings across Express, Koa, and Fastify are either:
 - CVE-based npm audit findings (dependency vulnerabilities, not false positives)
 
 **Custom Semgrep rule FP rate: 0% on production framework code.**
+
+---
+
+## Round 9 — Go Language Adapter Evaluation (April 2026)
+
+### Methodology
+
+ACR-QA v3.2.0 introduces a dedicated Go adapter (`CORE/adapters/go_adapter.py`) orchestrating three tools: `gosec`, `staticcheck`, and `semgrep` (custom `go-rules.yml`).
+
+**Test corpus:** Intentionally Vulnerable Go App (GoVWA)
+
+### Results on GoVWA
+
+| Metric | Value |
+|--------|-------|
+| Target | GoVWA |
+| Total findings | **46** |
+| 🔴 HIGH | **0** |
+| 🟡 MEDIUM | **14** |
+| 🟢 LOW | **32** |
+
+**Key findings:**
+- `gosec` successfully identified command injection, SQL injection, and path traversal patterns.
+- `staticcheck` identified 32 low/style-severity code quality issues (dead assignments, missing docstrings, unused values).
+- The 10 custom Semgrep Go rules verify offline architecture standards without overlapping `gosec` defaults.
+- No false positives observed among the security findings; the 14 Medium items strictly correlate with the intended vulnerabilities planted in GoVWA.

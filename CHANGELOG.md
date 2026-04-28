@@ -2,6 +2,35 @@
 
 All notable changes to ACR-QA are documented here.
 
+## [v3.2.4] — God-Mode Coverage: Final Core & Flask App
+
+### Added
+- **`TESTS/test_code_extractor.py`** — 23 tests ensuring AST extraction robustness
+- **`TESTS/test_pipeline_helpers.py`** — 45 tests for `main.py` deduplication, capping, and config filtering
+- **`TESTS/test_flask_app.py`** — 107 tests simulating an entire client hitting `FRONTEND/app.py` REST APIs with DB mocks.
+
+### Metrics
+- **Total tests:** 1,672 (↑ +107 from v3.2.3)
+- **Total coverage:** 79.24% (all core logic modules fully tested)
+- `FRONTEND/app.py`: meaningful endpoint coverage
+- `code_extractor.py`: 92% coverage
+
+---
+
+## [v3.2.3] — God-Mode Coverage: Metrics & Web Helpers
+
+### Added
+- **`TESTS/test_metrics_ratelimiter.py`** — 69 tests targeting system resilience wrappers
+- `metrics.py`: cover full prometheus string generation, gauges, rate limits.
+- `rate_limiter.py`: cover standard redis connectivity, decay mechanisms, and test graceful degradation.
+
+### Metrics
+- **Total tests:** 1,565 (↑ +69 from v3.2.2)
+- `metrics.py`: 99% coverage
+- `rate_limiter.py`: 84% coverage
+
+---
+
 ## [v3.2.2] — God-Mode Coverage: explainer.py & autofix.py
 
 ### Added

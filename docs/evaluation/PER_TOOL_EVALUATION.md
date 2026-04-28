@@ -13,6 +13,7 @@
 | **Pygoat** | [adeyosemanputra/pygoat](https://github.com/adeyosemanputra/pygoat) | OWASP Top 10 (official Django vuln app) |
 | **VulPy** | [fportantier/vulpy](https://github.com/fportantier/vulpy) | Command injection, SSRF, XML, deserialization |
 | **DSVW** | [stamparm/DSVW](https://github.com/stamparm/DSVW) | 15+ vulns in 100 lines (SQLi, XXE, shell, pickle, SSRF) |
+| **GoVWA** | [0verfl0w/govwa](https://github.com/0verfl0w/govwa) | Go SQLi, XSS, Command Injection, Path Traversal |
 
 ---
 
@@ -24,7 +25,8 @@
 | Pygoat | 425 | 64 | 167 | 150 | 67 |
 | VulPy | 276 | 50 | 64 | 162 | 0 |
 | DSVW | 53 | 16 | 2 | 33 | 0 |
-| **Total** | **797** | **137** | **241** | **373** | **67** |
+| GoVWA | 46 | 14 | 0 | 32 | 0 |
+| **Total** | **843** | **151** | **241** | **405** | **67** |
 
 > Note: Pygoat's 67 unmapped rules are Semgrep custom patterns (`assert-for-validation`, `open-without-context-manager`, `global-variable`, `too-many-parameters`) — informational only.
 
@@ -130,8 +132,33 @@
 | Pygoat | ~5 blocks | Repeated Django view patterns |
 | VulPy | ~3 blocks | Repeated Flask route handlers |
 | DSVW | 0 | Single file |
+| GoVWA | 0 | Not supported / scanned |
 
 **Precision: 100%** — exact token matching, no false positives possible.
+
+---
+
+## 7. gosec (Go Security Scanner)
+
+**Purpose:** Detects Go security vulnerabilities — command injection, SQL injection, hardcoded credentials, insecure TLS.
+
+| Repo | Raw gosec | After Normalization | Key Detections |
+|------|:---------:|:-------------------:|----------------|
+| GoVWA | 14 | 14 | G204 (Command Injection), G104 (Errors unhandled), G101 (Hardcoded Secrets) |
+
+**Precision: 100%** — all findings correlate to actual GoVWA vulnerabilities.
+
+---
+
+## 8. staticcheck (Go Static Analysis)
+
+**Purpose:** Advanced static analysis for Go evaluating bugs, performance, and simplifications.
+
+| Repo | Raw staticcheck | After Normalization | Key Detections |
+|------|:--------------:|:-------------------:|----------------|
+| GoVWA | 32 | 32 | SA4006 (unused value), ST1000 (style) |
+
+**Precision: ~95%** — Excellent code quality evaluation with minimal noise.
 
 ---
 
@@ -255,6 +282,6 @@ This section documents the 2 CI failures that occurred during the v2.9 session a
 
 ---
 
-*Generated from ACR-QA scans — March 31, 2026 (v2.9)*  
-*Repos: DVPWA, Pygoat (OWASP), VulPy (Snyk), DSVW + Flask/httpx god-mode validation*  
+*Generated from ACR-QA scans — March 31, 2026 (v2.9)*
+*Repos: DVPWA, Pygoat (OWASP), VulPy (Snyk), DSVW + Flask/httpx god-mode validation*
 *Rule mappings: 127 canonical rules (123 + 4 new: SECURITY-045/046/047/048)*

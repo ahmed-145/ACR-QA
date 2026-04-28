@@ -58,7 +58,7 @@ Creates a row in `analysis_runs` before any scanning starts. This gives every ru
 
 ### Stage 2a — Detection Layer
 
-**Component:** `TOOLS/run_checks.sh` (Python) · `CORE/adapters/js_adapter.py` (JS/TS)
+**Component:** `TOOLS/run_checks.sh` (Python) · `CORE/adapters/js_adapter.py` (JS/TS) · `CORE/adapters/go_adapter.py` (Go)
 
 #### Python Pipeline (7 tools)
 
@@ -81,11 +81,22 @@ Creates a row in `analysis_runs` before any scanning starts. This gives every ru
 | npm audit | CVE-matched dependency vulnerabilities | JSON |
 | jscpd | Copy-paste duplication | JSON |
 
+#### Go Pipeline (3 tools)
+
+| Tool | What it catches | Output |
+|------|----------------|--------|
+| gosec | Go security vulnerabilities | JSON |
+| staticcheck | Go static analysis and bug detection | Text |
+| Semgrep (10 custom rules) | Go architecture security flaws, Goroutine leaks | JSON |
+
 **Custom Semgrep JS rule sets** (`TOOLS/semgrep/js-*.yml`):
 - `js-rules.yml` — Core security (eval injection, SQL/NoSQL, XSS, SSRF, path traversal)
 - `js-taint-rules.yml` — Taint analysis architecture (SQL/cmd/eval sources→skins; Pro engine)
 - `js-xxe.yml` — XXE via libxmljs
 - `js-ejs-xss.yml` — EJS template XSS
+
+**Custom Semgrep Go rules** (`TOOLS/semgrep/go-rules.yml`):
+- `go-rules.yml` — Command injection, SQLi, hardcoded secrets, Goroutine leaks, defer-in-loop. Opt-in local-only execution.
 
 **Output:** Raw JSON files saved to `DATA/outputs/`
 

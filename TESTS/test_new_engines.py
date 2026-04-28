@@ -1525,21 +1525,13 @@ class TestFeature10TrendDashboard:
         assert test_repos == []
 
     def test_trends_api_returns_success(self):
-        import subprocess
-        import time
+        from FRONTEND.app import app
 
-        import requests
-
-        proc = subprocess.Popen(
-            ["python3", "FRONTEND/app.py"],
-            stdout=subprocess.DEVNULL,
-            stderr=subprocess.DEVNULL,
-        )
-        time.sleep(3)
-        try:
-            r = requests.get("http://localhost:5000/api/trends?limit=5", timeout=5)
+        app.config["TESTING"] = True
+        with app.test_client() as client:
+            r = client.get("/api/trends?limit=5")
             assert r.status_code == 200
-            data = r.json()
+            data = r.get_json()
             assert data["success"] is True
             assert "labels" in data
             assert "severity_series" in data
@@ -1547,51 +1539,26 @@ class TestFeature10TrendDashboard:
             assert "total_series" in data
             assert "repos" in data
             assert "run_count" in data
-        finally:
-            proc.terminate()
 
     def test_repos_api_returns_success(self):
-        import subprocess
-        import time
+        from FRONTEND.app import app
 
-        import requests
-
-        proc = subprocess.Popen(
-            ["python3", "FRONTEND/app.py"],
-            stdout=subprocess.DEVNULL,
-            stderr=subprocess.DEVNULL,
-        )
-        time.sleep(3)
-        try:
-            r = requests.get("http://localhost:5000/api/repos", timeout=5)
+        app.config["TESTING"] = True
+        with app.test_client() as client:
+            r = client.get("/api/repos")
             assert r.status_code == 200
-            data = r.json()
+            data = r.get_json()
             assert data["success"] is True
             assert "repos" in data
             assert isinstance(data["repos"], list)
-        finally:
-            proc.terminate()
 
     def test_trends_api_repo_filter(self):
-        import subprocess
-        import time
+        from FRONTEND.app import app
 
-        import requests
-
-        proc = subprocess.Popen(
-            ["python3", "FRONTEND/app.py"],
-            stdout=subprocess.DEVNULL,
-            stderr=subprocess.DEVNULL,
-        )
-        time.sleep(3)
-        try:
-            r = requests.get(
-                "http://localhost:5000/api/trends?limit=5&repo=nonexistent-xyz",
-                timeout=5,
-            )
+        app.config["TESTING"] = True
+        with app.test_client() as client:
+            r = client.get("/api/trends?limit=5&repo=nonexistent-xyz")
             assert r.status_code == 200
-            data = r.json()
+            data = r.get_json()
             assert data["success"] is True
             assert data["run_count"] == 0
-        finally:
-            proc.terminate()

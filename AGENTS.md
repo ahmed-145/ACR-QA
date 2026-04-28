@@ -9,7 +9,7 @@
 
 **ACR-QA** — Automated Code Review & Quality Assurance
 Graduation thesis project for Ahmed at KSIU. Supervisor: Dr. Samy.
-**Stack:** Python 3.11+, Flask, PostgreSQL, Redis, Semgrep, Bandit, Ruff, Vulture
+**Stack:** Python 3.11+, JavaScript/TypeScript, Go 1.22+, Flask, PostgreSQL, Redis, Semgrep, Bandit, Ruff, Vulture, gosec, staticcheck, ESLint
 **Repo:** `ahmed-145/ACR-QA` · **Branch:** always push to `main`
 
 ---
