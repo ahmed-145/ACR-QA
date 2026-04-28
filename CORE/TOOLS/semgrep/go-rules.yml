@@ -1,0 +1,173 @@
+rules:
+  # ── 1. Command Injection ──────────────────────────────────────────────────
+  - id: go-command-injection
+    patterns:
+      - pattern: exec.Command($CMD, ..., $INPUT, ...)
+      - pattern-not: exec.Command("...", ...)
+    message: >
+      Possible command injection: exec.Command called with a non-literal first
+      argument or with user-controlled arguments. An attacker may inject
+      arbitrary shell commands.
+    languages: [go]
+    severity: ERROR
+    metadata:
+      canonical_rule_id: SECURITY-030
+      cwe: "CWE-78"
+      owasp: "A03:2021 – Injection"
+
+  # ── 2. SQL Injection via fmt.Sprintf ────────────────────────────────────
+  - id: go-sql-injection-sprintf
+    patterns:
+      - pattern: |
+          $DB.$METHOD(fmt.Sprintf($QUERY, ...), ...)
+    message: >
+      Potential SQL injection: query string built with fmt.Sprintf and passed
+      directly to a database method. Use parameterised queries with '?' or '$N'
+      placeholders instead.
+    languages: [go]
+    severity: ERROR
+    metadata:
+      canonical_rule_id: SECURITY-020
+      cwe: "CWE-89"
+      owasp: "A03:2021 – Injection"
+
+  # ── 3. Hardcoded Password / Secret ───────────────────────────────────────
+  - id: go-hardcoded-secret
+    patterns:
+      - pattern: |
+          $KEY := "..."
+      - metavariable-regex:
+          metavariable: $KEY
+          regex: (?i)(password|passwd|secret|api_?key|token|credentials?)
+    message: >
+      Hardcoded secret detected in variable '$KEY'. Store secrets in environment
+      variables or a secrets manager — never in source code.
+    languages: [go]
+    severity: WARNING
+    metadata:
+      canonical_rule_id: HARDCODE-010
+      cwe: "CWE-798"
+      owasp: "A07:2021 – Identification and Authentication Failures"
+
+  # ── 4. Insecure TLS — InsecureSkipVerify ────────────────────────────────
+  - id: go-insecure-tls-skip-verify
+    pattern: |
+      tls.Config{..., InsecureSkipVerify: true, ...}
+    message: >
+      TLS certificate verification is disabled (InsecureSkipVerify: true).
+      This allows man-in-the-middle attacks. Remove this flag or use a proper
+      CA certificate bundle.
+    languages: [go]
+    severity: ERROR
+    metadata:
+      canonical_rule_id: SECURITY-060
+      cwe: "CWE-295"
+      owasp: "A02:2021 – Cryptographic Failures"
+
+  # ── 5. Path Traversal ────────────────────────────────────────────────────
+  - id: go-path-traversal
+    patterns:
+      - pattern: os.Open(filepath.Join($BASE, $INPUT))
+      - pattern: ioutil.ReadFile(filepath.Join($BASE, $INPUT))
+      - pattern: os.ReadFile(filepath.Join($BASE, $INPUT))
+    message: >
+      Possible path traversal: user-controlled input '$INPUT' passed to a file
+      open operation via filepath.Join. Validate and sanitise the path against a
+      known-safe prefix (filepath.Rel + strings.HasPrefix).
+    languages: [go]
+    severity: ERROR
+    metadata:
+      canonical_rule_id: SECURITY-040
+      cwe: "CWE-22"
+      owasp: "A01:2021 – Broken Access Control"
+
+  # ── 6. Weak Random — math/rand instead of crypto/rand ───────────────────
+  - id: go-weak-random
+    patterns:
+      - pattern: rand.Intn(...)
+      - pattern: rand.Int63n(...)
+      - pattern: rand.Float64()
+    message: >
+      math/rand produces predictable pseudo-random numbers. For security-
+      sensitive purposes (tokens, nonces, session IDs) use crypto/rand instead.
+    languages: [go]
+    severity: WARNING
+    metadata:
+      canonical_rule_id: SECURITY-051
+      cwe: "CWE-338"
+      owasp: "A02:2021 – Cryptographic Failures"
+
+  # ── 7. SSRF — http.Get with user input ──────────────────────────────────
+  - id: go-ssrf-http-get
+    patterns:
+      - pattern: http.Get($URL)
+      - pattern-not: http.Get("https://...")
+      - pattern-not: http.Get("http://...")
+    message: >
+      Possible Server-Side Request Forgery (SSRF): http.Get called with a
+      non-literal URL. Validate that the target URL belongs to an allow-listed
+      set of hosts before making the request.
+    languages: [go]
+    severity: ERROR
+    metadata:
+      canonical_rule_id: SECURITY-070
+      cwe: "CWE-918"
+      owasp: "A10:2021 – Server-Side Request Forgery"
+
+  # ── 8. Unsafe Use of fmt.Fprintf with Request Data ───────────────────────
+  - id: go-reflected-xss
+    patterns:
+      - pattern: fmt.Fprintf($W, $INPUT)
+      - pattern-not: fmt.Fprintf($W, "...")
+    message: >
+      Possible reflected XSS or response injection: user-controlled data written
+      directly to an http.ResponseWriter without sanitisation. Use
+      html/template or explicitly escape the output.
+    languages: [go]
+    severity: WARNING
+    metadata:
+      canonical_rule_id: SECURITY-080
+      cwe: "CWE-79"
+      owasp: "A03:2021 – Injection"
+
+  # ── 9. Defer inside Loop ─────────────────────────────────────────────────
+  - id: go-defer-in-loop
+    patterns:
+      - pattern: |
+          for ... {
+            ...
+            defer $FUNC(...)
+            ...
+          }
+    message: >
+      defer inside a loop will not execute until the surrounding function
+      returns, not at the end of each iteration. This commonly causes resource
+      leaks (file handles, DB connections). Extract the loop body into a
+      helper function.
+    languages: [go]
+    severity: WARNING
+    metadata:
+      canonical_rule_id: STYLE-020
+      cwe: "CWE-772"
+      owasp: "A04:2021 – Insecure Design"
+
+  # ── 10. Goroutine Leak — HTTP handler spawning unbounded goroutines ──────
+  - id: go-goroutine-in-handler
+    patterns:
+      - pattern: |
+          func $HANDLER(w http.ResponseWriter, r *http.Request) {
+            ...
+            go $F(...)
+            ...
+          }
+    message: >
+      An HTTP handler spawns a goroutine without any bound or cancellation
+      mechanism. If the goroutine outlives the request context it can leak and
+      exhaust resources under load. Pass r.Context() to the goroutine and
+      respect cancellation.
+    languages: [go]
+    severity: WARNING
+    metadata:
+      canonical_rule_id: STYLE-021
+      cwe: "CWE-404"
+      owasp: "A04:2021 – Insecure Design"

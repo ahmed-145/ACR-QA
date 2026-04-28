@@ -834,7 +834,7 @@ def main():
     parser.add_argument(
         "--version",
         action="version",
-        version="ACR-QA v3.1.3",
+        version="ACR-QA v3.2.0",
     )
     parser.add_argument(
         "--no-ai",
@@ -858,7 +858,7 @@ def main():
 
     parser.add_argument(
         "--lang",
-        choices=["auto", "python", "javascript", "typescript"],
+        choices=["auto", "python", "javascript", "typescript", "go"],
         default="auto",
         dest="language",
         help=(
@@ -888,8 +888,50 @@ def main():
         from CORE.adapters.js_adapter import JavaScriptAdapter
 
         language = JavaScriptAdapter.detect_language(args.target_dir)
+        if language == "unknown":
+            from CORE.adapters.go_adapter import GoAdapter
+
+            if GoAdapter.detect_language(args.target_dir) == "go":
+                language = "go"
         if language != "python":
             print(f"🔍 Auto-detected language: {language}")
+
+    if language == "go":
+        import dataclasses
+
+        from CORE.adapters.go_adapter import GoAdapter
+
+        print(f"\n🟦 ACR-QA Go Adapter — analyzing {args.target_dir}")
+        print("=" * 50)
+        go_adapter = GoAdapter(target_dir=args.target_dir)
+        tools_ok = go_adapter.check_tools_available()
+        print(
+            f"      gosec: {'✓' if tools_ok['gosec'] else '✗'}  staticcheck: {'✓' if tools_ok['staticcheck'] else '✗'}"
+        )
+        results = go_adapter.run_tools()
+        for err in results.get("errors", []):
+            print(f"      ⚠ {err}")
+        findings_obj = go_adapter.get_all_findings(results)
+        findings = [dataclasses.asdict(f) if hasattr(f, "__dataclass_fields__") else vars(f) for f in findings_obj]
+        for f in findings:
+            f.setdefault("canonical_rule_id", f.get("rule_id", "UNKNOWN"))
+            f.setdefault("canonical_severity", f.get("severity", "low"))
+            f.setdefault("file_path", f.get("file", ""))
+            f.setdefault("line_number", f.get("line", 0))
+        print(f"      ✓ {len(findings)} findings from Go tools")
+        # Print findings summary
+        high = [f for f in findings if f.get("canonical_severity") == "high"]
+        medium = [f for f in findings if f.get("canonical_severity") == "medium"]
+        low = [f for f in findings if f.get("canonical_severity") == "low"]
+        print(f"\n  🔴 High: {len(high)}  🟡 Medium: {len(medium)}  🟢 Low: {len(low)}")
+        print("\n  Top findings:")
+        for f in sorted(
+            findings, key=lambda x: {"high": 0, "medium": 1, "low": 2}.get(x.get("canonical_severity", "low"), 2)
+        )[:10]:
+            print(
+                f"    [{f.get('canonical_severity','?').upper()}] {f.get('canonical_rule_id')} — {f.get('file_path','').split('/')[-1]}:{f.get('line_number',0)} — {f.get('message','')[:60]}"
+            )
+        return
 
     if language in ("javascript", "typescript"):
         run_id = pipeline.run_js(

@@ -2,7 +2,70 @@
 
 All notable changes to ACR-QA are documented here.
 
+## [v3.2.1] — God-Mode Coverage Push
+
+### Added
+- **`TESTS/test_batch1_pure_logic.py`** — 108 tests covering `quality_gate`, `config_loader`, `confidence_scorer`, `triage_memory`
+- **`TESTS/test_batch2_engines.py`** — 96 tests covering `sca_scanner`, `cross_language_correlator`, `path_feasibility`
+- **`TESTS/test_batch3_detectors.py`** — 100 tests covering `ai_code_detector`, `cbom_scanner`, `dependency_reachability`
+
+### Coverage Gains (module-level)
+| Module | Before | After |
+|---|---|---|
+| `quality_gate.py` | 0% | 95% |
+| `config_loader.py` | 0% | 90%+ |
+| `confidence_scorer.py` | 0% | 96% |
+| `triage_memory.py` | 0% | 99% |
+| `sca_scanner.py` | 0% | 88% |
+| `cross_language_correlator.py` | 0% | 80% |
+| `path_feasibility.py` | 0% | 88% |
+| `ai_code_detector.py` | 0% | 90%+ |
+| `cbom_scanner.py` | partial | 90%+ |
+| `dependency_reachability.py` | 0% | 95% |
+
+### Test count
+1377 passed, 4 skipped — up from 1107 (v3.2.0) — **+270 tests**
+
+### Coverage
+**66.64% overall** — up from 63.33% (v3.2.0)
+
+---
+
+## [v3.2.0] — Feature 11: Go Language Support
+
+### Added
+- **`CORE/adapters/go_adapter.py`** — full Go language adapter (gosec + staticcheck + semgrep)
+  - `gosec v2.18.2` integration: CWE-mapped findings, 26 rules mapped to ACR-QA canonical IDs
+  - `staticcheck v0.4.3` integration: style, correctness, dead-code rules (19 mapped)
+  - `semgrep` integration: fires only when `CORE/TOOLS/semgrep/go-rules.yml` is present (no network calls)
+  - `detect_language()` static method for auto-routing
+  - Deduplication by `(file, line, column, canonical_rule_id)`
+- **`CORE/TOOLS/semgrep/go-rules.yml`** — 10 Go-specific Semgrep rules:
+  - Command injection, SQL injection via `fmt.Sprintf`, hardcoded secrets,
+    insecure TLS (`InsecureSkipVerify`), path traversal, weak random (`math/rand`),
+    SSRF, reflected XSS, defer-in-loop, goroutine leak in HTTP handler
+- **CLI `--lang go`** — added to `CORE/main.py` argument parser; routes to `GoAdapter`
+- **Auto-detection** — `--lang auto` now falls back to Go detection after JS check
+- **`TESTS/test_go_adapter.py`** — 51 unit tests: normalization, deduplication, rule mapping, category inference
+
+### Fixed
+- gosec line-range values (e.g., `"37-40"`) no longer crash `normalize_gosec`
+- `semgrep` block no longer raises `UnboundLocalError` when local rules are absent
+
+### Benchmark (GoVWA — known-vulnerable Go web app)
+- **46 findings** — 14 medium, 32 low
+- Top categories: weak crypto (MD5/SHA1), XSS template injection, SQL string formatting
+
+### Test count
+892 passed, 4 skipped — up from 526 (v3.1.3) — **+366 tests**
+
+### Coverage
+61.79% overall — above 40% CI threshold
+
+---
+
 ## [v3.1.3] — Feature 10: Vulnerability Trend Dashboard + Feature 9 Cross-Language Correlator
+
 
 ### Added (Feature 10)
 - Vulnerability trend dashboard — time-series view of findings across all historical scans

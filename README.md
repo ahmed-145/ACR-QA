@@ -7,12 +7,12 @@
 
 [![Python 3.11+](https://img.shields.io/badge/Python-3.11+-3776ab?logo=python&logoColor=white)](https://www.python.org/)
 [![CI Tests](https://github.com/ahmed-145/ACR-QA/actions/workflows/tests.yml/badge.svg)](https://github.com/ahmed-145/ACR-QA/actions/workflows/tests.yml)
-[![Tests](https://img.shields.io/badge/Tests-526%20passing-22c55e?logo=pytest&logoColor=white)](./TESTS/)
-[![Version](https://img.shields.io/badge/Version-3.1.3-blue)](CHANGELOG.md)
+[![Tests](https://img.shields.io/badge/Tests-1377%20passing-22c55e?logo=pytest&logoColor=white)](./TESTS/)
+[![Version](https://img.shields.io/badge/Version-3.2.0-blue)](CHANGELOG.md)
 [![PostgreSQL 15](https://img.shields.io/badge/PostgreSQL-15+-336791?logo=postgresql&logoColor=white)](https://postgresql.org/)
 [![Prometheus](https://img.shields.io/badge/Prometheus-monitored-e6522c?logo=prometheus&logoColor=white)](https://prometheus.io/)
 [![Rules](https://img.shields.io/badge/Rules-299%20mapped-8b5cf6?logo=shield&logoColor=white)](./docs/evaluation/PER_TOOL_EVALUATION.md)
-[![Languages](https://img.shields.io/badge/Languages-Python%20%7C%20JS%20%7C%20TS-f7df1e?logo=javascript&logoColor=black)](./CORE/adapters/)
+[![Languages](https://img.shields.io/badge/Languages-Python%20%7C%20JS%20%7C%20TS%20%7C%20Go-00ADD8?logo=go&logoColor=white)](./CORE/adapters/)
 [![Precision](https://img.shields.io/badge/Precision-100%25-22c55e?logo=target&logoColor=white)](./docs/evaluation/PER_TOOL_EVALUATION.md)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
@@ -52,6 +52,9 @@ ACR-QA is a **provenance-first, AI-augmented code review platform**. It runs **7
 | **Radon** | Cyclomatic complexity, maintainability index | JSON |
 | **Secrets Detector** | API keys, passwords, JWTs, tokens, private keys | Custom |
 | **SCA Scanner** | Known-vulnerable dependency versions | Custom |
+| **ESLint** | JavaScript/TypeScript security rules | JSON |
+| **gosec** | Go security vulnerabilities | JSON |
+| **staticcheck** | Go static analysis and bug detection | Text |
 
 - **Cryptographic Bill of Materials (CBoM)** — inventories all cryptographic API usage across Python and JS/TS, classifies every algorithm by quantum-safety status per NIST FIPS 203/204 (2024 PQC standards), and flags non-quantum-safe algorithms (MD5, SHA1, RSA, ECDSA, DES) with post-quantum replacements (ML-KEM, ML-DSA, SHA3, BLAKE2)
 
@@ -229,12 +232,12 @@ python3 FRONTEND/app.py   # → http://localhost:5000
 │                │ Radon       │                           │          │
 │                │ Secrets     │                           ▼          │
 │                │ SCA         │            ┌─────────────────────┐   │
-│                └─────────────┘            │   RAG Explainer     │   │
-│                                          │   66 rules.yml KB   │   │
-│                                          │   Cerebras LLM      │   │
-│                                          │   + Entropy (3×)    │   │
-│                                          │   + Self-eval       │   │
-│                                          └──────────┬──────────┘   │
+│                │ gosec       │            │   RAG Explainer     │   │
+│                │ staticcheck │            │   66 rules.yml KB   │   │
+│                │ ESLint      │            │   Cerebras LLM      │   │
+│                └─────────────┘            │   + Entropy (3×)    │   │
+│                                           │   + Self-eval       │   │
+│                                           └──────────┬──────────┘   │
 │                                                     │              │
 │              ┌───────────┐                          ▼              │
 │              │ Dashboard │◄────── PostgreSQL ◄─────────────────────│
@@ -273,7 +276,10 @@ acr-qa/
 │   └── templates/index.html     # Dark-mode responsive UI
 ├── TOOLS/
 │   ├── run_checks.sh            # Parallel tool execution
-│   └── semgrep/python-rules.yml # Custom Semgrep security rules
+│   └── semgrep/                 # Custom Semgrep security rules
+│       ├── python-rules.yml
+│       ├── js-rules.yml
+│       └── go-rules.yml
 ├── scripts/
 │   ├── post_pr_comments.py      # GitHub PR comment poster
 │   ├── post_gitlab_comments.py  # GitLab MR comment poster
@@ -333,7 +339,7 @@ Options:
   --diff-base BRANCH   Base branch for diff (default: main)
   --auto-fix           Generate auto-fix suggestions for fixable rules
   --rich               Beautiful terminal output with Rich tables & panels
-  --lang LANG          Language: auto (default) | python | javascript | typescript
+  --lang LANG          Language: auto (default) | python | javascript | typescript | go
   --no-ai              Skip AI explanation step (faster, no API key needed)
   --json               Output findings as JSON (pipe-friendly)
   --version            Print ACR-QA version and exit
@@ -441,6 +447,46 @@ npm install -g eslint eslint-plugin-security   # ESLint security plugin
 
 ---
 
+## 🟦 Go Support (Verified)
+
+ACR-QA v3.2.0 ships with a **full Go language adapter** — no configuration required.
+
+### How It Works
+
+```text
+Go Project
+    │
+    ├── gosec                             → Official Go security scanner (JSON output)
+    ├── staticcheck                       → Advanced static analysis (Text output)
+    └── Semgrep (TOOLS/semgrep/go-rules.yml) → Custom rules: Goroutine leaks, defer in loop, logic bugs...
+         │
+         ▼
+    Normalizer → Rule mappings + dynamic line range handling → CanonicalFinding
+         │
+         ▼
+    Severity Scorer + Quality Gate + AI Explanations
+```
+
+### Usage
+
+```bash
+# Auto-detect (ACR-QA checks for go.mod + .go files automatically)
+python3 CORE/main.py --target-dir ./my-go-api
+
+# Force Go mode
+python3 CORE/main.py --target-dir ./my-go-cli --lang go
+```
+
+### Prerequisites (Go mode)
+
+```bash
+# Ensure gosec and staticcheck are installed and in your PATH
+go install github.com/securego/gosec/v2/cmd/gosec@latest
+go install honnef.co/go/tools/cmd/staticcheck@latest
+```
+
+---
+
 ## 🔗 CI/CD Integration
 
 ### GitHub Actions (Automatic)
@@ -525,6 +571,7 @@ make test-e2e          # End-to-end with Docker
 | `test_god_mode.py` | 84 | All new features + regression + edge cases |
 | `test_integration_benchmarks.py` | 15 | Performance benchmarks |
 | `test_js_adapter.py` | 63 | JS/TS adapter, E2E pipeline, CLI routing |
+| `test_go_adapter.py` | 51 | Go adapter, tools extraction, semgrep local rules |
 | `test_coverage_boost.py` | 77 | quality_gate + severity_scorer paths |
 | `test_user_study.py` | 18 | User study module |
 
@@ -629,6 +676,7 @@ make test-e2e          # End-to-end with Docker
 - [x] ~~God-mode testing: 474 tests across 14 test suites~~ (v3.0.8 → 526 tests at v3.1.1)
 - [x] ~~JavaScript / TypeScript language adapter~~ (v3.0.3) — ESLint, Semgrep JS, npm audit, 56 rule mappings
 - [x] ~~Confidence Scoring Engine — 0-100 score per finding, DB-stored, dashboard slider~~ (v3.0.8)
+- [x] ~~Go language adapter~~ (v3.2.0) — gosec, staticcheck, Semgrep Go rules
 - [ ] User study (8–10 participants)
 - [ ] Precision / recall evaluation against ground-truth labels
 - [ ] ☁️ Cloud deployment on DigitalOcean ($200 free credit via GitHub Student Pack)
