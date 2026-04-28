@@ -4,7 +4,9 @@
 
 | Version | Supported          |
 |---------|--------------------|
-| 2.5.x   | ✅ Active          |
+| 3.2.x   | ✅ Active (current) |
+| 3.x.x   | ✅ Active          |
+| 2.5.x   | ⚠️ Security fixes only |
 | < 2.5   | ❌ No longer supported |
 
 ## Reporting a Vulnerability
@@ -37,3 +39,8 @@ ACR-QA follows these security practices:
 - The Cerebras API receives code snippets for generating AI explanations. If this is a concern, configure `ai.enabled: false` in `.acrqa.yml`
 - Redis is used without authentication by default. In production, enable Redis AUTH
 - PostgreSQL credentials should be rotated regularly in production deployments
+- **Flask dashboard has no authentication** — this is intentional for thesis/development use.
+  The dashboard is designed for local or internal network deployment only. Before any
+  public-facing deployment, protect all routes behind a reverse proxy with authentication
+  (nginx `auth_basic`, Caddy forward-auth, or an OAuth2 proxy). See `docs/ROADMAP.md`
+  Phase 2 for the planned session-based auth item.

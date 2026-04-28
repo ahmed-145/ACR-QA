@@ -195,6 +195,12 @@ acrqa-ts/
 
 #### Implementation order (Phase 2)
 
+**Step 0 — Dashboard Authentication** *(~1 day, can be done without TS rewrite)*
+- [ ] Add session-based auth or Bearer token to protect all `/` and `/api/*` routes
+  - Options: Flask-Login (session cookies), nginx `auth_basic`, or an OAuth2 proxy
+  - Priority: Medium — not required for thesis scope (local/demo only)
+  - See `SECURITY.md` for context on the current intentional auth gap
+
 **Step 1 — Core engine in TS** *(~1 week)*
 - Port `JS_RULE_MAPPING` from `js_adapter.py` → `normalizer.ts`
 - Port severity scoring dict → `scorer.ts`
@@ -285,6 +291,7 @@ npx acrqa --target-dir ./src --json > results.json
 | No JS AST analysis | ESLint covers most cases but no semantic graph | Phase 2: tree-sitter or Ox-security |
 | AI explanations require API key | Cerebras needed at runtime | Phase 2: optional, fallback to rule description |
 | No VS Code integration | Python-first architecture | Phase 2: TS extension |
+| **Flask dashboard has no auth** | Thesis/dev scope — local use only | Phase 2: session-based auth or OAuth2 proxy |
 
 ---
 
@@ -335,4 +342,4 @@ docs/
 
 ---
 
-*Last updated: April 23, 2026 — ACR-QA v3.1.3*
+*Last updated: April 28, 2026 — ACR-QA v3.2.4*
