@@ -67,7 +67,7 @@ jobs:
           DB_NAME: acrqa_test
           DB_USER: postgres
           DB_PASSWORD: postgres
-          CEREBRAS_API_KEY: ${{ secrets.CEREBRAS_API_KEY }}
+          GROQ_API_KEY_1: dummy_key
         run: |
           pytest TESTS/ -v --override-ini="addopts=" --tb=short \
             --cov=CORE --cov=DATABASE --cov-report=xml:coverage.xml \

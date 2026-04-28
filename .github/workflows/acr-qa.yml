@@ -105,7 +105,7 @@ jobs:
         id: analysis
         continue-on-error: true
         env:
-          CEREBRAS_API_KEY: ${{ secrets.CEREBRAS_API_KEY }}
+          GROQ_API_KEY_1: ${{ secrets.GROQ_API_KEY_1 }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           DB_HOST: localhost
           DB_PORT: 5432
@@ -278,7 +278,7 @@ jobs:
         id: analysis
         continue-on-error: true
         env:
-          CEREBRAS_API_KEY: ${{ secrets.CEREBRAS_API_KEY }}
+          GROQ_API_KEY_1: ${{ secrets.GROQ_API_KEY_1 }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           DB_HOST: localhost
           DB_PORT: 5432
