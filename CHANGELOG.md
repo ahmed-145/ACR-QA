@@ -10,7 +10,7 @@ All notable changes to ACR-QA are documented here.
 - **`TESTS/test_flask_app.py`** — 107 tests simulating an entire client hitting `FRONTEND/app.py` REST APIs with DB mocks.
 
 ### Metrics
-- **Total tests:** 1,672 (↑ +107 from v3.2.3)
+- **Total tests:** 1,699 (↑ +134 from v3.2.3)
 - **Total coverage:** 79.24% (all core logic modules fully tested)
 - `FRONTEND/app.py`: meaningful endpoint coverage
 - `code_extractor.py`: 92% coverage
