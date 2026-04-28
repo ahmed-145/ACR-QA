@@ -44,7 +44,7 @@
 
 ### What to say while it runs:
 1. **The Tool Orchestra:** *"Watch how ACR-QA concurrently triggers Ruff, Bandit, Semgrep, and Vulture. Standard tools just dump JSON at you, but my normalizer intercepts the output, standardizes the fields, maps them to a generic canonical ID, and drops duplicate findings across tools so the developer doesn’t see the same SQL injection flagged twice."*
-2. **AI RAG & Entropy (The Deep Technical Explanation):** *"Notice the 'Generating Explanations' progress bar? Here is where the real computer science happens. I am not passing raw code to a generic LLM constraint. Instead, I am using RAG. If Semgrep finds a finding, ACR-QA retrieves the exact definition of that vulnerability from my custom `config/rules.yml` knowledge base and forces the Cerebras LLM to base its explanation exclusively on that rule.
+2. **AI RAG & Entropy (The Deep Technical Explanation):** *"Notice the 'Generating Explanations' progress bar? Here is where the real computer science happens. I am not passing raw code to a generic LLM constraint. Instead, I am using RAG. If Semgrep finds a finding, ACR-QA retrieves the exact definition of that vulnerability from my custom `config/rules.yml` knowledge base and forces the Groq LLM to base its explanation exclusively on that rule.
 Then, it runs the LLM query 3 separate times at a high temperature. It mathematically calculates the 'Semantic Entropy' (the variance in meaning) between the 3 answers. If the AI contradicts itself, ACR-QA detects the hallucination and automatically penalizes the finding's Confidence Score. This guarantees trust."*
 
 ### When it finishes:
@@ -97,7 +97,7 @@ Then, it runs the LLM query 3 separate times at a high temperature. It mathemati
 
 ## Summary of the "God-Mode" Arsenal
 If he pushes you on specific tech stack choices:
-* **Why Cerebras API?** "It utilizes ultra-fast Wafer-Scale integration, allowing me to run complex multi-pass semantic entropy algorithms in sub-seconds rather than hanging the CI/CD pipeline."
+* **Why Groq API?** "It utilizes ultra-fast Wafer-Scale integration, allowing me to run complex multi-pass semantic entropy algorithms in sub-seconds rather than hanging the CI/CD pipeline."
 * **Why PostgreSQL?** "SQLite is fine for weekend scripts, but an Enterprise pipeline requires locking, concurrency, and historical trends data across parallel CI/CD runners."
 * **Why go cross-language?** "I didn't stop at Python. I built language adapters for JavaScript/Node.js and Go because modern microservice architectures rarely rely exclusively on a single backend language. ACR-QA even tracks specific Cross-Language Vulnerability Chains (e.g., Python SQL injection routing to a vulnerable Jinja2 template)."
 * **CBoM (Cryptographic Bill of Materials):** "Inside my pipeline, there is a dedicated CBoM scanner. It inventories all cryptography algorithms across the project and grades them on Post-Quantum safety according to NIST FIPS 2024 standards, ensuring companies know exactly what encryption paths will fail when quantum threats emerge."

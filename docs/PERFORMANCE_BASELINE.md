@@ -6,7 +6,7 @@
 
 - **Target:** `TESTS/samples/comprehensive-issues/` (11 Python files, ~800 lines)
 - **Tools:** Ruff, Semgrep, Vulture, jscpd, Radon, Bandit + Secrets Detector + SCA Scanner
-- **AI:** Cerebras Llama 3.1 8B (free tier), 3 explanations
+- **AI:** Groq Llama 3.1 8B (free tier), 3 explanations
 
 ## Pipeline Timings
 
@@ -66,7 +66,7 @@
 ## Notes
 
 - Redis was unavailable during this test (graceful degradation to in-memory rate limiting)
-- AI explanation latency varies with Cerebras API load (first call always slowest due to TCP warming)
+- AI explanation latency varies with Groq API load (first call always slowest due to TCP warming)
 - Quality gate correctly failed for test samples (intentional issues)
 - Dedup removed 7.2% of findings (same file+line+rule from different tools)
 

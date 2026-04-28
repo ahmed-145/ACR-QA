@@ -52,7 +52,7 @@ In Railway app settings → **Variables**:
 
 ```
 FLASK_SECRET_KEY=your-super-secret-key-here
-CEREBRAS_API_KEY=your-cerebras-key
+GROQ_API_KEY=your-groq-key
 ENVIRONMENT=production
 ```
 
@@ -121,7 +121,7 @@ cd ACR-QA
 # Create production .env
 cat > .env << 'EOF'
 FLASK_SECRET_KEY=generate-a-strong-key-here
-CEREBRAS_API_KEY=your-key
+GROQ_API_KEY=your-key
 POSTGRES_PASSWORD=strong-db-password
 ENVIRONMENT=production
 EOF

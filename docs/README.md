@@ -15,7 +15,7 @@
 | [REST API Reference](API_REFERENCE.md) | All 22 HTTP endpoints, CLI reference, JS fetch() integration example [v3.0] |
 | [REST API (legacy)](setup/API-Documentation.md) | Original 11 HTTP endpoints reference (v2.7) |
 | [Cloud Deployment](setup/Cloud-Deployment.md) | PythonAnywhere, Replit, ngrok deployment guides |
-| [Token Setup](setup/TOKEN_SETUP.md) | GitHub, GitLab, and Cerebras API key configuration |
+| [Token Setup](setup/TOKEN_SETUP.md) | GitHub, GitLab, and Groq API key configuration |
 | [Policy Engine](POLICY_ENGINE.md) | `.acrqa.yml` config reference — rules, thresholds, autofix, AI |
 
 ## 🧪 Testing & Quality

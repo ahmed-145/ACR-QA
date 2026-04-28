@@ -2,7 +2,7 @@
 
 ## 🔑 Required Tokens
 
-### 1. Cerebras API Key (Required for AI Explanations)
+### 1. Groq API Key (Required for AI Explanations)
 **Already configured** ✅
 
 ---
@@ -22,8 +22,8 @@
 #### Add to GitHub Repository:
 1. Go to your repo → Settings → Secrets and variables → Actions
 2. Click "New repository secret"
-3. Name: `CEREBRAS_API_KEY`
-4. Value: Your Cerebras API key
+3. Name: `GROQ_API_KEY`
+4. Value: Your Groq API key
 5. Click "Add secret"
 
 **Note:** GitHub Actions automatically provides `GITHUB_TOKEN` - you don't need to create this manually!
@@ -49,12 +49,12 @@
 3. Click "Add variable"
 4. Key: `GITLAB_TOKEN`
 5. Value: Your GitLab token
-6. Flags: 
+6. Flags:
    - ✅ Protect variable
    - ✅ Mask variable
 7. Click "Add variable"
 
-Also add `CEREBRAS_API_KEY` the same way.
+Also add `GROQ_API_KEY` the same way.
 
 ---
 
@@ -64,7 +64,7 @@ For local development, update your `.env` file:
 
 ```bash
 # Required
-CEREBRAS_API_KEY=your_cerebras_key_here
+GROQ_API_KEY=your_groq_key_here
 
 # Optional (only for local testing of PR/MR posting)
 GITHUB_TOKEN=ghp_xxxxxxxxxxxxxxxxxxxx
@@ -129,7 +129,7 @@ After setup, verify:
 
 ```bash
 # Check environment variables
-python3 -c "import os; print('✅ Cerebras:', 'CEREBRAS_API_KEY' in os.environ)"
+python3 -c "import os; print('✅ Groq:', 'GROQ_API_KEY' in os.environ)"
 
 # Test GitHub token (if set)
 curl -H "Authorization: token $GITHUB_TOKEN" https://api.github.com/user
@@ -144,4 +144,4 @@ curl -H "PRIVATE-TOKEN: $GITLAB_TOKEN" https://gitlab.com/api/v4/user
 
 - **GitHub Tokens:** https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/creating-a-personal-access-token
 - **GitLab Tokens:** https://docs.gitlab.com/ee/user/profile/personal_access_tokens.html
-- **Cerebras API:** https://inference-docs.cerebras.ai/
+- **Groq API:** https://inference-docs.groq.ai/

@@ -35,7 +35,7 @@ graph TD
         NORM["Normalizer — 299 rule mappings"]
         SCORE["Severity Scorer"]
         GATE["Quality Gate .acrqa.yml"]
-        AI["AI Explainer — Cerebras"]
+        AI["AI Explainer — Groq"]
         DB[("PostgreSQL")]
         DASH["Flask Dashboard — 22 endpoints"]
 
@@ -79,7 +79,7 @@ The Python version is **feature-complete and thesis-ready**.
 | Normalizer | ✅ | 139+ rule mappings → canonical IDs (SECURITY-xxx, STYLE-xxx, etc.) |
 | Severity Scorer | ✅ | Per-rule severity from `RULE_SEVERITY` dict (high/medium/low) |
 | Quality Gate | ✅ | Configurable via `.acrqa.yml` — blocks CI on policy violation |
-| AI Explanations | ✅ | Cerebras LLM — explains each finding + suggests fix |
+| AI Explanations | ✅ | Groq LLM — explains each finding + suggests fix |
 | Auto-fix | ✅ | Ruff `--fix` applied automatically for fixable issues |
 | OWASP Mapping | ✅ | 9/10 OWASP Top 10 categories covered |
 | Flask Dashboard | ✅ | 22 REST endpoints — runs, findings, stats, trends, compliance, suppression-rules |
@@ -177,7 +177,7 @@ acrqa-ts/
 │   │   │   ├── normalizer.ts    # rule_id → canonical_id mapping
 │   │   │   ├── scorer.ts        # severity scoring
 │   │   │   ├── quality-gate.ts  # gate logic (same policy as Python)
-│   │   │   ├── ai.ts            # LLM explanation (Gemini/Cerebras via fetch)
+│   │   │   ├── ai.ts            # LLM explanation (Gemini/Groq via fetch)
 │   │   │   └── pipeline.ts      # orchestrator
 │   │   └── package.json
 │   ├── cli/                     # `npx acrqa` CLI
@@ -235,7 +235,7 @@ npx acrqa --target-dir ./src --json > results.json
 - Language auto-detected (python or JS/TS)
 
 **Step 5 — AI in TS** *(~3 days)*
-- Replace Cerebras Python client with `fetch()` to Gemini API
+- Replace Groq Python client with `fetch()` to Gemini API
 - Explain findings in JSON format
 - Expose via `/api/explain` endpoint in a lightweight Express server
 
@@ -289,7 +289,7 @@ npx acrqa --target-dir ./src --json > results.json
 | B324 hashlib FPs on Django/SQLAlchemy | Bandit flags ALL MD5 regardless of intent | Phase 2: context-aware rule |
 | CSRF not detected | High FP rate on API-only apps | Phase 2: session-auth detection first |
 | No JS AST analysis | ESLint covers most cases but no semantic graph | Phase 2: tree-sitter or Ox-security |
-| AI explanations require API key | Cerebras needed at runtime | Phase 2: optional, fallback to rule description |
+| AI explanations require API key | Groq needed at runtime | Phase 2: optional, fallback to rule description |
 | No VS Code integration | Python-first architecture | Phase 2: TS extension |
 | **Flask dashboard has no auth** | Thesis/dev scope — local use only | Phase 2: session-based auth or OAuth2 proxy |
 
@@ -305,7 +305,7 @@ CORE/
 └── engines/
 │   ├── normalizer.py    ← 139+ rule → canonical ID mappings
 │   ├── severity_scorer.py ← RULE_SEVERITY dict (60-SECURITY + js +...)
-│   ├── explainer.py     ← Cerebras AI explanation
+│   ├── explainer.py     ← Groq AI explanation
 │   ├── autofix.py       ← Ruff --fix automation
 │   └── quality_gate.py  ← gate logic
 └── adapters/

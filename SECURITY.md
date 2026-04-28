@@ -28,7 +28,7 @@ We will acknowledge receipt within 48 hours and provide an estimated timeline fo
 ACR-QA follows these security practices:
 
 - **On-premises first** — all data stays on your infrastructure
-- **No telemetry** — zero data is sent to external services (except Cerebras API for AI explanations)
+- **No telemetry** — zero data is sent to external services (except Groq API for AI explanations)
 - **Secrets management** — API keys stored in `.env` (never committed)
 - **Dependency pinning** — all dependencies pinned to exact versions in `requirements.txt`
 - **Inline suppression audit** — suppressed findings are logged, not silently dropped
@@ -36,7 +36,7 @@ ACR-QA follows these security practices:
 
 ## Known Security Considerations
 
-- The Cerebras API receives code snippets for generating AI explanations. If this is a concern, configure `ai.enabled: false` in `.acrqa.yml`
+- The Groq API receives code snippets for generating AI explanations. If this is a concern, configure `ai.enabled: false` in `.acrqa.yml`
 - Redis is used without authentication by default. In production, enable Redis AUTH
 - PostgreSQL credentials should be rotated regularly in production deployments
 - **Flask dashboard has no authentication** — this is intentional for thesis/development use.

@@ -48,7 +48,7 @@
 | `test_flask_app.py` | 107 | Complete FRONTEND API REST endpoint verification over simulated payloads and mock DB. |
 | `test_pipeline_helpers.py` | 45 | Pure functions for `main.py` AnalysisPipeline sorting, deduplication, and quality-gate config application. |
 | `test_metrics_ratelimiter.py` | 69 | Prometheus output structures natively. Tests system resiliency directly hitting `redis`. |
-| `test_explainer.py` | 90 | Mocked Cerebras client covering prompt formation, semantic entropy fallback loops, DB insertions, pricing structures. |
+| `test_explainer.py` | 90 | Mocked Groq client covering prompt formation, semantic entropy fallback loops, DB insertions, pricing structures. |
 | `test_autofix.py` | 70 | Regex replacement algorithms against custom sub-processes checking line ranges and bounding boxes. |
 | `test_batch1-3...py` | 304 | Extensive edge-case tracking against individual pipeline detection algorithms pushing >90% coverage for AST analyzers. |
 
@@ -147,7 +147,7 @@ Full god-mode audit of every module (v2.6). Found and fixed 8 bugs.
 |--------|:--------:|--------|
 | `main.py` | 9% | Requires full infra (7 tools + DB + LLM) — integration-only |
 | `sca_scanner.py` | 0% | Wraps `pip-audit` subprocess — requires external binary |
-| `explainer.py` | 45% | LLM calls + Redis caching — requires live `CEREBRAS_API_KEY` |
+| `explainer.py` | 45% | LLM calls + Redis caching — requires live `GROQ_API_KEY` |
 
 ---
 

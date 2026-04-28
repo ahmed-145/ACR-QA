@@ -24,7 +24,7 @@
 
 ## 🎯 What is ACR-QA?
 
-ACR-QA is a **provenance-first, AI-augmented code review platform**. It runs **7 static analysis tools** in parallel, normalizes every finding into a canonical schema, and generates evidence-grounded explanations using Retrieval-Augmented Generation (RAG) — all at **zero recurring cost** (free-tier Cerebras API).
+ACR-QA is a **provenance-first, AI-augmented code review platform**. It runs **7 static analysis tools** in parallel, normalizes every finding into a canonical schema, and generates evidence-grounded explanations using Retrieval-Augmented Generation (RAG) — all at **zero recurring cost** (free-tier Groq API).
 
 **Key differentiators vs SonarQube / CodeRabbit:**
 - 🧠 **RAG-grounded explanations** — 66-rule knowledge base with source citations, not generic AI
@@ -234,7 +234,7 @@ python3 FRONTEND/app.py   # → http://localhost:5000
 │                │ SCA         │            ┌─────────────────────┐   │
 │                │ gosec       │            │   RAG Explainer     │   │
 │                │ staticcheck │            │   66 rules.yml KB   │   │
-│                │ ESLint      │            │   Cerebras LLM      │   │
+│                │ ESLint      │            │   Groq LLM      │   │
 │                └─────────────┘            │   + Entropy (3×)    │   │
 │                                           │   + Self-eval       │   │
 │                                           └──────────┬──────────┘   │
@@ -627,7 +627,7 @@ make test-e2e          # End-to-end with Docker
 | Web Framework | Flask 3.x |
 | Database | PostgreSQL 15 |
 | Cache / Rate Limiting | Redis 7 |
-| AI Model | Cerebras Llama 3.1 8B (free tier) |
+| AI Model | Groq Llama 3.1 8B (free tier) |
 | Static Analysis | Ruff, Semgrep, Bandit, Vulture, Radon |
 | Terminal UI | Rich |
 | Containerization | Docker + Docker Compose |

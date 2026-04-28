@@ -126,7 +126,7 @@
   \IfFileExists{media/ksiu-logo.png}{\includegraphics[height=1.5cm]{media/ksiu-logo.png}\\[0.5em]}{}
   {\Huge\bfseries\color{acrNavy} ACR-QA}\\[0.3em]
   {\Large\color{acrBlue} Phase 2 Progress Update}\\[0.5em]
-  
+
   \begin{tcolorbox}[
     enhanced,colback=acrLight,colframe=acrAccent,
     coltext=acrNavy,width=0.8\linewidth,center,
@@ -137,7 +137,7 @@
     \textbf{Rigorous Testing} \quad\textbullet\quad
     \textbf{Production CI/CD}
   \end{tcolorbox}
-  
+
   \vspace{0.5cm}
   {\small\color{acrSlate} \textbf{Ahmed Mahmoud Abbas} \quad\textbullet\quad King Salman International University}\\[0.2em]
   {\small\color{acrSlate} \textbf{Supervisor: Dr.\ Samy Abdelnabi} \quad\textbullet\quad \today}\\[0.5em]
@@ -151,14 +151,14 @@
       \vspace{0.5em}
       \begin{itemize}\setlength\itemsep{0.6em}
         \item Explains \textit{why} code is problematic and \textit{how} to fix it.
-        \item Uses Cerebras AI + RAG (Retrieval-Augmented Generation).
+        \item Uses Groq AI + RAG (Retrieval-Augmented Generation).
         \item Consolidates 7 static analysis engines.
         \item Zero recurring cost (open-source engines).
       \end{itemize}
     \end{column}
     \begin{column}{0.35\textwidth}
       \begin{tcolorbox}[colback=acrLight,colframe=acrBlue,title=\textbf{Core Stack}]
-        \scriptsize \symCode{} FastAPI\\ \symDB{} PostgreSQL/Redis\\ \symBrain{} Cerebras AI\\ \symCI{} GitHub Actions
+        \scriptsize \symCode{} FastAPI\\ \symDB{} PostgreSQL/Redis\\ \symBrain{} Groq AI\\ \symCI{} GitHub Actions
       \end{tcolorbox}
     \end{column}
   \end{columns}
@@ -238,9 +238,9 @@ suppression:
 \begin{frame}[fragile]{Innovation I: The Test Gap Analyzer}
   \begin{columns}[T]
     \begin{column}{0.6\textwidth}
-      \textbf{The Problem:} 
+      \textbf{The Problem:}
       Coverage metrics (80\%) hide \textit{which} critical logic is untested.
-      
+
       \vspace{1em}
       \textbf{Our Solution:}
       \begin{itemize}\setlength\itemsep{0.5em}
@@ -306,9 +306,9 @@ UNTESTED CRITICAL:
 \begin{frame}[fragile]{Innovation III: Developer Fatigue Tuner}
   \begin{columns}[T]
     \begin{column}{0.55\textwidth}
-      \textbf{The Problem:} 
+      \textbf{The Problem:}
       Developers abandon tools due to false positive spam.
-      
+
       \vspace{1em}
       \textbf{Our Solution (Feedback Tuner):}
       \begin{itemize}\setlength\itemsep{0.5em}
@@ -359,7 +359,7 @@ UNTESTED CRITICAL:
       \vspace{0.5em}
       {\fontsize{40}{45}\selectfont\bfseries\color{acrAccent} 273}\\
       {\large\color{acrSlate} Passing Tests}\\[1em]
-      
+
       {\fontsize{28}{32}\selectfont\bfseries\color{acrGold} $<$ 6s}\\
       {\large\color{acrSlate} Execution Time}\\[1em]
     \end{column}

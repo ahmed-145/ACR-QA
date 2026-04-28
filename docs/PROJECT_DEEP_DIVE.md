@@ -145,7 +145,7 @@ These are fully implemented but have limitations an examiner might probe.
 | **Normalizer** | `CORE/engines/normalizer.py` | 749 | ✅ Solid | 100+ rule mappings, Pydantic validation |
 | **Severity Scorer** | `CORE/engines/severity_scorer.py` | 387 | ✅ Solid | 80+ rules classified HIGH/MEDIUM/LOW with cost/benefit |
 | **Quality Gate** | `CORE/engines/quality_gate.py` | 247 | ✅ Solid | Configurable thresholds, block/warn modes, PR comment formatting |
-| **Explainer (RAG)** | `CORE/engines/explainer.py` | 604 | ✅ Killer feature | Cerebras + rules.yml RAG, entropy scoring, Redis caching |
+| **Explainer (RAG)** | `CORE/engines/explainer.py` | 604 | ✅ Killer feature | Groq + rules.yml RAG, entropy scoring, Redis caching |
 | **Confidence Scorer** | `CORE/engines/confidence_scorer.py` | 140 | ✅ Solid | 5-signal weighted scoring 0-100 |
 | **Autofix Engine** | `CORE/engines/autofix.py` | 543 | ✅ Working | 8 fixable rules, NOT dead code (conditionally triggered) |
 | **Secrets Detector** | `CORE/engines/secrets_detector.py` | 347 | ✅ Solid | 15+ regex patterns (AWS, Google, GitHub, JWT, DB URLs, private keys) |
@@ -220,7 +220,7 @@ Based on the current market (CodeRabbit, SonarQube, CodeAnt AI, DeepSource, Aiki
 |---------|------------|:------:|:------:|-----------------|
 | **GitHub inline `suggestion` blocks** | CodeRabbit, DeepSource | 🟢 2hrs | 🔴 HIGH | Modify `post_pr_comments.py` to emit ` ```suggestion ` blocks using your existing autofix output |
 | **SARIF → GitHub Security tab** | Everyone | 🟢 30min | 🔴 HIGH | Add `github/codeql-action/upload-sarif@v3` step to `acr-qa.yml` — you already generate SARIF |
-| **Repository context in AI prompts** | Greptile, Energent.ai | 🟡 1 day | 🟡 MED | Pre-load `config/rules.yml` + repo README into the Cerebras system prompt |
+| **Repository context in AI prompts** | Greptile, Energent.ai | 🟡 1 day | 🟡 MED | Pre-load `config/rules.yml` + repo README into the Groq system prompt |
 | **Interactive PR chat** ("@acr-qa explain") | CodeRabbit | 🔴 3+ days | 🟢 LOW | Cool but not thesis-critical |
 | **One-click GitHub App install** | CodeRabbit, CodeAnt | 🔴 1+ week | 🟢 LOW | Not needed for thesis |
 

@@ -2,6 +2,21 @@
 
 All notable changes to ACR-QA are documented here.
 
+## [v3.3.0] — Groq API Migration & KeyPool Load Balancing
+
+### Added
+- **Multi-Account KeyPool:** Implemented a round-robin rotation system across 4 Groq API accounts (`GROQ_API_KEY_1` to `GROQ_API_KEY_4`) to bypass rate-limit bottlenecks and increase throughput to ~120 requests/minute.
+- **Model Upgrade:** Switched the explanation engine to `llama-3.3-70b-versatile` for enhanced reasoning and explanations.
+- **Path Feasibility Engine:** Switched to `llama-3.1-8b-instant` for ultra-low latency routing validation.
+- **Global Mocking:** Added a global `mock_env` fixture in `TESTS/conftest.py` to seamlessly inject dummy API keys for all test environments.
+
+### Changed
+- **API Provider:** Fully migrated from `groq-cloud-sdk` to `groq` SDK and native `httpx` for all LLM calls.
+- **Dependencies:** Updated `requirements.txt` to remove Groq and pin `groq==1.2.0`.
+- **CI/CD Configuration:** Updated `.github/workflows/acr-qa.yml` to utilize `GROQ_API_KEY_1` instead of legacy Groq tokens.
+
+---
+
 ## [v3.2.4] — God-Mode Coverage: Final Core & Flask App
 
 ### Added
@@ -40,7 +55,7 @@ All notable changes to ACR-QA are documented here.
 
 ### Added
 - **`TESTS/test_explainer.py`** — 90+ tests for `ExplanationEngine` (11% → 93%)
-  - Full Cerebras API mocking (sync + async httpx paths)
+  - Full Groq API mocking (sync + async httpx paths)
   - Redis cache hit/miss/error coverage
   - `_get_cache_key`, `_build_evidence_grounded_prompt`, `_ngram_similarity`, `_calculate_cost`
   - `get_fallback_explanation`, `self_evaluate_explanation`, `compute_semantic_entropy`
@@ -706,7 +721,7 @@ python -m CORE --target-dir /path/to/next-app --json > findings.json
 ### Added
 - 5 detection tools (Ruff, Semgrep, Vulture, jscpd, Radon)
 - Canonical findings schema
-- RAG-enhanced AI explanations (Cerebras)
+- RAG-enhanced AI explanations (Groq)
 - PostgreSQL provenance database
 - Flask dashboard
 - Basic analysis pipeline

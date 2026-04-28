@@ -1,7 +1,7 @@
 # ACR-QA Development Session - Complete Documentation
 
-**Date:** January 28, 2026  
-**Session Duration:** ~4 hours  
+**Date:** January 28, 2026
+**Session Duration:** ~4 hours
 **Objective:** Complete Phase 1, Phase 2, and polish features for thesis
 
 ---
@@ -48,9 +48,9 @@
 
 ### 1. Added Bandit Security Scanner ✅
 
-**What:** Integrated Bandit as 6th detection tool  
-**Why:** Industry tools have 3-4+ security-focused scanners  
-**Where:** `TOOLS/run_checks.sh`, `CORE/engines/normalizer.py`  
+**What:** Integrated Bandit as 6th detection tool
+**Why:** Industry tools have 3-4+ security-focused scanners
+**Where:** `TOOLS/run_checks.sh`, `CORE/engines/normalizer.py`
 **Result:** 40+ new security rule mappings
 
 **Files Modified:**
@@ -60,9 +60,9 @@
 
 ### 2. Source Citations ✅
 
-**What:** Added clickable rule links in all outputs  
-**Why:** CodeRabbit and SonarQube provide source citations  
-**Where:** `scripts/generate_report.py`  
+**What:** Added clickable rule links in all outputs
+**Why:** CodeRabbit and SonarQube provide source citations
+**Where:** `scripts/generate_report.py`
 **Format:** `[RULE-ID](config/rules.yml)`
 
 **Example:**
@@ -72,9 +72,9 @@
 
 ### 3. Autofix Suggestions ✅
 
-**What:** Added "💡 How to Fix" sections with code examples  
-**Why:** Industry standard for actionable feedback  
-**Where:** `scripts/generate_report.py`  
+**What:** Added "💡 How to Fix" sections with code examples
+**Why:** Industry standard for actionable feedback
+**Where:** `scripts/generate_report.py`
 
 **Features:**
 - Remediation text from rules.yml
@@ -83,8 +83,8 @@
 
 ### 4. Expanded Knowledge Base ✅
 
-**What:** Grew from 10 to 19 rules  
-**Why:** Comprehensive coverage needed  
+**What:** Grew from 10 to 19 rules
+**Why:** Comprehensive coverage needed
 **Where:** `config/rules.yml`
 
 **New Rules:**
@@ -96,8 +96,8 @@
 
 ### 5. Confidence Scores ✅
 
-**What:** Exposed confidence scores in API  
-**Why:** Academic metric for evaluation  
+**What:** Exposed confidence scores in API
+**Why:** Academic metric for evaluation
 **Where:** `FRONTEND/app.py`
 
 **Logic:**
@@ -110,8 +110,8 @@
 
 ### 1. Response Caching with Redis ✅
 
-**What:** Cache LLM explanations to reduce costs  
-**Why:** Industry tools cache responses  
+**What:** Cache LLM explanations to reduce costs
+**Why:** Industry tools cache responses
 **Where:** `CORE/engines/explainer.py`, `CORE/main.py`
 
 **Implementation:**
@@ -136,8 +136,8 @@ self.redis.setex(cache_key, 604800, json.dumps(result))  # 7 days
 
 ### 2. Test Coverage Tracking ✅
 
-**What:** Added pytest-cov configuration  
-**Why:** Academic rigor requires coverage metrics  
+**What:** Added pytest-cov configuration
+**Why:** Academic rigor requires coverage metrics
 **Where:** `pyproject.toml`
 
 **Configuration:**
@@ -160,8 +160,8 @@ open htmlcov/index.html
 
 ### 3. GitLab CI/CD Integration ✅
 
-**What:** Full GitLab pipeline support  
-**Why:** Platform-agnostic tool (not just GitHub)  
+**What:** Full GitLab pipeline support
+**Why:** Platform-agnostic tool (not just GitHub)
 **Where:** `.gitlab-ci.yml`, `scripts/post_gitlab_comments.py`
 
 **Features:**
@@ -195,8 +195,8 @@ analyze-mr:
 
 ### 1. Issue Grouping & Deduplication ✅
 
-**What:** Group findings by canonical rule ID  
-**Why:** Easier to see patterns and prioritize  
+**What:** Group findings by canonical rule ID
+**Why:** Easier to see patterns and prioritize
 **Where:** `FRONTEND/app.py`
 
 **API Endpoint:**
@@ -221,8 +221,8 @@ GET /api/runs/{id}/findings?group_by=rule
 
 ### 2. OWASP/SANS Compliance Reporting ✅
 
-**What:** Map findings to industry security standards  
-**Why:** Demonstrates security coverage  
+**What:** Map findings to industry security standards
+**Why:** Demonstrates security coverage
 **Where:** `scripts/compliance_report.py`
 
 **Mappings:**
@@ -238,8 +238,8 @@ GET /api/runs/{id}/findings?group_by=rule
 
 ### 3. README Enhancement ✅
 
-**What:** Added thesis evaluation criteria section  
-**Why:** Maps implementation to research questions  
+**What:** Added thesis evaluation criteria section
+**Why:** Maps implementation to research questions
 **Where:** `README.md`
 
 **Sections Added:**
@@ -593,14 +593,14 @@ AttributeError: 'RateLimiter' object has no attribute 'redis'
 
 ---
 
-**Session Status: Complete ✅**  
+**Session Status: Complete ✅**
 **Thesis Status: Ready for Defense 🎓**
 
 ---
 
 ## GitHub Actions CI/CD Integration
 
-**Added:** January 28, 2026 (Later in session)  
+**Added:** January 28, 2026 (Later in session)
 **Status:** ✅ Complete and Working
 
 ### Overview
@@ -669,7 +669,7 @@ redis:
 - **Runs #1-5:** Failed (various issues)
 - **Run #6:** ✅ **SUCCESS!**
 
-**Duration:** ~56 seconds  
+**Duration:** ~56 seconds
 **All steps passed**
 
 ### Files Modified
@@ -686,8 +686,8 @@ redis:
 
 ## Session 2: Detection Improvements & Innovation Features
 
-**Date:** January 28, 2026 (Evening Session)  
-**Duration:** ~1.5 hours  
+**Date:** January 28, 2026 (Evening Session)
+**Duration:** ~1.5 hours
 **Objective:** Add market-competitive innovations, fix detection bugs, comprehensive testing
 
 ---
@@ -957,7 +957,7 @@ Intentionally triggers ALL rule categories:
 
 ## Quick Refresh API (Added Later in Session 2)
 
-**Date:** January 28, 2026 (22:15)  
+**Date:** January 28, 2026 (22:15)
 **Purpose:** Solve database/findings sync issue
 
 ### The Problem
@@ -1076,8 +1076,8 @@ curl -X POST http://localhost:5000/api/refresh-findings \
 
 ## Session 4: Python Stage Final Audit & Production Hardening
 
-**Date:** March 4, 2026  
-**Duration:** ~2 hours  
+**Date:** March 4, 2026
+**Duration:** ~2 hours
 **Objective:** Complete Python stage audit, close industry gaps, organize for Phase 2
 
 ---
@@ -1226,37 +1226,37 @@ class LanguageAdapter(ABC):
 
 #### Issue 1: ConfigLoader Was Dead Code
 
-**Problem:** `config_loader.py` was written months ago but `main.py` never imported it  
-**How we found it:** Searched for `ConfigLoader` imports — only test files used it  
-**Solution:** Rewrote `main.py` to load config in `__init__()` and apply filters in `run()`  
+**Problem:** `config_loader.py` was written months ago but `main.py` never imported it
+**How we found it:** Searched for `ConfigLoader` imports — only test files used it
+**Solution:** Rewrote `main.py` to load config in `__init__()` and apply filters in `run()`
 **Lesson:** Always grep for imports after creating new modules — dead code is invisible
 
 #### Issue 2: exit(0) Always — CI Never Blocks
 
-**Problem:** `main.py` always exited 0, even when finding critical security issues  
-**Impact:** CI pipelines would pass even with SQL injection vulnerabilities  
-**Solution:** Added `sys.exit(1)` when quality gate fails  
+**Problem:** `main.py` always exited 0, even when finding critical security issues
+**Impact:** CI pipelines would pass even with SQL injection vulnerabilities
+**Solution:** Added `sys.exit(1)` when quality gate fails
 **Lesson:** Without non-zero exit codes, your CI integration is decorative, not protective
 
 #### Issue 3: 26MB node_modules Tracked in Git
 
-**Problem:** `vscode-extension/node_modules/` was committed to git (2,967 files, 26MB)  
-**Solution:** `git rm -r --cached vscode-extension/node_modules/` + updated `.gitignore`  
-**Impact:** 395,305 lines deleted from git tracking  
+**Problem:** `vscode-extension/node_modules/` was committed to git (2,967 files, 26MB)
+**Solution:** `git rm -r --cached vscode-extension/node_modules/` + updated `.gitignore`
+**Impact:** 395,305 lines deleted from git tracking
 **Lesson:** Always add `node_modules/` to `.gitignore` BEFORE first commit
 
 #### Issue 4: Docs Folder Was a Mess
 
-**Problem:** 5 confusingly named subdirs: `DOCS/`, `real-docs/`, `project-docs/`, `diagrams/`, `images/`  
-**Solution:** Consolidated to 5 clean folders: `architecture/`, `setup/`, `thesis/`, `media/`, `assignments/`  
-**Impact:** Updated all README links to match  
+**Problem:** 5 confusingly named subdirs: `DOCS/`, `real-docs/`, `project-docs/`, `diagrams/`, `images/`
+**Solution:** Consolidated to 5 clean folders: `architecture/`, `setup/`, `thesis/`, `media/`, `assignments/`
+**Impact:** Updated all README links to match
 **Lesson:** Organize docs early — it only gets worse
 
 #### Issue 5: Git Commands Hanging
 
-**Problem:** `git commit` and `git push` commands appeared stuck for 10+ minutes  
-**Cause:** Processing 2,967 file deletions (node_modules removal) — actually just slow  
-**Solution:** Waited it out — they completed successfully in background  
+**Problem:** `git commit` and `git push` commands appeared stuck for 10+ minutes
+**Cause:** Processing 2,967 file deletions (node_modules removal) — actually just slow
+**Solution:** Waited it out — they completed successfully in background
 **Lesson:** Large git operations (especially deletions) can appear stuck but are working
 
 ---
@@ -1299,7 +1299,7 @@ python3 CORE/main.py --target-dir TESTS/samples/comprehensive-issues --limit 3
 3. ✅ 6 detection tools ran
 4. ✅ 2 extra scans (secrets: 2 found, SCA: clean)
 5. ✅ 417 findings normalized → 30 deduped → 387 filtered
-6. ✅ 3 AI explanations generated (Cerebras API, mean: 800ms)
+6. ✅ 3 AI explanations generated (Groq API, mean: 800ms)
 7. ✅ Quality gate evaluated → ❌ FAILED (expected for test samples)
 8. ✅ Exit code 1 (correctly blocks CI)
 
@@ -1356,6 +1356,6 @@ After reading all 1,805 lines of `prd-latex.tex`:
 
 ---
 
-**Session Status: Complete ✅**  
-**Python Stage: Production Ready 🚀**  
+**Session Status: Complete ✅**
+**Python Stage: Production Ready 🚀**
 **Next: Phase 2 — JavaScript/TypeScript Adapter**

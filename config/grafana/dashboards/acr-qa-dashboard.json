@@ -270,7 +270,7 @@
             "id": 5,
             "type": "gauge",
             "title": "🧠 LLM Explanation Latency (avg ms)",
-            "description": "Average time to generate one AI explanation via Cerebras API",
+            "description": "Average time to generate one AI explanation via Groq API",
             "gridPos": {
                 "h": 4,
                 "w": 6,

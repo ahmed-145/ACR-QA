@@ -35,7 +35,7 @@ CREATE TABLE IF NOT EXISTS findings (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
--- LLM explanations table (Cerebras API interactions)
+-- LLM explanations table (Groq API interactions)
 CREATE TABLE IF NOT EXISTS llm_explanations (
     id SERIAL PRIMARY KEY,
     finding_id INTEGER REFERENCES findings(id) ON DELETE CASCADE,

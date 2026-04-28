@@ -29,7 +29,7 @@ Source Code
 [3e] Priority Sort            ← security/high first for within-limit AI coverage
     │
     ▼
-[4]  AI Explanation           ← Cerebras LLM + RAG from config/rules.yml
+[4]  AI Explanation           ← Groq LLM + RAG from config/rules.yml
     │
     ▼
 [5]  Quality Gate             ← Configurable thresholds → exit 1 if failed
@@ -206,7 +206,7 @@ For each finding (up to `max_explanations` from `.acrqa.yml`):
 1. **Code extraction** — `code_extractor.py` pulls 3-line window around the finding
 2. **Knowledge retrieval** — Looks up the canonical rule in `config/rules.yml` (66+ rules with rationale, CWE, remediation, examples)
 3. **Prompt construction** — Evidence-grounded prompt: rule definition + code context + file path
-4. **LLM call** — Cerebras Llama 3.1 8B (`llama3.1-8b`) via async Cerebras API
+4. **LLM call** — Groq Llama 3.1 8B (`llama3.1-8b`) via async Groq API
 5. **Async pipeline** — All explanations fire simultaneously (23 findings → 1.12s wall time)
 6. **Entropy scoring** — 3 calls at different temperatures, response consistency measured (0–1)
 7. **Self-evaluation** — LLM rates its own output: relevance / accuracy / clarity (1–5 each)
