@@ -1,8 +1,8 @@
 # ACR-QA API Documentation
 
-**Version:** 2.7  
-**Base URL:** `http://localhost:5000`  
-**Last Updated:** March 5, 2026
+**Version:** 3.2.4
+**Base URL:** `http://localhost:5000`
+**Last Updated:** April 2026
 
 ---
 
@@ -17,7 +17,7 @@
 
 ## Authentication
 
-**Current:** No authentication required (development mode)  
+**Current:** No authentication required (development mode)
 **Future:** Bearer token authentication
 
 ```bash
@@ -374,7 +374,7 @@ await fetch(`${BASE_URL}/api/findings/123/mark-false-positive`, {
 
 ## Rate Limiting
 
-**Current:** No rate limiting on API endpoints  
+**Current:** No rate limiting on API endpoints
 **Analysis Rate Limit:** 1 analysis per repository per minute (enforced in pipeline)
 
 ---
@@ -661,6 +661,6 @@ Get OWASP Top 10 compliance report for a run.
 
 ---
 
-**Need Help?**  
+**Need Help?**
 - GitHub: [ACR-QA Repository](https://github.com/ahmed-145/ACR-QA)
 - Issues: [Report a Bug](https://github.com/ahmed-145/ACR-QA/issues)
