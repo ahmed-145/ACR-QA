@@ -1,6 +1,6 @@
 # Core Dependencies
 psycopg2-binary==2.9.9
-cerebras-cloud-sdk==1.59.0
+groq==1.2.0
 python-dotenv==1.0.0
 PyYAML==6.0.1
 pydantic==2.12.5
