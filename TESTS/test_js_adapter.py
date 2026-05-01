@@ -5,6 +5,7 @@ Tests rule mapping, ESLint normalization, npm audit normalization, and language 
 """
 
 import json
+import shutil
 from pathlib import Path
 
 import pytest
@@ -636,6 +637,7 @@ class TestCLILanguageRouting:
         assert "errors" in results
         assert isinstance(results["errors"], list)
 
+    @pytest.mark.skipif(not shutil.which("npm"), reason="npm not installed")
     def test_eslint_config_generates_without_error(self, tmp_path: Path) -> None:
         """_get_eslint_config_content() returns valid ESLint flat config string."""
         adapter = JavaScriptAdapter(target_dir=str(tmp_path))

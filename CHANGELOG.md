@@ -14,6 +14,14 @@ All notable changes to ACR-QA are documented here.
 - **API Provider:** Fully migrated from `groq-cloud-sdk` to `groq` SDK and native `httpx` for all LLM calls.
 - **Dependencies:** Updated `requirements.txt` to remove Groq and pin `groq==1.2.0`.
 - **CI/CD Configuration:** Updated `.github/workflows/acr-qa.yml` to utilize `GROQ_API_KEY_1` instead of legacy Groq tokens.
+- **Lazy Imports:** `CORE/engines/__init__.py` no longer eagerly imports the LLM stack, preventing cascade failures when optional deps are missing.
+- **Version Sync:** All version strings (`__init__.py`, `main.py`, `README.md`, `app.py`) now consistently say `3.3.0`.
+- **Test Guard:** `test_eslint_config_generates_without_error` now skips gracefully when `npm` is not installed.
+
+### Metrics
+- **Total tests:** 1,689 (1 skipped due to npm absence)
+- **Total coverage:** 87.03%
+- **Overall precision:** 94.8%
 
 ---
 

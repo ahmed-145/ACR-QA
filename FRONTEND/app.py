@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-ACR-QA v2.0 Web Dashboard
+ACR-QA v3.3.0 Web Dashboard
 Flask + Tailwind CSS
 """
 
