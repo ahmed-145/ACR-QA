@@ -16,6 +16,7 @@
 | [REST API (legacy)](setup/API-Documentation.md) | Original 11 HTTP endpoints reference (v2.7) |
 | [Cloud Deployment](setup/Cloud-Deployment.md) | PythonAnywhere, Replit, ngrok deployment guides |
 | [Token Setup](setup/TOKEN_SETUP.md) | GitHub, GitLab, and Groq API key configuration |
+| [LLM Providers](setup/LLM_PROVIDERS.md) | Groq (default) + AgentRouter integration plan, model comparison, budget planning |
 | [Policy Engine](POLICY_ENGINE.md) | `.acrqa.yml` config reference — rules, thresholds, autofix, AI |
 
 ## 🧪 Testing & Quality
@@ -69,4 +70,4 @@ During analysis runs, ACR-QA generates:
 
 ---
 
-**Last Updated:** April 23, 2026
+**Last Updated:** May 1, 2026
