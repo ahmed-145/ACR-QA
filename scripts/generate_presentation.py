@@ -1,4 +1,8 @@
+import logging
+
 from pptx import Presentation
+
+logger = logging.getLogger(__name__)
 
 
 def create_presentation():
@@ -216,4 +220,4 @@ def create_presentation():
 
 if __name__ == "__main__":
     create_presentation()
-    print("Created docs/ACR_QA_Phase2_Presentation.pptx")
+    logger.info("Created docs/ACR_QA_Phase2_Presentation.pptx")

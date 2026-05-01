@@ -4,7 +4,10 @@ ACR-QA Auto-fix Engine
 Generates code fixes for common issues
 """
 
+import logging
 import re
+
+logger = logging.getLogger(__name__)
 
 
 class AutoFixEngine:
@@ -537,6 +540,6 @@ if __name__ == "__main__":
 
     fix = engine.generate_fix(finding)
     if fix:
-        print(f"Generated fix: {fix}")
+        logger.info(f"Generated fix: {fix}")
         verification = verify_fix(fix)
-        print(f"Verification: {verification}")
+        logger.info(f"Verification: {verification}")

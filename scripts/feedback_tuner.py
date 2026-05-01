@@ -5,6 +5,7 @@ Analyzes stored false-positive feedback to generate per-rule severity overrides.
 This is a unique ACR-QA feature — no competitor does this.
 """
 
+import logging
 import sys
 from collections import defaultdict
 from pathlib import Path
@@ -17,6 +18,8 @@ import json
 import yaml
 
 from DATABASE.database import Database
+
+logger = logging.getLogger(__name__)
 
 
 def compute_fp_rates(run_id=None):
@@ -40,12 +43,12 @@ def compute_fp_rates(run_id=None):
             fetch=True,
         )
     except Exception as e:
-        print(f"⚠️  Could not query feedback: {e}")
-        print("   This script requires the feedback table to have data.")
+        logger.error(f"⚠️  Could not query feedback: {e}")
+        logger.info("   This script requires the feedback table to have data.")
         return {}
 
     if not feedback:
-        print("ℹ️  No feedback data found. Mark some findings as FP first.")
+        logger.info("ℹ️  No feedback data found. Mark some findings as FP first.")
         return {}
 
     # Aggregate by rule
@@ -130,10 +133,10 @@ def print_report(fp_rates):
     if not fp_rates:
         return
 
-    print("\n📊 ACR-QA Feedback Analysis Report")
-    print("=" * 70)
-    print(f"{'Rule ID':<18} {'Severity':<10} {'TP':>4} {'FP':>4} {'Total':>6} {'FP Rate':>8} {'Action':<12}")
-    print("-" * 70)
+    logger.info("\n📊 ACR-QA Feedback Analysis Report")
+    logger.info("=" * 70)
+    logger.info(f"{'Rule ID':<18} {'Severity':<10} {'TP':>4} {'FP':>4} {'Total':>6} {'FP Rate':>8} {'Action':<12}")
+    logger.info("-" * 70)
 
     for rule_id, data in sorted(fp_rates.items(), key=lambda x: x[1]["fp_rate"], reverse=True):
         action_icon = {
@@ -142,7 +145,7 @@ def print_report(fp_rates):
             "MONITOR": "👁️ ",
         }.get(data["recommendation"], "❓")
 
-        print(
+        logger.info(
             f"{rule_id:<18} {data['severity'] or '?':<10} "
             f"{data['tp']:>4} {data['fp']:>4} {data['total']:>6} "
             f"{data['fp_rate']*100:>6.1f}% {action_icon} {data['recommendation']:<10}"
@@ -154,10 +157,10 @@ def print_report(fp_rates):
     overall_rate = total_fp / total_all if total_all > 0 else 0
     downgrade_count = sum(1 for d in fp_rates.values() if d["recommendation"] == "DOWNGRADE")
 
-    print("-" * 70)
-    print(f"Overall FP Rate: {overall_rate*100:.1f}% ({total_fp}/{total_all})")
-    print(f"Rules to downgrade: {downgrade_count}")
-    print()
+    logger.info("-" * 70)
+    logger.info(f"Overall FP Rate: {overall_rate*100:.1f}% ({total_fp}/{total_all})")
+    logger.info(f"Rules to downgrade: {downgrade_count}")
+    logger.info("")
 
 
 def main():
@@ -176,13 +179,13 @@ def main():
     if args.format == "report":
         print_report(fp_rates)
     elif args.format == "json":
-        print(json.dumps(fp_rates, indent=2, default=str))
+        logger.info(json.dumps(fp_rates, indent=2, default=str))
 
     if args.apply:
         overrides = generate_overrides(fp_rates, min_feedback=args.min_feedback)
 
         if not overrides:
-            print("ℹ️  No rules meet the threshold for downgrade.")
+            logger.info("ℹ️  No rules meet the threshold for downgrade.")
             return
 
         output_path = Path(args.output)
@@ -196,11 +199,11 @@ def main():
                 sort_keys=True,
             )
 
-        print(f"✅ Severity overrides written to {output_path}")
-        print(f"   {len(overrides)} rules downgraded based on feedback data.")
+        logger.info(f"✅ Severity overrides written to {output_path}")
+        logger.info(f"   {len(overrides)} rules downgraded based on feedback data.")
     elif args.format == "yaml":
         overrides = generate_overrides(fp_rates, min_feedback=args.min_feedback)
-        print(yaml.dump({"severity_overrides": overrides}, default_flow_style=False))
+        logger.info(yaml.dump({"severity_overrides": overrides}, default_flow_style=False))
 
 
 if __name__ == "__main__":

@@ -3,7 +3,10 @@ Severity Scoring Engine for ACR-QA v2.0
 Maps canonical rule IDs to severity levels following PRD guidelines
 """
 
+import logging
 from typing import Any
+
+logger = logging.getLogger(__name__)
 
 
 class SeverityScorer:
@@ -313,7 +316,7 @@ def score_severity(canonical_rule_id: str, finding_dict: dict[str, Any]) -> str:
 
 # Test the scorer
 if __name__ == "__main__":
-    print("Testing Severity Scorer...\n")
+    logger.info("Testing Severity Scorer...\n")
 
     scorer = SeverityScorer()
 
@@ -378,9 +381,9 @@ if __name__ == "__main__":
         else:
             failed += 1
 
-        print(f"{status} {test['name']}")
-        print(f"   Rule: {test['rule_id']}")
-        print(f"   Expected: {test['expected']}, Got: {result}")
-        print()
+        logger.info(f"{status} {test['name']}")
+        logger.info(f"   Rule: {test['rule_id']}")
+        logger.info(f"   Expected: {test['expected']}, Got: {result}")
+        logger.info("")
 
-    print(f"Results: {passed} passed, {failed} failed")
+    logger.error(f"Results: {passed} passed, {failed} failed")

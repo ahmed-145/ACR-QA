@@ -7,6 +7,7 @@ with automatic API key rotation across multiple accounts.
 import asyncio
 import hashlib
 import json
+import logging
 import os
 import time
 
@@ -17,6 +18,8 @@ from groq import Groq
 from tenacity import retry, stop_after_attempt, wait_exponential
 
 load_dotenv()
+
+logger = logging.getLogger(__name__)
 
 
 class KeyPool:
@@ -88,7 +91,7 @@ class ExplanationEngine:
             with open("config/rules.yml") as f:
                 self.rules_catalog = yaml.safe_load(f)
         except FileNotFoundError:
-            print("⚠️  Warning: rules.yml not found, using empty catalog")
+            logger.info("⚠️  Warning: rules.yml not found, using empty catalog")
             self.rules_catalog = {}
 
     def _get_cache_key(self, finding, code_snippet):
@@ -187,7 +190,7 @@ Start with: "This code violates {canonical_id}..." and end with a ```python code
                     cached_data["latency_ms"] = int((time.time() - start_time) * 1000)
                     return cached_data
             except Exception as e:
-                print(f"Cache read error: {e}")
+                logger.error(f"Cache read error: {e}")
 
         self.cache_misses += 1
 
@@ -238,7 +241,7 @@ Start with: "This code violates {canonical_id}..." and end with a ```python code
                 try:
                     self.redis.setex(cache_key, self.cache_ttl, json.dumps(result))
                 except Exception as e:
-                    print(f"Cache write error: {e}")
+                    logger.error(f"Cache write error: {e}")
 
             return result
 
@@ -650,12 +653,12 @@ if __name__ == "__main__":
 
     test_snippet = "def authenticate(user, password, token, session, db, cache):"
 
-    print(f"🔑 Key pool size: {engine.key_pool.pool_size}")
-    print(f"🤖 Model: {engine.model}")
-    print("Testing explanation generation...")
+    logger.info(f"🔑 Key pool size: {engine.key_pool.pool_size}")
+    logger.info(f"🤖 Model: {engine.model}")
+    logger.info("Testing explanation generation...")
     result = engine.generate_explanation(test_finding, test_snippet)
 
-    print(f"\nStatus: {result['status']}")
-    print(f"Latency: {result['latency_ms']}ms")
-    print(f"Cost: ${result['cost_usd']:.6f}")
-    print(f"\nExplanation:\n{result['response_text']}")
+    logger.info(f"\nStatus: {result['status']}")
+    logger.info(f"Latency: {result['latency_ms']}ms")
+    logger.info(f"Cost: ${result['cost_usd']:.6f}")
+    logger.info(f"\nExplanation:\n{result['response_text']}")

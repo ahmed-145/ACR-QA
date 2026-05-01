@@ -5,12 +5,15 @@ Scans dependencies for known vulnerabilities using pip-audit
 """
 
 import json
+import logging
 import subprocess
 import sys
 from pathlib import Path
 from typing import Any
 
 sys.path.insert(0, str(Path(__file__).parent.parent.parent))
+
+logger = logging.getLogger(__name__)
 
 
 class SCAScanner:
@@ -99,7 +102,7 @@ class SCAScanner:
                 return self._parse_pip_audit(data)
             return []
         except (subprocess.TimeoutExpired, json.JSONDecodeError, Exception) as e:
-            print(f"⚠️ pip-audit error: {e}")
+            logger.error(f"⚠️ pip-audit error: {e}")
             return None
 
     def _parse_pip_audit(self, data: dict) -> list[dict]:
@@ -217,7 +220,7 @@ class SCAScanner:
                                     )
                             break
         except Exception as e:
-            print(f"⚠️ Error scanning requirements: {e}")
+            logger.error(f"⚠️ Error scanning requirements: {e}")
 
         return vulnerabilities
 
@@ -262,12 +265,12 @@ if __name__ == "__main__":
     scanner = SCAScanner(project_dir=".")
     results = scanner.scan()
 
-    print("\n🔍 SCA Scan Results")
-    print(f"   Scanner: {results['scanner']}")
-    print(f"   Total vulnerabilities: {results['total_vulnerabilities']}")
-    print(f"   Breakdown: {results['severity_breakdown']}")
+    logger.info("\n🔍 SCA Scan Results")
+    logger.info(f"   Scanner: {results['scanner']}")
+    logger.info(f"   Total vulnerabilities: {results['total_vulnerabilities']}")
+    logger.info(f"   Breakdown: {results['severity_breakdown']}")
 
     for vuln in results["vulnerabilities"]:
         emoji = "🔴" if vuln.get("severity") in ("HIGH", "CRITICAL") else "🟡"
-        print(f"   {emoji} {vuln['package']}=={vuln['installed_version']}: {vuln['vulnerability_id']}")
-        print(f"      {vuln.get('description', 'N/A')}")
+        logger.info(f"   {emoji} {vuln['package']}=={vuln['installed_version']}: {vuln['vulnerability_id']}")
+        logger.info(f"      {vuln.get('description', 'N/A')}")

@@ -2,7 +2,7 @@
 
 All notable changes to ACR-QA are documented here.
 
-## [v3.3.0] — Groq API Migration & KeyPool Load Balancing
+## [v3.2.4] — Groq API Migration & KeyPool Load Balancing
 
 ### Added
 - **Multi-Account KeyPool:** Implemented a round-robin rotation system across 4 Groq API accounts (`GROQ_API_KEY_1` to `GROQ_API_KEY_4`) to bypass rate-limit bottlenecks and increase throughput to ~120 requests/minute.

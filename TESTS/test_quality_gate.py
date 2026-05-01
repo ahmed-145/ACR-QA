@@ -183,14 +183,18 @@ class TestFormatGateComment:
 
 
 class TestPrintReport:
-    def test_print_report_does_not_crash(self, gate, capsys):
+    def test_print_report_does_not_crash(self, gate, caplog):
+        import logging
+
+        caplog.set_level(logging.INFO)
         result = gate.evaluate([_finding("high"), _finding("medium"), _finding("low")])
         gate.print_report(result)
-        captured = capsys.readouterr()
-        assert "Quality Gate" in captured.out
+        assert "Quality Gate" in caplog.text
 
-    def test_print_report_failed_gate(self, strict_gate, capsys):
+    def test_print_report_failed_gate(self, strict_gate, caplog):
+        import logging
+
+        caplog.set_level(logging.INFO)
         result = strict_gate.evaluate([_finding("high", "security")])
         strict_gate.print_report(result)
-        captured = capsys.readouterr()
-        assert "FAILED" in captured.out
+        assert "FAILED" in caplog.text

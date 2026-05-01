@@ -6,6 +6,7 @@ SARIF = Static Analysis Results Interchange Format (OASIS standard)
 """
 
 import json
+import logging
 import sys
 import uuid
 from datetime import datetime
@@ -17,6 +18,8 @@ import argparse
 
 from CORE import __version__
 from DATABASE.database import Database
+
+logger = logging.getLogger(__name__)
 
 
 def generate_sarif(run_id=None, output_file=None):
@@ -33,13 +36,13 @@ def generate_sarif(run_id=None, output_file=None):
     if not run_id:
         runs = db.get_analysis_runs(limit=1)
         if not runs:
-            print("❌ No analysis runs found.")
+            logger.error("❌ No analysis runs found.")
             return None
         run_id = runs[0]["id"]
 
     findings = db.get_findings(run_id)
     if not findings:
-        print(f"⚠️  No findings for run {run_id}")
+        logger.error(f"⚠️  No findings for run {run_id}")
         return None
 
     # Build SARIF structure
@@ -152,10 +155,10 @@ def generate_sarif(run_id=None, output_file=None):
     with open(output_file, "w") as fp:
         json.dump(sarif, fp, indent=2)
 
-    print(f"✅ SARIF exported: {output_file}")
-    print(f"   Rules: {len(seen_rules)}")
-    print(f"   Results: {len(results)}")
-    print(f"\n   Upload to GitHub: gh api repos/OWNER/REPO/code-scanning/sarifs --input {output_file}")
+    logger.info(f"✅ SARIF exported: {output_file}")
+    logger.info(f"   Rules: {len(seen_rules)}")
+    logger.info(f"   Results: {len(results)}")
+    logger.info(f"\n   Upload to GitHub: gh api repos/OWNER/REPO/code-scanning/sarifs --input {output_file}")
     return output_file
 
 

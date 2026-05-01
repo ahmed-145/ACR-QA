@@ -23,8 +23,6 @@ from typing import Any
 from CORE.adapters.base import LanguageAdapter
 from CORE.engines.normalizer import CanonicalFinding
 
-logger = logging.getLogger(__name__)
-
 # ---------------------------------------------------------------------------
 # Rule mappings
 # ---------------------------------------------------------------------------
@@ -89,6 +87,8 @@ STATICCHECK_RULE_MAPPING: dict[str, str] = {
     "S1021": "STYLE-017",  # Merge variable declaration and assignment
     "U1000": "DEAD-004",  # Unused code
 }
+
+logger = logging.getLogger(__name__)
 
 
 class GoAdapter(LanguageAdapter):

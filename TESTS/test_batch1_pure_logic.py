@@ -183,12 +183,14 @@ class TestQualityGateFormatComment:
 
 
 class TestQualityGatePrintReport:
-    def test_print_report_no_crash(self, capsys):
+    def test_print_report_no_crash(self, caplog):
+        import logging
+
+        caplog.set_level(logging.INFO)
         gate = QualityGate()
         result = gate.evaluate([_finding("high"), _finding("medium"), _finding("low")])
         gate.print_report(result)
-        captured = capsys.readouterr()
-        assert "Quality Gate" in captured.out
+        assert "Quality Gate" in caplog.text
 
 
 # ═════════════════════════════════════════════════════════════════════════════

@@ -6,6 +6,7 @@ for academic evaluation of the code review platform.
 """
 
 import csv
+import logging
 import sys
 from datetime import datetime
 from pathlib import Path
@@ -122,6 +123,8 @@ SURVEY_QUESTIONS = [
     },
 ]
 
+logger = logging.getLogger(__name__)
+
 
 def generate_survey_form(output_dir: str = "DATA/outputs"):
     """Generate survey questionnaire as Markdown and CSV template."""
@@ -175,7 +178,7 @@ def generate_survey_form(output_dir: str = "DATA/outputs"):
     md_file = output_path / "user_study_survey.md"
     with open(md_file, "w") as f:
         f.write("\n".join(md_lines))
-    print(f"✅ Survey form: {md_file}")
+    logger.info(f"✅ Survey form: {md_file}")
 
     # Generate CSV template for data collection
     csv_file = output_path / "user_study_responses.csv"
@@ -186,7 +189,7 @@ def generate_survey_form(output_dir: str = "DATA/outputs"):
         # Write example row
         example = ["P001", datetime.now().isoformat()] + ["" for _ in SURVEY_QUESTIONS]
         writer.writerow(example)
-    print(f"✅ CSV template: {csv_file}")
+    logger.info(f"✅ CSV template: {csv_file}")
 
     return md_file, csv_file
 
@@ -209,7 +212,7 @@ def generate_comparison_report(run_id: int = None, output_dir: str = "DATA/outpu
     else:
         runs = db.get_recent_runs(limit=1)
         if not runs:
-            print("❌ No analysis runs found")
+            logger.error("❌ No analysis runs found")
             return
         run_id = runs[0]["id"]
         findings = db.get_findings_with_explanations(run_id)
@@ -280,7 +283,7 @@ def generate_comparison_report(run_id: int = None, output_dir: str = "DATA/outpu
     with open(report_file, "w") as f:
         f.write(report)
 
-    print(f"✅ Comparison report: {report_file}")
+    logger.info(f"✅ Comparison report: {report_file}")
     return report_file
 
 
@@ -291,8 +294,8 @@ def analyze_survey_results(csv_path: str = "DATA/outputs/user_study_responses.cs
     """Analyze collected survey responses and generate statistics."""
     csv_file = Path(csv_path)
     if not csv_file.exists():
-        print(f"❌ No responses file found at {csv_path}")
-        print("   Generate template: python3 scripts/user_study.py --generate-survey")
+        logger.error(f"❌ No responses file found at {csv_path}")
+        logger.info("   Generate template: python3 scripts/user_study.py --generate-survey")
         return
 
     with open(csv_file) as f:
@@ -300,12 +303,12 @@ def analyze_survey_results(csv_path: str = "DATA/outputs/user_study_responses.cs
         responses = list(reader)
 
     if not responses or all(not r.get("Q1") for r in responses):
-        print("⚠️ No completed responses found. Collect responses first.")
+        logger.error("⚠️ No completed responses found. Collect responses first.")
         return
 
-    print(f"\n{'='*60}")
-    print(f"📊 User Study Results ({len(responses)} participants)")
-    print(f"{'='*60}\n")
+    logger.info(f"\n{'='*60}")
+    logger.info(f"📊 User Study Results ({len(responses)} participants)")
+    logger.info(f"{'='*60}\n")
 
     # Compute averages for Likert questions
     likert_qs = [q for q in SURVEY_QUESTIONS if q["type"] == "likert"]
@@ -320,9 +323,9 @@ def analyze_survey_results(csv_path: str = "DATA/outputs/user_study_responses.cs
         if values:
             avg = sum(values) / len(values)
             emoji = "✅" if avg >= 4 else "⚠️" if avg >= 3 else "❌"
-            print(f"{emoji} {q['id']}: {avg:.1f}/5 — {q['question'][:60]}")
+            logger.info(f"{emoji} {q['id']}: {avg:.1f}/5 — {q['question'][:60]}")
 
-    print(f"\n{'='*60}")
+    logger.info(f"\n{'='*60}")
 
 
 if __name__ == "__main__":

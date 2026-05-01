@@ -6,6 +6,7 @@ OWASP coverage, and visual charts for academic evaluation.
 """
 
 import json
+import logging
 import os
 import subprocess
 import sys
@@ -184,7 +185,7 @@ FP_RULES = {
     "STYLE-004",  # Format specifiers (style)
     "STYLE-005",  # Deprecated import (style)
     "STYLE-006",  # isinstance union (style)
-    "STYLE-007",  # print() found (style)
+    "STYLE-007",  # logger.info() found (style)
     "STYLE-008",  # builtin type annotation (style)
     "STYLE-009",  # datetime.UTC (style)
     "STYLE-010",  # os module aliases (style)
@@ -273,6 +274,8 @@ _KNOWN_FALSE_POSITIVE_RULE_IDS: frozenset[str] = frozenset(
         # we add those specific rule instances, not entire rule categories.
     }
 )
+
+logger = logging.getLogger(__name__)
 
 
 def classify_finding(finding: dict) -> str:
@@ -436,7 +439,7 @@ def generate_charts(all_results, comparative_data, output_dir):
         import matplotlib.pyplot as plt
         import numpy as np
     except ImportError:
-        print("WARNING: matplotlib not available, skipping charts")
+        logger.info("WARNING: matplotlib not available, skipping charts")
         return
 
     os.makedirs(output_dir, exist_ok=True)
@@ -476,7 +479,7 @@ def generate_charts(all_results, comparative_data, output_dir):
     plt.tight_layout()
     plt.savefig(f"{output_dir}/precision_recall_chart.png", dpi=150)
     plt.close()
-    print("  ✓ Saved precision_recall_chart.png")
+    logger.info("  ✓ Saved precision_recall_chart.png")
 
     # ─── Chart 2: Confusion Matrix ────────────────────────────────────
     total_tp = sum(r["metrics"]["tp"] for r in all_results)
@@ -510,7 +513,7 @@ def generate_charts(all_results, comparative_data, output_dir):
     plt.tight_layout()
     plt.savefig(f"{output_dir}/confusion_matrix.png", dpi=150)
     plt.close()
-    print("  ✓ Saved confusion_matrix.png")
+    logger.info("  ✓ Saved confusion_matrix.png")
 
     # ─── Chart 3: Comparative Benchmark ───────────────────────────────
     if comparative_data:
@@ -537,7 +540,7 @@ def generate_charts(all_results, comparative_data, output_dir):
         plt.tight_layout()
         plt.savefig(f"{output_dir}/comparative_benchmark.png", dpi=150)
         plt.close()
-        print("  ✓ Saved comparative_benchmark.png")
+        logger.info("  ✓ Saved comparative_benchmark.png")
 
     # ─── Chart 4: Severity Distribution ───────────────────────────────
     all_findings = []
@@ -569,7 +572,7 @@ def generate_charts(all_results, comparative_data, output_dir):
     plt.tight_layout()
     plt.savefig(f"{output_dir}/severity_distribution.png", dpi=150)
     plt.close()
-    print("  ✓ Saved severity_distribution.png")
+    logger.info("  ✓ Saved severity_distribution.png")
 
     # ─── Chart 5: Noise Reduction ─────────────────────────────────────
     if comparative_data:
@@ -609,7 +612,7 @@ def generate_charts(all_results, comparative_data, output_dir):
         plt.tight_layout()
         plt.savefig(f"{output_dir}/noise_reduction.png", dpi=150)
         plt.close()
-        print("  ✓ Saved noise_reduction.png")
+        logger.info("  ✓ Saved noise_reduction.png")
 
     # ─── Chart 6: Category Breakdown ──────────────────────────────────
     category_counts = Counter(f.get("category", "unknown") for f in all_findings)
@@ -646,7 +649,7 @@ def generate_charts(all_results, comparative_data, output_dir):
         plt.tight_layout()
         plt.savefig(f"{output_dir}/category_breakdown.png", dpi=150)
         plt.close()
-        print("  ✓ Saved category_breakdown.png")
+        logger.info("  ✓ Saved category_breakdown.png")
 
 
 def generate_owasp_coverage():
@@ -722,9 +725,9 @@ def generate_owasp_coverage():
 
 def main():
     """Run full evaluation."""
-    print("=" * 70)
-    print("  ACR-QA Comprehensive Evaluation Suite")
-    print("=" * 70)
+    logger.info("=" * 70)
+    logger.info("  ACR-QA Comprehensive Evaluation Suite")
+    logger.info("=" * 70)
 
     project_root = Path(__file__).parent.parent
     output_dir = str(project_root / "docs" / "evaluation")
@@ -743,16 +746,16 @@ def main():
 
     for repo_name, repo_path in eval_repos.items():
         if not Path(repo_path).exists():
-            print(f"\n⚠️  Skipping {repo_name} — not found at {repo_path}")
+            logger.info(f"\n⚠️  Skipping {repo_name} — not found at {repo_path}")
             continue
 
-        print(f"\n{'─' * 60}")
-        print(f"Scanning: {repo_name}")
-        print(f"{'─' * 60}")
+        logger.info(f"\n{'─' * 60}")
+        logger.info(f"Scanning: {repo_name}")
+        logger.info(f"{'─' * 60}")
 
         # Scan with ACR-QA
         findings = scan_repo(repo_path, repo_name)
-        print(f"  ACR-QA found {len(findings)} findings")
+        logger.info(f"  ACR-QA found {len(findings)} findings")
 
         # Label each finding
         for f in findings:
@@ -764,13 +767,15 @@ def main():
         ground_truth = GROUND_TRUTH_BY_REPO.get(repo_name)
         if ground_truth:
             detected_vulns, gt_recall = compute_ground_truth_recall(findings, ground_truth)
-            print(f"  Ground truth recall: {gt_recall:.2%} ({len(detected_vulns)}/{len(ground_truth)} known vulns)")
+            logger.info(
+                f"  Ground truth recall: {gt_recall:.2%} ({len(detected_vulns)}/{len(ground_truth)} known vulns)"
+            )
 
         # Compute metrics — pass real recall if available, None otherwise (no fake 100%)
         labeled = [{"label": f["label"], "category": f.get("category", "")} for f in findings]
         metrics = compute_metrics(labeled, recall=gt_recall)
         recall_str = f"{metrics['recall']:.2%}" if metrics["recall"] is not None else "N/A (no ground truth)"
-        print(
+        logger.info(
             f"  TP: {metrics['tp']}  |  FP: {metrics['fp']}  |  "
             f"Overall prec: {metrics['overall_precision']:.2%}  |  "
             f"Security prec: {metrics['security_precision']:.2%}  |  "
@@ -794,47 +799,49 @@ def main():
     # ─── Phase 2: Comparative Benchmark ───────────────────────────────
     dvpwa_path = "/tmp/eval-repos/dvpwa"
     if Path(dvpwa_path).exists():
-        print(f"\n{'─' * 60}")
-        print("Comparative Benchmark: Individual Tools vs ACR-QA")
-        print(f"{'─' * 60}")
+        logger.info(f"\n{'─' * 60}")
+        logger.info("Comparative Benchmark: Individual Tools vs ACR-QA")
+        logger.info(f"{'─' * 60}")
 
         for tool in ["bandit", "semgrep", "ruff"]:
             count = run_tool_standalone(tool, dvpwa_path)
             comparative_data[tool.capitalize()] = count
-            print(f"  {tool.capitalize():10s}: {count} raw findings")
+            logger.info(f"  {tool.capitalize():10s}: {count} raw findings")
 
         acr_count = len(all_results[0]["findings"]) if all_results else 0
         comparative_data["ACR-QA"] = acr_count
-        print(f"  {'ACR-QA':10s}: {acr_count} normalized findings")
+        logger.info(f"  {'ACR-QA':10s}: {acr_count} normalized findings")
 
     # ─── Phase 3: OWASP Coverage ──────────────────────────────────────
-    print(f"\n{'─' * 60}")
-    print("OWASP Top 10 (2021) Coverage Analysis")
-    print(f"{'─' * 60}")
+    logger.info(f"\n{'─' * 60}")
+    logger.info("OWASP Top 10 (2021) Coverage Analysis")
+    logger.info(f"{'─' * 60}")
 
     owasp_coverage = generate_owasp_coverage()
     covered_count = sum(1 for v in owasp_coverage.values() if v["status"] == "✅")
-    print(f"  Coverage: {covered_count}/{len(owasp_coverage)} categories ({covered_count/len(owasp_coverage):.0%})")
+    logger.info(
+        f"  Coverage: {covered_count}/{len(owasp_coverage)} categories ({covered_count/len(owasp_coverage):.0%})"
+    )
     for owasp_id, info in owasp_coverage.items():
-        print(f"  {info['status']} {owasp_id}: {info['covered']}/{info['total_rules']} rules mapped")
+        logger.info(f"  {info['status']} {owasp_id}: {info['covered']}/{info['total_rules']} rules mapped")
 
     # ─── Phase 4: Generate Charts ─────────────────────────────────────
-    print(f"\n{'─' * 60}")
-    print("Generating Visual Charts")
-    print(f"{'─' * 60}")
+    logger.info(f"\n{'─' * 60}")
+    logger.info("Generating Visual Charts")
+    logger.info(f"{'─' * 60}")
 
     generate_charts(all_results, comparative_data, output_dir)
 
     # ─── Phase 5: Write Evaluation Report ─────────────────────────────
-    print(f"\n{'─' * 60}")
-    print("Writing Evaluation Report")
-    print(f"{'─' * 60}")
+    logger.info(f"\n{'─' * 60}")
+    logger.info("Writing Evaluation Report")
+    logger.info(f"{'─' * 60}")
 
     report = generate_report(all_results, comparative_data, owasp_coverage)
     report_path = Path(output_dir) / "EVALUATION.md"
     with open(report_path, "w") as f:
         f.write(report)
-    print(f"  ✓ Saved {report_path}")
+    logger.info(f"  ✓ Saved {report_path}")
 
     # ─── Phase 6: Write JSON data ─────────────────────────────────────
     json_data = {
@@ -858,11 +865,11 @@ def main():
     json_path = Path(output_dir) / "evaluation_results.json"
     with open(json_path, "w") as f:
         json.dump(json_data, f, indent=2)
-    print(f"  ✓ Saved {json_path}")
+    logger.info(f"  ✓ Saved {json_path}")
 
-    print(f"\n{'=' * 70}")
-    print("  Evaluation Complete!")
-    print(f"{'=' * 70}")
+    logger.info(f"\n{'=' * 70}")
+    logger.info("  Evaluation Complete!")
+    logger.info(f"{'=' * 70}")
 
 
 def generate_report(all_results, comparative_data, owasp_coverage):

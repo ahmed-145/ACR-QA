@@ -4,25 +4,27 @@ ACR-QA v3.3.0 - Main Analysis Pipeline
 Orchestrates: Detection → Normalization → Config Filtering → Quality Gate → Explanation → Storage
 """
 
-import sys
-from pathlib import Path
-
-sys.path.insert(0, str(Path(__file__).parent.parent))
-
 import argparse
 import json
+import logging
 import os
 import shutil
 import subprocess
+import sys
 import tempfile
 import time
+from pathlib import Path
 
-from CORE.config_loader import ConfigLoader
-from CORE.engines.explainer import ExplanationEngine
-from CORE.engines.quality_gate import QualityGate
-from CORE.utils.code_extractor import extract_code_snippet
-from CORE.utils.rate_limiter import get_rate_limiter
-from DATABASE.database import Database
+logger = logging.getLogger(__name__)
+
+sys.path.insert(0, str(Path(__file__).parent.parent))
+
+from CORE.config_loader import ConfigLoader  # noqa: E402
+from CORE.engines.explainer import ExplanationEngine  # noqa: E402
+from CORE.engines.quality_gate import QualityGate  # noqa: E402
+from CORE.utils.code_extractor import extract_code_snippet  # noqa: E402
+from CORE.utils.rate_limiter import get_rate_limiter  # noqa: E402
+from DATABASE.database import Database  # noqa: E402
 
 
 class AnalysisPipeline:
@@ -36,11 +38,11 @@ class AnalysisPipeline:
 
     def run(self, repo_name="local", pr_number=None, limit=None, files=None, rich_output=False):
         """Run full analysis pipeline."""
-        print("🚀 ACR-QA v3.3.0 Analysis Pipeline")
-        print("=" * 50)
+        logger.info("🚀 ACR-QA v3.3.0 Analysis Pipeline")
+        logger.info("=" * 50)
 
         # Step 0: Check rate limit
-        print("\n[0/5] Checking rate limit...")
+        logger.info("\n[0/5] Checking rate limit...")
         redis_host = os.getenv("REDIS_HOST", "localhost")
         redis_port = int(os.getenv("REDIS_PORT", 6379))
 
@@ -48,33 +50,33 @@ class AnalysisPipeline:
         allowed, retry_after = rate_limiter.check_rate_limit(repo_name, pr_number)
 
         if not allowed:
-            print("      ✗ RATE LIMITED!")
-            print(f"      Repository: {repo_name}")
+            logger.error("      ✗ RATE LIMITED!")
+            logger.info(f"      Repository: {repo_name}")
             if pr_number:
-                print(f"      PR Number: {pr_number}")
-            print(f"      Retry after: {retry_after:.1f} seconds")
-            print("\n⚠️  Rate limit: ≤1 analysis per repo per minute")
-            print(f"    Please wait {retry_after:.1f}s before retrying.")
+                logger.info(f"      PR Number: {pr_number}")
+            logger.info(f"      Retry after: {retry_after:.1f} seconds")
+            logger.info("\n⚠️  Rate limit: ≤1 analysis per repo per minute")
+            logger.info(f"    Please wait {retry_after:.1f}s before retrying.")
             return None
 
-        print("      ✓ Rate limit OK")
+        logger.info("      ✓ Rate limit OK")
 
         # Step 1: Create analysis run
-        print("\n[1/5] Creating analysis run in database...")
+        logger.info("\n[1/5] Creating analysis run in database...")
         run_id = self.db.create_analysis_run(repo_name=repo_name, pr_number=pr_number)
-        print(f"      ✓ Run ID: {run_id}")
+        logger.info(f"      ✓ Run ID: {run_id}")
 
         # Step 2: Run detection tools
-        print("\n[2/5] Running detection tools...")
-        print("      - Ruff (style & practices)")
-        print("      - Semgrep (security & patterns)")
-        print("      - Vulture (unused code)")
-        print("      - jscpd (duplication)")
+        logger.info("\n[2/5] Running detection tools...")
+        logger.info("      - Ruff (style & practices)")
+        logger.info("      - Semgrep (security & patterns)")
+        logger.info("      - Vulture (unused code)")
+        logger.info("      - jscpd (duplication)")
 
         # Check if analyzing specific files or entire directory
         if files:
             # Only analyze specific files (for PR diffs)
-            print(f"      - Analyzing {len(files)} changed files")
+            logger.info(f"      - Analyzing {len(files)} changed files")
             analysis_dir = tempfile.mkdtemp(prefix="acrqa_diff_")
             try:
                 for f in files:
@@ -88,16 +90,16 @@ class AnalysisPipeline:
         else:
             subprocess.run(["bash", "TOOLS/run_checks.sh", self.target_dir], check=True)
 
-        print("      ✓ Detection complete")
+        logger.info("      ✓ Detection complete")
 
         # Step 2b: Run extra scanners (secrets + SCA)
-        print("\n[2b/5] Running extra scanners...")
+        logger.info("\n[2b/5] Running extra scanners...")
         target = analysis_dir if files and "analysis_dir" in dir() else self.target_dir
         extra_findings = self.run_extra_scanners(target)
-        print(f"      ✓ {len(extra_findings)} extra findings from secrets/SCA")
+        logger.info(f"      ✓ {len(extra_findings)} extra findings from secrets/SCA")
 
         # Step 3: Load and filter findings
-        print("\n[3/5] Loading normalized findings...")
+        logger.info("\n[3/5] Loading normalized findings...")
         findings = self._load_findings()
 
         # Apply config filters: disabled rules, ignored paths, min severity
@@ -108,7 +110,7 @@ class AnalysisPipeline:
 
         findings, suppressed = TriageMemory().suppress_findings(findings, self.db)
         if suppressed:
-            print(f"      - Triage Memory: suppressed {suppressed} known false positive(s)")
+            logger.info(f"      - Triage Memory: suppressed {suppressed} known false positive(s)")
 
         # Deduplicate findings (same file+line+rule from different tools)
         findings = self._deduplicate_findings(findings)
@@ -120,10 +122,10 @@ class AnalysisPipeline:
         findings = self._sort_by_priority(findings)
 
         total_findings = len(findings)
-        print(f"      ✓ {total_findings} issues after filtering & dedup")
+        logger.info(f"      ✓ {total_findings} issues after filtering & dedup")
 
         # Step 4: Generate AI explanations (with caching)
-        print("[4/5] Generating AI explanations (Groq API)...")
+        logger.info("[4/5] Generating AI explanations (Groq API)...")
 
         redis_client = rate_limiter.redis if rate_limiter and rate_limiter.redis else None
         self.explainer = ExplanationEngine(redis_client=redis_client)
@@ -141,13 +143,13 @@ class AnalysisPipeline:
             )
             findings_with_snippets.append({"finding": f, "snippet": snippet})
 
-        print(f"      Batching {len(findings_with_snippets)} explanations...", end=" ")
+        logger.info(f"      Batching {len(findings_with_snippets)} explanations...")
 
         start_time = time.time()
         explanations = self.explainer.generate_explanation_batch(findings_with_snippets)
         total_time = int((time.time() - start_time) * 1000)
 
-        print(f"✓ ({total_time}ms total)")
+        logger.info(f"✓ ({total_time}ms total)")
 
         for i, (f_data, expl) in enumerate(zip(findings_with_snippets, explanations, strict=False), 1):
             f = f_data["finding"]
@@ -155,7 +157,7 @@ class AnalysisPipeline:
 
             # If gather caught an exception, it might be an Exception object
             if isinstance(expl, Exception):
-                print(f"      [{i}/{len(findings_to_process)}] {rule_id} ✗ Error: {expl}")
+                logger.error(f"      [{i}/{len(findings_to_process)}] {rule_id} ✗ Error: {expl}")
                 # Provide a fallback
                 fallback_expl = {
                     "model_name": self.explainer.model,
@@ -172,7 +174,7 @@ class AnalysisPipeline:
                 self.db.insert_explanation(f["_db_id"], fallback_expl)
             else:
                 latency = expl.get("latency_ms", 0)
-                print(f"      [{i}/{len(findings_to_process)}] {rule_id} ✓ ({latency}ms)")
+                logger.info(f"      [{i}/{len(findings_to_process)}] {rule_id} ✓ ({latency}ms)")
                 self.db.insert_explanation(f["_db_id"], expl)
 
         # Mark run as complete
@@ -186,7 +188,7 @@ class AnalysisPipeline:
             pass
 
         # Step 5: Quality Gate
-        print("\n[5/5] Quality Gate evaluation...")
+        logger.info("\n[5/5] Quality Gate evaluation...")
         gate = QualityGate(config=self.config)
         gate_result = gate.evaluate(findings)
 
@@ -194,12 +196,12 @@ class AnalysisPipeline:
             self._print_rich_output(findings, gate_result, run_id, len(findings_to_process))
         else:
             gate.print_report(gate_result)
-            print(f"\n   Run ID: {run_id}")
-            print(f"   Explanations Generated: {len(findings_to_process)}")
-            print("\nNext Steps:")
-            print("   View dashboard: python3 FRONTEND/app.py")
-            print(f"   Generate report: python3 scripts/generate_report.py {run_id}")
-            print(f"   Export SARIF: python3 scripts/export_sarif.py --run-id {run_id}")
+            logger.info(f"\n   Run ID: {run_id}")
+            logger.info(f"   Explanations Generated: {len(findings_to_process)}")
+            logger.info("\nNext Steps:")
+            logger.info("   View dashboard: python3 FRONTEND/app.py")
+            logger.info(f"   Generate report: python3 scripts/generate_report.py {run_id}")
+            logger.info(f"   Export SARIF: python3 scripts/export_sarif.py --run-id {run_id}")
 
         # Return exit code info
         # Feature 9: Cross-language correlation
@@ -209,9 +211,9 @@ class AnalysisPipeline:
             correlator = CrossLanguageCorrelator(str(self.target_dir))
             findings, corr_groups = correlator.enrich_findings(findings)
             if corr_groups:
-                print(f"\n[+] Cross-language correlations: {len(corr_groups)} chain(s) detected")
+                logger.info(f"\n[+] Cross-language correlations: {len(corr_groups)} chain(s) detected")
                 for g in corr_groups:
-                    print(f"    [{g.combined_severity.upper()}] {g.correlation_type}: {g.chain_description[:80]}")
+                    logger.info(f"    [{g.combined_severity.upper()}] {g.correlation_type}: {g.chain_description[:80]}")
         except Exception:
             pass  # Never crash the main pipeline
 
@@ -356,7 +358,7 @@ class AnalysisPipeline:
             filtered.append(f)
 
         if removed_rules or removed_paths or removed_severity:
-            print(
+            logger.info(
                 f"      - Config filters: removed {removed_rules} disabled rules, "
                 f"{removed_paths} ignored paths, {removed_severity} below min severity"
             )
@@ -447,7 +449,7 @@ class AnalysisPipeline:
 
         removed = len(findings) - len(final)
         if removed:
-            print(f"      - Dedup: removed {removed} duplicate findings")
+            logger.info(f"      - Dedup: removed {removed} duplicate findings")
         return final
 
     def _cap_per_rule(self, findings, max_per_rule=5):
@@ -465,7 +467,7 @@ class AnalysisPipeline:
                 removed += 1
 
         if removed:
-            print(f"      - Per-rule cap: removed {removed} excess findings (max {max_per_rule}/rule)")
+            logger.info(f"      - Per-rule cap: removed {removed} excess findings (max {max_per_rule}/rule)")
         return capped
 
     def _sort_by_priority(self, findings):
@@ -492,8 +494,8 @@ class AnalysisPipeline:
 
         from CORE.adapters.js_adapter import JavaScriptAdapter
 
-        print(f"\n🟨 ACR-QA JS/TS Adapter — analyzing {self.target_dir}")
-        print("=" * 50)
+        logger.info(f"\n🟨 ACR-QA JS/TS Adapter — analyzing {self.target_dir}")
+        logger.info("=" * 50)
 
         # Step 0: Rate limit
         import os
@@ -505,15 +507,15 @@ class AnalysisPipeline:
         rate_limiter = get_rate_limiter(redis_host=redis_host, redis_port=redis_port)
         allowed, retry_after = rate_limiter.check_rate_limit(repo_name, pr_number)
         if not allowed:
-            print(f"      ✗ RATE LIMITED — retry after {retry_after:.1f}s")
+            logger.error(f"      ✗ RATE LIMITED — retry after {retry_after:.1f}s")
             return None
 
         # Step 1: Create analysis run
         run_id = self.db.create_analysis_run(repo_name=repo_name, pr_number=pr_number)
-        print(f"\n[1/5] Created database run ID: {run_id}")
+        logger.info(f"\n[1/5] Created database run ID: {run_id}")
 
         # Step 2: Run JS tools
-        print("\n[2/5] Running JS/TS detection tools...")
+        logger.info("\n[2/5] Running JS/TS detection tools...")
         js_adapter = JavaScriptAdapter(target_dir=self.target_dir)
         results = js_adapter.run_tools()
         findings_obj = js_adapter.get_all_findings(results)
@@ -526,10 +528,10 @@ class AnalysisPipeline:
             f.setdefault("file_path", f.get("file", ""))
             f.setdefault("line_number", f.get("line", 0))
 
-        print(f"      ✓ {len(findings)} raw findings from JS tools")
+        logger.info(f"      ✓ {len(findings)} raw findings from JS tools")
 
         # Step 2b: Extra scanners (CBoM — secrets/SCA not applicable for JS targets)
-        print("\n[2b/5] Running extra scanners...")
+        logger.info("\n[2b/5] Running extra scanners...")
         try:
             from CORE.engines.cbom_scanner import CBoMScanner
 
@@ -537,14 +539,14 @@ class AnalysisPipeline:
             cbom_report = cbom.scan()
             cbom_findings = cbom.to_findings(cbom_report)
             findings.extend(cbom_findings)
-            print(
+            logger.info(
                 f"      - CBoM: {cbom_report.total_usages} crypto usages — "
                 f"🔴{cbom_report.unsafe_count} unsafe  "
                 f"🟡{cbom_report.warn_count} warn  "
                 f"🟢{cbom_report.safe_count} safe"
             )
         except Exception as e:
-            print(f"      - CBoM scan error: {e}")
+            logger.error(f"      - CBoM scan error: {e}")
 
         # Dependency reachability enrichment
         try:
@@ -558,15 +560,15 @@ class AnalysisPipeline:
                 direct = sum(1 for f in enriched if f.get("reachability_level") == "DIRECT")
                 transitive = sum(1 for f in enriched if f.get("reachability_level") == "TRANSITIVE")
                 unknown = sum(1 for f in enriched if f.get("reachability_level") == "UNKNOWN")
-                print(
+                logger.info(
                     f"      - Reachability: {len(enriched)} npm findings — "
                     f"🔴{direct} direct  🟡{transitive} transitive  ⚪{unknown} unknown"
                 )
         except Exception as e:
-            print(f"      - Reachability check error: {e}")
+            logger.error(f"      - Reachability check error: {e}")
 
         # Step 3: Apply same pipeline filters as Python path
-        print("\n[3/5] Filtering and normalizing findings...")
+        logger.info("\n[3/5] Filtering and normalizing findings...")
         findings = self._apply_config_filters(findings)
 
         # Triage Memory: suppress findings that match learned FP rules (Feature 6)
@@ -574,15 +576,15 @@ class AnalysisPipeline:
 
         findings, suppressed = TriageMemory().suppress_findings(findings, self.db)
         if suppressed:
-            print(f"      - Triage Memory: suppressed {suppressed} known false positive(s)")
+            logger.info(f"      - Triage Memory: suppressed {suppressed} known false positive(s)")
 
         findings = self._deduplicate_findings(findings)
         findings = self._sort_by_priority(findings)
         total_findings = len(findings)
-        print(f"      ✓ {total_findings} issues after filtering & dedup")
+        logger.info(f"      ✓ {total_findings} issues after filtering & dedup")
 
         # Step 4: AI explanations
-        print("\n[4/5] Generating AI explanations (Groq API)...")
+        logger.info("\n[4/5] Generating AI explanations (Groq API)...")
         redis_client = rate_limiter.redis if rate_limiter and rate_limiter.redis else None
         self.explainer = ExplanationEngine(redis_client=redis_client)
 
@@ -604,22 +606,22 @@ class AnalysisPipeline:
                 findings_with_snippets.append({"finding": f, "snippet": snippet})
 
         if findings_with_snippets:
-            print(f"      Batching {len(findings_with_snippets)} HIGH explanations...", end=" ")
+            logger.info(f"      Batching {len(findings_with_snippets)} HIGH explanations...")
             import time as _time
 
             start_time = _time.time()
             explanations = self.explainer.generate_explanation_batch(findings_with_snippets)
             total_time = int((_time.time() - start_time) * 1000)
-            print(f"✓ ({total_time}ms total)")
+            logger.info(f"✓ ({total_time}ms total)")
             for f_data, expl in zip(findings_with_snippets, explanations, strict=False):
                 f = f_data["finding"]
                 rule_id = f.get("canonical_rule_id", "UNKNOWN")
                 if isinstance(expl, Exception):
-                    print(f"      ✗ {rule_id}: {expl}")
+                    logger.error(f"      ✗ {rule_id}: {expl}")
                 else:
                     self.db.insert_explanation(f["_db_id"], expl)
         else:
-            print("      (no HIGH findings to explain)")
+            logger.info("      (no HIGH findings to explain)")
 
         # Mark run complete
         self.db.complete_analysis_run(run_id, total_findings)
@@ -632,7 +634,7 @@ class AnalysisPipeline:
             pass
 
         # Step 5: Quality gate
-        print("\n[5/5] Quality Gate evaluation...")
+        logger.info("\n[5/5] Quality Gate evaluation...")
         gate = QualityGate(config=self.config)
         gate_result = gate.evaluate(findings)
 
@@ -640,11 +642,11 @@ class AnalysisPipeline:
             self._print_rich_output(findings, gate_result, run_id, len(findings_with_snippets))
         else:
             gate.print_report(gate_result)
-            print(f"\n   Run ID: {run_id}")
-            print(f"   Explanations Generated: {len(findings_with_snippets)}")
-            print("\nNext Steps:")
-            print("   View dashboard: python3 FRONTEND/app.py")
-            print(f"   Generate report: python3 scripts/generate_report.py {run_id}")
+            logger.info(f"\n   Run ID: {run_id}")
+            logger.info(f"   Explanations Generated: {len(findings_with_snippets)}")
+            logger.info("\nNext Steps:")
+            logger.info("   View dashboard: python3 FRONTEND/app.py")
+            logger.info(f"   Generate report: python3 scripts/generate_report.py {run_id}")
 
         # Feature 9: Cross-language correlation
         try:
@@ -653,9 +655,9 @@ class AnalysisPipeline:
             correlator = CrossLanguageCorrelator(str(self.target_dir))
             findings, corr_groups = correlator.enrich_findings(findings)
             if corr_groups:
-                print(f"\n[+] Cross-language correlations: {len(corr_groups)} chain(s) detected")
+                logger.info(f"\n[+] Cross-language correlations: {len(corr_groups)} chain(s) detected")
                 for g in corr_groups:
-                    print(f"    [{g.combined_severity.upper()}] {g.correlation_type}: {g.chain_description[:80]}")
+                    logger.info(f"    [{g.combined_severity.upper()}] {g.correlation_type}: {g.chain_description[:80]}")
         except Exception:
             pass  # Never crash the main pipeline
 
@@ -666,10 +668,10 @@ class AnalysisPipeline:
         high = sum(1 for f in findings if f.get("canonical_severity") == "high")
         med = sum(1 for f in findings if f.get("canonical_severity") == "medium")
         low = sum(1 for f in findings if f.get("canonical_severity") == "low")
-        print(f"\n  Total findings: {total_findings}")
-        print(f"  🔴 High: {high}  🟡 Medium: {med}  🟢 Low: {low}")
+        logger.info(f"\n  Total findings: {total_findings}")
+        logger.info(f"  🔴 High: {high}  🟡 Medium: {med}  🟢 Low: {low}")
         for err in results.get("errors", []):
-            print(f"  ⚠️  {err}")
+            logger.info(f"  ⚠️  {err}")
 
         return run_id
         """Run autofix engine on findings and display diffs."""
@@ -678,10 +680,10 @@ class AnalysisPipeline:
         engine = AutoFixEngine()
         fixable = [f for f in findings if engine.can_fix(f.get("canonical_rule_id", ""))]
         if not fixable:
-            print("\n⚙️  No auto-fixable issues found.")
+            logger.info("\n⚙️  No auto-fixable issues found.")
             return []
 
-        print(f"\n⚙️  Auto-Fix: {len(fixable)} fixable issues found")
+        logger.info(f"\n⚙️  Auto-Fix: {len(fixable)} fixable issues found")
         results = []
         for f in fixable:
             rule_id = f.get("canonical_rule_id", "")
@@ -708,12 +710,12 @@ class AnalysisPipeline:
                             "fixed": fix.get("fixed", ""),
                         }
                     )
-                    print(f"   ✓ {rule_id} @ {filepath}:{line} (confidence: {confidence})")
+                    logger.info(f"   ✓ {rule_id} @ {filepath}:{line} (confidence: {confidence})")
             except Exception as e:
-                print(f"   ✗ {rule_id} @ {filepath}:{line} — {e}")
+                logger.error(f"   ✗ {rule_id} @ {filepath}:{line} — {e}")
 
         if results:
-            print(f"\n   📋 {len(results)} fixes generated. Review diffs above.")
+            logger.info(f"\n   📋 {len(results)} fixes generated. Review diffs above.")
         return results
 
     def run_extra_scanners(self, target_dir):
@@ -723,36 +725,36 @@ class AnalysisPipeline:
         try:
             from CORE.engines.secrets_detector import SecretsDetector
 
-            print("      - Secrets Detector (hardcoded credentials)")
+            logger.info("      - Secrets Detector (hardcoded credentials)")
             detector = SecretsDetector()
             results = detector.scan_directory(target_dir)
             if results.get("findings"):
                 canonical = detector.to_canonical_findings(results["findings"])
                 extra_findings.extend(canonical)
-                print(f"        → {len(results['findings'])} secrets found")
+                logger.info(f"        → {len(results['findings'])} secrets found")
             else:
-                print("        → Clean (no secrets)")
+                logger.info("        → Clean (no secrets)")
         except Exception as e:
-            print(f"        ✗ Secrets scan error: {e}")
+            logger.error(f"        ✗ Secrets scan error: {e}")
 
         try:
             from CORE.engines.sca_scanner import SCAScanner
 
-            print("      - SCA Scanner (dependency vulnerabilities)")
+            logger.info("      - SCA Scanner (dependency vulnerabilities)")
             scanner = SCAScanner(project_dir=target_dir)
             results = scanner.scan()
             if results.get("vulnerabilities"):
                 extra_findings.extend(results.get("findings", []))
-                print(f"        → {len(results['vulnerabilities'])} vulnerabilities found")
+                logger.info(f"        → {len(results['vulnerabilities'])} vulnerabilities found")
             else:
-                print("        → Clean (no known vulnerabilities)")
+                logger.info("        → Clean (no known vulnerabilities)")
         except Exception as e:
-            print(f"        ✗ SCA scan error: {e}")
+            logger.error(f"        ✗ SCA scan error: {e}")
 
         try:
             from CORE.engines.cbom_scanner import CBoMScanner
 
-            print("      - CBoM Scanner (cryptographic bill of materials)")
+            logger.info("      - CBoM Scanner (cryptographic bill of materials)")
             cbom = CBoMScanner(target_dir=target_dir)
             report = cbom.scan()
             cbom_findings = cbom.to_findings(report)
@@ -761,17 +763,19 @@ class AnalysisPipeline:
             warn = report.warn_count
             safe = report.safe_count
             algos = ", ".join(f"{k}×{v}" for k, v in report.algorithms_found.items()) or "none"
-            print(f"        → {report.total_usages} crypto usages: 🔴{unsafe} unsafe  🟡{warn} warn  🟢{safe} safe")
-            print(f"        → Algorithms: {algos}")
+            logger.info(
+                f"        → {report.total_usages} crypto usages: 🔴{unsafe} unsafe  🟡{warn} warn  🟢{safe} safe"
+            )
+            logger.info(f"        → Algorithms: {algos}")
         except Exception as e:
-            print(f"        ✗ CBoM scan error: {e}")
+            logger.error(f"        ✗ CBoM scan error: {e}")
 
         return extra_findings
 
     def _load_findings(self):
         from CORE.engines.normalizer import normalize_all
 
-        print("      - Normalizing tool outputs...")
+        logger.info("      - Normalizing tool outputs...")
         findings = normalize_all("DATA/outputs")
 
         with open("DATA/outputs/findings.json", "w") as f:
@@ -793,7 +797,7 @@ def get_diff_files(base_branch: str = "main") -> list:
         py_files = [f for f in files if f.endswith(".py")]
         return py_files
     except subprocess.CalledProcessError:
-        print("⚠️ Could not get git diff. Analyzing full directory instead.")
+        logger.info("⚠️ Could not get git diff. Analyzing full directory instead.")
         return []
 
 
@@ -875,11 +879,11 @@ def main():
     if args.diff_only:
         files = get_diff_files(args.diff_base)
         if files:
-            print(f"📝 Diff-only mode: {len(files)} changed Python files")
+            logger.info(f"📝 Diff-only mode: {len(files)} changed Python files")
             for f in files:
-                print(f"   • {f}")
+                logger.info(f"   • {f}")
         else:
-            print("📝 No changed Python files found. Running full analysis.")
+            logger.info("📝 No changed Python files found. Running full analysis.")
 
     pipeline = AnalysisPipeline(target_dir=args.target_dir, files=files)
 
@@ -895,23 +899,23 @@ def main():
             if GoAdapter.detect_language(args.target_dir) == "go":
                 language = "go"
         if language != "python":
-            print(f"🔍 Auto-detected language: {language}")
+            logger.info(f"🔍 Auto-detected language: {language}")
 
     if language == "go":
         import dataclasses
 
         from CORE.adapters.go_adapter import GoAdapter
 
-        print(f"\n🟦 ACR-QA Go Adapter — analyzing {args.target_dir}")
-        print("=" * 50)
+        logger.info(f"\n🟦 ACR-QA Go Adapter — analyzing {args.target_dir}")
+        logger.info("=" * 50)
         go_adapter = GoAdapter(target_dir=args.target_dir)
         tools_ok = go_adapter.check_tools_available()
-        print(
+        logger.info(
             f"      gosec: {'✓' if tools_ok['gosec'] else '✗'}  staticcheck: {'✓' if tools_ok['staticcheck'] else '✗'}"
         )
         results = go_adapter.run_tools()
         for err in results.get("errors", []):
-            print(f"      ⚠ {err}")
+            logger.info(f"      ⚠ {err}")
         findings_obj = go_adapter.get_all_findings(results)
         findings = [dataclasses.asdict(f) if hasattr(f, "__dataclass_fields__") else vars(f) for f in findings_obj]
         for f in findings:
@@ -919,17 +923,17 @@ def main():
             f.setdefault("canonical_severity", f.get("severity", "low"))
             f.setdefault("file_path", f.get("file", ""))
             f.setdefault("line_number", f.get("line", 0))
-        print(f"      ✓ {len(findings)} findings from Go tools")
+        logger.info(f"      ✓ {len(findings)} findings from Go tools")
         # Print findings summary
         high = [f for f in findings if f.get("canonical_severity") == "high"]
         medium = [f for f in findings if f.get("canonical_severity") == "medium"]
         low = [f for f in findings if f.get("canonical_severity") == "low"]
-        print(f"\n  🔴 High: {len(high)}  🟡 Medium: {len(medium)}  🟢 Low: {len(low)}")
-        print("\n  Top findings:")
+        logger.info(f"\n  🔴 High: {len(high)}  🟡 Medium: {len(medium)}  🟢 Low: {len(low)}")
+        logger.info("\n  Top findings:")
         for f in sorted(
             findings, key=lambda x: {"high": 0, "medium": 1, "low": 2}.get(x.get("canonical_severity", "low"), 2)
         )[:10]:
-            print(
+            logger.info(
                 f"    [{f.get('canonical_severity','?').upper()}] {f.get('canonical_rule_id')} — {f.get('file_path','').split('/')[-1]}:{f.get('line_number',0)} — {f.get('message','')[:60]}"
             )
         return
@@ -945,11 +949,11 @@ def main():
             findings_path = Path("DATA/outputs/findings.json")
             if findings_path.exists():
                 with open(findings_path) as fp:
-                    print(fp.read())
+                    logger.info(fp.read())
             else:
-                print("[]")
+                logger.info("[]")
         if run_id and hasattr(pipeline, "_gate_passed") and not pipeline._gate_passed:
-            print("\n❌ Exiting with code 1 (quality gate failed)")
+            logger.error("\n❌ Exiting with code 1 (quality gate failed)")
             sys.exit(1)
         return
 
@@ -969,9 +973,9 @@ def main():
         findings_path = Path("DATA/outputs/findings.json")
         if findings_path.exists():
             with open(findings_path) as fp:
-                print(fp.read())
+                logger.info(fp.read())
         else:
-            print("[]")
+            logger.info("[]")
 
     # Run auto-fix if requested
     if args.auto_fix and run_id:
@@ -985,7 +989,7 @@ def main():
 
     # Exit with non-zero code if quality gate failed
     if run_id and hasattr(pipeline, "_gate_passed") and not pipeline._gate_passed:
-        print("\n❌ Exiting with code 1 (quality gate failed)")
+        logger.error("\n❌ Exiting with code 1 (quality gate failed)")
         sys.exit(1)
 
 

@@ -203,32 +203,38 @@ class TestQualityGateFullCoverage:
 
     # ── print_report() ───────────────────────────────────────────────────
 
-    def test_print_report_pass(self, capsys):
+    def test_print_report_pass(self, caplog):
+        import logging
+
+        caplog.set_level(logging.INFO)
         gate = self.QualityGate(None)
         result = gate.evaluate([])
         gate.print_report(result)
-        captured = capsys.readouterr()
-        assert "PASSED" in captured.out
-        assert "Total" in captured.out
+        assert "PASSED" in caplog.text
+        assert "Total" in caplog.text
 
-    def test_print_report_fail(self, capsys):
+    def test_print_report_fail(self, caplog):
+        import logging
+
+        caplog.set_level(logging.INFO)
         gate = self.QualityGate({"quality_gate": {"max_high": 0}})
         findings = [{"canonical_severity": "high", "category": "security"}]
         result = gate.evaluate(findings)
         gate.print_report(result)
-        captured = capsys.readouterr()
-        assert "FAILED" in captured.out
-        assert "❌" in captured.out
+        assert "FAILED" in caplog.text
+        assert "❌" in caplog.text
 
-    def test_print_report_all_checks_shown(self, capsys):
+    def test_print_report_all_checks_shown(self, caplog):
+        import logging
+
+        caplog.set_level(logging.INFO)
         gate = self.QualityGate(None)
         result = gate.evaluate([])
         gate.print_report(result)
-        captured = capsys.readouterr()
-        assert "High Severity" in captured.out
-        assert "Medium Severity" in captured.out
-        assert "Total Findings" in captured.out
-        assert "Security Findings" in captured.out
+        assert "High Severity" in caplog.text
+        assert "Medium Severity" in caplog.text
+        assert "Total Findings" in caplog.text
+        assert "Security Findings" in caplog.text
 
 
 # ═════════════════════════════════════════════════════════════════════════════

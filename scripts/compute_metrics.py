@@ -4,6 +4,7 @@ Evaluation Metrics Calculator for ACR-QA v2.0
 Computes precision, recall, F1 score from labeled ground truth
 """
 
+import logging
 import sys
 from collections import defaultdict
 from pathlib import Path
@@ -13,6 +14,8 @@ sys.path.insert(0, str(Path(__file__).parent.parent))
 import argparse
 
 from DATABASE.database import Database
+
+logger = logging.getLogger(__name__)
 
 
 def compute_metrics(run_id=None, by_severity=False, by_category=False):
@@ -35,29 +38,29 @@ def compute_metrics(run_id=None, by_severity=False, by_category=False):
     # Get findings
     if run_id:
         findings = db.get_findings_with_explanations(run_id)
-        print(f"📊 Computing metrics for Run {run_id}...")
+        logger.info(f"📊 Computing metrics for Run {run_id}...")
     else:
         # Get all findings from recent runs
         runs = db.get_recent_runs(limit=10)
         findings = []
         for run in runs:
             findings.extend(db.get_findings_with_explanations(run["id"]))
-        print(f"📊 Computing metrics across {len(runs)} runs...")
+        logger.info(f"📊 Computing metrics across {len(runs)} runs...")
 
-    print(f"   Total findings: {len(findings)}")
+    logger.info(f"   Total findings: {len(findings)}")
 
     # Filter labeled findings
     labeled_findings = [f for f in findings if f.get("ground_truth")]
 
     if not labeled_findings:
-        print("\n⚠️  No labeled findings found!")
-        print("   To label findings:")
-        print("   1. Use dashboard to mark false positives")
-        print("   2. Or directly update database:")
-        print("      UPDATE findings SET ground_truth='TP' WHERE id=X;")
+        logger.info("\n⚠️  No labeled findings found!")
+        logger.info("   To label findings:")
+        logger.info("   1. Use dashboard to mark false positives")
+        logger.info("   2. Or directly update database:")
+        logger.info("      UPDATE findings SET ground_truth='TP' WHERE id=X;")
         return None
 
-    print(f"   Labeled findings: {len(labeled_findings)}")
+    logger.info(f"   Labeled findings: {len(labeled_findings)}")
 
     # Count labels
     tp = sum(1 for f in labeled_findings if f.get("ground_truth") == "TP")
@@ -71,41 +74,41 @@ def compute_metrics(run_id=None, by_severity=False, by_category=False):
     f1 = 2 * (precision * recall) / (precision + recall) if (precision + recall) > 0 else 0
 
     # Print overall results
-    print("\n" + "=" * 60)
-    print("OVERALL METRICS")
-    print("=" * 60)
-    print(f"True Positives (TP):  {tp:4d}")
-    print(f"False Positives (FP): {fp:4d}")
-    print(f"False Negatives (FN): {fn:4d}")
-    print(f"True Negatives (TN):  {tn:4d}")
-    print("-" * 60)
-    print(f"Precision: {precision:6.2%}  (TP / (TP + FP))")
-    print(f"Recall:    {recall:6.2%}  (TP / (TP + FN))")
-    print(f"F1 Score:  {f1:6.2%}  (2 * P * R / (P + R))")
-    print("=" * 60)
+    logger.info("\n" + "=" * 60)
+    logger.info("OVERALL METRICS")
+    logger.info("=" * 60)
+    logger.info(f"True Positives (TP):  {tp:4d}")
+    logger.info(f"False Positives (FP): {fp:4d}")
+    logger.info(f"False Negatives (FN): {fn:4d}")
+    logger.info(f"True Negatives (TN):  {tn:4d}")
+    logger.info("-" * 60)
+    logger.info(f"Precision: {precision:6.2%}  (TP / (TP + FP))")
+    logger.info(f"Recall:    {recall:6.2%}  (TP / (TP + FN))")
+    logger.info(f"F1 Score:  {f1:6.2%}  (2 * P * R / (P + R))")
+    logger.info("=" * 60)
 
     # Check targets
-    print("\n🎯 Target Evaluation (from PRD):")
+    logger.info("\n🎯 Target Evaluation (from PRD):")
     precision_target = 0.70
     recall_target = 0.60
 
     if precision >= precision_target:
-        print(f"✅ Precision {precision:.2%} >= {precision_target:.0%} target")
+        logger.info(f"✅ Precision {precision:.2%} >= {precision_target:.0%} target")
     else:
-        print(
+        logger.info(
             f"❌ Precision {precision:.2%} < {precision_target:.0%} target (gap: {(precision_target - precision):.2%})"
         )
 
     if recall >= recall_target:
-        print(f"✅ Recall {recall:.2%} >= {recall_target:.0%} target")
+        logger.info(f"✅ Recall {recall:.2%} >= {recall_target:.0%} target")
     else:
-        print(f"⚠️  Recall {recall:.2%} < {recall_target:.0%} target (gap: {(recall_target - recall):.2%})")
+        logger.error(f"⚠️  Recall {recall:.2%} < {recall_target:.0%} target (gap: {(recall_target - recall):.2%})")
 
     # By severity breakdown
     if by_severity:
-        print("\n" + "=" * 60)
-        print("METRICS BY SEVERITY")
-        print("=" * 60)
+        logger.info("\n" + "=" * 60)
+        logger.info("METRICS BY SEVERITY")
+        logger.info("=" * 60)
 
         by_sev = defaultdict(lambda: {"tp": 0, "fp": 0, "fn": 0})
 
@@ -130,15 +133,15 @@ def compute_metrics(run_id=None, by_severity=False, by_category=False):
                 rec_s = tp_s / (tp_s + fn_s) if (tp_s + fn_s) > 0 else 0
                 f1_s = 2 * (prec_s * rec_s) / (prec_s + rec_s) if (prec_s + rec_s) > 0 else 0
 
-                print(f"\n{sev.upper()}:")
-                print(f"  TP: {tp_s:3d} | FP: {fp_s:3d} | FN: {fn_s:3d}")
-                print(f"  Precision: {prec_s:6.2%} | Recall: {rec_s:6.2%} | F1: {f1_s:6.2%}")
+                logger.info(f"\n{sev.upper()}:")
+                logger.info(f"  TP: {tp_s:3d} | FP: {fp_s:3d} | FN: {fn_s:3d}")
+                logger.info(f"  Precision: {prec_s:6.2%} | Recall: {rec_s:6.2%} | F1: {f1_s:6.2%}")
 
     # By category breakdown
     if by_category:
-        print("\n" + "=" * 60)
-        print("METRICS BY CATEGORY")
-        print("=" * 60)
+        logger.info("\n" + "=" * 60)
+        logger.info("METRICS BY CATEGORY")
+        logger.info("=" * 60)
 
         by_cat = defaultdict(lambda: {"tp": 0, "fp": 0, "fn": 0})
 
@@ -161,9 +164,9 @@ def compute_metrics(run_id=None, by_severity=False, by_category=False):
             rec_c = tp_c / (tp_c + fn_c) if (tp_c + fn_c) > 0 else 0
             f1_c = 2 * (prec_c * rec_c) / (prec_c + rec_c) if (prec_c + rec_c) > 0 else 0
 
-            print(f"\n{cat.upper()}:")
-            print(f"  TP: {tp_c:3d} | FP: {fp_c:3d} | FN: {fn_c:3d}")
-            print(f"  Precision: {prec_c:6.2%} | Recall: {rec_c:6.2%} | F1: {f1_c:6.2%}")
+            logger.info(f"\n{cat.upper()}:")
+            logger.info(f"  TP: {tp_c:3d} | FP: {fp_c:3d} | FN: {fn_c:3d}")
+            logger.info(f"  Precision: {prec_c:6.2%} | Recall: {rec_c:6.2%} | F1: {f1_c:6.2%}")
 
     # Save results
     results = {
@@ -187,7 +190,7 @@ def compute_metrics(run_id=None, by_severity=False, by_category=False):
     with open(output_file, "w") as f:
         json.dump(results, f, indent=2)
 
-    print(f"\n💾 Results saved to: {output_file}")
+    logger.info(f"\n💾 Results saved to: {output_file}")
 
     return results
 
@@ -197,7 +200,7 @@ def label_seeded_dataset():
     Helper: Label the seeded dataset findings as TP
     (Since we intentionally created those issues)
     """
-    print("🏷️  Labeling seeded dataset as True Positives...")
+    logger.info("🏷️  Labeling seeded dataset as True Positives...")
 
     db = Database()
 
@@ -224,8 +227,8 @@ def label_seeded_dataset():
                     )
                     labeled_count += 1
 
-    print(f"✅ Labeled {labeled_count} findings as True Positives")
-    print("   Run: python3 scripts/compute_metrics.py")
+    logger.info(f"✅ Labeled {labeled_count} findings as True Positives")
+    logger.info("   Run: python3 scripts/compute_metrics.py")
 
 
 def main():
@@ -247,10 +250,8 @@ def main():
                 by_category=args.by_category,
             )
     except Exception as e:
-        print(f"❌ Error computing metrics: {e}")
-        import traceback
+        logger.error(f"❌ Error computing metrics: {e}")
 
-        traceback.print_exc()
         sys.exit(1)
 
 

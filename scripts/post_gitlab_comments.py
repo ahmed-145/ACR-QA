@@ -4,18 +4,21 @@ Post ACR-QA findings as GitLab Merge Request comments
 """
 
 import argparse
+import logging
 import os
 import sys
 from pathlib import Path
 
+logger = logging.getLogger(__name__)
+
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-from DATABASE.database import Database
+from DATABASE.database import Database  # noqa: E402
 
 try:
     import gitlab
 except ImportError:
-    print("❌ python-gitlab not installed. Run: pip install python-gitlab")
+    logger.error("❌ python-gitlab not installed. Run: pip install python-gitlab")
     sys.exit(1)
 
 
@@ -96,7 +99,7 @@ def post_gitlab_comment(project_id, mr_iid, comment_body, token):
 
     # Post comment
     mr.notes.create({"body": comment_body})
-    print(f"✅ Posted comment to MR !{mr_iid}")
+    logger.info(f"✅ Posted comment to MR !{mr_iid}")
 
 
 def main():
@@ -111,7 +114,7 @@ def main():
     # Get token
     token = args.token or os.getenv("GITLAB_TOKEN")
     if not token:
-        print("❌ GitLab token required (--token or GITLAB_TOKEN env)")
+        logger.error("❌ GitLab token required (--token or GITLAB_TOKEN env)")
         sys.exit(1)
 
     # Get findings
@@ -121,7 +124,7 @@ def main():
     else:
         runs = db.get_recent_runs(limit=1)
         if not runs:
-            print("❌ No analysis runs found")
+            logger.error("❌ No analysis runs found")
             sys.exit(1)
         findings = db.get_findings_with_explanations(runs[0]["id"])
 

@@ -5,12 +5,15 @@ Heuristic-based detection of AI-generated code patterns
 """
 
 import ast
+import logging
 import re
 import sys
 from pathlib import Path
 from typing import Any
 
 sys.path.insert(0, str(Path(__file__).parent.parent.parent))
+
+logger = logging.getLogger(__name__)
 
 
 class AICodeDetector:
@@ -334,17 +337,17 @@ if __name__ == "__main__":
 
     if Path(target).is_file():
         result = detector.analyze_file(target)
-        print(f"\n📊 AI Code Analysis: {target}")
-        print(f"   Score: {result['score']:.1%}")
-        print(f"   AI Generated: {'⚠️ Yes' if result['is_ai_generated'] else '✅ No'}")
-        print(f"   Confidence: {result['confidence']}")
+        logger.info(f"\n📊 AI Code Analysis: {target}")
+        logger.info(f"   Score: {result['score']:.1%}")
+        logger.info(f"   AI Generated: {'⚠️ Yes' if result['is_ai_generated'] else '✅ No'}")
+        logger.info(f"   Confidence: {result['confidence']}")
         for signal in result["signals"]:
-            print(f"   • {signal['detail']} ({signal['score']:.1%})")
+            logger.info(f"   • {signal['detail']} ({signal['score']:.1%})")
     else:
         results = detector.analyze_directory(target)
-        print(f"\n📊 AI Code Analysis: {target}")
-        print(f"   Files analyzed: {results['total_files']}")
-        print(f"   Flagged: {results['flagged_files']} ({results['flagged_percentage']}%)")
+        logger.info(f"\n📊 AI Code Analysis: {target}")
+        logger.info(f"   Files analyzed: {results['total_files']}")
+        logger.info(f"   Flagged: {results['flagged_files']} ({results['flagged_percentage']}%)")
         for r in results["files"]:
             if r.get("is_ai_generated"):
-                print(f"   ⚠️  {r['file']} — score: {r['score']:.1%}")
+                logger.info(f"   ⚠️  {r['file']} — score: {r['score']:.1%}")

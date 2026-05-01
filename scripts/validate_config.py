@@ -4,6 +4,7 @@ ACR-QA Configuration Validator & Template Generator
 Validates .acrqa.yml files against the expected schema and generates documented templates.
 """
 
+import logging
 import sys
 from pathlib import Path
 
@@ -89,6 +90,8 @@ SCHEMA = {
 }
 
 VALID_SEVERITIES = {"low", "medium", "high"}
+
+logger = logging.getLogger(__name__)
 
 
 def validate_config(config_path):
@@ -272,20 +275,20 @@ def main():
 
     if args.command == "validate":
         config_file = args.config_file
-        print(f"🔍 Validating {config_file}...")
+        logger.info(f"🔍 Validating {config_file}...")
 
         is_valid, errors, warnings = validate_config(config_file)
 
         for w in warnings:
-            print(f"  ⚠️  {w}")
+            logger.info(f"  ⚠️  {w}")
 
         for e in errors:
-            print(f"  ❌ {e}")
+            logger.info(f"  ❌ {e}")
 
         if is_valid:
-            print("  ✅ Configuration is valid!")
+            logger.info("  ✅ Configuration is valid!")
         else:
-            print(f"\n  ❌ {len(errors)} error(s) found.")
+            logger.error(f"\n  ❌ {len(errors)} error(s) found.")
             sys.exit(1)
 
     elif args.command == "template":
@@ -295,9 +298,9 @@ def main():
             Path(args.output).parent.mkdir(parents=True, exist_ok=True)
             with open(args.output, "w") as f:
                 f.write(template)
-            print(f"✅ Template written to {args.output}")
+            logger.info(f"✅ Template written to {args.output}")
         else:
-            print(template)
+            logger.info(template)
 
     else:
         parser.print_help()

@@ -11,6 +11,7 @@ from tenacity import retry, stop_after_attempt, wait_exponential
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
+
 logger = logging.getLogger(__name__)
 
 
@@ -259,28 +260,28 @@ def get_rate_limiter(redis_host: str = "localhost", redis_port: int = 6379) -> R
 
 if __name__ == "__main__":
     # Test rate limiter
-    print("Testing Rate Limiter...")
+    logger.info("Testing Rate Limiter...")
 
     limiter = RateLimiter(redis_host="localhost", redis_port=6379)
 
     # Test 1: First request should succeed
     allowed, retry_after = limiter.check_rate_limit("test-repo", 1)
-    print(f"Test 1 - First request: allowed={allowed}, retry_after={retry_after}")
+    logger.info(f"Test 1 - First request: allowed={allowed}, retry_after={retry_after}")
     assert allowed is True
 
     # Test 2: Immediate second request should be rate limited
     allowed, retry_after = limiter.check_rate_limit("test-repo", 1)
-    print(f"Test 2 - Immediate retry: allowed={allowed}, retry_after={retry_after}")
+    logger.info(f"Test 2 - Immediate retry: allowed={allowed}, retry_after={retry_after}")
     assert allowed is False
     assert retry_after is not None
 
     # Test 3: Different PR should succeed
     allowed, retry_after = limiter.check_rate_limit("test-repo", 2)
-    print(f"Test 3 - Different PR: allowed={allowed}, retry_after={retry_after}")
+    logger.info(f"Test 3 - Different PR: allowed={allowed}, retry_after={retry_after}")
     assert allowed is True
 
     # Clean up
     limiter.reset_rate_limit("test-repo", 1)
     limiter.reset_rate_limit("test-repo", 2)
 
-    print("\n✅ All rate limiter tests passed!")
+    logger.info("\n✅ All rate limiter tests passed!")

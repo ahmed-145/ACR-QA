@@ -3,6 +3,7 @@ Universal Finding Normalizer for ACR-QA v2.0
 Converts tool-specific outputs to canonical schema
 """
 
+import logging
 import sys
 from pathlib import Path
 
@@ -109,7 +110,7 @@ RULE_MAPPING = {
     "F811": "ERROR-002",  # Redefined unused name
     # ── Ruff: Best practices ──
     "B904": "EXCEPT-002",  # Use raise ... from within except
-    "T201": "STYLE-007",  # print() found
+    "T201": "STYLE-007",  # logger.info() found
     "T203": "STYLE-007",  # pprint() found
     # ── Ruff: Naming ──
     "N807": "NAMING-002",  # Function name should not start/end with __
@@ -156,7 +157,7 @@ RULE_MAPPING = {
     "B320": "SECURITY-044",  # xml_bad_lxml — unsafe XML parsing (lxml)
     "B409": "SECURITY-039",  # import_lxml — lxml imported (unsafe XML)
     # ── Semgrep custom rules → Canonical IDs ──
-    "print-in-production": "STYLE-007",  # print() found — same as Ruff T201
+    "print-in-production": "STYLE-007",  # logger.info() found — same as Ruff T201
     "hardcoded-password": "SECURITY-005",  # Same as B105/B106/B107
     "shell-injection": "SECURITY-021",  # Same as B602
     "unsafe-pickle": "SECURITY-008",  # Same as B301
@@ -203,6 +204,8 @@ CATEGORY_MAPPING = {
     "duplication": "duplication",
     "design": "design",
 }
+
+logger = logging.getLogger(__name__)
 
 
 class CanonicalFinding(BaseModel):
@@ -354,8 +357,8 @@ class CanonicalFinding(BaseModel):
             return finding
         except Exception as e:
             # Log validation error but don't crash
-            print(f"ERROR: Pydantic validation failed for finding: {e}")
-            print(f"  Rule: {canonical_rule_id}, File: {file}:{line}")
+            logger.error(f"ERROR: Pydantic validation failed for finding: {e}")
+            logger.info(f"  Rule: {canonical_rule_id}, File: {file}:{line}")
             raise
 
     def extract_evidence(self, context_lines: int = 3) -> None:
@@ -606,11 +609,11 @@ def normalize_all(outputs_dir: str = "outputs") -> list[CanonicalFinding]:
                     ruff_data = json.loads(content)
                     ruff_findings = normalize_ruff(ruff_data)
                     all_findings.extend(ruff_findings)
-                    print(f"  Normalized {len(ruff_findings)} Ruff findings")
+                    logger.info(f"  Normalized {len(ruff_findings)} Ruff findings")
         except json.JSONDecodeError:
-            print(f"  Warning: Could not parse {ruff_file}")
+            logger.info(f"  Warning: Could not parse {ruff_file}")
         except Exception as e:
-            print(f"  Error processing Ruff: {e}")
+            logger.error(f"  Error processing Ruff: {e}")
 
     # Load and normalize Semgrep
     semgrep_file = outputs_path / "semgrep.json"
@@ -620,9 +623,9 @@ def normalize_all(outputs_dir: str = "outputs") -> list[CanonicalFinding]:
                 semgrep_data = json.load(f)
                 semgrep_findings = normalize_semgrep(semgrep_data)
                 all_findings.extend(semgrep_findings)
-                print(f"  Normalized {len(semgrep_findings)} Semgrep findings")
+                logger.info(f"  Normalized {len(semgrep_findings)} Semgrep findings")
         except Exception as e:
-            print(f"  Error processing Semgrep: {e}")
+            logger.error(f"  Error processing Semgrep: {e}")
 
     # Load and normalize Vulture
     vulture_file = outputs_path / "vulture.txt"
@@ -632,9 +635,9 @@ def normalize_all(outputs_dir: str = "outputs") -> list[CanonicalFinding]:
                 vulture_data = f.read()
                 vulture_findings = normalize_vulture(vulture_data)
                 all_findings.extend(vulture_findings)
-                print(f"  Normalized {len(vulture_findings)} Vulture findings")
+                logger.info(f"  Normalized {len(vulture_findings)} Vulture findings")
         except Exception as e:
-            print(f"  Error processing Vulture: {e}")
+            logger.error(f"  Error processing Vulture: {e}")
 
     # Load and normalize jscpd
     jscpd_file = outputs_path / "jscpd.json"
@@ -644,9 +647,9 @@ def normalize_all(outputs_dir: str = "outputs") -> list[CanonicalFinding]:
                 jscpd_data = json.load(f)
                 jscpd_findings = normalize_jscpd(jscpd_data)
                 all_findings.extend(jscpd_findings)
-                print(f"  Normalized {len(jscpd_findings)} jscpd findings")
+                logger.info(f"  Normalized {len(jscpd_findings)} jscpd findings")
         except Exception as e:
-            print(f"  Error processing jscpd: {e}")
+            logger.error(f"  Error processing jscpd: {e}")
 
     # Load and normalize Radon
     radon_file = outputs_path / "radon.json"
@@ -656,9 +659,9 @@ def normalize_all(outputs_dir: str = "outputs") -> list[CanonicalFinding]:
                 radon_data = json.load(f)
                 radon_findings = normalize_radon(radon_data)
                 all_findings.extend(radon_findings)
-                print(f"  Normalized {len(radon_findings)} Radon findings")
+                logger.info(f"  Normalized {len(radon_findings)} Radon findings")
         except Exception as e:
-            print(f"  Error processing Radon: {e}")
+            logger.error(f"  Error processing Radon: {e}")
 
     # Load and normalize Bandit
     bandit_file = outputs_path / "bandit.json"
@@ -668,9 +671,9 @@ def normalize_all(outputs_dir: str = "outputs") -> list[CanonicalFinding]:
                 bandit_data = json.load(f)
                 bandit_findings = normalize_bandit(bandit_data)
                 all_findings.extend(bandit_findings)
-                print(f"  Normalized {len(bandit_findings)} Bandit findings")
+                logger.info(f"  Normalized {len(bandit_findings)} Bandit findings")
         except Exception as e:
-            print(f"  Error processing Bandit: {e}")
+            logger.error(f"  Error processing Bandit: {e}")
 
     # Inline suppression: filter out findings with # acr-qa:ignore or # acrqa:disable
     suppressed = 0
@@ -702,9 +705,9 @@ def normalize_all(outputs_dir: str = "outputs") -> list[CanonicalFinding]:
             filtered_findings.append(finding)
 
     if suppressed:
-        print(f"  Suppressed {suppressed} findings via inline comments")
+        logger.info(f"  Suppressed {suppressed} findings via inline comments")
 
-    print(f"\n  Total canonical findings: {len(filtered_findings)}")
+    logger.info(f"\n  Total canonical findings: {len(filtered_findings)}")
     return filtered_findings
 
 
@@ -740,9 +743,9 @@ def normalize_bandit(bandit_json: dict) -> list[CanonicalFinding]:
 
 if __name__ == "__main__":
     # Test normalization
-    print("Testing normalizer...")
+    logger.info("Testing normalizer...")
     findings = normalize_all()
 
     if findings:
-        print("\nSample canonical finding:")
-        print(json.dumps(findings[0].to_dict(), indent=2))
+        logger.info("\nSample canonical finding:")
+        logger.info(json.dumps(findings[0].to_dict(), indent=2))

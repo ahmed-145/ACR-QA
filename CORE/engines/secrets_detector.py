@@ -4,12 +4,15 @@ ACR-QA Secrets Detector
 Pattern-based detection of hardcoded secrets, API keys, passwords, and tokens
 """
 
+import logging
 import re
 import sys
 from pathlib import Path
 from typing import Any
 
 sys.path.insert(0, str(Path(__file__).parent.parent.parent))
+
+logger = logging.getLogger(__name__)
 
 
 class SecretsDetector:
@@ -330,17 +333,17 @@ if __name__ == "__main__":
 
     if Path(target).is_file():
         findings = detector.scan_file(target)
-        print(f"\n🔐 Secrets scan: {target}")
-        print(f"   Found: {len(findings)} potential secrets")
+        logger.info(f"\n🔐 Secrets scan: {target}")
+        logger.info(f"   Found: {len(findings)} potential secrets")
         for f in findings:
-            print(f"   🔴 Line {f['line']}: {f['type']} — {f['masked_value']}")
+            logger.info(f"   🔴 Line {f['line']}: {f['type']} — {f['masked_value']}")
     else:
         results = detector.scan_directory(target)
-        print(f"\n🔐 Secrets Scan Results: {target}")
-        print(f"   Files scanned: {results['files_scanned']}")
-        print(f"   Secrets found: {results['total_secrets']}")
-        print(f"   Breakdown: {results['severity_breakdown']}")
+        logger.info(f"\n🔐 Secrets Scan Results: {target}")
+        logger.info(f"   Files scanned: {results['files_scanned']}")
+        logger.info(f"   Secrets found: {results['total_secrets']}")
+        logger.info(f"   Breakdown: {results['severity_breakdown']}")
         if results["secret_types_found"]:
-            print(f"   Types: {', '.join(results['secret_types_found'])}")
+            logger.info(f"   Types: {', '.join(results['secret_types_found'])}")
         for f in results["findings"][:10]:
-            print(f"   🔴 {f['file']}:{f['line']} — {f['type']}: {f['masked_value']}")
+            logger.info(f"   🔴 {f['file']}:{f['line']} — {f['type']}: {f['masked_value']}")

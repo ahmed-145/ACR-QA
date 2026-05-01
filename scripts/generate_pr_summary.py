@@ -4,6 +4,7 @@ ACR-QA PR Summary Generator
 Generates human-readable summaries for pull requests with risk scoring
 """
 
+import logging
 import sys
 from collections import Counter
 from pathlib import Path
@@ -13,6 +14,8 @@ sys.path.insert(0, str(Path(__file__).parent.parent))
 
 from CORE import __version__
 from DATABASE.database import Database
+
+logger = logging.getLogger(__name__)
 
 
 def calculate_risk_score(findings: list[dict]) -> dict[str, Any]:
@@ -222,7 +225,7 @@ def generate_summary_from_findings(findings: list[dict]) -> str:
 
 def print_summary(run_id: int = None):
     """Print summary to console"""
-    print(generate_pr_summary(run_id))
+    logger.info(generate_pr_summary(run_id))
 
 
 if __name__ == "__main__":

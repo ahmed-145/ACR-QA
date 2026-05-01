@@ -9,6 +9,7 @@ Uses GitHub API blobs — no local file manipulation required.
 from __future__ import annotations
 
 import argparse
+import logging
 import os
 import sys
 from pathlib import Path
@@ -18,6 +19,8 @@ sys.path.insert(0, str(Path(__file__).parent.parent))
 from github import Github, GithubException
 
 from DATABASE.database import Database
+
+logger = logging.getLogger(__name__)
 
 
 def build_pr_body(fixes: list[dict], run_id: int) -> str:
@@ -73,20 +76,20 @@ def build_pr_body(fixes: list[dict], run_id: int) -> str:
 
 
 def create_fix_pr(run_id: int, github_token: str, repo_name: str, base_branch: str = "main") -> None:
-    print(f"ACR-QA Autofix PR — run #{run_id}")
+    logger.info(f"ACR-QA Autofix PR — run #{run_id}")
 
     db = Database()
     fixes = db.get_validated_fixes(run_id)
 
     if not fixes:
-        print("No validated fixes found for this run — nothing to PR.")
-        print("Fixes are only available for findings where the AI suggested a fix")
-        print("and it passed linter validation (fix_validated=True).")
+        logger.info("No validated fixes found for this run — nothing to PR.")
+        logger.info("Fixes are only available for findings where the AI suggested a fix")
+        logger.info("and it passed linter validation (fix_validated=True).")
         sys.exit(0)
 
-    print(f"Found {len(fixes)} validated fix(es)")
+    logger.info(f"Found {len(fixes)} validated fix(es)")
     for f in fixes:
-        print(
+        logger.info(
             f"  {f['canonical_severity'].upper()} {f['canonical_rule_id']} "
             f"@ {f['file_path']}:{f['line_number']} "
             f"(confidence: {f['fix_confidence']})"
@@ -96,7 +99,7 @@ def create_fix_pr(run_id: int, github_token: str, repo_name: str, base_branch: s
     try:
         repo = gh.get_repo(repo_name)
     except GithubException as e:
-        print(f"Cannot access repo {repo_name}: {e}")
+        logger.info(f"Cannot access repo {repo_name}: {e}")
         sys.exit(1)
 
     branch_name = f"acrqa-autofix-run-{run_id}"
@@ -106,17 +109,17 @@ def create_fix_pr(run_id: int, github_token: str, repo_name: str, base_branch: s
         base_ref = repo.get_git_ref(f"heads/{base_branch}")
         base_sha = base_ref.object.sha
     except GithubException as e:
-        print(f"Cannot get base branch {base_branch!r}: {e}")
+        logger.info(f"Cannot get base branch {base_branch!r}: {e}")
         sys.exit(1)
 
     # Create or reset the fix branch
     try:
         existing = repo.get_git_ref(f"heads/{branch_name}")
         existing.edit(sha=base_sha, force=True)
-        print(f"Reset existing branch: {branch_name}")
+        logger.info(f"Reset existing branch: {branch_name}")
     except GithubException:
         repo.create_git_ref(f"refs/heads/{branch_name}", base_sha)
-        print(f"Created branch: {branch_name}")
+        logger.info(f"Created branch: {branch_name}")
 
     # Group fixes by file
     fixes_by_file: dict[str, list[dict]] = {}
@@ -131,7 +134,7 @@ def create_fix_pr(run_id: int, github_token: str, repo_name: str, base_branch: s
             file_obj = repo.get_contents(file_path, ref=base_branch)
             original_lines = file_obj.decoded_content.decode("utf-8").splitlines(keepends=True)
         except GithubException as e:
-            print(f"Cannot read {file_path} from repo: {e} — skipping")
+            logger.info(f"Cannot read {file_path} from repo: {e} — skipping")
             continue
 
         # Apply fixes: replace the flagged line with the validated fix code
@@ -160,12 +163,12 @@ def create_fix_pr(run_id: int, github_token: str, repo_name: str, base_branch: s
                 branch=branch_name,
             )
             committed_files.append(file_path)
-            print(f"Committed fix for {file_path}")
+            logger.info(f"Committed fix for {file_path}")
         except GithubException as e:
-            print(f"Failed to commit {file_path}: {e}")
+            logger.info(f"Failed to commit {file_path}: {e}")
 
     if not committed_files:
-        print("No files could be committed — aborting PR creation")
+        logger.info("No files could be committed — aborting PR creation")
         sys.exit(1)
 
     # Create PR
@@ -175,7 +178,7 @@ def create_fix_pr(run_id: int, github_token: str, repo_name: str, base_branch: s
     # Delete existing open autofix PR for this run if any
     for pr in repo.get_pulls(state="open", head=f"{repo.owner.login}:{branch_name}"):
         pr.edit(state="closed")
-        print(f"Closed existing PR #{pr.number}")
+        logger.info(f"Closed existing PR #{pr.number}")
 
     try:
         pr = repo.create_pull(
@@ -184,8 +187,8 @@ def create_fix_pr(run_id: int, github_token: str, repo_name: str, base_branch: s
             head=branch_name,
             base=base_branch,
         )
-        print(f"PR created: {pr.html_url}")
-        print(f"PR number: #{pr.number}")
+        logger.info(f"PR created: {pr.html_url}")
+        logger.info(f"PR number: #{pr.number}")
 
         # Write PR URL to file for workflow summary
         try:
@@ -195,7 +198,7 @@ def create_fix_pr(run_id: int, github_token: str, repo_name: str, base_branch: s
             pass
 
     except GithubException as e:
-        print(f"Failed to create PR: {e}")
+        logger.info(f"Failed to create PR: {e}")
         sys.exit(1)
 
 
@@ -209,7 +212,7 @@ def main() -> None:
 
     token = args.token or os.getenv("GITHUB_TOKEN")
     if not token:
-        print("GitHub token required — pass --token or set GITHUB_TOKEN")
+        logger.info("GitHub token required — pass --token or set GITHUB_TOKEN")
         sys.exit(1)
 
     create_fix_pr(args.run_id, token, args.repo, args.base_branch)

@@ -5,6 +5,7 @@ Sorted by severity: HIGH → MEDIUM → LOW
 """
 
 import argparse
+import logging
 import os
 import sys
 from pathlib import Path
@@ -15,6 +16,8 @@ from github import Github
 
 from CORE import __version__
 from DATABASE.database import Database
+
+logger = logging.getLogger(__name__)
 
 
 def clean_file_path(raw_path: str) -> str:
@@ -207,11 +210,11 @@ def post_to_github(repo_name, pr_number, findings, summary_body, github_token):
 
         pr.create_review(commit=last_commit, body=summary_body, event="COMMENT", comments=review_comments)
 
-        print(f"✅ Posted review to PR #{pr_number} with {len(review_comments)} inline comments")
+        logger.info(f"✅ Posted review to PR #{pr_number} with {len(review_comments)} inline comments")
         return True
 
     except Exception as e:
-        print(f"❌ Failed to post comment: {e}")
+        logger.error(f"❌ Failed to post comment: {e}")
         return False
 
 
@@ -240,7 +243,7 @@ def main():
         if runs:
             run_id = runs[0]["id"]
         else:
-            print("❌ No run ID found")
+            logger.error("❌ No run ID found")
             sys.exit(1)
 
     # Get findings with explanations
@@ -248,10 +251,10 @@ def main():
     findings = db.get_findings_with_explanations(run_id)
 
     if not findings:
-        print("ℹ️  No findings to post")
+        logger.info("ℹ️  No findings to post")
         return
 
-    print(f"📊 Found {len(findings)} issues")
+    logger.info(f"📊 Found {len(findings)} issues")
 
     # Format comment
     comment = format_pr_comment(findings)
@@ -259,13 +262,13 @@ def main():
     # Post to GitHub
     github_token = os.getenv("GITHUB_TOKEN", "").strip()
     if not github_token:
-        print("❌ GITHUB_TOKEN not set")
+        logger.error("❌ GITHUB_TOKEN not set")
         sys.exit(1)
 
     success = post_to_github(args.repo, args.pr_number, findings, comment, github_token)
 
     if success:
-        print("✅ PR comment posted successfully")
+        logger.info("✅ PR comment posted successfully")
     else:
         sys.exit(1)
 

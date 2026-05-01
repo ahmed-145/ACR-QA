@@ -1,20 +1,25 @@
 #!/usr/bin/env python3
 """
-ACR-QA v3.3.0 Web Dashboard
+ACR-QA v3.2.4 Web Dashboard
 Flask + Tailwind CSS
 """
 
+import logging
 import os
 import sys
 from pathlib import Path
 
 from flask import Flask, jsonify, render_template, request
 from flask_cors import CORS
+from werkzeug.exceptions import HTTPException
 
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
 from CORE.utils.metrics import register_metrics_endpoint, track_request
 from DATABASE.database import Database
+
+logger = logging.getLogger(__name__)
+
 
 app = Flask(__name__)
 CORS(app)
@@ -25,6 +30,15 @@ app.config["SECRET_KEY"] = os.getenv("FLASK_SECRET_KEY", os.urandom(32).hex())
 register_metrics_endpoint(app)
 
 db = Database()
+
+
+@app.errorhandler(Exception)
+def handle_global_error(e):
+    """Global exception handler for all unhandled errors."""
+    if isinstance(e, HTTPException):
+        return jsonify({"success": False, "error": e.description}), e.code
+    logger.error(f"Unhandled exception: {e}", exc_info=True)
+    return jsonify({"success": False, "error": str(e)}), 500
 
 
 def _calculate_confidence(finding):
@@ -97,10 +111,8 @@ def get_runs():
 
         return jsonify({"success": True, "runs": runs_with_summary})
     except Exception as e:
-        print(f"Error in /api/runs: {e}")
-        import traceback
+        logger.error(f"Error in /api/runs: {e}")
 
-        traceback.print_exc()
         return jsonify({"success": False, "error": str(e)}), 500
 
 
@@ -187,10 +199,8 @@ def get_run_findings(run_id):
 
         return jsonify({"success": True, "findings": filtered, "total": len(filtered)})
     except Exception as e:
-        print(f"Error in /api/runs/{run_id}/findings: {e}")
-        import traceback
+        logger.error(f"Error in /api/runs/{run_id}/findings: {e}")
 
-        traceback.print_exc()
         return jsonify({"success": False, "error": str(e)}), 500
 
 
@@ -219,10 +229,8 @@ def get_run_stats(run_id):
             }
         )
     except Exception as e:
-        print(f"Error in /api/runs/{run_id}/stats: {e}")
-        import traceback
+        logger.error(f"Error in /api/runs/{run_id}/stats: {e}")
 
-        traceback.print_exc()
         return jsonify({"success": False, "error": str(e)}), 500
 
 
@@ -236,7 +244,7 @@ def get_categories():
 
         return jsonify({"success": True, "categories": categories})
     except Exception as e:
-        print(f"Error in /api/categories: {e}")
+        logger.error(f"Error in /api/categories: {e}")
         return jsonify({"success": False, "error": str(e)}), 500
 
 
@@ -308,9 +316,6 @@ def refresh_findings():
         )
 
     except Exception as e:
-        import traceback
-
-        traceback.print_exc()
         return jsonify({"success": False, "error": str(e)}), 500
 
 
@@ -428,10 +433,8 @@ def analyze_single_file():
         )
 
     except Exception as e:
-        print(f"Error in /api/analyze: {e}")
-        import traceback
+        logger.error(f"Error in /api/analyze: {e}")
 
-        traceback.print_exc()
         return jsonify({"success": False, "error": str(e)}), 500
 
 
@@ -636,7 +639,7 @@ def get_trends():
         )
 
     except Exception as e:
-        print(f"Error in /api/trends: {e}")
+        logger.error(f"Error in /api/trends: {e}")
         return jsonify({"success": False, "error": str(e)}), 500
 
 
@@ -666,9 +669,6 @@ def get_compliance_report(run_id):
 
         return jsonify({"success": True, **data})
     except Exception as e:
-        import traceback
-
-        traceback.print_exc()
         return jsonify({"success": False, "error": str(e)}), 500
 
 
@@ -687,9 +687,6 @@ def get_test_gaps():
         data = get_test_gap_data(target_dir=target, test_dir=test_dir)
         return jsonify({"success": True, **data})
     except Exception as e:
-        import traceback
-
-        traceback.print_exc()
         return jsonify({"success": False, "error": str(e)}), 500
 
 
@@ -749,9 +746,6 @@ def get_policy_config():
 
         return jsonify({"success": True, **policy})
     except Exception as e:
-        import traceback
-
-        traceback.print_exc()
         return jsonify({"success": False, "error": str(e)}), 500
 
 
@@ -977,6 +971,6 @@ def submit_feedback(finding_id):
 
 
 if __name__ == "__main__":
-    print("🚀 Starting ACR-QA Dashboard...")
-    print("📊 Access at: http://localhost:5000")
+    logger.info("🚀 Starting ACR-QA Dashboard...")
+    logger.info("📊 Access at: http://localhost:5000")
     app.run(host="0.0.0.0", port=5000, debug=True)

@@ -4,6 +4,7 @@ Markdown Report Generator for ACR-QA v2.0
 Creates human-readable reports from analysis runs
 """
 
+import logging
 import sys
 from datetime import datetime
 from pathlib import Path
@@ -17,8 +18,11 @@ import argparse
 
 from DATABASE.database import Database
 
-
 # Load rules catalog for remediation suggestions
+
+logger = logging.getLogger(__name__)
+
+
 def load_rules_catalog():
     """Load the rules catalog for showing remediation suggestions"""
     try:
@@ -42,13 +46,13 @@ def generate_report(run_id=None, output_file=None):
     if run_id:
         run = db.get_run_info(run_id)
         if not run:
-            print(f"❌ Run {run_id} not found")
+            logger.error(f"❌ Run {run_id} not found")
             return
     else:
         # Get latest run
         runs = db.get_recent_runs(limit=1)
         if not runs:
-            print("❌ No analysis runs found")
+            logger.error("❌ No analysis runs found")
             return
         run = runs[0]
         run_id = run["id"]
@@ -273,11 +277,11 @@ def generate_report(run_id=None, output_file=None):
     with open(output_path, "w", encoding="utf-8") as f:
         f.write("\n".join(report_lines))
 
-    print(f"✅ Report generated: {output_path}")
-    print(f"   Total findings: {len(findings)}")
-    print(f"   High: {len(findings_by_severity['high'])}")
-    print(f"   Medium: {len(findings_by_severity['medium'])}")
-    print(f"   Low: {len(findings_by_severity['low'])}")
+    logger.info(f"✅ Report generated: {output_path}")
+    logger.info(f"   Total findings: {len(findings)}")
+    logger.info(f"   High: {len(findings_by_severity['high'])}")
+    logger.info(f"   Medium: {len(findings_by_severity['medium'])}")
+    logger.info(f"   Low: {len(findings_by_severity['low'])}")
 
     return output_path
 
@@ -297,10 +301,8 @@ def main():
     try:
         generate_report(args.run_id, args.output)
     except Exception as e:
-        print(f"❌ Error generating report: {e}")
-        import traceback
+        logger.error(f"❌ Error generating report: {e}")
 
-        traceback.print_exc()
         sys.exit(1)
 
 

@@ -537,9 +537,13 @@ class TestFeedbackTuner:
         overrides = generate_overrides(fp_rates, min_feedback=3)
         assert len(overrides) == 0
 
-    def test_print_report_no_crash(self, capsys):
+    def test_print_report_no_crash(self, caplog):
         """print_report should not crash on valid data."""
+        import logging
+
         from scripts.feedback_tuner import print_report
+
+        caplog.set_level(logging.INFO)
 
         fp_rates = {
             "TEST-001": {
@@ -555,9 +559,8 @@ class TestFeedbackTuner:
         }
 
         print_report(fp_rates)
-        captured = capsys.readouterr()
-        assert "TEST-001" in captured.out
-        assert "50.0%" in captured.out
+        assert "TEST-001" in caplog.text
+        assert "50.0%" in caplog.text
 
     def test_print_report_empty_data(self, capsys):
         """print_report should handle empty data gracefully."""

@@ -25,8 +25,6 @@ from typing import Any
 from CORE.adapters.base import LanguageAdapter
 from CORE.engines.normalizer import CanonicalFinding
 
-logger = logging.getLogger(__name__)
-
 # ──────────────────────────────────────────────────────────────────────────────
 # ESLint rule → canonical rule ID mapping
 # Used by normalizer.py (merged at runtime via JS_RULE_MAPPING)
@@ -107,6 +105,8 @@ JS_RULE_MAPPING: dict[str, str] = {
     # ── Pattern-based SQLi / XXE rules (js-rules.yml) ─────────────────────────
     "js-sequelize-raw-query": "SECURITY-061",  # db.sequelize.query(var) — SQLi
 }
+
+logger = logging.getLogger(__name__)
 
 
 class JavaScriptAdapter(LanguageAdapter):

@@ -229,11 +229,13 @@ class TestQualityGate:
             assert "actual" in check
             assert "threshold" in check
 
-    def test_print_report_doesnt_crash(self, capsys):
+    def test_print_report_doesnt_crash(self, caplog):
         """print_report should produce output without errors."""
+        import logging
+
+        caplog.set_level(logging.INFO)
         gate = QualityGate()
         result = gate.evaluate(self._make_findings(high=1))
         gate.print_report(result)
-        captured = capsys.readouterr()
-        assert "Quality Gate" in captured.out
-        assert "FAILED" in captured.out
+        assert "Quality Gate" in caplog.text
+        assert "FAILED" in caplog.text

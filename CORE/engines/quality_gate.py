@@ -4,6 +4,7 @@ ACR-QA Quality Gate Engine
 Enforces configurable thresholds to pass/fail CI pipelines.
 """
 
+import logging
 from typing import Any
 
 DEFAULT_THRESHOLDS = {
@@ -14,6 +15,8 @@ DEFAULT_THRESHOLDS = {
     "max_security": 3,  # Allow up to 3 low-risk security findings (e.g., assert-for-validation)
     "min_confidence": 0,  # No minimum confidence requirement (0 = disabled)
 }
+
+logger = logging.getLogger(__name__)
 
 
 class QualityGate:
@@ -196,24 +199,24 @@ class QualityGate:
 
     def print_report(self, result: dict) -> None:
         """Print a formatted quality gate report to stdout."""
-        print("\n" + "═" * 50)
-        print(f"  🚦 Quality Gate: {result['status']}")
-        print("═" * 50)
+        logger.info("\n" + "═" * 50)
+        logger.info(f"  🚦 Quality Gate: {result['status']}")
+        logger.info("═" * 50)
 
         counts = result["counts"]
-        print(
+        logger.info(
             f"  Total: {counts['total']}  │  "
             f"🔴 High: {counts['high']}  │  "
             f"🟡 Medium: {counts['medium']}  │  "
             f"🟢 Low: {counts['low']}"
         )
-        print("─" * 50)
+        logger.info("─" * 50)
 
         for check in result["checks"]:
             icon = "✅" if check["passed"] else "❌"
-            print(f"  {icon} {check['name']}: {check['message']}")
+            logger.info(f"  {icon} {check['name']}: {check['message']}")
 
-        print("═" * 50)
+        logger.info("═" * 50)
 
 
 if __name__ == "__main__":

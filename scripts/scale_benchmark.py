@@ -13,6 +13,7 @@ Generates synthetic JS files (or uses real targets) and reports:
 """
 
 import argparse
+import logging
 import sys
 import tempfile
 import time
@@ -35,6 +36,8 @@ _JS_TEMPLATES = [
     # Has var (STYLE-017)
     "var result = 0;\nfor (var i = 0; i < 10; i++) { result += i; }\nconsole.log(result);\n",
 ]
+
+logger = logging.getLogger(__name__)
 
 
 def _generate_synthetic_project(target_dir: Path, num_files: int) -> None:
@@ -95,11 +98,11 @@ def main() -> None:
     )
     args = parser.parse_args()
 
-    print("=" * 60)
-    print("ACR-QA Scale Benchmark")
-    print("=" * 60)
-    print(f"{'Label':<30} {'Files':>6} {'Findings':>9} {'Time(s)':>8} {'Files/s':>8}")
-    print("-" * 60)
+    logger.info("=" * 60)
+    logger.info("ACR-QA Scale Benchmark")
+    logger.info("=" * 60)
+    logger.info(f"{'Label':<30} {'Files':>6} {'Findings':>9} {'Time(s)':>8} {'Files/s':>8}")
+    logger.info("-" * 60)
 
     results = []
 
@@ -107,7 +110,9 @@ def main() -> None:
         # Benchmark real directory
         r = _run_benchmark(args.target, Path(args.target).name)
         results.append(r)
-        print(f"{r['label']:<30} {r['files']:>6} {r['findings']:>9} {r['elapsed_s']:>8.2f} {r['files_per_sec']:>8.1f}")
+        logger.info(
+            f"{r['label']:<30} {r['files']:>6} {r['findings']:>9} {r['elapsed_s']:>8.2f} {r['files_per_sec']:>8.1f}"
+        )
     else:
         # Benchmark synthetic projects of increasing sizes
         for size in args.sizes:
@@ -117,22 +122,22 @@ def main() -> None:
                 label = f"{size} synthetic JS files"
                 r = _run_benchmark(str(synthetic_dir), label)
                 results.append(r)
-                print(
+                logger.info(
                     f"{r['label']:<30} {r['files']:>6} {r['findings']:>9} {r['elapsed_s']:>8.2f} {r['files_per_sec']:>8.1f}"
                 )
 
-    print("=" * 60)
+    logger.info("=" * 60)
     if len(results) >= 2:
         # Check for roughly linear scaling
         r0, r_last = results[0], results[-1]
         if r0["elapsed_s"] > 0 and r_last["elapsed_s"] > 0:
             size_ratio = r_last["files"] / r0["files"] if r0["files"] > 0 else 1
             time_ratio = r_last["elapsed_s"] / r0["elapsed_s"]
-            print(f"\nScalability: {size_ratio:.0f}× files → {time_ratio:.1f}× time")
+            logger.info(f"\nScalability: {size_ratio:.0f}× files → {time_ratio:.1f}× time")
             if time_ratio < size_ratio * 1.5:
-                print("✅ Roughly linear scaling observed.")
+                logger.info("✅ Roughly linear scaling observed.")
             else:
-                print("⚠️  Superlinear scaling — tool startup overhead dominates at this scale.")
+                logger.error("⚠️  Superlinear scaling — tool startup overhead dominates at this scale.")
 
 
 if __name__ == "__main__":

@@ -6,6 +6,7 @@ For academic evaluation and thesis defense
 """
 
 import json
+import logging
 import sys
 from datetime import datetime
 from pathlib import Path
@@ -15,6 +16,8 @@ sys.path.insert(0, str(Path(__file__).parent.parent))
 import argparse
 
 from DATABASE.database import Database
+
+logger = logging.getLogger(__name__)
 
 
 def export_provenance(run_id=None, output_dir="DATA/outputs/provenance"):
@@ -39,17 +42,17 @@ def export_provenance(run_id=None, output_dir="DATA/outputs/provenance"):
     if run_id:
         run = db.get_run_info(run_id)
         if not run:
-            print(f"❌ Run {run_id} not found")
+            logger.error(f"❌ Run {run_id} not found")
             return None
     else:
         runs = db.get_recent_runs(limit=1)
         if not runs:
-            print("❌ No analysis runs found")
+            logger.error("❌ No analysis runs found")
             return None
         run = runs[0]
         run_id = run["id"]
 
-    print(f"📦 Exporting provenance for Run {run_id}...")
+    logger.info(f"📦 Exporting provenance for Run {run_id}...")
 
     # Get findings with explanations
     findings = db.get_findings_with_explanations(run_id)
@@ -153,7 +156,7 @@ def export_provenance(run_id=None, output_dir="DATA/outputs/provenance"):
     with open(json_file, "w", encoding="utf-8") as f:
         json.dump(provenance, f, indent=2, ensure_ascii=False)
 
-    print(f"✅ JSON provenance: {json_file}")
+    logger.info(f"✅ JSON provenance: {json_file}")
 
     # Write human-readable summary
     summary_file = output_path / f"summary_run_{run_id}.txt"
@@ -219,14 +222,14 @@ def export_provenance(run_id=None, output_dir="DATA/outputs/provenance"):
         f.write(f"Export completed: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n")
         f.write("=" * 60 + "\n")
 
-    print(f"✅ Summary: {summary_file}")
+    logger.info(f"✅ Summary: {summary_file}")
 
     # Print summary
-    print("\n📊 Provenance Summary:")
-    print(f"   Findings: {len(findings)}")
-    print(f"   With Explanations: {provenance['statistics']['with_explanations']}")
+    logger.info("\n📊 Provenance Summary:")
+    logger.info(f"   Findings: {len(findings)}")
+    logger.info(f"   With Explanations: {provenance['statistics']['with_explanations']}")
     if latencies:
-        print(f"   Avg Explanation Time: {provenance['statistics']['explanation_latency']['avg_ms']}ms")
+        logger.info(f"   Avg Explanation Time: {provenance['statistics']['explanation_latency']['avg_ms']}ms")
 
     return json_file
 
@@ -236,12 +239,12 @@ def export_all_runs(output_dir="outputs/provenance_all"):
     db = Database()
     runs = db.get_recent_runs(limit=100)
 
-    print(f"📦 Exporting provenance for {len(runs)} runs...")
+    logger.info(f"📦 Exporting provenance for {len(runs)} runs...")
 
     for run in runs:
         export_provenance(run["id"], output_dir)
 
-    print(f"\n✅ All provenance exported to: {output_dir}")
+    logger.info(f"\n✅ All provenance exported to: {output_dir}")
 
 
 def main():
@@ -258,10 +261,8 @@ def main():
         else:
             export_provenance(args.run_id, args.output)
     except Exception as e:
-        print(f"❌ Error exporting provenance: {e}")
-        import traceback
+        logger.error(f"❌ Error exporting provenance: {e}")
 
-        traceback.print_exc()
         sys.exit(1)
 
 

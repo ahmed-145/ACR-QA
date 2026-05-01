@@ -4,6 +4,7 @@ ACR-QA Per-Repository Configuration Loader
 Reads .acrqa.yml from a project to customize analysis behavior.
 """
 
+import logging
 from pathlib import Path
 from typing import Any
 
@@ -45,6 +46,8 @@ DEFAULT_CONFIG = {
     },
 }
 
+logger = logging.getLogger(__name__)
+
 
 class ConfigLoader:
     """Load and merge per-repo .acrqa.yml with defaults."""
@@ -68,9 +71,9 @@ class ConfigLoader:
                 with open(config_file) as f:
                     user_config = yaml.safe_load(f) or {}
                 self._config = self._deep_merge(DEFAULT_CONFIG.copy(), user_config)
-                print(f"📋 Loaded config from {config_file}")
+                logger.info(f"📋 Loaded config from {config_file}")
             except Exception as e:
-                print(f"⚠️ Error reading {config_file}: {e}. Using defaults.")
+                logger.error(f"⚠️ Error reading {config_file}: {e}. Using defaults.")
                 self._config = DEFAULT_CONFIG.copy()
         else:
             self._config = DEFAULT_CONFIG.copy()
@@ -191,7 +194,7 @@ ai:
 """
         with open(output_path, "w") as f:
             f.write(content)
-        print(f"✅ Generated default config: {output_path}")
+        logger.info(f"✅ Generated default config: {output_path}")
         return output_path
 
 
@@ -204,4 +207,4 @@ if __name__ == "__main__":
     else:
         loader = ConfigLoader()
         config = loader.load()
-        print(yaml.dump(config, default_flow_style=False))
+        logger.info(yaml.dump(config, default_flow_style=False))

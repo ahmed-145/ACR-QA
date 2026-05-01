@@ -3,6 +3,7 @@ PostgreSQL Database Interface for ACR-QA v2.0
 Handles provenance storage and retrieval
 """
 
+import logging
 import os
 from pathlib import Path
 
@@ -14,6 +15,8 @@ from psycopg2.extras import Json, RealDictCursor
 project_root = Path(__file__).parent.parent
 env_path = project_root / ".env"
 load_dotenv(dotenv_path=env_path)
+
+logger = logging.getLogger(__name__)
 
 
 class Database:
@@ -35,7 +38,7 @@ class Database:
             self.conn = psycopg2.connect(**self.conn_params)
             self.conn.autocommit = False  # Use transactions
         except psycopg2.Error as e:
-            print(f"❌ Database connection failed: {e}")
+            logger.error(f"❌ Database connection failed: {e}")
             raise
 
     def _ensure_connection(self):
@@ -74,8 +77,8 @@ class Database:
 
         except psycopg2.Error as e:
             self.conn.rollback()
-            print(f"❌ Query failed: {e}")
-            print(f"   Query: {query}")
+            logger.error(f"❌ Query failed: {e}")
+            logger.info(f"   Query: {query}")
             raise
 
     # ===== ANALYSIS RUNS =====
@@ -558,11 +561,11 @@ class Database:
 
 # Test connection
 if __name__ == "__main__":
-    print("Testing database connection...")
+    logger.info("Testing database connection...")
     try:
         db = Database()
         runs = db.get_recent_runs(limit=5)
-        print(f"✅ Connected! Found {len(runs)} recent analysis runs")
+        logger.info(f"✅ Connected! Found {len(runs)} recent analysis runs")
         db.close()
     except Exception as e:
-        print(f"❌ Connection failed: {e}")
+        logger.error(f"❌ Connection failed: {e}")

@@ -4,6 +4,7 @@ ACR-QA OWASP Top 10 & CWE/SANS Top 25 Compliance Report Generator
 Maps security findings to OWASP Top 10 (2021) and CWE IDs for regulatory compliance.
 """
 
+import logging
 import sys
 from pathlib import Path
 
@@ -100,6 +101,8 @@ RULE_TO_CWE = {
     "ERROR-001": "CWE-390",  # Detection of Error without Action
     "ASSERT-001": "CWE-617",  # Reachable Assertion
 }
+
+logger = logging.getLogger(__name__)
 
 
 def generate_compliance_report(run_id=None, output_format="md"):
@@ -293,9 +296,9 @@ def main():
         Path(args.output).parent.mkdir(parents=True, exist_ok=True)
         with open(args.output, "w") as f:
             f.write(report)
-        print(f"✅ Compliance report saved to {args.output}")
+        logger.info(f"✅ Compliance report saved to {args.output}")
     else:
-        print(report)
+        logger.info(report)
 
 
 if __name__ == "__main__":

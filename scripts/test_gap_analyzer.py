@@ -10,18 +10,20 @@ Usage:
     python scripts/test_gap_analyzer.py --target CORE/ --format json
 """
 
+import argparse
 import ast
+import json
+import logging
+import re
 import sys
+from dataclasses import dataclass, field
 from pathlib import Path
+
+logger = logging.getLogger(__name__)
 
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-import argparse
-import json
-import re
-from dataclasses import dataclass, field
-
-from CORE import __version__
+from CORE import __version__  # noqa: E402
 
 # ─── Data Models ──────────────────────────────────────────────────────────
 
@@ -501,10 +503,10 @@ def main():
             max_untested=args.max_untested,
             max_complex_untested=args.max_complex_untested,
         )
-        print(f"\n🚦 Test Gap Gate: {result['status']}")
+        logger.info(f"\n🚦 Test Gap Gate: {result['status']}")
         for c in result["checks"]:
             icon = "✅" if c["passed"] else "❌"
-            print(f"  {icon} {c['message']}")
+            logger.info(f"  {icon} {c['message']}")
 
         if not result["passed"]:
             sys.exit(1)
@@ -516,7 +518,7 @@ def main():
             include_dunder=args.include_dunder,
         )
         report = generate_report(mappings, format=args.format)
-        print(report)
+        logger.info(report)
 
 
 if __name__ == "__main__":

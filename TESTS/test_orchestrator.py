@@ -453,8 +453,11 @@ class TestRunAutoLanguageRouting:
                                         pass
         mock_run_js.assert_called()
 
-    def test_explicit_lang_go_prints_findings(self, capsys):
+    def test_explicit_lang_go_prints_findings(self, caplog):
         """--lang go should print a Go findings summary (not call run/run_js)."""
+        import logging
+
+        caplog.set_level(logging.INFO)
         mock_go_adapter = MagicMock()
         mock_go_adapter.check_tools_available.return_value = {"gosec": True, "staticcheck": True}
         mock_go_adapter.run_tools.return_value = {"errors": []}
@@ -479,8 +482,7 @@ class TestRunAutoLanguageRouting:
                             except SystemExit:
                                 pass
 
-        captured = capsys.readouterr()
-        assert "Go Adapter" in captured.out or "findings" in captured.out.lower()
+        assert "Go Adapter" in caplog.text or "findings" in caplog.text.lower()
 
     def test_explicit_lang_python_skips_js(self):
         """--lang python should call run() even if the dir has a package.json."""
