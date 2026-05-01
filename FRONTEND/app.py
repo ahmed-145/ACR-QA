@@ -970,6 +970,14 @@ def submit_feedback(finding_id):
         return jsonify({"success": False, "error": str(e)}), 500
 
 
+@app.errorhandler(Exception)
+def handle_exception(e):
+    if isinstance(e, HTTPException):
+        return e
+    app.logger.exception(e)
+    return jsonify({"success": False, "error": "Internal server error"}), 500
+
+
 if __name__ == "__main__":
     logger.info("🚀 Starting ACR-QA Dashboard...")
     logger.info("📊 Access at: http://localhost:5000")

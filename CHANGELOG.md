@@ -2,6 +2,23 @@
 
 All notable changes to ACR-QA are documented here.
 
+## [v3.2.4] — Logging Migration & System Stability
+
+### Added
+- **Production Logging:** Replaced 199 `print()` calls in production code (`CORE/`, `FRONTEND/`, `DATABASE/`) with proper structured logging (`logger.info()`, `logger.error()`).
+- **Centralized Error Handling:** Added `@app.errorhandler(Exception)` to `FRONTEND/app.py` to capture all unhandled exceptions, log them with tracebacks via `app.logger.exception()`, and return standard 500 JSON responses.
+- **Dependency Locking:** Generated definitive `requirements.lock` file.
+
+### Changed
+- **Testing Standard:** Switched to using `caplog` instead of `capsys` for validating log outputs in `TESTS/test_god_mode.py`.
+- **Import Ordering:** Fixed E402 linter errors in `CORE/main.py` by reorganizing standard imports before `sys.path` changes.
+
+### Removed
+- **`traceback.print_exc()`:** Eliminated all direct traceback printing in the Flask app.
+- **`test_comprehensive.sh`:** Deleted legacy script from project root.
+
+---
+
 ## [v3.2.4] — Groq API Migration & KeyPool Load Balancing
 
 ### Added
@@ -15,7 +32,7 @@ All notable changes to ACR-QA are documented here.
 - **Dependencies:** Updated `requirements.txt` to remove Groq and pin `groq==1.2.0`.
 - **CI/CD Configuration:** Updated `.github/workflows/acr-qa.yml` to utilize `GROQ_API_KEY_1` instead of legacy Groq tokens.
 - **Lazy Imports:** `CORE/engines/__init__.py` no longer eagerly imports the LLM stack, preventing cascade failures when optional deps are missing.
-- **Version Sync:** All version strings (`__init__.py`, `main.py`, `README.md`, `app.py`) now consistently say `3.3.0`.
+- **Version Sync:** All version strings (`__init__.py`, `main.py`, `README.md`, `app.py`) now consistently say `3.2.4`.
 - **Test Guard:** `test_eslint_config_generates_without_error` now skips gracefully when `npm` is not installed.
 
 ### Metrics

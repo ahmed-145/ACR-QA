@@ -29,7 +29,7 @@ Run these three commands in order. All must pass before committing:
 
 # 3. Tests
 .venv/bin/pytest TESTS/ -q --tb=short
-# Expected: 370+ passed, 0 failed
+# Expected: 1680+ passed, 0 failed
 ```
 
 > These are also enforced by `.pre-commit-config.yaml` — the commit will be **blocked** if any fail.
