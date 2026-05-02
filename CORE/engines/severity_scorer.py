@@ -1,6 +1,6 @@
 """
-Severity Scoring Engine for ACR-QA v2.0
-Maps canonical rule IDs to severity levels following PRD guidelines
+Severity Scoring Engine for ACR-QA
+Maps canonical rule IDs to severity levels following PRD guidelines.
 """
 
 import logging

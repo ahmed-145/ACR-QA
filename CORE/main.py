@@ -15,6 +15,44 @@ import tempfile
 import time
 from pathlib import Path
 
+
+def setup_logging(verbose=False, quiet=False):
+    level = logging.INFO
+    if verbose:
+        level = logging.DEBUG
+    elif quiet:
+        level = logging.WARNING
+
+    root_logger = logging.getLogger()
+    root_logger.setLevel(level)
+
+    # Remove existing handlers to avoid duplicates, except pytest caplog
+    for handler in root_logger.handlers[:]:
+        if "LogCapture" not in type(handler).__name__:
+            root_logger.removeHandler(handler)
+
+    handler = logging.StreamHandler(sys.stdout)
+    if os.getenv("ACRQA_JSON_LOGS") == "1":
+
+        class JsonFormatter(logging.Formatter):
+            def format(self, record):
+                log_record = {
+                    "timestamp": self.formatTime(record, self.datefmt),
+                    "level": record.levelname,
+                    "module": record.module,
+                    "message": record.getMessage(),
+                }
+                import json
+
+                return json.dumps(log_record)
+
+        handler.setFormatter(JsonFormatter())
+    else:
+        handler.setFormatter(logging.Formatter("%(message)s"))
+
+    root_logger.addHandler(handler)
+
+
 logger = logging.getLogger(__name__)
 
 sys.path.insert(0, str(Path(__file__).parent.parent))
@@ -848,6 +886,16 @@ def main():
         help="Skip AI explanation step (faster; useful for CI or large repos)",
     )
     parser.add_argument(
+        "--verbose",
+        action="store_true",
+        help="Enable verbose DEBUG logging",
+    )
+    parser.add_argument(
+        "--quiet",
+        action="store_true",
+        help="Enable quiet WARNING logging",
+    )
+    parser.add_argument(
         "--ai",
         action="store_true",
         dest="ai",
@@ -873,6 +921,7 @@ def main():
     )
 
     args = parser.parse_args()
+    setup_logging(args.verbose, args.quiet)
 
     # Determine files to analyze
     files = None

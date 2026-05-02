@@ -10,6 +10,7 @@ from pathlib import Path
 import psycopg2
 from dotenv import load_dotenv
 from psycopg2.extras import Json, RealDictCursor
+from psycopg2.pool import ThreadedConnectionPool
 
 # Load .env from project root
 project_root = Path(__file__).parent.parent
@@ -20,8 +21,10 @@ logger = logging.getLogger(__name__)
 
 
 class Database:
+    _pool = None
+
     def __init__(self):
-        """Initialize database connection"""
+        """Initialize database connection pool"""
         self.conn_params = {
             "host": os.getenv("DB_HOST", "localhost"),
             "port": os.getenv("DB_PORT", "5432"),
@@ -29,22 +32,16 @@ class Database:
             "user": os.getenv("DB_USER", "postgres"),
             "password": os.getenv("DB_PASSWORD", "postgres"),
         }
-        self.conn = None
         self._connect()
 
     def _connect(self):
-        """Establish database connection"""
-        try:
-            self.conn = psycopg2.connect(**self.conn_params)
-            self.conn.autocommit = False  # Use transactions
-        except psycopg2.Error as e:
-            logger.error(f"❌ Database connection failed: {e}")
-            raise
-
-    def _ensure_connection(self):
-        """Reconnect if connection is closed"""
-        if self.conn is None or self.conn.closed:
-            self._connect()
+        """Establish database connection pool"""
+        if Database._pool is None:
+            try:
+                Database._pool = ThreadedConnectionPool(1, 10, **self.conn_params)
+            except psycopg2.Error as e:
+                logger.error(f"❌ Database connection pool failed: {e}")
+                raise
 
     def execute(self, query, params=None, fetch=False):
         """
@@ -58,28 +55,33 @@ class Database:
         Returns:
             Query results if fetch=True, else None
         """
-        self._ensure_connection()
+        if Database._pool is None:
+            self._connect()
 
+        conn = Database._pool.getconn()
         try:
-            with self.conn.cursor(cursor_factory=RealDictCursor) as cur:
+            conn.autocommit = False
+            with conn.cursor(cursor_factory=RealDictCursor) as cur:
                 cur.execute(query, params)
 
                 if fetch:
                     res = cur.fetchall()
-                    self.conn.commit()
+                    conn.commit()
                     return res
 
-                self.conn.commit()
+                conn.commit()
 
                 # Return last inserted ID if applicable
                 if "INSERT" in query.upper() and "RETURNING" in query.upper():
                     return cur.fetchone()
 
         except psycopg2.Error as e:
-            self.conn.rollback()
+            conn.rollback()
             logger.error(f"❌ Query failed: {e}")
             logger.info(f"   Query: {query}")
             raise
+        finally:
+            Database._pool.putconn(conn)
 
     # ===== ANALYSIS RUNS =====
 
@@ -553,10 +555,10 @@ class Database:
         return [r["repo_name"] for r in rows] if rows else []
 
     def close(self):
-        """Close database connection"""
-        if self.conn:
-            self.conn.close()
-            self.conn = None
+        """Close database connection pool"""
+        if Database._pool:
+            Database._pool.closeall()
+            Database._pool = None
 
 
 # Test connection

@@ -1,8 +1,8 @@
-# ACR-QA v3.1.3 Architecture
+# ACR-QA v3.2.4 Architecture
 
 ## System Overview
 
-ACR-QA is a modular, pipeline-based system for automated code review with RAG-enhanced AI explanations. It runs 7 static analysis tools, normalizes all findings into a canonical schema, generates evidence-grounded explanations, and enforces configurable quality gates.
+ACR-QA is a modular, pipeline-based system for automated code review with RAG-enhanced AI explanations. It runs **10+ static analysis tools** across Python, JavaScript/TypeScript, and Go, normalizes all findings into a canonical schema, generates evidence-grounded explanations with hallucination detection, and enforces configurable quality gates — all with full provenance tracking.
 
 ## Pipeline Stages
 
@@ -16,20 +16,27 @@ Source Code
 [1] DB Run Created            ← PostgreSQL analysis_runs row
     │
     ▼
-[2a] Tool Detection           ← Ruff, Semgrep, Bandit, Vulture, Radon, jscpd
+[2a] Tool Detection           ← Ruff, Semgrep, Bandit, Vulture, Radon, jscpd (Python)
+                                 ESLint, Semgrep, npm audit, jscpd (JS/TS)
+                                 gosec, staticcheck, Semgrep (Go)
     │
     ▼
-[2b] Extra Scanners           ← Secrets Detector, SCA Scanner (deps)
+[2b] Extra Scanners           ← Secrets Detector, SCA Scanner, CBoM Scanner
     │
     ▼
 [3a] Normalization            ← tool outputs → canonical schema (normalizer.py)
 [3b] Config Filtering         ← .acrqa.yml: disabled rules, ignored paths, min severity
-[3c] Deduplication            ← 2-pass: exact (file+line+rule) + cross-tool category
-[3d] Per-Rule Cap             ← max 5 findings/rule (noise control)
-[3e] Priority Sort            ← security/high first for within-limit AI coverage
+[3c] Triage Memory            ← Suppress known FPs from learned patterns (Feature 6)
+[3d] Deduplication            ← 2-pass: exact (file+line+rule) + cross-tool category
+[3e] Per-Rule Cap             ← max 5 findings/rule (noise control)
+[3f] Priority Sort            ← security/high first for within-limit AI coverage
     │
     ▼
 [4]  AI Explanation           ← Groq LLM + RAG from config/rules.yml
+     ├── Fix Validation       ← AI code fix extracted + linter-verified (Feature 1)
+     ├── Path Feasibility     ← Reachability check on HIGH findings (Feature 7)
+     ├── Dep Reachability     ← npm package import analysis (Feature 8)
+     └── Cross-Language Corr  ← Multi-layer vulnerability chains (Feature 9)
     │
     ▼
 [5]  Quality Gate             ← Configurable thresholds → exit 1 if failed
@@ -382,7 +389,7 @@ Detects vulnerability chains that span Python backend code, Jinja2/HTML template
 
 ## Database Schema
 
-6 tables in PostgreSQL 15:
+6 tables in PostgreSQL 15 (connection pooling via `ThreadedConnectionPool`, min=1, max=10):
 
 | Table | Purpose |
 |-------|---------|
@@ -416,7 +423,7 @@ Detects vulnerability chains that span Python backend code, Jinja2/HTML template
 - **Graceful degradation** — Fully functional without Redis (in-memory fallback)
 - **Diff-only mode** — `--diff-only` flag scans only PR-changed files for faster CI
 
-### Scale Benchmark Results (v3.0.3)
+### Scale Benchmark Results (v3.0.3, verified stable through v3.2.4)
 
 | Synthetic Target | Files | Execution Time | Throughput |
 |------------------|:-----:|:--------------:|:----------:|
