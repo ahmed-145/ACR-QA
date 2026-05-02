@@ -33,25 +33,37 @@ class KeyPool:
 
     def __init__(self):
         self._keys: list[str] = []
-        i = 1
-        while True:
-            key = os.getenv(f"GROQ_API_KEY_{i}")
+        provider = os.getenv("ACRQA_LLM_PROVIDER", "groq")
+
+        if provider == "agentrouter":
+            key = os.getenv("AGENTROUTER_API_KEY")
             if key:
                 self._keys.append(key)
-                i += 1
-            else:
-                break
-        # Fallback: single GROQ_API_KEY
-        if not self._keys:
-            single = os.getenv("GROQ_API_KEY")
-            if single:
-                self._keys.append(single)
-        if not self._keys:
-            raise ValueError(
-                "No GROQ_API_KEY found in environment. "
-                "Set GROQ_API_KEY_1, GROQ_API_KEY_2, ... or a single GROQ_API_KEY."
-            )
-        self._clients = [Groq(api_key=k) for k in self._keys]
+            if not self._keys:
+                raise ValueError("No AGENTROUTER_API_KEY found in environment.")
+            self._clients = [Groq(api_key=k, base_url="https://agentrouter.org/v1") for k in self._keys]
+            self.base_url = "https://agentrouter.org/v1/chat/completions"
+        else:
+            i = 1
+            while True:
+                key = os.getenv(f"GROQ_API_KEY_{i}")
+                if key:
+                    self._keys.append(key)
+                    i += 1
+                else:
+                    break
+            # Fallback: single GROQ_API_KEY
+            if not self._keys:
+                single = os.getenv("GROQ_API_KEY")
+                if single:
+                    self._keys.append(single)
+            if not self._keys:
+                raise ValueError(
+                    "No GROQ_API_KEY found in environment. "
+                    "Set GROQ_API_KEY_1, GROQ_API_KEY_2, ... or a single GROQ_API_KEY."
+                )
+            self._clients = [Groq(api_key=k) for k in self._keys]
+            self.base_url = "https://api.groq.com/openai/v1/chat/completions"
         self._index = 0
 
     def next_client(self) -> Groq:
@@ -302,7 +314,7 @@ Start with: "This code violates {canonical_id}..." and end with a ```python code
 
         try:
             response = await client.post(
-                "https://api.groq.com/openai/v1/chat/completions",
+                self.key_pool.base_url,
                 json=payload,
                 headers={"Authorization": f"Bearer {api_key}"},
             )
