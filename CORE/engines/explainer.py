@@ -219,6 +219,9 @@ Start with: "This code violates {canonical_id}..." and end with a ```python code
             canonical_id = finding.get("canonical_rule_id", finding.get("rule_id", "UNKNOWN"))
             cites_rule = canonical_id in response_text
 
+            entropy_res = self.compute_semantic_entropy(finding, code_snippet)
+            eval_res = self.self_evaluate_explanation(response_text, finding)
+
             result = {
                 "model_name": self.model,
                 "prompt_filled": prompt_filled,
@@ -232,8 +235,8 @@ Start with: "This code violates {canonical_id}..." and end with a ```python code
                 "cites_rule": cites_rule,
                 "confidence": 0.9 if cites_rule else 0.6,
                 "cache_hit": False,
-                "consistency_score": None,
-                "self_eval_score": None,
+                "consistency_score": entropy_res.get("consistency_score"),
+                "self_eval_score": eval_res.get("overall"),
             }
 
             # Phase 2: Store in cache
@@ -314,6 +317,11 @@ Start with: "This code violates {canonical_id}..." and end with a ```python code
             canonical_id = finding.get("canonical_rule_id", finding.get("rule_id", "UNKNOWN"))
             cites_rule = canonical_id in response_text
 
+            import asyncio
+
+            entropy_res = await asyncio.to_thread(self.compute_semantic_entropy, finding, code_snippet)
+            eval_res = await asyncio.to_thread(self.self_evaluate_explanation, response_text, finding)
+
             result = {
                 "model_name": self.model,
                 "prompt_filled": prompt_filled,
@@ -327,8 +335,8 @@ Start with: "This code violates {canonical_id}..." and end with a ```python code
                 "cites_rule": cites_rule,
                 "confidence": 0.9 if cites_rule else 0.6,
                 "cache_hit": False,
-                "consistency_score": None,
-                "self_eval_score": None,
+                "consistency_score": entropy_res.get("consistency_score"),
+                "self_eval_score": eval_res.get("overall"),
             }
 
             # --- Feature 1: Validated Autofix Loop ---

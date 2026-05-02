@@ -471,5 +471,5 @@ class TestBuildSyntheticFindings:
         c = CrossLanguageCorrelator(str(tmp_path))
         findings = c._build_synthetic_findings()
         if findings:
-            for key in ["canonical_rule_id", "file_path", "line_number", "language"]:
+            for key in ["canonical_rule_id", "file", "line_number", "language"]:
                 assert key in findings[0]

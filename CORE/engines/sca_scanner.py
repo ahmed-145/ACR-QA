@@ -254,7 +254,7 @@ class SCAScanner:
                         f"({vuln['vulnerability_id']}). {vuln.get('description', '')}. "
                         f"Fix: upgrade to {fix_str}"
                     ),
-                    "tool_name": "sca-scanner",
+                    "tool": "sca",
                 }
             )
 

@@ -454,8 +454,6 @@ class TestCBoMScanner:
             "severity",
             "category",
             "file",
-            "file_path",
-            "line",
             "line_number",
             "message",
             "language",

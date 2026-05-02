@@ -50,7 +50,7 @@ class TestCryptoUsage:
             "tool",
             "canonical_rule_id",
             "canonical_severity",
-            "file_path",
+            "file",
             "line_number",
             "message",
             "cbom_metadata",

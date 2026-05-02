@@ -412,7 +412,6 @@ class CrossLanguageCorrelator:
                         "canonical_rule_id": "SECURITY-027",
                         "canonical_severity": "high",
                         "category": "security",
-                        "file_path": str(py_file),
                         "file": str(py_file),
                         "line_number": line_no,
                         "line": line_no,

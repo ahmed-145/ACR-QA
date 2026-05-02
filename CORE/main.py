@@ -222,7 +222,7 @@ class AnalysisPipeline:
         try:
             with open("/tmp/acr_run_id.txt", "w") as f:
                 f.write(str(run_id))
-        except:
+        except OSError:
             pass
 
         # Step 5: Quality Gate
@@ -252,8 +252,26 @@ class AnalysisPipeline:
                 logger.info(f"\n[+] Cross-language correlations: {len(corr_groups)} chain(s) detected")
                 for g in corr_groups:
                     logger.info(f"    [{g.combined_severity.upper()}] {g.correlation_type}: {g.chain_description[:80]}")
-        except Exception:
-            pass  # Never crash the main pipeline
+
+                # Save correlation results to the database
+                for f in findings:
+                    if "_db_id" in f and "correlation_chain" in f:
+                        evidence = f.get("evidence", {})
+                        if isinstance(evidence, str):
+                            import json
+
+                            try:
+                                evidence = json.loads(evidence)
+                            except Exception:
+                                evidence = {}
+                        evidence["correlation_chain"] = f["correlation_chain"]
+                        evidence["correlation_severity"] = f.get("correlation_severity", "high")
+
+                        self.db.update_finding_correlation(
+                            finding_id=f["_db_id"], confidence_score=f.get("confidence_score"), evidence=evidence
+                        )
+        except Exception as e:
+            logger.error(f"Cross-language correlation error: {e}")
 
         self._gate_passed = not gate.should_block(gate_result)
         self._gate_comment = gate.format_gate_comment(gate_result)
@@ -696,8 +714,26 @@ class AnalysisPipeline:
                 logger.info(f"\n[+] Cross-language correlations: {len(corr_groups)} chain(s) detected")
                 for g in corr_groups:
                     logger.info(f"    [{g.combined_severity.upper()}] {g.correlation_type}: {g.chain_description[:80]}")
-        except Exception:
-            pass  # Never crash the main pipeline
+
+                # Save correlation results to the database
+                for f in findings:
+                    if "_db_id" in f and "correlation_chain" in f:
+                        evidence = f.get("evidence", {})
+                        if isinstance(evidence, str):
+                            import json
+
+                            try:
+                                evidence = json.loads(evidence)
+                            except Exception:
+                                evidence = {}
+                        evidence["correlation_chain"] = f["correlation_chain"]
+                        evidence["correlation_severity"] = f.get("correlation_severity", "high")
+
+                        self.db.update_finding_correlation(
+                            finding_id=f["_db_id"], confidence_score=f.get("confidence_score"), evidence=evidence
+                        )
+        except Exception as e:
+            logger.error(f"Cross-language correlation error: {e}")
 
         self._gate_passed = not gate.should_block(gate_result)
         self._gate_comment = gate.format_gate_comment(gate_result)

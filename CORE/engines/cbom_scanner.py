@@ -164,7 +164,6 @@ class CryptoUsage:
             "severity": self.severity,
             "category": "security",
             "file": self.file_path,
-            "file_path": self.file_path,
             "line": self.line_number,
             "line_number": self.line_number,
             "message": " ".join(msg_parts),

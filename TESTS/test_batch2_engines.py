@@ -244,7 +244,7 @@ class TestSCAScannerToCanonicalFindings:
         f = findings[0]
         assert f["canonical_rule_id"] == "SCA-001"
         assert f["category"] == "security"
-        assert f["tool_name"] == "sca-scanner"
+        assert findings[0]["tool"] == "sca"
         assert f["severity"] == "high"
 
     def test_empty_fix_versions(self):

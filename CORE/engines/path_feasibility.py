@@ -172,11 +172,21 @@ class PathFeasibilityValidator:
         file_path = finding.get("file_path", finding.get("file", "unknown"))
         line_number = finding.get("line_number", finding.get("line", 0))
 
+        import os
+
+        provider = os.getenv("ACRQA_LLM_PROVIDER", "groq")
+        if provider == "agentrouter":
+            base_url = "https://agentrouter.org/v1/chat/completions"
+            actual_api_key = os.getenv("AGENTROUTER_API_KEY", api_key)
+        else:
+            base_url = "https://api.groq.com/openai/v1/chat/completions"
+            actual_api_key = api_key
+
         try:
             response = await client.post(
-                "https://api.groq.com/openai/v1/chat/completions",
+                base_url,
                 json=payload,
-                headers={"Authorization": f"Bearer {api_key}"},
+                headers={"Authorization": f"Bearer {actual_api_key}"},
                 timeout=15.0,
             )
             response.raise_for_status()

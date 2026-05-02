@@ -190,6 +190,15 @@ class Database:
         result = self.execute(query, values, fetch=True)
         return result[0]["id"] if result else None
 
+    def update_finding_correlation(self, finding_id, confidence_score, evidence):
+        """Update a finding's confidence and evidence with cross-language correlation data"""
+        query = """
+            UPDATE findings
+            SET confidence_score = %s, evidence = %s
+            WHERE id = %s
+        """
+        self.execute(query, (confidence_score, Json(evidence), finding_id))
+
     def get_findings(self, run_id=None, severity=None, category=None, limit=100):
         """Query findings with filters"""
         conditions = []
