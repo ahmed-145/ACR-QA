@@ -14,6 +14,7 @@ DEFAULT_THRESHOLDS = {
     "max_total": 200,  # Realistic cap for medium-sized codebases
     "max_security": 3,  # Allow up to 3 low-risk security findings (e.g., assert-for-validation)
     "min_confidence": 0,  # No minimum confidence requirement (0 = disabled)
+    "max_new_severe_security": 0,  # Fail if new high/critical security findings exceed this
 }
 
 logger = logging.getLogger(__name__)
@@ -58,6 +59,7 @@ class QualityGate:
         # Count by severity
         counts = {"high": 0, "medium": 0, "low": 0, "total": len(findings)}
         category_counts: dict[str, int] = {}
+        new_severe_security = 0
 
         for f in findings:
             sev = f.get("canonical_severity", f.get("severity", "low")).lower()
@@ -65,6 +67,9 @@ class QualityGate:
 
             cat = f.get("category", "unknown").lower()
             category_counts[cat] = category_counts.get(cat, 0) + 1
+
+            if f.get("is_new", False) and sev in ("high", "critical") and cat == "security":
+                new_severe_security += 1
 
         # Run checks
         checks = []
@@ -129,6 +134,21 @@ class QualityGate:
             }
         )
         if not sec_ok:
+            passed = False
+
+        # Check: max new severe security
+        max_new_severe = int(str(self.thresholds.get("max_new_severe_security", 0)))
+        new_severe_ok = new_severe_security <= max_new_severe
+        checks.append(
+            {
+                "name": "New Severe Security",
+                "passed": new_severe_ok,
+                "actual": new_severe_security,
+                "threshold": max_new_severe,
+                "message": f"{new_severe_security} new high/critical security findings (max: {max_new_severe})",
+            }
+        )
+        if not new_severe_ok:
             passed = False
 
         # Build summary

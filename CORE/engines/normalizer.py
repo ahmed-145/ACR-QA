@@ -213,6 +213,7 @@ class CanonicalFinding(BaseModel):
 
     # Core fields
     finding_id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    fingerprint: str = ""
     canonical_rule_id: str
     original_rule_id: str
     severity: str
@@ -402,6 +403,13 @@ class CanonicalFinding(BaseModel):
                 "context_before": [],
                 "context_after": [],
             }
+
+        # Generate fingerprint
+        import hashlib
+
+        snippet = self.evidence.get("snippet", "")[:200]
+        raw = f"{self.canonical_rule_id}:{self.file}:{snippet}"
+        self.fingerprint = hashlib.sha256(raw.encode("utf-8")).hexdigest()[:16]
 
     def to_dict(self) -> dict[str, Any]:
         """Convert to dictionary for JSON serialization (uses Pydantic's model_dump)"""

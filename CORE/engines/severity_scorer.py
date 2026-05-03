@@ -205,6 +205,8 @@ class SeverityScorer:
         # Apply context-based adjustments
         severity = self._apply_context_adjustments(base_severity, canonical_rule_id, finding_dict)
 
+        severity = self._context_adjust(severity, finding_dict)
+
         return severity
 
     def _infer_custom_severity(self, rule_id: str) -> str:
@@ -259,6 +261,26 @@ class SeverityScorer:
 
         # Default: use base severity
         return base_severity
+
+    def _context_adjust(self, severity: str, finding: dict[str, Any]) -> str:
+        """
+        Demotes severity to 'low' for findings in test/fixture/mock files,
+        and caps at 'medium' for example/demo/sample paths.
+        """
+        file_path = finding.get("file", "").lower()
+
+        # Demote to low for test files
+        test_markers = ["test_", "tests/", "conftest", "fixtures/", "mock_", "test"]
+        if any(marker in file_path for marker in test_markers):
+            return "low"
+
+        # Cap at medium for example/demo files
+        example_markers = ["example", "demo", "sample"]
+        if any(marker in file_path for marker in example_markers):
+            if severity == "high":
+                return "medium"
+
+        return severity
 
     def _extract_complexity(self, finding: dict[str, Any]) -> int:
         """Extract cyclomatic complexity from Radon output"""

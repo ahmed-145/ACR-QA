@@ -108,12 +108,7 @@ class ExplanationEngine:
 
     def _get_cache_key(self, finding, code_snippet):
         """Generate cache key from finding characteristics"""
-        key_data = (
-            f"{finding.get('canonical_rule_id', '')}:"
-            f"{finding.get('file', '')}:"
-            f"{finding.get('line', 0)}:"
-            f"{code_snippet[:100]}"  # First 100 chars of snippet
-        )
+        key_data = f"{finding.get('fingerprint', '')}:" f"{finding.get('message', '')}"
         hash_key = hashlib.md5(key_data.encode()).hexdigest()
         return f"explanation:{hash_key}"
 

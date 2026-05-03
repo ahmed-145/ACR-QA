@@ -74,7 +74,7 @@ class AnalysisPipeline:
         # Load per-repo config (.acrqa.yml)
         self.config = ConfigLoader(project_dir=target_dir).load()
 
-    def run(self, repo_name="local", pr_number=None, limit=None, files=None, rich_output=False):
+    def run(self, repo_name="local", pr_number=None, limit=None, files=None, rich_output=False, baseline_run_id=None):
         """Run full analysis pipeline."""
         logger.info("🚀 ACR-QA v3.2.4 Analysis Pipeline")
         logger.info("=" * 50)
@@ -161,6 +161,54 @@ class AnalysisPipeline:
 
         total_findings = len(findings)
         logger.info(f"      ✓ {total_findings} issues after filtering & dedup")
+
+        # Baseline comparison
+        if baseline_run_id:
+            logger.info(f"\n[3.5/5] Comparing against baseline run ID {baseline_run_id}...")
+            baseline_findings = self.db.get_findings(run_id=baseline_run_id, limit=10000)
+            baseline_fingerprints = set()
+            for bf in baseline_findings:
+                # Use DB fingerprint if added later, else recalculate
+                fp = bf.get("fingerprint")
+                if not fp:
+                    import hashlib
+
+                    evidence = bf.get("evidence", {})
+                    if isinstance(evidence, str):
+                        import json
+
+                        try:
+                            evidence = json.loads(evidence)
+                        except:
+                            evidence = {}
+                    snippet = evidence.get("snippet", "")[:200]
+                    raw = f"{bf.get('canonical_rule_id')}:{bf.get('file_path')}:{snippet}"
+                    fp = hashlib.sha256(raw.encode("utf-8")).hexdigest()[:16]
+                baseline_fingerprints.add(fp)
+
+            new_findings_count = 0
+            for f in findings:
+                f_fp = f.get("fingerprint")
+                if not f_fp:
+                    import hashlib
+
+                    snippet = f.get("evidence", {}).get("snippet", "")[:200]
+                    raw = f"{f.get('canonical_rule_id')}:{f.get('file_path', f.get('file', ''))}:{snippet}"
+                    f_fp = hashlib.sha256(raw.encode("utf-8")).hexdigest()[:16]
+                    f["fingerprint"] = f_fp
+
+                if f_fp in baseline_fingerprints:
+                    f["is_new"] = False
+                else:
+                    f["is_new"] = True
+                    new_findings_count += 1
+
+            logger.info(
+                f"      ✓ Delta summary: {new_findings_count} new findings, {len(findings) - new_findings_count} existing."
+            )
+        else:
+            for f in findings:
+                f["is_new"] = True
 
         # Step 4: Generate AI explanations (with caching)
         logger.info("[4/5] Generating AI explanations (Groq API)...")
@@ -900,6 +948,12 @@ def main():
         help="Base branch for diff comparison (default: main)",
     )
     parser.add_argument(
+        "--baseline",
+        type=int,
+        dest="baseline_run_id",
+        help="Baseline Run ID to compare against and mark new findings",
+    )
+    parser.add_argument(
         "--auto-fix",
         action="store_true",
         help="Generate auto-fix suggestions for fixable issues",
@@ -1051,6 +1105,7 @@ def main():
         limit=effective_limit,
         files=files,
         rich_output=args.rich,
+        baseline_run_id=args.baseline_run_id,
     )
 
     # --json: dump findings as JSON to stdout (pipe-friendly, for JS consumers)

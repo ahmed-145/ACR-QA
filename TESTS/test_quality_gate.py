@@ -104,9 +104,9 @@ class TestEvaluateChecks:
         result = g.evaluate(findings)
         assert result["passed"] is True
 
-    def test_checks_list_has_four_items(self, gate):
+    def test_checks_list_has_five_items(self, gate):
         result = gate.evaluate([])
-        assert len(result["checks"]) == 4
+        assert len(result["checks"]) == 5
 
     def test_all_checks_passed_when_empty(self, gate):
         result = gate.evaluate([])

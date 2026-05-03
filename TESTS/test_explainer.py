@@ -135,8 +135,12 @@ class TestGetCacheKey:
 
     def test_differs_for_different_rule_id(self):
         eng = _engine()
-        k1 = eng._get_cache_key(_finding(rule_id="A"), "code")
-        k2 = eng._get_cache_key(_finding(rule_id="B"), "code")
+        f1 = _finding(rule_id="A")
+        f1["fingerprint"] = "hashA"
+        f2 = _finding(rule_id="B")
+        f2["fingerprint"] = "hashB"
+        k1 = eng._get_cache_key(f1, "code")
+        k2 = eng._get_cache_key(f2, "code")
         assert k1 != k2
 
     def test_uses_first_100_chars_of_snippet(self):

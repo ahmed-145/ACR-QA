@@ -116,9 +116,9 @@ class TestQualityGateEvaluate:
         result = QualityGate().evaluate([])
         assert "passed" in result["summary"].lower() or "PASSED" in result["summary"]
 
-    def test_checks_list_has_4_items(self):
+    def test_checks_list_has_5_items(self):
         result = QualityGate().evaluate([])
-        assert len(result["checks"]) == 4
+        assert len(result["checks"]) == 5
 
     def test_finding_with_severity_field_fallback(self):
         """Falls back to 'severity' if 'canonical_severity' missing."""

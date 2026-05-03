@@ -222,7 +222,7 @@ class TestQualityGate:
         """Should include details for each check."""
         gate = QualityGate()
         result = gate.evaluate([])
-        assert len(result["checks"]) == 4  # high, medium, total, security
+        assert len(result["checks"]) == 5  # high, medium, total, security, new severe security
         for check in result["checks"]:
             assert "name" in check
             assert "passed" in check

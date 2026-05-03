@@ -161,10 +161,10 @@ class TestQualityGateFullCoverage:
         assert result["category_counts"]["security"] == 2
         assert result["category_counts"]["design"] == 1
 
-    def test_checks_list_has_4_items(self):
+    def test_checks_list_has_5_items(self):
         gate = self.QualityGate(None)
         result = gate.evaluate([])
-        assert len(result["checks"]) == 4
+        assert len(result["checks"]) == 5
 
     def test_check_structure(self):
         gate = self.QualityGate(None)
