@@ -621,6 +621,14 @@ class AnalysisPipeline:
         # Step 2: Run JS tools
         logger.info("\n[2/5] Running JS/TS detection tools...")
         js_adapter = JavaScriptAdapter(target_dir=self.target_dir)
+
+        tools_status = js_adapter.check_tools_available()
+        if not tools_status.get("npm"):
+            logger.error(
+                "      ✗ ERROR: 'npm' is missing from the environment. Please install Node.js/npm to analyze JS/TS projects."
+            )
+            return None
+
         results = js_adapter.run_tools()
         findings_obj = js_adapter.get_all_findings(results)
 
@@ -693,10 +701,16 @@ class AnalysisPipeline:
         self.explainer = ExplanationEngine(redis_client=redis_client)
 
         max_explanations = self.config.get("ai", {}).get("max_explanations", 50)
-        effective_limit = min(limit, max_explanations) if limit else max_explanations
-        # For JS: only explain HIGH findings by default to keep latency low
-        high_findings = [f for f in findings if f.get("canonical_severity") == "high"]
-        findings_to_explain = high_findings[:effective_limit] if effective_limit else high_findings
+        effective_limit = min(limit, max_explanations) if limit is not None else max_explanations
+
+        # If limit is explicitly 0 (no-ai), don't explain anything
+        if limit == 0:
+            findings_to_explain = []
+            logger.info("      - AI explanations disabled (--no-ai)")
+        else:
+            # For JS: only explain HIGH findings by default to keep latency low
+            high_findings = [f for f in findings if f.get("canonical_severity") == "high"]
+            findings_to_explain = high_findings[:effective_limit] if effective_limit else high_findings
 
         findings_with_snippets = []
         for f in findings:
@@ -795,50 +809,15 @@ class AnalysisPipeline:
         for err in results.get("errors", []):
             logger.info(f"  ⚠️  {err}")
 
+        # Write findings.json so --json flag can read it
+        import json as _json
+
+        output_path = Path("DATA/outputs")
+        output_path.mkdir(parents=True, exist_ok=True)
+        with open(output_path / "findings.json", "w") as _fp:
+            _json.dump(findings, _fp, indent=2, default=str)
+
         return run_id
-        """Run autofix engine on findings and display diffs."""
-        from CORE.engines.autofix import AutoFixEngine
-
-        engine = AutoFixEngine()
-        fixable = [f for f in findings if engine.can_fix(f.get("canonical_rule_id", ""))]
-        if not fixable:
-            logger.info("\n⚙️  No auto-fixable issues found.")
-            return []
-
-        logger.info(f"\n⚙️  Auto-Fix: {len(fixable)} fixable issues found")
-        results = []
-        for f in fixable:
-            rule_id = f.get("canonical_rule_id", "")
-            filepath = f.get("file_path", f.get("file", ""))
-            line = f.get("line_number", f.get("line", 0))
-            confidence = engine.get_fix_confidence(rule_id)
-
-            try:
-                finding_dict = {
-                    "canonical_rule_id": rule_id,
-                    "file_path": filepath,
-                    "line": line,
-                    "message": f.get("message", ""),
-                }
-                fix = engine.generate_fix(finding_dict)
-                if fix and fix.get("fixed") is not None:
-                    results.append(
-                        {
-                            "rule_id": rule_id,
-                            "file": filepath,
-                            "line": line,
-                            "confidence": confidence,
-                            "original": fix.get("original", ""),
-                            "fixed": fix.get("fixed", ""),
-                        }
-                    )
-                    logger.info(f"   ✓ {rule_id} @ {filepath}:{line} (confidence: {confidence})")
-            except Exception as e:
-                logger.error(f"   ✗ {rule_id} @ {filepath}:{line} — {e}")
-
-        if results:
-            logger.info(f"\n   📋 {len(results)} fixes generated. Review diffs above.")
-        return results
 
     def run_extra_scanners(self, target_dir):
         """Run secrets detection, SCA scanning, and CBoM as part of the pipeline."""
