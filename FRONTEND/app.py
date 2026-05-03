@@ -477,6 +477,34 @@ def quick_stats():
         return jsonify({"success": False, "error": str(e)}), 500
 
 
+@app.route("/api/cost-summary")
+def cost_summary():
+    """Get aggregate cost and latency statistics for all AI explanations."""
+    try:
+        query = """
+            SELECT
+                COUNT(*) as total_explanations,
+                SUM(cost_usd) as total_cost,
+                AVG(cost_usd) as avg_cost_per_finding,
+                AVG(latency_ms) as avg_latency_ms
+            FROM llm_explanations
+        """
+        results = db.execute(query, fetch=True)
+        data = results[0] if results and results[0] else {}
+        return jsonify(
+            {
+                "success": True,
+                "total_explanations": data.get("total_explanations", 0),
+                "total_cost": float(data.get("total_cost", 0) or 0),
+                "avg_cost_per_finding": float(data.get("avg_cost_per_finding", 0) or 0),
+                "avg_latency_ms": float(data.get("avg_latency_ms", 0) or 0),
+            }
+        )
+    except Exception as e:
+        logger.error(f"Error in /api/cost-summary: {e}")
+        return jsonify({"success": False, "error": str(e)}), 500
+
+
 @app.route("/api/runs/<int:run_id>/summary")
 def get_pr_summary(run_id):
     """

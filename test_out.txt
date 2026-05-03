@@ -1,0 +1,18 @@
+============================= test session starts ==============================
+platform linux -- Python 3.10.12, pytest-7.4.3, pluggy-1.6.0
+rootdir: /home/ahmeed/Documents/KSIU/GRAD/SOLO
+configfile: pyproject.toml
+plugins: cov-4.1.0, anyio-4.13.0, mock-3.12.0
+collected 66 items
+
+TESTS/test_cbom_scanner.py ......F...................................... [ 68%]
+.....................                                                    [100%]
+
+=================================== FAILURES ===================================
+_____________________ TestCryptoUsage.test_to_finding_keys _____________________
+TESTS/test_cbom_scanner.py:58: in test_to_finding_keys
+    assert key in f
+E   AssertionError: assert 'file_path' in {'canonical_rule_id': 'CRYPTO-001', 'canonical_severity': 'high', 'category': 'security', 'cbom_metadata': {'algorithm': 'md5', 'category': 'hash', 'detection_pattern': 'hashlib.direct', 'quantum_safe': False, ...}, ...}
+=========================== short test summary info ============================
+FAILED TESTS/test_cbom_scanner.py::TestCryptoUsage::test_to_finding_keys - As...
+========================= 1 failed, 65 passed in 0.10s =========================

@@ -9,6 +9,7 @@ import hashlib
 import json
 import logging
 import os
+import re
 import time
 
 import httpx
@@ -106,9 +107,19 @@ class ExplanationEngine:
             logger.info("⚠️  Warning: rules.yml not found, using empty catalog")
             self.rules_catalog = {}
 
+    def _normalize_snippet(self, snippet):
+        if not snippet:
+            return ""
+        norm = re.sub(r"[a-zA-Z_]\w*", "VAR", snippet)
+        norm = re.sub(r"\s+", " ", norm).strip()
+        return norm
+
     def _get_cache_key(self, finding, code_snippet):
         """Generate cache key from finding characteristics"""
-        key_data = f"{finding.get('fingerprint', '')}:" f"{finding.get('message', '')}"
+        canonical_id = finding.get("canonical_rule_id", finding.get("rule_id", "UNKNOWN"))
+        category = finding.get("category", "unknown")
+        normalized = self._normalize_snippet(code_snippet)
+        key_data = f"{canonical_id}:{category}:{normalized[:150]}"
         hash_key = hashlib.md5(key_data.encode()).hexdigest()
         return f"explanation:{hash_key}"
 
