@@ -18,15 +18,18 @@ pip install -r requirements.txt
 
 # 4. Set up environment
 cp .env.example .env
-# Edit .env with your API keys
+# Edit .env with your GROQ_API_KEY_1..4 and DB credentials
 
-# 5. Initialize database (requires PostgreSQL)
-make init-db
+# 5. Start the stack (PostgreSQL + Redis + App)
+make up
 
-# 6. Generate default config
+# 6. Run database migrations
+make db-migrate
+
+# 7. Generate default config
 make init-config
 
-# 7. Run tests
+# 8. Run tests
 pytest TESTS/ -v
 ```
 
@@ -35,13 +38,16 @@ pytest TESTS/ -v
 ```
 CORE/           → Engine logic (normalizer, explainer, quality gate, etc.)
 CORE/adapters/  → Language adapters (Python, JavaScript/TypeScript, Go)
-DATABASE/       → PostgreSQL schema and ORM
+DATABASE/       → PostgreSQL ORM and connection layer
 FRONTEND/       → Flask dashboard (22 endpoints)
 TESTS/          → pytest suite (1,690 tests)
 TOOLS/          → Shell scripts for running analysis tools
 scripts/        → CI/CD and utility scripts
-config/         → Prometheus, Grafana, and rule definitions
-docs/           → Architecture docs, setup guides, thesis docs
+config/         → Prometheus, Grafana dashboards, and rule definitions
+alembic/        → Database migration scripts (Alembic)
+docs/           → Architecture docs, ADRs, SRE runbooks, setup guides
+docs/adr/       → Architecture Decision Records (0001–0005)
+docs/sre/       → SLOs and operational runbooks
 ```
 
 ## Development Workflow
@@ -57,7 +63,26 @@ docs/           → Architecture docs, setup guides, thesis docs
    ```bash
    python3 CORE/main.py --target-dir TESTS/samples/comprehensive-issues --limit 3
    ```
-6. **Submit a PR** — the ACR-QA GitHub Action will automatically analyze your code
+6. **Submit a PR** — the ACR-QA GitHub Action will analyze your code and Railway will deploy a preview environment automatically.
+
+## Database Migrations
+
+All schema changes go through Alembic. **Never edit `DATABASE/schema.sql` directly** — it is kept only as a reference.
+
+```bash
+# Apply all pending migrations
+make db-migrate
+
+# Roll back the last migration
+make db-rollback
+
+# Create a new migration after changing the schema
+.venv/bin/alembic revision --autogenerate -m "add user_id to analysis_runs"
+
+# On a fresh database, stamp the baseline (existing DB) or upgrade (new DB)
+.venv/bin/alembic stamp 0001      # existing DB with tables already created
+.venv/bin/alembic upgrade head    # new empty DB
+```
 
 ## Adding a New Language Adapter
 

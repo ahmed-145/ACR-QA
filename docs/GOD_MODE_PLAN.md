@@ -475,20 +475,19 @@ That's week 1. No new features. Just see, document, prune.
 
 **12-week god-mode schedule (quarter-time student pace, ~15 hrs/week):**
 
-| Week | Focus | Outcome |
-|---|---|---|
-| 1 | Cleanup + docs + diagrams | Clean repo, C4 diagrams, README rewrite |
-| 2 | Alembic + settings + Dockerfile | Migrations + 12-factor + small image |
-| 3 | FastAPI migration | Async API with OpenAPI auto-gen |
-| 4 | Celery + auth | Background jobs + JWT/API keys |
-| 5 | Webhooks + Helm | Event-driven + K8s manifests |
-| 6 | Terraform + Prometheus | Live deploy + metrics |
-| 7 | Tracing + SLOs + runbooks | Full observability stack |
-| 8 | Load tests + chaos | Performance budget + resilience proof |
-| 9 | Frontend rewrite (if time) | Modern SPA |
-| 10 | CI/CD polish + preview deploys | Production-grade pipeline |
-| 11 | Security hardening + SBOM | Supply chain story |
-| 12 | Final polish + release v4.0.0 | Tagged release, blog post, talk slides |
+| Week | Focus | Outcome | Status |
+|---|---|---|---|
+| 1 | Cleanup + docs + diagrams | Clean repo, C4 diagrams, README rewrite | ✅ Done May 5 |
+| 2 | Alembic + settings + Dockerfile | Migrations + 12-factor + small image | ✅ Done May 5 |
+| 2b | SRE + Railway + Grafana | Runbooks, SLOs, PR preview deploys, SLO panels | ✅ Done May 5 |
+| 3 | FastAPI migration | Async API with OpenAPI auto-gen | |
+| 4 | Celery + auth | Background jobs + JWT/API keys | |
+| 5 | Webhooks + Helm | Event-driven + K8s manifests | |
+| 6 | Terraform + Prometheus | Live deploy + metrics | |
+| 7 | Tracing + load tests | OpenTelemetry spans, Locust scenarios | |
+| 8 | Security hardening + SBOM | Supply chain story | |
+| 9 | Frontend rewrite (if time) | Modern SPA | |
+| 10 | Final polish + release v4.0.0 | Tagged release, blog post, talk slides | |
 
 If you only have 6 weeks: do weeks 1, 2, 3, 6, 7, 10. You'll be employable.
 
@@ -496,16 +495,18 @@ If you only have 6 weeks: do weeks 1, 2, 3, 6, 7, 10. You'll be employable.
 
 You're done when you can answer **YES** to every question:
 
-- [ ] Can a stranger run the project locally with one command?
-- [ ] Is there a live URL anyone can hit right now?
-- [ ] If I deleted the prod DB tomorrow, do I have a runbook to restore it?
-- [ ] Can I show a Grafana screenshot of real traffic?
-- [ ] Can I show a flame graph of a real scan?
-- [ ] Do I have at least 5 ADRs?
-- [ ] Does my CI deploy on every merge to main?
-- [ ] Does every PR get its own preview URL?
+- [x] Can a stranger run the project locally with one command? (`make up && make db-migrate`)
+- [ ] Is there a live URL anyone can hit right now? *(Railway one-time setup still needed — see `docs/setup/RAILWAY_DEPLOY.md`)*
+- [x] If I deleted the prod DB tomorrow, do I have a runbook to restore it? (`docs/sre/runbooks/restore-from-backup.md`)
+- [ ] Can I show a Grafana screenshot of real traffic? *(needs live deploy)*
+- [ ] Can I show a flame graph of a real scan? *(not yet done)*
+- [x] Do I have at least 5 ADRs? (`docs/adr/0001`–`0005`)
+- [ ] Does my CI deploy on every merge to main? *(Railway token not yet configured)*
+- [x] Does every PR get its own preview URL? (`deploy-preview.yml` ready — needs `RAILWAY_TOKEN` secret)
 - [ ] Have I tagged at least one major release with proper release notes?
 - [ ] Can I explain in 60 seconds what this project does, in 5 minutes how it's architected, and in 30 minutes how I'd scale it 100x?
+
+**Status as of May 5, 2026:** 5/10 complete. Remaining blockers: Railway token setup (unlocks 3 more ✅), live deploy, flame graph, tagged release.
 
 When all 10 are checked, write a blog post titled *"What I learned building ACR-QA"* and put it on dev.to / Hashnode / Medium. Link from your resume.
 

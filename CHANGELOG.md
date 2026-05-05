@@ -2,6 +2,34 @@
 
 All notable changes to ACR-QA are documented here.
 
+## [v3.2.5] — God Mode: Architecture Docs, Multi-Stage Docker, Alembic, SRE, Railway (May 5, 2026)
+
+### Added — Documentation & Architecture
+- **C4 Architecture diagrams** — 4 Mermaid diagrams covering all C4 levels (`docs/architecture/c1-context.md` through `c4-code.md`): system context, container map with port table, all internal components + pipeline sequence, single finding lifecycle from raw tool output to PostgreSQL.
+- **5 Architecture Decision Records** in `docs/adr/`: ADR-0001 (thesis scope), ADR-0002 (LanguageAdapter ABC), ADR-0003 (RAG + semantic entropy), ADR-0004 (Groq + 4-key rotation), ADR-0005 (PostgreSQL 6-table schema).
+- **README.md complete rewrite** — badges, 30-second pitch, inline C2 Mermaid diagram, 14-row competitive feature table, full CLI reference, thesis evaluation results.
+- **SRE documentation** in `docs/sre/`:
+  - `slos.md` — 4 formal SLOs (availability 99.5%/30d, P95 < 500ms/7d, scan completion 99%/7d, AI latency < 5s/7d) with error budget policy table.
+  - 5 operational runbooks: `groq-api-down.md`, `high-error-rate-5xx.md`, `db-connection-pool-exhausted.md`, `disk-full-postgres.md`, `restore-from-backup.md`.
+
+### Added — Infrastructure
+- **Multi-stage Dockerfile** — `builder` stage (Python venv + pip), `go-tools` stage (gosec + staticcheck binaries via Go compiler), `runtime` stage (python:3.11-slim, non-root `acrqa` user, no build artifacts). OCI labels, `HEALTHCHECK` via `/api/health`.
+- **Alembic database migrations** — `alembic.ini`, `alembic/env.py` (reads `DATABASE_URL` or `DB_*` env vars; normalizes Railway's `postgres://` to `postgresql://`), baseline migration `20260505_0001_baseline` covering all 6 tables with correct FK/index/cascade order.
+- **Railway PR preview deploys** — `.github/workflows/deploy-preview.yml` creates a Railway environment per PR and tears it down on close. `railway.toml` runs `alembic upgrade head` before app start. `docs/setup/RAILWAY_DEPLOY.md` is the one-time setup guide.
+- **Grafana SLO panels** (IDs 7-9) — API Availability 30d (stat, thresholds 99.0/99.5%), P95 Latency 7d (gauge, max 1000ms, threshold 500ms), Scan Completion Rate 7d (stat, thresholds 97/99%).
+
+### Changed
+- **CI (`tests.yml`)** — `alembic upgrade head` replaces raw `psql -f DATABASE/schema.sql` for database initialization.
+- **`requirements.txt`** — Added `alembic==1.13.1`, `sqlalchemy==2.0.23`.
+- **`Makefile`** — Added `db-migrate` and `db-rollback` targets.
+- **`.gitignore`** — Added `test_targets/` and `scratch/`.
+- **`docs/README.md`** — Added SRE, Deployment, and C4 Architecture sections.
+
+### Removed
+- **`scratch/`** — Deleted one-off debug scripts.
+
+---
+
 ## [v3.2.4] — Quality Audit: CUSTOM-* Elimination, Severity Fix, JSON Output Clean
 
 ### Fixed
