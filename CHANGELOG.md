@@ -2,6 +2,23 @@
 
 All notable changes to ACR-QA are documented here.
 
+## [v3.2.4] — Quality Audit: CUSTOM-* Elimination, Severity Fix, JSON Output Clean
+
+### Fixed
+- **Go adapter — 0 CUSTOM-* on govwa:** Mapped 6 previously unmapped staticcheck rules (`S1023`, `S1025`, `S1031`, `S1039`, `ST1005`, `ST1006`) to canonical IDs `STYLE-021` through `STYLE-026` in `go_adapter.py` and `severity_scorer.py`.
+- **JS adapter — 0 CUSTOM-eslint-unknown:** Extended null-ruleId filter in `normalize_eslint()` to suppress ESLint "Parsing error:" messages (CommonJS/ES6 import errors) that were generating `CUSTOM-eslint-unknown` as HIGH-severity findings (was 9 on dvblab).
+- **severity_scorer.py duplicate keys:** Removed 15 duplicate `RULE_SEVERITY` dict entries (`F601` violations) that caused silent overrides due to Python dict last-value-wins semantics. Early HIGH-block duplicates removed; later more precise entries kept.
+- **`SECURITY-047` invalid severity:** Changed from `"critical"` → `"high"`. `"critical"` is not a valid `CanonicalFinding` severity and would raise `ValueError` from Pydantic validator on any Python path that hit this rule.
+- **`--json` stdout pollution:** Progress messages and shell script output were mixed with JSON on stdout. Logging now routes to `stderr` when `--json` is active; `run_checks.sh` stdout suppressed via `DEVNULL`. `--json` now outputs clean parseable JSON.
+- **Go severity preservation:** `normalize_gosec()` previously let `SeverityScorer.score()` override native gosec severity (e.g., G401 HIGH → scored medium, G104 LOW → scored high). Fixed via `model_copy` restoring adapter-derived severity.
+- **JS severity preservation:** Same issue in `normalize_eslint()` and `normalize_npm_audit()`. Fixed via `model_copy`. ESLint warnings now correctly stay "medium", not "low".
+
+### Tests
+- Updated 2 tests (`test_coverage_boost.py`, `test_normalizer_scorer.py`) that asserted `SECURITY-047` scored as `"critical"` → now assert `"high"`.
+- All 1690 tests passing. 0 CUSTOM-* across all eval targets (pygoat, dvblab, govwa, dvpwa, dsvw, vulpy).
+
+---
+
 ## [v3.2.4] — Logging Migration & System Stability
 
 ### Added
