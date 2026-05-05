@@ -2,6 +2,29 @@
 
 All notable changes to ACR-QA are documented here.
 
+## [v3.2.5] — CI/CD Overhaul & mypy Integration (May 5, 2026)
+
+### Fixed — CI/CD
+- **`acr-qa.yml` database init** — replaced `psql -f DATABASE/schema.sql` with `alembic upgrade head` in `analyze-pr` job (was missed when `tests.yml` was updated).
+- **`acr-qa.yml` GROQ key rotation** — `analyze-pr` job now has all 4 `GROQ_API_KEY_*` secrets; previously only key 1 was set, breaking key rotation in auto-PR analysis.
+- **`tj-actions/changed-files`** — bumped `v41 → v45`.
+- **`deploy-preview.yml` permissions** — added `pull-requests: write` block; comment posting was failing with HTTP 403.
+- **`tests.yml` coverage gate** — added `--cov-fail-under=40`; coverage was reported but never enforced.
+
+### Added — CI/CD
+- **Composite action** `.github/actions/acr-qa-setup` — extracts Python setup, Go tool install (with cache), and Alembic migration into a single reusable step shared by both `analyze-pr` and `manual-trigger` jobs. Go tools cached by version key, saving ~30s per run on cache hit.
+- **mypy in CI** — added to `tests.yml` lint job (`mypy==1.11.0` + `types-PyYAML`, `types-requests`, `types-redis` stubs). Config in `pyproject.toml` `[tool.mypy]`; `CORE.main` and `scripts.*` suppressed with documented rationale.
+
+### Fixed — Type Checking
+- `scripts/test_gap_analyzer.py:146` — added `dict[str, set[str]]` annotation to `test_map` (mypy `var-annotated` error).
+- `pyproject.toml` — added `[tool.mypy]` section with `ignore_missing_imports = true` and per-module overrides.
+
+### Documented
+- `CONTRIBUTING.md` — new "Type Checking (mypy)" section: how to run, what's covered, suppression table with rationale.
+- `docs/TESTING_AND_CALIBRATION.md` — new CI Static Analysis Status table showing current pass/fail state of all 4 checks.
+
+---
+
 ## [v3.2.5] — God Mode: Architecture Docs, Multi-Stage Docker, Alembic, SRE, Railway (May 5, 2026)
 
 ### Added — Documentation & Architecture
