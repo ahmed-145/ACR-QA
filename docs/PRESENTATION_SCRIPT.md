@@ -1,4 +1,4 @@
-# 🎤 ACR-QA Phase 2 — Wednesday March 11 Presentation Script
+# 🎤 ACR-QA Thesis Defense & Demo Script (v3.2.4)
 
 *7 minutes total: 2 min slides → 5 min live demo. Show, don't tell.*
 
@@ -16,7 +16,7 @@ python3 FRONTEND/app.py     # Start the dashboard → localhost:5000
 
 ### Browser Tabs (Open These)
 - **Tab 1:** `http://localhost:5000` — Your Dashboard (should show findings)
-- **Tab 2:** `https://github.com/ahmed-145/ACR-QA/releases/tag/v2.7.0` — Release page
+- **Tab 2:** `https://github.com/ahmed-145/ACR-QA/releases/tag/v3.2.4` — Release page
 - **Tab 3:** `https://github.com/ahmed-145/ACR-QA/actions` — CI/CD green checkmarks
 
 ### Terminal Tabs
@@ -28,13 +28,13 @@ python3 FRONTEND/app.py     # Start the dashboard → localhost:5000
 ## 🗣️ Part 1: Slides (2 Minutes)
 
 ### Slides 1–2: Context
-> "Hello Dr. Samy. Last semester I showed you the early prototype. Today I want to show you the working enterprise release: ACR-QA v2.7. It's a fully automated, AI-powered Code Review platform that runs 7 analysis tools, normalizes them into a single standard, and uses RAG-enhanced AI to explain every finding."
+> "Hello Dr. Samy. Today I want to show you the completed enterprise release: ACR-QA v3.2.4. It's a fully automated, AI-powered Code Review platform that runs 10 analysis tools across Python, JavaScript, and Go — normalises them into a single standard, and uses RAG-enhanced AI to explain every finding."
 
-### Slides 3–7: What Changed
-> "Since January, I made three major leaps. First, I built a **Policy-as-Code** engine — teams define their quality rules in a YAML file and the system enforces them automatically. Second, I wrote a **Test Gap Analyzer** from scratch that reads Python's Abstract Syntax Tree to find untested business logic. Third, every security finding now maps to **OWASP Top 10** compliance standards with CWE IDs."
+### Slides 3–7: What Makes It Different
+> "There are three things no commercial competitor — not SonarQube, not CodeRabbit — offers. First, I built a **Policy-as-Code** engine where teams define quality rules in a YAML file and the system enforces them in CI. Second, I wrote a **Test Gap Analyzer** from scratch using Python's Abstract Syntax Tree to find untested business logic by complexity. Third, I implemented **semantic entropy scoring** — the AI runs 3 times and the system mathematically detects when it contradicts itself, preventing hallucination."
 
 ### Slide 8: Reliability
-> "Most importantly, I built a comprehensive stress-testing suite. We now have **1,690 rigorous tests** that execute in under 45 seconds. But rather than talking about it, let me show you."
+> "Most importantly, I built a comprehensive stress-testing suite. We now have **1,690 rigorous tests** that execute in under 45 seconds, with 86% code coverage and 97.1% precision across 4 deliberately vulnerable benchmark repositories. But rather than talking about it, let me show you."
 
 ---
 
@@ -80,7 +80,7 @@ python3 CORE/main.py --target-dir TESTS/samples --rich --limit 5
 > "It caught security vulnerabilities, mapped them to OWASP standards, and the Quality Gate correctly **failed** — meaning in a real CI/CD pipeline, this code would be blocked from merging."
 
 ### Demo 5: GitHub Enterprise Setup (Browser — 30 sec)
-- Switch to Browser **Tab 2** (Releases): "I created an official v2.7.0 release with full semantic versioning."
+- Switch to Browser **Tab 2** (Releases): "I created an official v3.2.4 release with full semantic versioning."
 - Switch to Browser **Tab 3** (Actions): "And here is the CI/CD pipeline. Every push triggers the 1,690 tests automatically. Green checkmark means the code is safe."
 
 ### Closing Line
@@ -141,5 +141,5 @@ python3 CORE/main.py --target-dir /tmp/dvpwa --limit 0
 
 ### Browser Tabs
 1. `http://localhost:5000` — Flask Dashboard (findings, AI explanations, feedback)
-2. `https://github.com/ahmed-145/ACR-QA/releases/tag/v2.8.0` — Release Page
+2. `https://github.com/ahmed-145/ACR-QA/releases/tag/v3.2.4` — Release Page
 3. `https://github.com/ahmed-145/ACR-QA/actions` — CI/CD Green Checkmarks

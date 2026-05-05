@@ -4,9 +4,23 @@
 
 | Document | Description |
 |----------|-------------|
-| [Architecture](architecture/ARCHITECTURE.md) | Pipeline stages, component design, database schema, security |
+| [C1 Context](architecture/c1-context.md) | System in its environment — users, GitHub, Groq, Prometheus |
+| [C2 Containers](architecture/c2-containers.md) | Deployable units — CLI, engine, dashboard, PostgreSQL, Redis |
+| [C3 Components](architecture/c3-components.md) | Inside the engine — adapters, normalisers, AI layer, advanced engines |
+| [C4 Code](architecture/c4-code.md) | Single finding lifecycle from raw tool output to PostgreSQL |
+| [Architecture (detailed)](architecture/ARCHITECTURE.md) | Pipeline stages, component design, database schema, security |
 | [Canonical Schema](architecture/CANONICAL_SCHEMA.md) | Universal finding data model with field reference |
 | [Internal API](architecture/API.md) | Python class/function API reference for all components |
+
+## 📋 Architecture Decision Records
+
+| ADR | Decision |
+|-----|----------|
+| [0001 — Context & Goals](adr/0001-context-and-goals.md) | Scope: self-hosted thesis tool, not SaaS |
+| [0002 — Multi-Tool Adapter Pattern](adr/0002-multi-tool-adapter-pattern.md) | LanguageAdapter ABC for language support |
+| [0003 — RAG over Generic LLM](adr/0003-rag-over-generic-llm.md) | RAG + semantic entropy for hallucination control |
+| [0004 — Groq as LLM Provider](adr/0004-groq-as-llm-provider.md) | Free tier, 500+ tok/s, 4-key rotation |
+| [0005 — PostgreSQL for Provenance](adr/0005-postgres-for-provenance.md) | ACID, relational audit trail, concurrent CI runners |
 
 ## 🔧 Setup & Configuration
 

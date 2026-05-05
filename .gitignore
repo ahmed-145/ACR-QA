@@ -85,3 +85,9 @@ tmp_repos/DVNA
 tmp_repos/NodeGoat
 
 DATA/outputs/
+
+# Eval repos (downloaded by scripts/run_evaluation.py — don't commit)
+test_targets/
+
+# One-off debug/scratch scripts
+scratch/
