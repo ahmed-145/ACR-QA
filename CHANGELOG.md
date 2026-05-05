@@ -2,6 +2,54 @@
 
 All notable changes to ACR-QA are documented here.
 
+## [v3.3.0] — FastAPI + Celery + Auth (May 5, 2026)
+
+### Added — Async API (FastAPI)
+- **`FRONTEND/api/main.py`** — FastAPI app running on port 8000 alongside legacy Flask (port 5000). All routes live under `/v1/`, Swagger UI at `/docs`, OpenAPI spec at `/openapi.json`.
+- **Pydantic request/response models** (`FRONTEND/api/models.py`) — typed input validation and schema-generated OpenAPI docs for every endpoint.
+- **Dependency injection** (`FRONTEND/api/deps.py`) — `get_db()`, `get_current_user()` (resolves JWT or API key), `require_role("admin")` RBAC decorator.
+- **Three domain routers:**
+  - `FRONTEND/api/routers/auth.py` — login, refresh, me, create-user (admin), API key CRUD
+  - `FRONTEND/api/routers/runs.py` — runs list, findings, stats, PR summary, compliance, cost-benefit
+  - `FRONTEND/api/routers/scans.py` — async scan dispatch, job status polling, single-file analysis, quick refresh, secrets, SCA, AI detection
+- All Flask I/O operations wrapped in `asyncio.to_thread()` for non-blocking execution.
+
+### Added — Background Jobs (Celery)
+- **`CORE/tasks.py`** — Celery app configured with Redis as broker + result backend. `run_analysis_task` wraps `AnalysisPipeline.run()` as a background task.
+- **`POST /v1/scans`** — returns `202 Accepted` with `{"job_id": "..."}` immediately (scan no longer blocks the request thread).
+- **`GET /v1/scans/{job_id}`** — polls Celery result backend; maps `PENDING/STARTED/SUCCESS/FAILURE` → `queued/started/completed/failed`.
+- **`docker-compose.yml`** — new `worker` service running `celery -A CORE.tasks worker --concurrency=4`.
+
+### Added — Auth (JWT + API Keys + RBAC)
+- **`users` table** — email, bcrypt password hash, role (admin/member/viewer), is_active.
+- **`api_keys` table** — user FK, bcrypt key hash, name, scopes (JSON), last_used_at.
+- **Alembic migration `0002`** — `users` + `api_keys` tables; reversible downgrade.
+- **`POST /v1/auth/login`** — validates bcrypt hash, returns 15-min access token + 7-day refresh token (HS256 JWT).
+- **`POST /v1/auth/refresh`** — validates refresh token, rotates both tokens.
+- **`X-API-Key` header** — CI integrations authenticate with `acrqa_<random>` keys; only the bcrypt hash is stored.
+- **`scripts/seed_admin.py`** — bootstraps first admin user via `ADMIN_EMAIL` / `ADMIN_PASSWORD` env vars.
+- **`make seed-admin`** target.
+
+### Added — Infrastructure
+- **`docker-compose.yml`** — `api` service (FastAPI, port 8000) and `worker` service (Celery) using YAML anchors to share env/volumes with legacy `app` service.
+- **`JWT_SECRET_KEY` env var** — must be set in production; falls back to a dev placeholder with warning.
+- **`requirements.txt`** — added `fastapi==0.115.0`, `uvicorn[standard]==0.30.6`, `python-multipart==0.0.9`, `python-jose[cryptography]==3.3.0`, `passlib[bcrypt]==1.7.4`, `bcrypt==4.1.3`, `celery[redis]==5.4.0`, `pydantic-settings==2.3.4`.
+- **`Makefile`** — added `make api` (uvicorn with --reload), `make worker` (celery), `make seed-admin`.
+
+### Career signal coverage after v3.3.0
+| Skill | Status |
+|---|---|
+| Async Python / FastAPI | ✅ |
+| Message queues / Celery | ✅ |
+| Database migrations / Alembic | ✅ |
+| AuthN/AuthZ — JWT + API keys + RBAC | ✅ |
+| Containers / Docker | ✅ |
+| CI/CD depth | ✅ |
+| Observability — metrics | ✅ |
+| SRE practices / SLOs | ✅ |
+
+---
+
 ## [v3.2.5] — CI/CD Overhaul & mypy Integration (May 5, 2026)
 
 ### Fixed — CI/CD

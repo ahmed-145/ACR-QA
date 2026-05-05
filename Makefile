@@ -1,7 +1,7 @@
 # ACR-QA v2.5 - Makefile
 # One-click setup and common operations
 
-.PHONY: help up down setup install-deps install-tools init-db db-migrate db-rollback docker-up docker-down run dashboard test test-all lint coverage version clean
+.PHONY: help up down setup install-deps install-tools init-db db-migrate db-rollback docker-up docker-down run dashboard api worker seed-admin test test-all lint coverage version clean
 
 # Default target
 help:
@@ -107,11 +107,13 @@ up:
 	@echo ""
 	@echo "✅ All services started!"
 	@echo ""
-	@echo "  📊 Dashboard:   http://localhost:5000"
-	@echo "  📈 Grafana:     http://localhost:3000  (admin / admin)"
-	@echo "  🔥 Prometheus:  http://localhost:9090"
-	@echo "  🗄️  PostgreSQL:  localhost:5433"
-	@echo "  🔴 Redis:       localhost:6379"
+	@echo "  📊 Flask (legacy):  http://localhost:5000"
+	@echo "  ⚡ FastAPI:         http://localhost:8000/docs"
+	@echo "  ⚙️  Celery worker:  docker logs acr-qa-worker"
+	@echo "  📈 Grafana:         http://localhost:3000  (admin / admin)"
+	@echo "  🔥 Prometheus:      http://localhost:9090"
+	@echo "  🗄️  PostgreSQL:      localhost:5433"
+	@echo "  🔴 Redis:           localhost:6379"
 	@echo ""
 	@echo "Run analysis: make run"
 	@echo "Stop stack:   make down"
@@ -174,6 +176,20 @@ dashboard:
 	@echo "Dashboard will be available at: http://localhost:5000"
 	@echo ""
 	python3 FRONTEND/app.py
+
+api:
+	@echo "⚡ Starting FastAPI server..."
+	@echo "API docs at: http://localhost:8000/docs"
+	@echo ""
+	.venv/bin/uvicorn FRONTEND.api.main:app --host 0.0.0.0 --port 8000 --reload
+
+worker:
+	@echo "⚙️  Starting Celery worker..."
+	.venv/bin/celery -A CORE.tasks worker --loglevel=info --concurrency=4
+
+seed-admin:
+	@echo "🔑 Seeding admin user..."
+	.venv/bin/python3 scripts/seed_admin.py
 
 # ============================================
 # Testing

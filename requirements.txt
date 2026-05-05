@@ -4,13 +4,27 @@ groq==1.2.0
 python-dotenv==1.0.0
 PyYAML==6.0.1
 pydantic==2.12.5
+pydantic-settings==2.3.4
 redis==7.1.0
 httpx==0.28.1
 
-# Web Dashboard
+# Web Dashboard (Flask — kept in parallel during FastAPI migration)
 Flask==3.0.0
 Flask-CORS==4.0.0
 gunicorn==21.2.0
+
+# Async API (FastAPI)
+fastapi==0.115.0
+uvicorn[standard]==0.30.6
+python-multipart==0.0.9
+
+# Auth
+python-jose[cryptography]==3.3.0
+passlib[bcrypt]==1.7.4
+bcrypt==4.1.3
+
+# Background Tasks
+celery[redis]==5.4.0
 
 # GitHub/GitLab Integration
 PyGithub==2.1.1

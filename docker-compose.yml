@@ -39,13 +39,13 @@ services:
     networks:
       - acr-network
 
-  # ─── ACR-QA Flask Application ────────────────────────────────────────────
+  # ─── ACR-QA Flask Application (legacy — port 5000) ───────────────────────
   app:
     build:
       context: .
       dockerfile: Dockerfile
     container_name: acr-qa-app
-    environment:
+    environment: &app-env
       DB_NAME: acrqa
       DB_USER: postgres
       DB_PASSWORD: ${DB_PASSWORD:-postgres}
@@ -58,12 +58,14 @@ services:
       GROQ_API_KEY_4: ${GROQ_API_KEY_4:-}
       REDIS_HOST: redis
       REDIS_PORT: 6379
+      REDIS_URL: redis://redis:6379/0
       GITHUB_TOKEN: ${GITHUB_TOKEN:-}
       GITLAB_TOKEN: ${GITLAB_TOKEN:-}
       FLASK_SECRET_KEY: ${FLASK_SECRET_KEY:-acr-qa-dev-secret}
+      JWT_SECRET_KEY: ${JWT_SECRET_KEY:-dev-jwt-secret-change-in-prod}
     ports:
       - "5000:5000"
-    volumes:
+    volumes: &app-volumes
       - ./CORE:/app/CORE
       - ./DATABASE:/app/DATABASE
       - ./FRONTEND:/app/FRONTEND
@@ -83,6 +85,48 @@ services:
       - acr-network
     stdin_open: true
     tty: true
+
+  # ─── ACR-QA FastAPI Application (new — port 8000) ────────────────────────
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: acr-qa-api
+    command: uvicorn FRONTEND.api.main:app --host 0.0.0.0 --port 8000 --workers 4
+    environment: *app-env
+    ports:
+      - "8000:8000"
+    volumes: *app-volumes
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - acr-network
+    healthcheck:
+      test: ["CMD-SHELL", "curl -sf http://localhost:8000/health || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # ─── Celery Worker (background scan processing) ───────────────────────────
+  worker:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: acr-qa-worker
+    command: celery -A CORE.tasks worker --loglevel=info --concurrency=4 -Q default
+    environment: *app-env
+    volumes: *app-volumes
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - acr-network
+    restart: unless-stopped
 
   # ─── Prometheus (Metrics Scraping) ───────────────────────────────────────
   prometheus:
