@@ -37,4 +37,4 @@ row = db.execute(
     (email, _pwd.hash(password)),
 )
 print(f"✓ Created admin user {email!r} (id={row['id']})")
-print(f"  Login at POST /v1/auth/login with {{\"email\": \"{email}\", \"password\": \"<your-password>\"}}")
+print(f'  Login at POST /v1/auth/login with {{"email": "{email}", "password": "<your-password>"}}')
