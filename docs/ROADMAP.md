@@ -10,7 +10,7 @@
 
 ```mermaid
 graph TD
-    subgraph "ACR-QA v3.1.2 — Current"
+    subgraph "ACR-QA v3.2.4 — Current"
         CLI["CLI --lang auto|python|javascript"]
         DETECT["Language Detector\ndetect_language()"]
         CLI --> DETECT
@@ -32,7 +32,7 @@ graph TD
         DETECT -->|python| RUFF
         DETECT -->|javascript| ESLINT
 
-        NORM["Normalizer — 299 rule mappings"]
+        NORM["Normalizer — 311 rule mappings"]
         SCORE["Severity Scorer"]
         GATE["Quality Gate .acrqa.yml"]
         AI["AI Explainer — Groq"]

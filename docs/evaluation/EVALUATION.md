@@ -93,16 +93,16 @@ ACR-QA covers **9/10** OWASP Top 10 categories.
 
 | Metric | Value |
 |--------|:-----:|
-| Test Suite | 290+ tests (pytest) |
-| Code Coverage | Tracked via Codecov |
+| Test Suite | 1,690 tests (pytest) |
+| Code Coverage | 86% |
 | CI/CD | GitHub Actions (test + lint + coverage) |
 | Docker | Dockerfile + docker-compose.yml |
-| API Endpoints | 20+ REST endpoints |
-| AI Quality | {total}/{total} explanations generated |
-| Deduplication | {(raw_total - acr_total) if comparative_data else 'Automated cross-tool'} duplicates removed |
-| Rule Mappings | 124 tool-specific → canonical rules |
+| API Endpoints | 22 REST endpoints |
+| CUSTOM-* Findings | 0 (all 7 eval targets verified) |
+| Deduplication | Automated cross-tool deduplication |
+| Rule Mappings | 311 tool-specific → canonical rules |
 | OWASP Coverage | 9/10 categories |
-| Repos Tested | 4 benchmark repositories |
+| Repos Tested | 7 benchmark repositories (Python × 4, JS × 2, Go × 1) |
 
 ## 7. Key Differentiators vs Competitors
 

@@ -1,7 +1,7 @@
 # ACR-QA REST API Reference
 
 **Base URL:** `http://localhost:5000`
-**Version:** v3.1.3
+**Version:** v3.2.4
 **Format:** All responses are `application/json`
 
 > This document covers all 22 REST endpoints exposed by `FRONTEND/app.py`.
@@ -275,4 +275,4 @@ console.log(`Found ${data.total} issues`);
 
 ---
 
-*Last updated: April 21, 2026 — ACR-QA v3.1.3*
+*Last updated: May 5, 2026 — ACR-QA v3.2.4*

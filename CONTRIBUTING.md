@@ -34,10 +34,10 @@ pytest TESTS/ -v
 
 ```
 CORE/           → Engine logic (normalizer, explainer, quality gate, etc.)
-CORE/adapters/  → Language adapters (Python, JS placeholder)
+CORE/adapters/  → Language adapters (Python, JavaScript/TypeScript, Go)
 DATABASE/       → PostgreSQL schema and ORM
-FRONTEND/       → Flask dashboard (20 endpoints)
-TESTS/          → pytest suite (97 tests)
+FRONTEND/       → Flask dashboard (22 endpoints)
+TESTS/          → pytest suite (1,690 tests)
 TOOLS/          → Shell scripts for running analysis tools
 scripts/        → CI/CD and utility scripts
 config/         → Prometheus, Grafana, and rule definitions
@@ -49,9 +49,9 @@ docs/           → Architecture docs, setup guides, thesis docs
 1. **Create a branch** from `main`
 2. **Make your changes** following the existing patterns
 3. **Add tests** for new functionality in `TESTS/`
-4. **Run the test suite** — all 97 tests must pass:
+4. **Run the test suite** — all 1,690 tests must pass:
    ```bash
-   pytest TESTS/ -v --override-ini="addopts="
+   .venv/bin/pytest TESTS/ -q
    ```
 5. **Run the pipeline** to verify integration:
    ```bash
