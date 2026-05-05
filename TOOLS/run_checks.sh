@@ -11,17 +11,12 @@ echo ""
 
 mkdir -p "$OUTPUT_DIR"
 
-# 1. RUFF - Find ALL Python files recursively
+# 1. RUFF
 echo "[1/5] Running Ruff (style & best practices)..."
-# Note: ruff check returns exit code 1 when issues are found, so we need to handle that
-find "$TARGET_DIR" -name "*.py" -type f | xargs ruff check \
+ruff check "$TARGET_DIR" \
     --output-format=json \
     --config pyproject.toml \
     > "$OUTPUT_DIR/ruff.json" 2>/dev/null || true
-# Only write empty array if file doesn't exist or is empty
-if [ ! -s "$OUTPUT_DIR/ruff.json" ]; then
-    echo "[]" > "$OUTPUT_DIR/ruff.json"
-fi
 echo "      ✓ Ruff complete"
 
 # 2. SEMGREP
@@ -36,7 +31,7 @@ echo "      ✓ Semgrep complete"
 
 # 3. VULTURE
 echo "[3/5] Running Vulture (unused code)..."
-find "$TARGET_DIR" -name "*.py" -type f | xargs vulture \
+vulture "$TARGET_DIR" \
     --min-confidence 60 \
     > "$OUTPUT_DIR/vulture.txt" 2>/dev/null || touch "$OUTPUT_DIR/vulture.txt"
 echo "      ✓ Vulture complete"
@@ -54,26 +49,17 @@ jscpd "$TARGET_DIR" \
 if [ -f "$OUTPUT_DIR/jscpd-report.json" ]; then
     mv "$OUTPUT_DIR/jscpd-report.json" "$OUTPUT_DIR/jscpd.json"
 fi
-
-if [ ! -f "$OUTPUT_DIR/jscpd.json" ]; then
-    echo '{"duplicates":[]}' > "$OUTPUT_DIR/jscpd.json"
-fi
 echo "      ✓ jscpd complete"
 
 # 5. RADON
 echo "[5/6] Running Radon (complexity metrics)..."
-find "$TARGET_DIR" -name "*.py" -type f | xargs radon cc -a -j > "$OUTPUT_DIR/radon.json" 2>/dev/null || echo '{}' > "$OUTPUT_DIR/radon.json"
+radon cc -a -j "$TARGET_DIR" > "$OUTPUT_DIR/radon.json" 2>/dev/null || echo '{}' > "$OUTPUT_DIR/radon.json"
 echo "      ✓ Radon complete"
 
-# 6. BANDIT - Security scanner
+# 6. BANDIT
 echo "[6/6] Running Bandit (security vulnerabilities)..."
-# Note: bandit returns exit code 1 when issues are found
-find "$TARGET_DIR" -name "*.py" -type f | xargs bandit -f json -q \
+.venv/bin/bandit -r "$TARGET_DIR" -f json -q \
     > "$OUTPUT_DIR/bandit.json" 2>/dev/null || true
-# Only write empty results if file doesn't exist or is empty
-if [ ! -s "$OUTPUT_DIR/bandit.json" ]; then
-    echo '{"results":[]}' > "$OUTPUT_DIR/bandit.json"
-fi
 echo "      ✓ Bandit complete"
 
 echo ""

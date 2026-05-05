@@ -725,6 +725,7 @@ def generate_owasp_coverage():
 
 def main():
     """Run full evaluation."""
+    logging.basicConfig(level=logging.INFO, format="%(message)s")
     logger.info("=" * 70)
     logger.info("  ACR-QA Comprehensive Evaluation Suite")
     logger.info("=" * 70)
@@ -738,10 +739,10 @@ def main():
 
     # ─── Phase 1: Scan repos ──────────────────────────────────────────
     eval_repos = {
-        "DVPWA": "/tmp/eval-repos/dvpwa",
-        "Pygoat": "/tmp/eval-repos/pygoat",
-        "VulPy": "/tmp/eval-repos/vulpy",
-        "DSVW": "/tmp/eval-repos/dsvw",
+        "DVPWA": "test_targets/eval-repos/dvpwa",
+        "Pygoat": "test_targets/eval-repos/pygoat",
+        "VulPy": "test_targets/eval-repos/vulpy",
+        "DSVW": "test_targets/eval-repos/dsvw",
     }
 
     for repo_name, repo_path in eval_repos.items():
@@ -797,7 +798,7 @@ def main():
         )
 
     # ─── Phase 2: Comparative Benchmark ───────────────────────────────
-    dvpwa_path = "/tmp/eval-repos/dvpwa"
+    dvpwa_path = "test_targets/eval-repos/dvpwa"
     if Path(dvpwa_path).exists():
         logger.info(f"\n{'─' * 60}")
         logger.info("Comparative Benchmark: Individual Tools vs ACR-QA")

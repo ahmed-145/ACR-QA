@@ -1,29 +1,38 @@
 {
-  "evaluation_date": "2026-04-28T09:14:54.468965",
-  "repos_evaluated": 3,
+  "evaluation_date": "2026-05-03T15:45:30.125677",
+  "repos_evaluated": 4,
   "results": [
     {
       "repo": "DVPWA",
-      "total_findings": 42,
-      "true_positives": 34,
+      "total_findings": 44,
+      "true_positives": 36,
       "false_positives": 8,
-      "precision": 0.8095,
-      "recall": 0.1667,
-      "f1_score": 0.2765
+      "precision": 0.8182,
+      "recall": 0.5,
+      "f1_score": 0.6207
     },
     {
       "repo": "Pygoat",
-      "total_findings": 377,
-      "true_positives": 361,
+      "total_findings": 440,
+      "true_positives": 424,
       "false_positives": 16,
-      "precision": 0.9576,
+      "precision": 0.9636,
       "recall": 1.0,
-      "f1_score": 0.9783
+      "f1_score": 0.9815
+    },
+    {
+      "repo": "VulPy",
+      "total_findings": 293,
+      "true_positives": 293,
+      "false_positives": 0,
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1_score": 1.0
     },
     {
       "repo": "DSVW",
-      "total_findings": 45,
-      "true_positives": 45,
+      "total_findings": 59,
+      "true_positives": 59,
       "false_positives": 0,
       "precision": 1.0,
       "recall": 1.0,
@@ -34,7 +43,7 @@
     "Bandit": 0,
     "Semgrep": 0,
     "Ruff": 33,
-    "ACR-QA": 42
+    "ACR-QA": 44
   },
   "owasp_coverage": {
     "A01:2021 Broken Access Control": {
