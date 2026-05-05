@@ -143,7 +143,7 @@ def discover_test_symbols(test_dir: str) -> dict[str, set[str]]:
     Returns:
         Dict of { test_file: set of referenced names }
     """
-    test_map = {}
+    test_map: dict[str, set[str]] = {}
     test_path = Path(test_dir)
 
     if not test_path.exists():

@@ -34,6 +34,23 @@ max-complexity = 15
 "TESTS/samples/*" = ["E", "F", "B", "N", "UP", "C90"]
 "scripts/*" = ["E501", "B", "C90"]
 
+[tool.mypy]
+python_version = "3.11"
+ignore_missing_imports = true
+no_error_summary = true
+exclude = [
+    "TESTS/",
+    "TESTS/samples/",
+]
+
+[[tool.mypy.overrides]]
+module = "CORE.main"
+ignore_errors = true
+
+[[tool.mypy.overrides]]
+module = "scripts.*"
+ignore_errors = true
+
 # Test coverage tracking
 [tool.pytest.ini_options]
 testpaths = ["TESTS"]

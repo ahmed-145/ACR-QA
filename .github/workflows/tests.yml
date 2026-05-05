@@ -125,7 +125,7 @@ jobs:
           cache: 'pip'
 
       - name: Install Ruff and mypy
-        run: pip install ruff==0.6.0 mypy==1.11.0 types-PyYAML types-requests
+        run: pip install ruff==0.6.0 mypy==1.11.0 types-PyYAML types-requests types-redis
 
       - name: Check formatting
         run: ruff format --check CORE/ DATABASE/ scripts/ FRONTEND/ TESTS/
@@ -134,4 +134,4 @@ jobs:
         run: ruff check CORE/ DATABASE/ scripts/ FRONTEND/ TESTS/
 
       - name: Type check
-        run: mypy CORE/ DATABASE/ FRONTEND/ --ignore-missing-imports --no-error-summary
+        run: mypy CORE/ DATABASE/ FRONTEND/
