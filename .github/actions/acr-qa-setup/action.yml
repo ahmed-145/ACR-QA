@@ -1,0 +1,73 @@
+name: 'ACR-QA Environment Setup'
+description: 'Install Python deps, Go analysis tools, and run DB migrations. Used by both analyze-pr and manual-trigger jobs.'
+
+inputs:
+  db-name:
+    description: 'PostgreSQL database name'
+    required: true
+  db-password:
+    description: 'PostgreSQL password'
+    required: true
+  db-host:
+    description: 'PostgreSQL host'
+    default: 'localhost'
+  db-port:
+    description: 'PostgreSQL port'
+    default: '5432'
+  db-user:
+    description: 'PostgreSQL user'
+    default: 'postgres'
+
+runs:
+  using: 'composite'
+  steps:
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.11'
+        cache: 'pip'
+
+    - name: Install Python dependencies
+      shell: bash
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+        npm install -g jscpd
+
+    - name: Cache Go analysis tools
+      uses: actions/cache@v4
+      id: go-tools-cache
+      with:
+        path: ~/.local/gopath/bin
+        key: go-tools-gosec-2.18.2-staticcheck-2023.1.3
+
+    - name: Install Go analysis tools
+      if: steps.go-tools-cache.outputs.cache-hit != 'true'
+      shell: bash
+      run: |
+        mkdir -p ~/.local/gopath/bin
+        wget -q https://github.com/securego/gosec/releases/download/v2.18.2/gosec_2.18.2_linux_amd64.tar.gz \
+          -O /tmp/gosec.tar.gz
+        tar -xzf /tmp/gosec.tar.gz -C ~/.local/gopath/bin/ gosec
+        wget -q "https://github.com/dominikh/go-tools/releases/download/2023.1.3/staticcheck_linux_amd64.tar.gz" \
+          -O /tmp/staticcheck.tar.gz
+        tar -xzf /tmp/staticcheck.tar.gz -C /tmp/
+        cp /tmp/staticcheck/staticcheck ~/.local/gopath/bin/
+
+    - name: Add Go tools to PATH
+      shell: bash
+      run: echo "$HOME/.local/gopath/bin" >> $GITHUB_PATH
+
+    - name: Run database migrations
+      shell: bash
+      env:
+        DB_HOST: ${{ inputs.db-host }}
+        DB_PORT: ${{ inputs.db-port }}
+        DB_NAME: ${{ inputs.db-name }}
+        DB_USER: ${{ inputs.db-user }}
+        DB_PASSWORD: ${{ inputs.db-password }}
+      run: |
+        alembic upgrade head || {
+          echo "❌ Alembic migration failed"
+          exit 1
+        }

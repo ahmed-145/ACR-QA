@@ -74,6 +74,7 @@ jobs:
         run: |
           pytest TESTS/ -v --override-ini="addopts=" --tb=short \
             --cov=CORE --cov=DATABASE --cov-report=xml:coverage.xml \
+            --cov-fail-under=40 \
             --cov-report=term-missing \
             --junitxml=test-results.xml 2>&1
 
@@ -123,11 +124,14 @@ jobs:
           python-version: '3.11'
           cache: 'pip'
 
-      - name: Install Ruff
-        run: pip install ruff==0.6.0
+      - name: Install Ruff and mypy
+        run: pip install ruff==0.6.0 mypy==1.11.0 types-PyYAML types-requests
 
       - name: Check formatting
         run: ruff format --check CORE/ DATABASE/ scripts/ FRONTEND/ TESTS/
 
       - name: Check linting
         run: ruff check CORE/ DATABASE/ scripts/ FRONTEND/ TESTS/
+
+      - name: Type check
+        run: mypy CORE/ DATABASE/ FRONTEND/ --ignore-missing-imports --no-error-summary

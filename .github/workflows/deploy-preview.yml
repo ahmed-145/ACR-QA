@@ -13,6 +13,10 @@ on:
     types: [opened, synchronize, reopened, closed]
     branches: [main]
 
+permissions:
+  contents: read
+  pull-requests: write
+
 env:
   RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
 
