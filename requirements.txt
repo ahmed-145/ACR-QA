@@ -5,7 +5,7 @@ python-dotenv==1.0.0
 PyYAML==6.0.1
 pydantic==2.12.5
 pydantic-settings==2.3.4
-redis==7.1.0
+redis==5.2.1
 httpx==0.28.1
 
 # Web Dashboard (Flask — kept in parallel during FastAPI migration)
