@@ -290,6 +290,9 @@ def apply_fixes(fixes: list[dict]) -> dict[str, list[str]]:
         # Apply fix
         line_idx = fix["line"] - 1
 
+        if line_idx < 0 or line_idx >= len(lines):
+            continue
+
         if fix["fixed"] == "":
             # Remove line
             lines.pop(line_idx)

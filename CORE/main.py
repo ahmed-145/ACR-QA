@@ -1151,11 +1151,20 @@ def main():
     if args.auto_fix and run_id:
         findings_path = Path("DATA/outputs/findings.json")
         if findings_path.exists():
-            import json as json_mod
+            from CORE.engines.autofix import AutoFixEngine, apply_fixes
 
             with open(findings_path) as fp:
-                findings = json_mod.load(fp)
-            pipeline.run_autofix(findings)
+                raw_findings = json.load(fp)
+            engine = AutoFixEngine()
+            # autofix engine uses "file_path" key; canonical findings use "file"
+            for f in raw_findings:
+                if "file_path" not in f and "file" in f:
+                    f["file_path"] = f["file"]
+            fixes = [engine.generate_fix(f) for f in raw_findings if engine.can_fix(f.get("canonical_rule_id", ""))]
+            fixes = [f for f in fixes if f]
+            if fixes:
+                results = apply_fixes(fixes)
+                logger.info(f"Auto-fix applied {len(fixes)} fixes across {len(results)} files")
 
     # Exit with non-zero code if quality gate failed
     if run_id and hasattr(pipeline, "_gate_passed") and not pipeline._gate_passed:
