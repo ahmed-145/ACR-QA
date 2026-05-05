@@ -111,6 +111,24 @@ See `CORE/adapters/python_adapter.py` for a reference implementation.
 - Follow existing patterns in the codebase
 - Run `ruff format` before committing
 
+## Type Checking (mypy)
+
+mypy runs in CI on every push (lint job). To run locally:
+
+```bash
+pip install mypy types-PyYAML types-requests types-redis
+mypy CORE/ DATABASE/ FRONTEND/
+```
+
+Configuration lives in `pyproject.toml` under `[tool.mypy]`. Two modules are currently suppressed with `ignore_errors = true`:
+
+| Module | Reason |
+|--------|--------|
+| `CORE.main` | Pre-existing `Mapping[str, Any]` vs `dict` type conflicts in the pipeline orchestrator. Requires auditing all engine function signatures to fix properly — tracked as future work. |
+| `scripts.*` | Utility scripts not part of the importable library; type-checking them is not required. |
+
+If you add new code to `CORE/` (engines, adapters, utils), it **will** be type-checked. Add annotations to new functions. Do not extend the suppression list without a comment explaining why.
+
 ## Configuration
 
 Per-repo configuration is via `.acrqa.yml`. See the generated default for all options:

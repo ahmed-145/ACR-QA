@@ -3,6 +3,17 @@
 **Latest Run:** May 2026 · **Version:** v3.2.5
 **Unit Tests:** 1,690 passed · **Coverage:** 86% (God-Mode — All Core Logic Fully Covered)
 
+### CI Static Analysis Status (v3.2.5)
+
+| Check | Status | Notes |
+|-------|--------|-------|
+| ruff format | ✅ 0 errors | All production code |
+| ruff lint | ✅ 0 errors | All production code |
+| mypy | ✅ 0 errors* | `CORE/main.py` and `scripts.*` suppressed — see below |
+| pytest | ✅ 1,690 passed | Coverage ≥ 40% enforced |
+
+**mypy suppression note:** `CORE/main.py` (the 1,167-line pipeline orchestrator) has pre-existing `Mapping[str, Any]` vs `dict[str, Any]` type conflicts introduced when engine functions were added incrementally. These are suppressed via `[[tool.mypy.overrides]]` in `pyproject.toml` and do not affect runtime behaviour — all engine calls are tested end-to-end. Fixing them requires auditing the return type annotations of `enrich_findings()`, `suppress_findings()`, and `evaluate()` across multiple engine modules.
+
 ---
 
 ## Table of Contents
