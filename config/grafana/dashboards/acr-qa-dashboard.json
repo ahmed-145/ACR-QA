@@ -380,9 +380,112 @@
                 "colorMode": "background",
                 "graphMode": "area"
             }
+        },
+        {
+            "id": 7,
+            "title": "🎯 SLO: API Availability (30d)",
+            "type": "stat",
+            "gridPos": {"h": 4, "w": 8, "x": 0, "y": 16},
+            "datasource": {"type": "prometheus", "uid": "prometheus"},
+            "targets": [
+                {
+                    "expr": "(1 - sum(rate(acrqa_http_requests_total{status_code=~\"5..\"}[30d])) / sum(rate(acrqa_http_requests_total[30d]))) * 100",
+                    "legendFormat": "Availability %",
+                    "refId": "A"
+                }
+            ],
+            "fieldConfig": {
+                "defaults": {
+                    "unit": "percent",
+                    "decimals": 2,
+                    "thresholds": {
+                        "mode": "absolute",
+                        "steps": [
+                            {"color": "red", "value": null},
+                            {"color": "yellow", "value": 99.0},
+                            {"color": "green", "value": 99.5}
+                        ]
+                    }
+                }
+            },
+            "options": {
+                "reduceOptions": {"calcs": ["lastNotNull"]},
+                "colorMode": "background",
+                "graphMode": "none",
+                "textMode": "auto"
+            }
+        },
+        {
+            "id": 8,
+            "title": "🎯 SLO: P95 Latency (7d, target < 500ms)",
+            "type": "gauge",
+            "gridPos": {"h": 4, "w": 8, "x": 8, "y": 16},
+            "datasource": {"type": "prometheus", "uid": "prometheus"},
+            "targets": [
+                {
+                    "expr": "histogram_quantile(0.95, rate(acrqa_http_request_duration_seconds_bucket[7d])) * 1000",
+                    "legendFormat": "P95 ms",
+                    "refId": "A"
+                }
+            ],
+            "fieldConfig": {
+                "defaults": {
+                    "unit": "ms",
+                    "decimals": 0,
+                    "min": 0,
+                    "max": 1000,
+                    "thresholds": {
+                        "mode": "absolute",
+                        "steps": [
+                            {"color": "green", "value": null},
+                            {"color": "yellow", "value": 400},
+                            {"color": "red", "value": 500}
+                        ]
+                    }
+                }
+            },
+            "options": {
+                "reduceOptions": {"calcs": ["lastNotNull"]},
+                "showThresholdLabels": true,
+                "showThresholdMarkers": true
+            }
+        },
+        {
+            "id": 9,
+            "title": "🎯 SLO: Scan Completion Rate (7d, target > 99%)",
+            "type": "stat",
+            "gridPos": {"h": 4, "w": 8, "x": 16, "y": 16},
+            "datasource": {"type": "prometheus", "uid": "prometheus"},
+            "targets": [
+                {
+                    "expr": "sum(rate(acrqa_http_requests_total{status_code=~\"2..\"}[7d])) / sum(rate(acrqa_http_requests_total[7d])) * 100",
+                    "legendFormat": "Success %",
+                    "refId": "A"
+                }
+            ],
+            "fieldConfig": {
+                "defaults": {
+                    "unit": "percent",
+                    "decimals": 2,
+                    "thresholds": {
+                        "mode": "absolute",
+                        "steps": [
+                            {"color": "red", "value": null},
+                            {"color": "yellow", "value": 97.0},
+                            {"color": "green", "value": 99.0}
+                        ]
+                    }
+                }
+            },
+            "options": {
+                "reduceOptions": {"calcs": ["lastNotNull"]},
+                "colorMode": "background",
+                "graphMode": "none",
+                "textMode": "auto"
+            }
         }
     ],
-    "refresh": "30s",
+        "refresh": "30s",
     "schemaVersion": 38,
     "tags": [
         "acr-qa",

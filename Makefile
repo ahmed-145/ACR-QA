@@ -1,7 +1,7 @@
 # ACR-QA v2.5 - Makefile
 # One-click setup and common operations
 
-.PHONY: help up down setup install-deps install-tools init-db docker-up docker-down run dashboard test test-all lint coverage version clean
+.PHONY: help up down setup install-deps install-tools init-db db-migrate db-rollback docker-up docker-down run dashboard test test-all lint coverage version clean
 
 # Default target
 help:
@@ -41,6 +41,8 @@ help:
 	@echo "Utilities:"
 	@echo "  make clean          - Remove outputs and cache"
 	@echo "  make reset-redis    - Reset Redis rate limits"
+	@echo "  make db-migrate     - Run Alembic migrations (alembic upgrade head)"
+	@echo "  make db-rollback    - Roll back last migration (alembic downgrade -1)"
 	@echo ""
 
 # ============================================
@@ -77,6 +79,14 @@ init-db:
 	else \
 		echo "⚠️  PostgreSQL not found. Use Docker instead: make docker-up"; \
 	fi
+
+db-migrate:
+	@echo "Running database migrations..."
+	.venv/bin/alembic upgrade head
+
+db-rollback:
+	@echo "Rolling back last migration..."
+	.venv/bin/alembic downgrade -1
 
 init-config:
 	@echo "📋 Generating default .acrqa.yml config..."

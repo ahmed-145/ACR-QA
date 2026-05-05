@@ -58,6 +58,24 @@
 | [LaTeX Slides](acr_qa_presentation.tex) | Formal presentation slide source |
 | [Phase 1 Extras](thesis/Phase1-extras.md) | Additional Phase 1 implementation details |
 
+## 🚨 SRE & Operations
+
+| Document | Description |
+|----------|-------------|
+| [SLOs](sre/slos.md) | 4 formal SLOs — availability 99.5%, P95 < 500ms, scan completion 99%, AI latency < 5s |
+| [Runbook: Groq API Down](sre/runbooks/groq-api-down.md) | Rate limiting, key rotation, graceful degradation |
+| [Runbook: High 5xx Rate](sre/runbooks/high-error-rate-5xx.md) | Diagnosis and resolution by root cause |
+| [Runbook: DB Connection Pool](sre/runbooks/db-connection-pool-exhausted.md) | Terminate idle connections, max_connections tuning |
+| [Runbook: Disk Full (Postgres)](sre/runbooks/disk-full-postgres.md) | VACUUM, data retention, volume monitoring |
+| [Runbook: Restore from Backup](sre/runbooks/restore-from-backup.md) | Full restore procedure with estimated recovery times |
+
+## 🚀 Deployment
+
+| Document | Description |
+|----------|-------------|
+| [Railway Preview Deploys](setup/RAILWAY_DEPLOY.md) | PR preview environments via Railway (GitHub Student Pack) |
+| [Cloud Deployment](setup/Cloud-Deployment.md) | PythonAnywhere, Replit, ngrok deployment guides |
+
 ## 🗺️ Roadmap
 
 | Document | Description |
@@ -84,4 +102,4 @@ During analysis runs, ACR-QA generates:
 
 ---
 
-**Last Updated:** May 2, 2026
+**Last Updated:** May 5, 2026

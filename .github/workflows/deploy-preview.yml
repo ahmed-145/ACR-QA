@@ -1,0 +1,73 @@
+# =============================================================================
+# ACR-QA — Railway PR Preview Deploys
+# =============================================================================
+# Deploys a preview environment for every PR and tears it down on close/merge.
+# Requires: RAILWAY_TOKEN secret set in repo Settings → Secrets.
+# Setup guide: docs/setup/RAILWAY_DEPLOY.md
+# =============================================================================
+
+name: PR Preview Deploy
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, closed]
+    branches: [main]
+
+env:
+  RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
+
+jobs:
+  deploy-preview:
+    name: Deploy PR Preview
+    runs-on: ubuntu-latest
+    if: github.event.action != 'closed'
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install Railway CLI
+        run: npm install -g @railway/cli
+
+      - name: Deploy preview environment
+        id: deploy
+        run: |
+          railway up \
+            --service acr-qa \
+            --environment pr-${{ github.event.pull_request.number }} \
+            --detach
+          PREVIEW_URL=$(railway status \
+            --service acr-qa \
+            --environment pr-${{ github.event.pull_request.number }} \
+            --json 2>/dev/null | python3 -c "import json,sys; d=json.load(sys.stdin); print(d.get('url',''))" || echo "")
+          echo "preview_url=$PREVIEW_URL" >> "$GITHUB_OUTPUT"
+
+      - name: Comment preview URL on PR
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const previewUrl = '${{ steps.deploy.outputs.preview_url }}';
+            const body = previewUrl
+              ? `### Preview Deploy\n\n**URL:** ${previewUrl}\n\nRuns database migrations automatically. Health check: \`${previewUrl}/api/health\``
+              : `### Preview Deploy\n\nEnvironment deploying — check Railway dashboard for URL.`;
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body
+            });
+
+  teardown-preview:
+    name: Tear Down PR Preview
+    runs-on: ubuntu-latest
+    if: github.event.action == 'closed'
+
+    steps:
+      - name: Install Railway CLI
+        run: npm install -g @railway/cli
+
+      - name: Delete preview environment
+        run: |
+          railway environment delete pr-${{ github.event.pull_request.number }} \
+            --service acr-qa \
+            --yes || echo "Environment already deleted or not found"

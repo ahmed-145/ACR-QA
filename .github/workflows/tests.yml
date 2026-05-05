@@ -51,12 +51,16 @@ jobs:
           pip install -r requirements.txt
           pip install pytest-cov
 
-      - name: Initialize database
+      - name: Run database migrations
         env:
-          PGPASSWORD: postgres
+          DB_HOST: localhost
+          DB_PORT: 5432
+          DB_NAME: acrqa_test
+          DB_USER: postgres
+          DB_PASSWORD: postgres
         run: |
-          psql -h localhost -U postgres -d acrqa_test -f DATABASE/schema.sql || {
-            echo "❌ Database initialization failed"
+          alembic upgrade head || {
+            echo "❌ Alembic migration failed"
             exit 1
           }
 
