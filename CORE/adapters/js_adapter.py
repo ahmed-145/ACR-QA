@@ -524,34 +524,33 @@ export default [
         for file_result in eslint_data:
             file_path = file_result.get("filePath", "unknown")
             for msg in file_result.get("messages", []):
-                # Suppress purely informational "File ignored" warnings
-                if msg.get("ruleId") is None and "File ignored" in msg.get("message", ""):
-                    continue
+                # Suppress purely informational messages (no ruleId)
+                if msg.get("ruleId") is None:
+                    msg_text = msg.get("message", "")
+                    if "File ignored" in msg_text or "Parsing error:" in msg_text:
+                        continue
 
                 rule_id = msg.get("ruleId") or "eslint-unknown"
                 canonical_rule_id = JS_RULE_MAPPING.get(rule_id, f"CUSTOM-{rule_id}")
                 severity_raw = msg.get("severity", 1)
                 # ESLint severity: 2=error→high, 1=warn→medium
                 severity = "high" if severity_raw == 2 else "medium"
-                findings.append(
-                    CanonicalFinding(
-                        canonical_rule_id=canonical_rule_id,
-                        original_rule_id=rule_id,
-                        message=msg.get("message", ""),
-                        file=file_path,
-                        line=msg.get("line", 0),
-                        column=msg.get("column", 0),
-                        severity=severity,
-                        category=self._infer_category(canonical_rule_id),
-                        language="javascript",
-                        tool_raw={
-                            "tool_name": "eslint",
-                            "rule_id": rule_id,
-                            "column": msg.get("column"),
-                            "source": "eslint",
-                        },
-                    )
+                finding = CanonicalFinding.create(
+                    canonical_rule_id=canonical_rule_id,
+                    rule_id=rule_id,
+                    message=msg.get("message", ""),
+                    file=file_path,
+                    line=msg.get("line", 0),
+                    column=msg.get("column", 0),
+                    severity=severity,
+                    category=self._infer_category(canonical_rule_id),
+                    tool_name="eslint",
+                    tool_output=msg,
                 )
+                # Preserve ESLint-computed severity — RULE_SEVERITY may downgrade
+                # style rules (e.g. no-console → low) but ESLint warnings are medium.
+                finding = finding.model_copy(update={"severity": severity})
+                findings.append(finding)
         return findings
 
     def normalize_npm_audit(self, audit_data: dict) -> list[CanonicalFinding]:
@@ -565,22 +564,23 @@ export default [
             cve_info = via[0] if via and isinstance(via[0], dict) else {}
             # Normalise severity to high/medium/low (SECURITY-059 = high)
             severity = "high" if sev_raw in ("critical", "high") else "medium" if sev_raw == "moderate" else "low"
-            findings.append(
-                CanonicalFinding(
-                    canonical_rule_id=canonical_rule_id,
-                    original_rule_id=f"npm-audit-{sev_raw}",
-                    message=(
-                        f"Vulnerable dependency: {pkg_name} ({sev_raw}) — " f"{cve_info.get('title', 'CVE advisory')}"
-                    ),
-                    file="package.json",
-                    line=0,
-                    column=0,
-                    severity=severity,
-                    category="security",
-                    language="javascript",
-                    tool_raw={"tool_name": "npm-audit", "package": pkg_name, "via": via, "severity": sev_raw},
-                )
+            finding = CanonicalFinding.create(
+                canonical_rule_id=canonical_rule_id,
+                rule_id=f"npm-audit-{sev_raw}",
+                message=(
+                    f"Vulnerable dependency: {pkg_name} ({sev_raw}) — " f"{cve_info.get('title', 'CVE advisory')}"
+                ),
+                file="package.json",
+                line=0,
+                column=0,
+                severity=severity,
+                category="security",
+                tool_name="npm-audit",
+                tool_output=vuln,
             )
+            # Expose package name at top-level tool_raw for direct access
+            finding = finding.model_copy(update={"tool_raw": {**finding.tool_raw, "package": pkg_name}})
+            findings.append(finding)
         return findings
 
     def normalize_semgrep_js(self, semgrep_data: dict) -> list[CanonicalFinding]:
@@ -600,22 +600,17 @@ export default [
             severity = "high" if sev_raw == "error" else "low" if sev_raw == "info" else "medium"
             category_raw = item.get("extra", {}).get("metadata", {}).get("category", "security")
             findings.append(
-                CanonicalFinding(
+                CanonicalFinding.create(
                     canonical_rule_id=canonical_rule_id,
-                    original_rule_id=rule_id,
+                    rule_id=rule_id,
                     message=item.get("extra", {}).get("message", ""),
                     file=item.get("path", "unknown"),
                     line=item.get("start", {}).get("line", 0),
                     column=item.get("start", {}).get("col", 0),
                     severity=severity,
                     category=self._infer_category(canonical_rule_id) or category_raw,
-                    language="javascript",
-                    tool_raw={
-                        "tool_name": "semgrep",
-                        "rule_id": rule_id,
-                        "check_id": check_id,
-                        "source": "semgrep",
-                    },
+                    tool_name="semgrep",
+                    tool_output=item,
                 )
             )
         return findings

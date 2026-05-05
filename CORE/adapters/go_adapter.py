@@ -85,6 +85,12 @@ STATICCHECK_RULE_MAPPING: dict[str, str] = {
     "S1003": "STYLE-015",  # Replace call to strings.Index with strings.Contains
     "S1016": "STYLE-016",  # Use a type conversion instead of struct literal
     "S1021": "STYLE-017",  # Merge variable declaration and assignment
+    "S1023": "STYLE-021",  # Redundant return statement
+    "S1025": "STYLE-022",  # Don't use fmt.Sprintf with a single string
+    "S1031": "STYLE-023",  # Unnecessary nil check around range
+    "S1039": "STYLE-024",  # Unnecessary use of fmt.Sprintf
+    "ST1005": "STYLE-025",  # Incorrectly formatted error string
+    "ST1006": "STYLE-026",  # Poorly chosen receiver name
     "U1000": "DEAD-004",  # Unused code
 }
 
@@ -241,28 +247,30 @@ class GoAdapter(LanguageAdapter):
             canonical_rule_id = GOSEC_RULE_MAPPING.get(rule_id, f"CUSTOM-GO-{rule_id}")
             sev_raw = issue.get("severity", "MEDIUM").upper()
             severity = {"HIGH": "high", "MEDIUM": "medium", "LOW": "low"}.get(sev_raw, "medium")
-            cwe = issue.get("cwe", {})
-            findings.append(
-                CanonicalFinding(
-                    canonical_rule_id=canonical_rule_id,
-                    original_rule_id=rule_id,
-                    message=issue.get("details", ""),
-                    file=issue.get("file", "unknown"),
-                    line=int(str(issue.get("line", 0)).split("-")[0]),
-                    column=int(str(issue.get("column", 0)).split("-")[0]),
-                    severity=severity,
-                    category=self._infer_category(canonical_rule_id),
-                    language="go",
-                    tool_raw={
-                        "tool_name": "gosec",
-                        "rule_id": rule_id,
-                        "cwe_id": cwe.get("id", ""),
-                        "cwe_url": cwe.get("url", ""),
-                        "confidence": issue.get("confidence", ""),
-                        "code": issue.get("code", ""),
-                    },
-                )
+            cwe_data = issue.get("cwe", {})
+            cwe_id = str(cwe_data.get("id", "")) if isinstance(cwe_data, dict) else ""
+            finding = CanonicalFinding.create(
+                canonical_rule_id=canonical_rule_id,
+                rule_id=rule_id,
+                message=issue.get("details", ""),
+                file=issue.get("file", "unknown"),
+                line=int(str(issue.get("line", 0)).split("-")[0]),
+                column=int(str(issue.get("column", 0)).split("-")[0]),
+                severity=severity,
+                category=self._infer_category(canonical_rule_id),
+                tool_name="gosec",
+                tool_output=issue,
             )
+            # Preserve native gosec severity — RULE_SEVERITY uses Python-centric mappings
+            # that don't correctly reflect Go-specific rule semantics.
+            # Also expose CWE ID at top-level tool_raw for direct access.
+            finding = finding.model_copy(
+                update={
+                    "severity": severity,
+                    "tool_raw": {**finding.tool_raw, "cwe_id": cwe_id},
+                }
+            )
+            findings.append(finding)
         return findings
 
     def normalize_staticcheck(self, lines: list[str]) -> list[CanonicalFinding]:
@@ -288,20 +296,17 @@ class GoAdapter(LanguageAdapter):
             else:
                 severity = "low"
             findings.append(
-                CanonicalFinding(
+                CanonicalFinding.create(
                     canonical_rule_id=canonical_rule_id,
-                    original_rule_id=rule_id,
+                    rule_id=rule_id,
                     message=message,
                     file=file_path,
                     line=int(lineno),
                     column=int(col),
                     severity=severity,
                     category=self._infer_category(canonical_rule_id),
-                    language="go",
-                    tool_raw={
-                        "tool_name": "staticcheck",
-                        "rule_id": rule_id,
-                    },
+                    tool_name="staticcheck",
+                    tool_output={"raw_line": line},
                 )
             )
         return findings

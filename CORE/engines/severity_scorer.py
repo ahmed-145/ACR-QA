@@ -33,11 +33,12 @@ class SeverityScorer:
         "SECURITY-021": "high",  # subprocess_popen_with_shell=True
         "SECURITY-024": "high",  # start_process_with_a_shell
         "SECURITY-027": "high",  # ⚠️ SQL INJECTION (hardcoded_sql_expressions)
-        "SECURITY-029": "high",  # django_extra_used
-        "SECURITY-030": "high",  # django_rawsql_used
-        "SECURITY-031": "high",  # jinja2_autoescape_false (XSS)
-        "SECURITY-033": "high",  # django_mark_safe (XSS)
-        "HARDCODE-001": "high",  # Hardcoded password (flake8-bandit)
+        "SECURITY-029": "high",  # Use of unescaped data in HTML templates (Go G203)
+        "SECURITY-030": "high",  # Subprocess launched with variable (Go G204)
+        "SECURITY-031": "high",  # Poor file permissions (mkdir)
+        "SECURITY-033": "high",  # Creating tempfile using predictable path
+        "SECURITY-065": "high",  # flask_debug_true
+        "HARDCODE-001": "high",  # Hardcoded password
         # ══════════════════════════════════════════════
         # MEDIUM: Risky patterns, weak crypto, design smells
         # ══════════════════════════════════════════════
@@ -145,6 +146,19 @@ class SeverityScorer:
         "CUSTOM-assert-for-validation": "low",  # Semgrep: assert for validation
         "CUSTOM-print-in-production": "low",  # Semgrep: print statements
         "CUSTOM-too-many-parameters": "low",  # Semgrep: too many params (informational)
+        # ── Previously unmapped Ruff rules ──
+        "IMPORT-005": "low",  # E402: module import not at top of file
+        "PATTERN-003": "low",  # E711: comparison to None should use `is`
+        "PATTERN-004": "low",  # E712: comparison to True/False
+        "BEST-PRACTICE-008": "low",  # F601: membership test style (`not in`)
+        "STYLE-019": "low",  # UP008: use super() without args
+        "STYLE-020": "low",  # UP015: prefer pathlib over os.path
+        "STYLE-021": "low",  # S1023: redundant return statement (Go)
+        "STYLE-022": "low",  # S1025: don't use fmt.Sprintf with single string (Go)
+        "STYLE-023": "low",  # S1031: unnecessary nil check around range (Go)
+        "STYLE-024": "low",  # S1039: unnecessary use of fmt.Sprintf (Go)
+        "STYLE-025": "low",  # ST1005: incorrectly formatted error string (Go)
+        "STYLE-026": "low",  # ST1006: poorly chosen receiver name (Go)
         "CUSTOM-global-variable": "low",  # Semgrep: global variable usage
         # ── Round 3 deep scan additions ──
         "SECURITY-036": "medium",  # TLS certificate verification disabled
@@ -160,7 +174,7 @@ class SeverityScorer:
         # ── New rules from precision/recall overhaul ──
         "SECURITY-045": "high",  # XSS via render_template_string (CWE-79)
         "SECURITY-046": "high",  # SSRF via requests with user-controlled URL (CWE-918)
-        "SECURITY-047": "critical",  # JWT none algorithm — signature bypass (CWE-347)
+        "SECURITY-047": "high",  # JWT none algorithm — signature bypass (CWE-347)
         "SECURITY-048": "medium",  # Open redirect via user-controlled URL (CWE-601)
         # ── Taint analysis & new JS rules ──
         "SECURITY-061": "high",  # Taint: req.* → SQL query (SQLi via taint tracking)

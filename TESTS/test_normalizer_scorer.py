@@ -845,10 +845,10 @@ class TestSeverityScorerScore:
         result = self.scorer.score("DUP-001", finding)
         assert result == "medium"  # base severity for DUP-001
 
-    def test_security_047_is_critical(self):
-        # JWT none algorithm — critical
+    def test_security_047_is_high(self):
+        # JWT none algorithm — high severity (critical is not a valid ACR-QA severity level)
         result = self.scorer.score("SECURITY-047", {})
-        assert result == "critical"
+        assert result == "high"
 
     def test_all_high_security_rules(self):
         high_rules = [

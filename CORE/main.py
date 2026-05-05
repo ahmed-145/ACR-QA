@@ -16,7 +16,7 @@ import time
 from pathlib import Path
 
 
-def setup_logging(verbose=False, quiet=False):
+def setup_logging(verbose=False, quiet=False, json_output=False):
     level = logging.INFO
     if verbose:
         level = logging.DEBUG
@@ -31,7 +31,7 @@ def setup_logging(verbose=False, quiet=False):
         if "LogCapture" not in type(handler).__name__:
             root_logger.removeHandler(handler)
 
-    handler = logging.StreamHandler(sys.stdout)
+    handler = logging.StreamHandler(sys.stderr if json_output else sys.stdout)
     if os.getenv("ACRQA_JSON_LOGS") == "1":
 
         class JsonFormatter(logging.Formatter):
@@ -74,7 +74,16 @@ class AnalysisPipeline:
         # Load per-repo config (.acrqa.yml)
         self.config = ConfigLoader(project_dir=target_dir).load()
 
-    def run(self, repo_name="local", pr_number=None, limit=None, files=None, rich_output=False, baseline_run_id=None):
+    def run(
+        self,
+        repo_name="local",
+        pr_number=None,
+        limit=None,
+        files=None,
+        rich_output=False,
+        baseline_run_id=None,
+        json_output=False,
+    ):
         """Run full analysis pipeline."""
         logger.info("🚀 ACR-QA v3.2.4 Analysis Pipeline")
         logger.info("=" * 50)
@@ -122,11 +131,19 @@ class AnalysisPipeline:
                     if src.exists():
                         dest = Path(analysis_dir) / src.name
                         shutil.copy2(str(src), str(dest))
-                subprocess.run(["bash", "TOOLS/run_checks.sh", analysis_dir], check=True)
+                subprocess.run(
+                    ["bash", "TOOLS/run_checks.sh", analysis_dir],
+                    check=True,
+                    stdout=subprocess.DEVNULL if json_output else None,
+                )
             finally:
                 shutil.rmtree(analysis_dir, ignore_errors=True)
         else:
-            subprocess.run(["bash", "TOOLS/run_checks.sh", self.target_dir], check=True)
+            subprocess.run(
+                ["bash", "TOOLS/run_checks.sh", self.target_dir],
+                check=True,
+                stdout=subprocess.DEVNULL if json_output else None,
+            )
 
         logger.info("      ✓ Detection complete")
 
@@ -990,7 +1007,7 @@ def main():
     )
 
     args = parser.parse_args()
-    setup_logging(args.verbose, args.quiet)
+    setup_logging(args.verbose, args.quiet, json_output=args.json_output)
 
     # Determine files to analyze
     files = None
@@ -1042,18 +1059,45 @@ def main():
             f.setdefault("file_path", f.get("file", ""))
             f.setdefault("line_number", f.get("line", 0))
         logger.info(f"      ✓ {len(findings)} findings from Go tools")
-        # Print findings summary
-        high = [f for f in findings if f.get("canonical_severity") == "high"]
-        medium = [f for f in findings if f.get("canonical_severity") == "medium"]
-        low = [f for f in findings if f.get("canonical_severity") == "low"]
-        logger.info(f"\n  🔴 High: {len(high)}  🟡 Medium: {len(medium)}  🟢 Low: {len(low)}")
-        logger.info("\n  Top findings:")
-        for f in sorted(
-            findings, key=lambda x: {"high": 0, "medium": 1, "low": 2}.get(x.get("canonical_severity", "low"), 2)
-        )[:10]:
-            logger.info(
-                f"    [{f.get('canonical_severity','?').upper()}] {f.get('canonical_rule_id')} — {f.get('file_path','').split('/')[-1]}:{f.get('line_number',0)} — {f.get('message','')[:60]}"
-            )
+
+        # Save to findings.json
+        output_path = Path("DATA/outputs")
+        output_path.mkdir(parents=True, exist_ok=True)
+        with open(output_path / "findings.json", "w") as _fp:
+            import json as _json
+
+            _json.dump(findings, _fp, indent=2, default=str)
+
+        if args.json_output:
+            import sys as _sys
+
+            _sys.stdout.write(_json.dumps(findings, indent=2, default=str))
+            _sys.stdout.flush()
+        else:
+            # Print findings summary
+            high_f = [f for f in findings if f.get("canonical_severity") == "high"]
+            medium_f = [f for f in findings if f.get("canonical_severity") == "medium"]
+            low_f = [f for f in findings if f.get("canonical_severity") == "low"]
+            logger.info(f"\n  🔴 High: {len(high_f)}  🟡 Medium: {len(medium_f)}  🟢 Low: {len(low_f)}")
+            logger.info("\n  Top findings:")
+            for f in sorted(
+                findings, key=lambda x: {"high": 0, "medium": 1, "low": 2}.get(x.get("canonical_severity", "low"), 2)
+            )[:10]:
+                logger.info(
+                    f"    [{f.get('canonical_severity','?').upper()}] {f.get('canonical_rule_id')} — {f.get('file_path','').split('/')[-1]}:{f.get('line_number',0)} — {f.get('message','')[:60]}"
+                )
+
+        # Quality Gate for Go
+        from CORE.engines.quality_gate import QualityGate
+
+        gate = QualityGate(config=pipeline.config)
+        gate_result = gate.evaluate(findings)
+        if not args.json_output:
+            gate.print_report(gate_result)
+
+        if gate.should_block(gate_result):
+            logger.error("\n❌ Exiting with code 1 (quality gate failed)")
+            sys.exit(1)
         return
 
     if language in ("javascript", "typescript"):
@@ -1067,7 +1111,10 @@ def main():
             findings_path = Path("DATA/outputs/findings.json")
             if findings_path.exists():
                 with open(findings_path) as fp:
-                    logger.info(fp.read())
+                    import sys as _sys
+
+                    _sys.stdout.write(fp.read())
+                    _sys.stdout.flush()
             else:
                 logger.info("[]")
         if run_id and hasattr(pipeline, "_gate_passed") and not pipeline._gate_passed:
@@ -1085,6 +1132,7 @@ def main():
         files=files,
         rich_output=args.rich,
         baseline_run_id=args.baseline_run_id,
+        json_output=args.json_output,
     )
 
     # --json: dump findings as JSON to stdout (pipe-friendly, for JS consumers)
@@ -1092,7 +1140,10 @@ def main():
         findings_path = Path("DATA/outputs/findings.json")
         if findings_path.exists():
             with open(findings_path) as fp:
-                logger.info(fp.read())
+                import sys as _sys
+
+                _sys.stdout.write(fp.read())
+                _sys.stdout.flush()
         else:
             logger.info("[]")
 

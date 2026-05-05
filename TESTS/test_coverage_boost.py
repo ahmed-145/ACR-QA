@@ -251,9 +251,9 @@ class TestSeverityScorerFullCoverage:
     # ── RULE_SEVERITY table ───────────────────────────────────────────────
 
     def test_critical_mapped_rule(self):
-        """SECURITY-047 is the only 'critical' rule, returned as-is."""
+        """SECURITY-047 (JWT none algorithm) scores as high."""
         result = self.scorer.score("SECURITY-047", {})
-        assert result == "critical"
+        assert result == "high"
 
     def test_all_new_semgrep_custom_high_rules(self):
         for rule in [

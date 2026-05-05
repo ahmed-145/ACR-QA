@@ -149,7 +149,7 @@ RULE_MAPPING = {
     "B321": "SECURITY-040",  # FTP cleartext protocol
     "B402": "SECURITY-041",  # import_ftplib — FTP module imported
     # ── Bandit: XML/Network/Misc security (previously CUSTOM-*) ──
-    "B201": "SECURITY-022",  # flask_debug_true
+    "B201": "SECURITY-065",  # flask_debug_true
     "B310": "SECURITY-042",  # urllib_urlopen — audit url open for permitted schemes
     "B314": "SECURITY-043",  # xml_bad_etree — unsafe XML parsing (ElementTree)
     "B317": "SECURITY-043",  # xml_bad_sax — unsafe XML parsing (SAX)
@@ -192,6 +192,13 @@ RULE_MAPPING = {
     "B026": "STYLE-016",  # Ruff: star-arg unpacking after keyword arg — confusing call signature
     "B009": "BEST-PRACTICE-006",  # Ruff: Do not call getattr with constant attr string
     "path-traversal": "SECURITY-049",  # Semgrep: user-controlled path traversal risk
+    # ── Ruff: Previously unmapped style/quality rules ──
+    "E402": "IMPORT-005",  # Module level import not at top of file
+    "E711": "PATTERN-003",  # Comparison to None should use `is`/`is not`
+    "E712": "PATTERN-004",  # Comparison to True/False should use `is` or truthiness check
+    "F601": "BEST-PRACTICE-008",  # Membership test should use `not in` not `not x in`
+    "UP008": "STYLE-019",  # Use super() without arguments (PEP 3135)
+    "UP015": "STYLE-020",  # Prefer pathlib alternatives to `os.path` operations
 }
 
 # Category Mapping
@@ -283,6 +290,7 @@ class CanonicalFinding(BaseModel):
         tool_name: str,
         tool_output: dict[str, Any],
         column: int = 0,
+        canonical_rule_id: str | None = None,
     ) -> "CanonicalFinding":
         """
         Factory method to create a CanonicalFinding with intelligent severity scoring.
@@ -293,8 +301,9 @@ class CanonicalFinding(BaseModel):
         3. Applies intelligent severity scoring
         4. Returns validated Pydantic model
         """
-        # Map to canonical rule ID
-        canonical_rule_id = RULE_MAPPING.get(rule_id, f"CUSTOM-{rule_id}")
+        # Map to canonical rule ID if not provided
+        if not canonical_rule_id:
+            canonical_rule_id = RULE_MAPPING.get(rule_id, f"CUSTOM-{rule_id}")
 
         # Map to canonical category
         canonical_category = CATEGORY_MAPPING.get(category, category)
