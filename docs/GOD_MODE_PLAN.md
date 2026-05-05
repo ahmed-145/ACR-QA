@@ -450,12 +450,11 @@ That's week 1. No new features. Just see, document, prune.
 - §8.1 C4 diagrams + §8.2 ADRs (1 week, ongoing — this is your interview cheat sheet)
 - §9.2 PR preview deploys (2 days, the most impressive demo trick)
 
-**Tier 2 — do these if you have a month or more:**
-- §5.1 Flask → FastAPI
-- §5.2 Celery
-- §5.4 Auth
-- §7.2 OpenTelemetry tracing
-- §7.4–7.6 SLOs + runbooks + load tests
+**Tier 2 — ✅ DONE May 5, 2026:**
+- §5.1 Flask → FastAPI — `FRONTEND/api/` (28 async endpoints, Swagger at /docs)
+- §5.2 Celery — `CORE/tasks.py`, POST /v1/scans → 202, GET /v1/scans/{id}
+- §5.4 Auth — JWT (HS256, 15m/7d) + API keys (bcrypt) + RBAC admin/member/viewer
+- Next: §7.2 OpenTelemetry tracing, §7.4–7.6 SLOs + runbooks + load tests
 
 **Tier 3 — do these if you're going for senior-leaning roles:**
 - §5.5 Webhooks / outbox
@@ -480,8 +479,7 @@ That's week 1. No new features. Just see, document, prune.
 | 1 | Cleanup + docs + diagrams | Clean repo, C4 diagrams, README rewrite | ✅ Done May 5 |
 | 2 | Alembic + settings + Dockerfile | Migrations + 12-factor + small image | ✅ Done May 5 |
 | 2b | SRE + Railway + Grafana | Runbooks, SLOs, PR preview deploys, SLO panels | ✅ Done May 5 |
-| 3 | FastAPI migration | Async API with OpenAPI auto-gen | |
-| 4 | Celery + auth | Background jobs + JWT/API keys | |
+| 3-4 | FastAPI + Celery + Auth | Async API, background jobs, JWT/API keys/RBAC | ✅ Done May 5 |
 | 5 | Webhooks + Helm | Event-driven + K8s manifests | |
 | 6 | Terraform + Prometheus | Live deploy + metrics | |
 | 7 | Tracing + load tests | OpenTelemetry spans, Locust scenarios | |
@@ -506,7 +504,12 @@ You're done when you can answer **YES** to every question:
 - [ ] Have I tagged at least one major release with proper release notes?
 - [ ] Can I explain in 60 seconds what this project does, in 5 minutes how it's architected, and in 30 minutes how I'd scale it 100x?
 
-**Status as of May 5, 2026:** 5/10 complete. Remaining blockers: Railway token setup (unlocks 3 more ✅), live deploy, flame graph, tagged release.
+**Status as of May 5, 2026:** 6/10 complete. The following done checklist items updated after FastAPI/Celery/Auth (v3.3.0):
+- [x] Can a stranger run the project locally with one command? (`make up && make db-migrate && make seed-admin`)
+- [x] Auth: JWT + API keys + RBAC fully implemented
+- [x] Async API: FastAPI on port 8000 with Swagger docs
+- [x] Background jobs: Celery worker, scan no longer blocks request thread
+Remaining blockers: Railway token setup (unlocks 3 more ✅), live deploy, flame graph, tagged release.
 
 When all 10 are checked, write a blog post titled *"What I learned building ACR-QA"* and put it on dev.to / Hashnode / Medium. Link from your resume.
 

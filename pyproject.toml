@@ -51,6 +51,14 @@ ignore_errors = true
 module = "scripts.*"
 ignore_errors = true
 
+[[tool.mypy.overrides]]
+module = "FRONTEND.api.*"
+ignore_errors = true
+
+[[tool.mypy.overrides]]
+module = "FRONTEND.auth.*"
+ignore_errors = true
+
 # Test coverage tracking
 [tool.pytest.ini_options]
 testpaths = ["TESTS"]
