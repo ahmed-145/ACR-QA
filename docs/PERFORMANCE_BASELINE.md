@@ -46,12 +46,12 @@
 
 | Metric | Value |
 |--------|-------|
-| Total tests | **526** (as of v3.1.3) |
-| Passed | **436** |
-| Skipped | 4 (infrastructure-dependent) |
-| Runtime | ~6s |
-| `quality_gate.py` coverage | **93%** |
-| `severity_scorer.py` coverage | **62%** |
+| Total tests | **1,690** (as of v3.2.4) |
+| Passed | **1,690** |
+| Skipped | 13 (infrastructure-dependent) |
+| Runtime | ~40s |
+| `quality_gate.py` coverage | **95%** |
+| `severity_scorer.py` coverage | **83%** |
 
 ## Resource Usage
 
@@ -70,18 +70,18 @@
 - Quality gate correctly failed for test samples (intentional issues)
 - Dedup removed 7.2% of findings (same file+line+rule from different tools)
 
-## v2.9 Updates Since This Baseline
+## v3.2.4 Updates Since This Baseline
 
-| Change | Before | After |
+| Change | Baseline (v3.1.3) | Current (v3.2.4) |
 |--------|--------|-------|
-| Test count | 97 | **436** |
-| `quality_gate.py` coverage | ~38% | **93%** |
-| `severity_scorer.py` coverage | ~25% | **62%** |
-| SECURITY-008 (pickle) severity | medium | **high** (CWE-502) |
-| SECURITY-018 (yaml.load) severity | medium | **high** (CWE-502) |
-| CUSTOM-* findings in output | 3 types | **0** |
-| PR comment file paths | `/tmp/pr-files/` prefix | Clean relative paths |
-| Rule mappings | 97 | 127 |
+| Test count | 526 | **1,690** |
+| `quality_gate.py` coverage | ~38% | **95%** |
+| `severity_scorer.py` coverage | ~25% | **83%** |
+| CUSTOM-* findings in output | multiple types | **0** (all targets) |
+| Rule mappings | 97 | **311** |
+| Languages supported | Python | Python, JS/TS, Go |
+| `--json` stdout | polluted with progress | **clean JSON only** |
+| Precision | 94.8% | **97.1%** |
 
 **Pipeline timing unchanged** — normalization and severity scoring are pure in-memory operations; the new test coverage does not affect runtime performance.
 

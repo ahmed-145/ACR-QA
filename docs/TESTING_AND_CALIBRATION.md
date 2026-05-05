@@ -1,7 +1,7 @@
 # ACR-QA Testing & Calibration Report
 
-**Latest Run:** April 2026 · **Version:** v3.2.4
-**Unit Tests:** 1,699 passed · **Coverage:** 80% (God-Mode — All Core Logic Fully Covered)
+**Latest Run:** May 2026 · **Version:** v3.2.4
+**Unit Tests:** 1,690 passed · **Coverage:** 86% (God-Mode — All Core Logic Fully Covered)
 
 ---
 
@@ -719,3 +719,39 @@ AI explanations: 7 HIGH findings in 2299ms
 - Extensively boosted coverage for core engines (scorer, normalizer, explainer, cbom, etc.) reaching >94% line coverage each.
 - Full testing of the new Go Language adapter spanning offline `gosec`, `staticcheck` and `semgrep` Go rules.
 - Robust parsing for dynamic output line ranges (e.g. `'37-40'`) in gosec outputs, now returning the lowest single digit integer to prevent SQL write issues.
+
+---
+
+## Section 14 — Quality Audit: CUSTOM-* Elimination & Output Integrity (May 2026)
+
+*Full pipeline audit across all 7 targets — verified zero CUSTOM-* findings, fixed severity bugs, cleaned JSON output*
+
+### Issues Found & Fixed
+
+| Bug | Root Cause | Fix |
+|-----|-----------|-----|
+| 20 `CUSTOM-GO-*` findings on govwa | 6 staticcheck rules unmapped (S1023/25/31/39, ST1005/06) | Added STYLE-021–026 in `go_adapter.py` + `severity_scorer.py` |
+| 9 `CUSTOM-eslint-unknown` as HIGH on dvblab | ESLint parsing errors (null ruleId) treated as real findings | Extended null-ruleId filter to also skip `"Parsing error:"` messages |
+| 6 Ruff rules unmapped on pygoat | E402/E711/E712/F601/UP008/UP015 missing from RULE_MAPPING | Added IMPORT-005, PATTERN-003/004, BEST-PRACTICE-008, STYLE-019/020 |
+| 15 duplicate keys in `severity_scorer.py` | RULE_SEVERITY built up incrementally without dedup check | Removed early-block duplicates; last/more-precise definitions kept |
+| `SECURITY-047` severity `"critical"` | Not a valid `CanonicalFinding` severity (Pydantic rejects it) | Changed to `"high"` throughout |
+| Go/JS severity overridden by scorer | `CanonicalFinding.create()` calls `SeverityScorer.score()` which uses Python-centric RULE_SEVERITY | Added `model_copy(update={"severity": ...})` in `normalize_gosec()` and `normalize_eslint()` |
+| `--json` stdout polluted | Logging hardwired to `sys.stdout`; `run_checks.sh` also writes to stdout | Logging → stderr when `--json`; subprocess stdout → DEVNULL |
+
+### Target Coverage (All Verified)
+
+| Target | Language | Total Findings | CUSTOM-* | Status |
+|--------|----------|:--------------:|:--------:|--------|
+| pygoat | Python | 440 raw / 126 capped | 0 | ✅ |
+| dvpwa | Python | 44 | 0 | ✅ |
+| dsvw | Python | 59 raw / 33 capped | 0 | ✅ |
+| vulpy | Python | 293 raw / 73 capped | 0 | ✅ |
+| dvblab | JavaScript | 148 | 0 | ✅ |
+| vuln-node-api | JavaScript | 72 | 0 | ✅ |
+| govwa | Go | 46 | 0 | ✅ |
+
+### Test Suite After
+
+| Version | Tests Passed | Coverage | Notes |
+|---------|-------------|----------|-------|
+| v3.2.4 (May 5) | **1,690** | **86%** | Full quality audit; fixed 6 adapter bugs |

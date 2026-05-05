@@ -70,7 +70,7 @@ These are what separate ACR-QA from a "GPT wrapper on top of linters."
 - **Defense angle:** "We inventory all cryptographic usage and flag non-quantum-safe algorithms per NIST 2024 PQC standards."
 
 ### E. Engineering Maturity
-- **1,699 tests** across 36 files with 80% coverage
+- **1,690 tests** across 18 files with 86% coverage
 - **Strict CI:** ruff format + ruff check + mypy + pytest (all enforced via pre-commit hooks)
 - **Pydantic validation** on every canonical finding (`CanonicalFinding` model with field validators)
 - **Defense angle:** This alone puts you above 95% of thesis projects.

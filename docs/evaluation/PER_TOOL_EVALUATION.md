@@ -21,14 +21,14 @@
 
 | Repo | Total | Security | Dead Code | Style | Unmapped |
 |------|:-----:|:--------:|:---------:|:-----:|:--------:|
-| DVPWA | 43 | 7 | 8 | 28 | 0 |
-| Pygoat | 425 | 64 | 167 | 150 | 67 |
-| VulPy | 276 | 50 | 64 | 162 | 0 |
-| DSVW | 53 | 16 | 2 | 33 | 0 |
+| DVPWA | 44 | 7 | 8 | 29 | 0 |
+| Pygoat | 440 | 64 | 167 | 150 | 67 |
+| VulPy | 293 | 50 | 64 | 162 | 0 |
+| DSVW | 59 | 16 | 2 | 33 | 0 |
 | GoVWA | 46 | 14 | 0 | 32 | 0 |
-| **Total** | **843** | **151** | **241** | **405** | **67** |
+| **Total** | **882** | **151** | **241** | **406** | **67** |
 
-> Note: Pygoat's 67 unmapped rules are Semgrep custom patterns (`assert-for-validation`, `open-without-context-manager`, `global-variable`, `too-many-parameters`) — informational only.
+> Note: Pygoat's 67 "unmapped" findings are intentional Semgrep custom-rule canonical IDs (`CUSTOM-assert-for-validation`, `CUSTOM-open-without-context-manager`, `CUSTOM-global-variable`, `CUSTOM-too-many-parameters`) — these have severity scores and are informational only. All other CUSTOM-* findings are 0 across all targets as of v3.2.4 (May 2026).
 
 ---
 

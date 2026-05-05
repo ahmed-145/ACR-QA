@@ -7,14 +7,14 @@
 
 [![Python 3.11+](https://img.shields.io/badge/Python-3.11+-3776ab?logo=python&logoColor=white)](https://www.python.org/)
 [![CI Tests](https://github.com/ahmed-145/ACR-QA/actions/workflows/tests.yml/badge.svg)](https://github.com/ahmed-145/ACR-QA/actions/workflows/tests.yml)
-[![Tests](https://img.shields.io/badge/Tests-1699%20passing-22c55e?logo=pytest&logoColor=white)](./TESTS/)
+[![Tests](https://img.shields.io/badge/Tests-1690%20passing-22c55e?logo=pytest&logoColor=white)](./TESTS/)
 [![Version](https://img.shields.io/badge/Version-3.2.4-blue)](CHANGELOG.md)
 [![PostgreSQL 15](https://img.shields.io/badge/PostgreSQL-15+-336791?logo=postgresql&logoColor=white)](https://postgresql.org/)
 [![Prometheus](https://img.shields.io/badge/Prometheus-monitored-e6522c?logo=prometheus&logoColor=white)](https://prometheus.io/)
-[![Rules](https://img.shields.io/badge/Rules-299%20mapped-8b5cf6?logo=shield&logoColor=white)](./docs/evaluation/PER_TOOL_EVALUATION.md)
+[![Rules](https://img.shields.io/badge/Rules-311%20mapped-8b5cf6?logo=shield&logoColor=white)](./docs/evaluation/PER_TOOL_EVALUATION.md)
 [![Languages](https://img.shields.io/badge/Languages-Python%20%7C%20JS%20%7C%20TS%20%7C%20Go-00ADD8?logo=go&logoColor=white)](./CORE/adapters/)
-[![Precision](https://img.shields.io/badge/Precision-94.8%25-22c55e?logo=target&logoColor=white)](./docs/evaluation/PER_TOOL_EVALUATION.md)
-[![Coverage](https://img.shields.io/badge/Coverage-87%25-22c55e?logo=codecov&logoColor=white)](./htmlcov/)
+[![Precision](https://img.shields.io/badge/Precision-97.1%25-22c55e?logo=target&logoColor=white)](./docs/evaluation/PER_TOOL_EVALUATION.md)
+[![Coverage](https://img.shields.io/badge/Coverage-86%25-22c55e?logo=codecov&logoColor=white)](./htmlcov/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
 [Quick Start](#-quick-start) · [Features](#-features) · [Architecture](#-architecture) · [CLI](#-cli-reference) · [CI/CD](#-cicd-integration) · [Monitoring](#-monitoring) · [Docs](#-documentation)
