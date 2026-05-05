@@ -1,6 +1,6 @@
 # ACR-QA Testing & Calibration Report
 
-**Latest Run:** May 2026 · **Version:** v3.2.4
+**Latest Run:** May 2026 · **Version:** v3.2.5
 **Unit Tests:** 1,690 passed · **Coverage:** 86% (God-Mode — All Core Logic Fully Covered)
 
 ---

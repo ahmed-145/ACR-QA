@@ -1,4 +1,4 @@
-# 🎤 ACR-QA Thesis Defense & Demo Script (v3.2.4)
+# 🎤 ACR-QA Thesis Defense & Demo Script (v3.2.5)
 
 *7 minutes total: 2 min slides → 5 min live demo. Show, don't tell.*
 
@@ -28,7 +28,7 @@ python3 FRONTEND/app.py     # Start the dashboard → localhost:5000
 ## 🗣️ Part 1: Slides (2 Minutes)
 
 ### Slides 1–2: Context
-> "Hello Dr. Samy. Today I want to show you the completed enterprise release: ACR-QA v3.2.4. It's a fully automated, AI-powered Code Review platform that runs 10 analysis tools across Python, JavaScript, and Go — normalises them into a single standard, and uses RAG-enhanced AI to explain every finding."
+> "Hello Dr. Samy. Today I want to show you the completed enterprise release: ACR-QA v3.2.5. It's a fully automated, AI-powered Code Review platform that runs 10 analysis tools across Python, JavaScript, and Go — normalises them into a single standard, and uses RAG-enhanced AI to explain every finding."
 
 ### Slides 3–7: What Makes It Different
 > "There are three things no commercial competitor — not SonarQube, not CodeRabbit — offers. First, I built a **Policy-as-Code** engine where teams define quality rules in a YAML file and the system enforces them in CI. Second, I wrote a **Test Gap Analyzer** from scratch using Python's Abstract Syntax Tree to find untested business logic by complexity. Third, I implemented **semantic entropy scoring** — the AI runs 3 times and the system mathematically detects when it contradicts itself, preventing hallucination."

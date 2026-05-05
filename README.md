@@ -6,7 +6,7 @@
 *10 static analysis tools. One canonical schema. RAG-enhanced AI explanations. $0 recurring cost.*
 
 [![Python 3.11+](https://img.shields.io/badge/Python-3.11+-3776ab?logo=python&logoColor=white)](https://www.python.org/)
-[![Version](https://img.shields.io/badge/Version-3.2.4-blue)](CHANGELOG.md)
+[![Version](https://img.shields.io/badge/Version-3.2.5-blue)](CHANGELOG.md)
 [![Tests](https://img.shields.io/badge/Tests-1690%20passing-22c55e?logo=pytest&logoColor=white)](./TESTS/)
 [![Coverage](https://img.shields.io/badge/Coverage-86%25-22c55e?logo=codecov&logoColor=white)](./htmlcov/)
 [![Precision](https://img.shields.io/badge/Precision-97.1%25-22c55e)](./docs/evaluation/PER_TOOL_EVALUATION.md)
