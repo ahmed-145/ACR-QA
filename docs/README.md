@@ -37,6 +37,7 @@
 
 | Document | Description |
 |----------|-------------|
+| [**Testing Strategy** (v2)](TESTING_STRATEGY.md) | **6-layer testing pyramid for a security tool. Why coverage % is a tripwire, not a target. The plan to move thesis claims from hand-typed to test-generated.** |
 | [Testing & Calibration](TESTING_AND_CALIBRATION.md) | Full test suite breakdown, code audit bugs, mass repo testing across 9 repos, god-mode end-to-end validation (v2.9), all calibration fixes |
 
 ## 📊 Evaluation

@@ -221,7 +221,40 @@ When all 11 are checked: write the blog post, link from resume. Ship the thesis.
 
 ---
 
-## 9. Key Numbers to Beat (Evaluation Targets)
+## 9. Testing Strategy — Read This Before Writing Any Code
+
+**Coverage % is a lie when used as a goal.** 85% line coverage doesn't tell you whether ACR-QA actually finds bugs. The thesis needs evidence, not vibes.
+
+**The current honest state:**
+- 1,690 unit tests pass — these prevent regressions in functions, NOT prove the tool works
+- DVPWA recall is **50%** (3 of 6 known CWEs missed) — silent thesis risk
+- Flask FP rate ~10.3%, httpx ~9% — stale numbers, need re-measurement
+- `CORE/tasks.py` Celery code: **0% coverage** — claimed feature is unverified
+- No snapshot tests — refactors silently change output
+- Ground truth lives in Python dicts, not auditable YAML
+
+**The full strategy is in [`docs/TESTING_STRATEGY.md`](TESTING_STRATEGY.md).** Highlights:
+
+1. **6-layer pyramid** — static guards → unit → integration → snapshots → **evaluation benchmarks** (the thesis evidence) → user study
+2. **Move ground truth from Python dicts to YAML files** — `TESTS/evaluation/ground_truth/{pygoat,dvpwa,flask,httpx,…}.yml` — auditable by anyone
+3. **Every thesis number has a green test that generated it** — no hand-typed claims
+4. **TDD for new features** — write the validation harness BEFORE the engine:
+   - Reachability engine (Week 2): build `TESTS/fixtures/reachability/` first, then make tests pass
+   - Proof-of-Exploit (Week 4): build `TESTS/fixtures/exploits/` first, then make tests pass
+5. **Coverage becomes a tripwire, not a target** — fail CI if coverage drops > 2 points; never optimize for hitting 90%
+6. **Nightly full evaluation in CI** — runs Layer 5 against all benchmark repos, opens GitHub issue on regression
+
+**Week 1 testing must-fix list (before any new feature):**
+- [ ] Move ground truth YAML files into `TESTS/evaluation/ground_truth/`
+- [ ] Investigate why DVPWA hardcoded password (B105/B106) and debug mode (B201) aren't being caught
+- [ ] Mark CSRF as `out_of_scope: static_analysis_limit` (it can't be caught without runtime context — defensible)
+- [ ] Add `test_no_custom_rules.py` (CI fails if `CUSTOM-*` ever leaks to output)
+- [ ] Re-run Flask + httpx + requests benchmarks post-cleanup; capture honest current FP numbers
+- [ ] Write 5-10 integration tests against `CORE/tasks.py` (Celery worker lifecycle)
+
+---
+
+## 10. Key Numbers to Beat (Evaluation Targets)
 
 | Metric | Current (v3.3.0) | Target (v4.0.0) |
 |---|---|---|
