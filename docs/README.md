@@ -38,6 +38,7 @@
 | Document | Description |
 |----------|-------------|
 | [**God Mode Plan v2 — §9 Testing Strategy**](GOD_MODE_PLAN.md#9-testing-strategy--read-this-before-writing-any-code) | **6-layer testing pyramid for a security tool. Why coverage % is a tripwire, not a target. The plan to move thesis claims from hand-typed to test-generated.** |
+| [Phase 0 Baseline — Reality Check](evaluation/PHASE_0_BASELINE.md) | **May 6, 2026.** Real numbers from running ACR-QA on DVPWA, Pygoat, VulPy, DSVW, Flask, httpx. DVPWA "50% recall" is a tooling limit not a bug; 35 CUSTOM-* rules leaking; parallel-scan DB collision bug. |
 | [Testing & Calibration](TESTING_AND_CALIBRATION.md) | Full test suite breakdown, code audit bugs, mass repo testing across 9 repos, god-mode end-to-end validation (v2.9), all calibration fixes |
 
 ## 📊 Evaluation
