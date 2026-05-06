@@ -91,3 +91,11 @@ test_targets/
 
 # One-off debug/scratch scripts
 scratch/
+
+# Local Claude session config (per-clone, not committed)
+.claude/
+
+# Coverage artifacts (regenerated on every test run)
+coverage.xml
+.coverage
+htmlcov/
