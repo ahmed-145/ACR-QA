@@ -190,6 +190,15 @@ class Database:
         result = self.execute(query, values, fetch=True)
         return result[0]["id"] if result else None
 
+    def update_finding_reachability(self, finding_id: int, status: str, penalty: int) -> None:
+        """Persist call-graph reachability result for a finding (Feature 9)."""
+        query = """
+            UPDATE findings
+            SET reachability_status = %s, reachability_penalty = %s
+            WHERE id = %s
+        """
+        self.execute(query, (status, penalty, finding_id))
+
     def update_finding_correlation(self, finding_id, confidence_score, evidence):
         """Update a finding's confidence and evidence with cross-language correlation data"""
         query = """

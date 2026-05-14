@@ -1160,5 +1160,184 @@ class TestEdgeCases:
             assert resp.status_code == 200
 
 
+# ═══════════════════════════════════════════════════════════════════════════
+# Feature 9: CALL GRAPH REACHABILITY ENGINE — GOD MODE
+# ═══════════════════════════════════════════════════════════════════════════
+
+
+class TestReachabilityGodMode:
+    """Deep god-mode tests for Feature 9 — Call Graph FP Reduction."""
+
+    def test_engine_importable(self):
+        from CORE.engines.reachability import (
+            CallGraphReachability,
+            CallGraphResult,
+            _build_call_graph,
+            _detect_entry_points,
+            get_function_at_line,
+        )
+
+        assert CallGraphReachability is not None
+        assert CallGraphResult is not None
+        assert callable(_build_call_graph)
+        assert callable(_detect_entry_points)
+        assert callable(get_function_at_line)
+
+    def test_call_graph_result_dataclass(self):
+        from CORE.engines.reachability import CallGraphResult
+
+        r = CallGraphResult(
+            file_path="x.py",
+            reachable={"a", "b"},
+            unreachable={"c"},
+            entry_points=["a"],
+        )
+        assert r.is_function_reachable("a") is True
+        assert r.is_function_reachable("c") is False
+        assert r.penalty_for("c") == -20
+        assert r.penalty_for("a") == 0
+        assert r.penalty_for(None) == 0
+        d = r.to_dict()
+        assert d["reachable_functions"] == ["a", "b"]
+        assert d["unreachable_functions"] == ["c"]
+
+    def test_detect_all_entry_point_types(self):
+        from CORE.engines.reachability import _detect_entry_points
+
+        code = """\
+from flask import Flask
+from fastapi import FastAPI
+from celery import Celery
+
+flask_app = Flask(__name__)
+fast_app = FastAPI()
+celery_app = Celery()
+
+@flask_app.route("/a")
+def flask_view(): pass
+
+@fast_app.post("/b")
+async def fastapi_handler(): pass
+
+@celery_app.task
+def celery_task(): pass
+
+def pure_helper(): pass
+
+if __name__ == "__main__":
+    main_fn()
+"""
+        eps = _detect_entry_points(code)
+        assert "flask_view" in eps
+        assert "fastapi_handler" in eps
+        assert "celery_task" in eps
+        assert "main_fn" in eps
+        assert "pure_helper" not in eps
+
+    def test_deep_call_chain_all_reachable(self, tmp_path):
+        from CORE.engines.reachability import CallGraphReachability
+
+        f = tmp_path / "chain.py"
+        f.write_text(
+            "from flask import Flask\napp=Flask(__name__)\n"
+            "@app.route('/')\ndef a(): b()\n"
+            "def b(): c()\n"
+            "def c(): d()\n"
+            "def d(): pass\n"
+            "def orphan(): pass\n"
+        )
+        r = CallGraphReachability().analyze(str(f))
+        for fn in ("a", "b", "c", "d"):
+            assert r.is_function_reachable(fn), f"{fn} should be reachable"
+        assert not r.is_function_reachable("orphan")
+
+    def test_get_function_at_line_nested(self):
+        from CORE.engines.reachability import get_function_at_line
+
+        src = "def outer():\n    def inner():\n        return 1\n    return inner()\n"
+        assert get_function_at_line(src, 3) == "inner"
+        assert get_function_at_line(src, 4) == "outer"
+
+    def test_enrich_findings_mixed_batch(self, tmp_path):
+        from CORE.engines.reachability import CallGraphReachability
+
+        py_file = tmp_path / "app.py"
+        py_file.write_text(
+            "from flask import Flask\napp=Flask(__name__)\n"
+            "@app.route('/')\ndef index(): helper()\n"
+            "def helper(): pass\n"
+            "def dead(): pass\n"
+        )
+        js_file = tmp_path / "script.js"
+        js_file.write_text("function foo() {}\n")
+
+        findings = [
+            {"file_path": str(py_file), "line_number": 5, "confidence_score": 80},
+            {"file_path": str(py_file), "line_number": 6, "confidence_score": 80},
+            {"file_path": str(js_file), "line_number": 1, "confidence_score": 80},
+            {"file_path": "", "line_number": 0, "confidence_score": 80},
+        ]
+        results = CallGraphReachability().enrich_findings(findings)
+        assert results[0]["reachability_status"] == "REACHABLE"
+        assert results[1]["reachability_status"] == "UNREACHABLE"
+        assert results[1]["confidence_score"] == 60
+        assert results[2]["reachability_status"] == "UNKNOWN"
+        assert results[3]["reachability_status"] == "UNKNOWN"
+
+    def test_enrich_findings_no_mutation(self, tmp_path):
+        """enrich_findings must not mutate the original finding dict."""
+        from CORE.engines.reachability import CallGraphReachability
+
+        f = tmp_path / "app.py"
+        f.write_text(
+            "from flask import Flask\napp=Flask(__name__)\n" "@app.route('/')\ndef index(): pass\n" "def dead(): pass\n"
+        )
+        original = {"file_path": str(f), "line_number": 5, "confidence_score": 80}
+        original_copy = dict(original)
+        CallGraphReachability().enrich_findings([original])
+        assert original == original_copy
+
+    def test_alembic_migration_file_exists(self):
+        migration = Path("alembic/versions/20260514_0003_reachability_columns.py")
+        assert migration.exists(), "Migration 0003 for reachability columns is missing"
+
+    def test_database_has_update_reachability_method(self):
+        from DATABASE.database import Database
+
+        assert hasattr(Database, "update_finding_reachability")
+
+    def test_reachability_penalty_constant(self):
+        from CORE.engines import reachability as r_mod
+
+        assert r_mod._UNREACHABLE_PENALTY == -20
+
+    def test_library_file_unknown_not_penalised(self, tmp_path):
+        """Pure library files with no entry points get UNKNOWN — no penalty."""
+        from CORE.engines.reachability import CallGraphReachability
+
+        lib = tmp_path / "utils.py"
+        lib.write_text("def parse(data): return data\ndef validate(data): return True\n")
+        findings = [{"file_path": str(lib), "line_number": 1, "confidence_score": 75}]
+        results = CallGraphReachability().enrich_findings(findings)
+        assert results[0]["reachability_status"] == "UNKNOWN"
+        assert results[0]["confidence_score"] == 75
+
+    def test_zero_fp_rate_on_benchmark_fixtures(self):
+        """No reachable finding should be mislabelled as UNREACHABLE across all fixtures."""
+        from CORE.engines.reachability import CallGraphReachability
+
+        fixture_dir = Path(__file__).parent / "fixtures" / "reachability"
+        reachable_cases = [
+            (str(fixture_dir / "flask_app.py"), 27),  # process_input body
+            (str(fixture_dir / "flask_app.py"), 33),  # execute_query body
+            (str(fixture_dir / "standalone.py"), 23),  # called_from_main body
+            (str(fixture_dir / "celery_tasks.py"), 26),  # task_helper body
+        ]
+        findings = [{"file_path": fp, "line_number": ln, "confidence_score": 80} for fp, ln in reachable_cases]
+        results = CallGraphReachability().enrich_findings(findings)
+        fps = [r for r in results if r.get("reachability_status") == "UNREACHABLE"]
+        assert len(fps) == 0, f"FP misclassifications: {fps}"
+
+
 if __name__ == "__main__":
     pytest.main([__file__, "-v", "--tb=short"])

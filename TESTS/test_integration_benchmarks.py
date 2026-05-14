@@ -269,5 +269,135 @@ class TestRulesCoverage:
         print(f"\n🔒 Security rules: {len(security_rules)}")
 
 
+class TestReachabilityBenchmark:
+    """
+    Feature 9: Call Graph Reachability — FP reduction benchmarks.
+    Validates that the engine correctly classifies findings in benchmark fixtures
+    and that the enrich_findings pipeline integration works end-to-end.
+    """
+
+    FIXTURE_DIR = Path(__file__).parent / "fixtures" / "reachability"
+
+    def test_flask_fp_rate_benchmark(self):
+        """
+        Flask fixture: reachable findings must not be penalised,
+        unreachable ones must receive a -20 confidence penalty.
+        FP criterion: a reachable finding marked UNREACHABLE = false positive.
+        """
+        from CORE.engines.reachability import CallGraphReachability
+
+        # Ground truth for flask_app.py (post-ruff-format line numbers):
+        #   reachable body lines  → process_input:27, execute_query:33
+        #   unreachable body lines → orphan_function:38, dead_helper:44
+        flask_file = str(self.FIXTURE_DIR / "flask_app.py")
+        findings = [
+            {"file_path": flask_file, "line_number": 27, "confidence_score": 80, "id": "tp1"},
+            {"file_path": flask_file, "line_number": 33, "confidence_score": 75, "id": "tp2"},
+            {"file_path": flask_file, "line_number": 38, "confidence_score": 70, "id": "dead1"},
+            {"file_path": flask_file, "line_number": 44, "confidence_score": 60, "id": "dead2"},
+        ]
+        results = CallGraphReachability().enrich_findings(findings)
+        by_id = {r["id"]: r for r in results}
+
+        # Reachable findings must NOT be penalised
+        assert by_id["tp1"]["reachability_status"] == "REACHABLE"
+        assert by_id["tp1"]["confidence_score"] == 80
+        assert by_id["tp2"]["reachability_status"] == "REACHABLE"
+        assert by_id["tp2"]["confidence_score"] == 75
+
+        # Unreachable findings must have -20 penalty applied
+        assert by_id["dead1"]["reachability_status"] == "UNREACHABLE"
+        assert by_id["dead1"]["confidence_score"] == 50
+        assert by_id["dead2"]["reachability_status"] == "UNREACHABLE"
+        assert by_id["dead2"]["confidence_score"] == 40
+
+        # FP rate: reachable findings incorrectly labelled UNREACHABLE
+        fp_count = sum(1 for r in results if r["id"] in ("tp1", "tp2") and r["reachability_status"] == "UNREACHABLE")
+        fp_rate = fp_count / 2
+        assert fp_rate == 0.0, f"FP rate {fp_rate:.0%} exceeds 0% on Flask fixture"
+
+    def test_standalone_benchmark(self):
+        """standalone.py: main + called_from_main reachable, never_called + also_dead not."""
+        from CORE.engines.reachability import CallGraphReachability
+
+        standalone_file = str(self.FIXTURE_DIR / "standalone.py")
+        findings = [
+            # called_from_main body (line 23) — reachable
+            {"file_path": standalone_file, "line_number": 23, "confidence_score": 80, "id": "reach"},
+            # also_dead body (line 32) — unreachable
+            {"file_path": standalone_file, "line_number": 32, "confidence_score": 70, "id": "dead"},
+        ]
+        results = CallGraphReachability().enrich_findings(findings)
+        by_id = {r["id"]: r for r in results}
+        assert by_id["reach"]["reachability_status"] == "REACHABLE"
+        assert by_id["dead"]["reachability_status"] == "UNREACHABLE"
+
+    def test_celery_benchmark(self):
+        """celery_tasks.py: process_job + task_helper reachable, orphan_task_helper not."""
+        from CORE.engines.reachability import CallGraphReachability
+
+        celery_file = str(self.FIXTURE_DIR / "celery_tasks.py")
+        findings = [
+            # task_helper body line 26 — reachable
+            {"file_path": celery_file, "line_number": 26, "confidence_score": 80, "id": "reach"},
+            # orphan_task_helper body line 31 — unreachable
+            {"file_path": celery_file, "line_number": 31, "confidence_score": 60, "id": "dead"},
+        ]
+        results = CallGraphReachability().enrich_findings(findings)
+        by_id = {r["id"]: r for r in results}
+        assert by_id["reach"]["reachability_status"] == "REACHABLE"
+        assert by_id["dead"]["reachability_status"] == "UNREACHABLE"
+
+    def test_mixed_language_batch(self, tmp_path):
+        """Non-Python findings pass through as UNKNOWN without confidence change."""
+        from CORE.engines.reachability import CallGraphReachability
+
+        js_file = tmp_path / "app.js"
+        js_file.write_text("function vuln() { eval(input); }\n")
+        findings = [
+            {"file_path": str(js_file), "line_number": 1, "confidence_score": 90, "id": "js"},
+        ]
+        results = CallGraphReachability().enrich_findings(findings)
+        assert results[0]["reachability_status"] == "UNKNOWN"
+        assert results[0]["confidence_score"] == 90
+
+    def test_enrich_findings_preserves_all_fields(self, tmp_path):
+        """Enrichment must not drop existing finding fields."""
+        from CORE.engines.reachability import CallGraphReachability
+
+        f = tmp_path / "app.py"
+        f.write_text("from flask import Flask\napp=Flask(__name__)\n" "@app.route('/')\ndef index(): pass\n")
+        finding = {
+            "file_path": str(f),
+            "line_number": 4,
+            "confidence_score": 80,
+            "canonical_rule_id": "SECURITY-001",
+            "canonical_severity": "high",
+            "message": "test",
+        }
+        results = CallGraphReachability().enrich_findings([finding])
+        for key in ("canonical_rule_id", "canonical_severity", "message"):
+            assert key in results[0], f"Field {key!r} was dropped by enrich_findings"
+
+    def test_zero_false_positives_on_fixtures(self):
+        """
+        Aggregate: across all three fixtures, no reachable finding should be
+        misclassified as UNREACHABLE. Target: 0% FP rate.
+        """
+        from CORE.engines.reachability import CallGraphReachability
+
+        # Reachable body lines by fixture
+        reachable_cases = [
+            (str(self.FIXTURE_DIR / "flask_app.py"), 27),  # process_input body
+            (str(self.FIXTURE_DIR / "flask_app.py"), 33),  # execute_query body
+            (str(self.FIXTURE_DIR / "standalone.py"), 23),  # called_from_main body
+            (str(self.FIXTURE_DIR / "celery_tasks.py"), 26),  # task_helper body
+        ]
+        findings = [{"file_path": fp, "line_number": ln, "confidence_score": 80} for fp, ln in reachable_cases]
+        results = CallGraphReachability().enrich_findings(findings)
+        fps = [r for r in results if r.get("reachability_status") == "UNREACHABLE"]
+        assert len(fps) == 0, f"False positives detected: {[r['file_path'] + ':' + str(r['line_number']) for r in fps]}"
+
+
 if __name__ == "__main__":
     pytest.main([__file__, "-v", "--tb=short"])

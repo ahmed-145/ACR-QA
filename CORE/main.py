@@ -170,6 +170,17 @@ class AnalysisPipeline:
         # Deduplicate findings (same file+line+rule from different tools)
         findings = self._deduplicate_findings(findings)
 
+        # Call Graph Reachability: penalise findings in dead-code functions (Feature 9)
+        try:
+            from CORE.engines.reachability import CallGraphReachability
+
+            findings = CallGraphReachability().enrich_findings(findings, str(self.target_dir))
+            dead = sum(1 for f in findings if f.get("reachability_status") == "UNREACHABLE")
+            if dead:
+                logger.info(f"      - Reachability: {dead} finding(s) in unreachable functions (−20 confidence)")
+        except Exception as _reach_err:
+            logger.warning(f"Reachability enrichment skipped: {_reach_err}")
+
         # Cap findings per rule (max 5 per rule to prevent flooding)
         findings = self._cap_per_rule(findings, max_per_rule=5)
 
@@ -241,6 +252,16 @@ class AnalysisPipeline:
         findings_with_snippets = []
         for f in findings_to_process:
             f["_db_id"] = self.db.insert_finding(run_id, f)
+            # Persist reachability result when available
+            if f.get("reachability_status") and f["_db_id"]:
+                try:
+                    self.db.update_finding_reachability(
+                        f["_db_id"],
+                        f["reachability_status"],
+                        f.get("reachability_penalty", 0),
+                    )
+                except Exception:
+                    pass
             snippet = extract_code_snippet(
                 f["file_path"] if "file_path" in f else f["file"], f["line"], context_lines=3
             )
@@ -725,6 +746,18 @@ class AnalysisPipeline:
             logger.info(f"      - Triage Memory: suppressed {suppressed} known false positive(s)")
 
         findings = self._deduplicate_findings(findings)
+
+        # Call Graph Reachability for any Python files in JS repo (Feature 9)
+        try:
+            from CORE.engines.reachability import CallGraphReachability
+
+            findings = CallGraphReachability().enrich_findings(findings, str(self.target_dir))
+            dead = sum(1 for f in findings if f.get("reachability_status") == "UNREACHABLE")
+            if dead:
+                logger.info(f"      - Reachability: {dead} finding(s) in unreachable functions (−20 confidence)")
+        except Exception as _reach_err:
+            logger.warning(f"Reachability enrichment skipped: {_reach_err}")
+
         findings = self._sort_by_priority(findings)
         total_findings = len(findings)
         logger.info(f"      ✓ {total_findings} issues after filtering & dedup")

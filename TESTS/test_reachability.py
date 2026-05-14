@@ -14,6 +14,7 @@ from CORE.engines.reachability import (
     CallGraphResult,
     _build_call_graph,
     _detect_entry_points,
+    get_function_at_line,
 )
 
 FIXTURE_DIR = Path(__file__).parent / "fixtures" / "reachability"
@@ -259,6 +260,153 @@ def isolated():
     def test_returns_dict(self):
         graph = _build_call_graph("def f(): pass\n")
         assert isinstance(graph, dict)
+
+
+# ── get_function_at_line ──────────────────────────────────────────────────────
+
+
+class TestGetFunctionAtLine:
+    _CODE = """\
+def outer():
+    x = 1
+    return x
+
+
+def inner():
+    y = 2
+    return y
+
+
+def nested_outer():
+    def nested_inner():
+        z = 3
+        return z
+    return nested_inner()
+"""
+
+    def test_line_inside_outer(self):
+        assert get_function_at_line(self._CODE, 2) == "outer"
+
+    def test_line_inside_inner(self):
+        assert get_function_at_line(self._CODE, 7) == "inner"
+
+    def test_line_inside_nested_inner(self):
+        # Line 13 is inside nested_inner — should return innermost
+        assert get_function_at_line(self._CODE, 13) == "nested_inner"
+
+    def test_module_level_line_returns_none(self):
+        code = "x = 1\ndef f(): pass\n"
+        assert get_function_at_line(code, 1) is None
+
+    def test_zero_line_returns_none(self):
+        assert get_function_at_line("def f(): pass\n", 0) is None
+
+    def test_syntax_error_returns_none(self):
+        assert get_function_at_line("def (broken:", 5) is None
+
+    def test_empty_source_returns_none(self):
+        assert get_function_at_line("", 1) is None
+
+
+# ── enrich_findings ───────────────────────────────────────────────────────────
+
+
+class TestEnrichFindings:
+    @pytest.fixture
+    def flask_file(self, tmp_path):
+        f = tmp_path / "app.py"
+        f.write_text(
+            "from flask import Flask, request\n"
+            "app = Flask(__name__)\n"
+            "\n"
+            "@app.route('/vuln')\n"
+            "def vuln_route():\n"
+            "    return process_input(request.args.get('q', ''))\n"
+            "\n"
+            "def process_input(data):\n"
+            "    return execute_query(data)\n"
+            "\n"
+            "def execute_query(query):\n"
+            "    import sqlite3\n"
+            "    conn = sqlite3.connect(':memory:')\n"
+            '    conn.execute("SELECT * FROM users WHERE name = \'" + query + "\'")\n'
+            "    return 'ok'\n"
+            "\n"
+            "def orphan(): pass\n"
+        )
+        return str(f)
+
+    def _finding(self, file_path, line, score=70):
+        return {
+            "file_path": file_path,
+            "line_number": line,
+            "confidence_score": score,
+            "canonical_rule_id": "SECURITY-001",
+        }
+
+    def test_reachable_finding_no_penalty(self, flask_file):
+        finding = self._finding(flask_file, 14)  # execute_query body
+        results = CallGraphReachability().enrich_findings([finding])
+        assert results[0]["reachability_status"] == "REACHABLE"
+        assert results[0]["confidence_score"] == 70
+
+    def test_unreachable_finding_penalty_applied(self, flask_file):
+        finding = self._finding(flask_file, 17)  # orphan
+        results = CallGraphReachability().enrich_findings([finding])
+        assert results[0]["reachability_status"] == "UNREACHABLE"
+        assert results[0]["confidence_score"] == 50  # 70 - 20
+
+    def test_non_python_file_is_unknown(self, tmp_path):
+        f = tmp_path / "app.js"
+        f.write_text("function foo() { return 1; }\n")
+        finding = {"file_path": str(f), "line_number": 1, "confidence_score": 80}
+        results = CallGraphReachability().enrich_findings([finding])
+        assert results[0]["reachability_status"] == "UNKNOWN"
+        assert results[0]["confidence_score"] == 80  # unchanged
+
+    def test_missing_file_is_unknown(self):
+        finding = {"file_path": "/nonexistent/file.py", "line_number": 5, "confidence_score": 60}
+        results = CallGraphReachability().enrich_findings([finding])
+        assert results[0]["reachability_status"] == "UNKNOWN"
+
+    def test_no_entry_points_is_unknown(self, tmp_path):
+        f = tmp_path / "lib.py"
+        f.write_text("def helper(): pass\ndef another(): pass\n")
+        finding = {"file_path": str(f), "line_number": 1, "confidence_score": 65}
+        results = CallGraphReachability().enrich_findings([finding])
+        assert results[0]["reachability_status"] == "UNKNOWN"
+        assert results[0]["confidence_score"] == 65
+
+    def test_per_file_cache(self, flask_file):
+        # Two findings in the same file — file should only be parsed once
+        findings = [self._finding(flask_file, 14), self._finding(flask_file, 17)]
+        results = CallGraphReachability().enrich_findings(findings)
+        assert results[0]["reachability_status"] == "REACHABLE"
+        assert results[1]["reachability_status"] == "UNREACHABLE"
+
+    def test_empty_list(self):
+        assert CallGraphReachability().enrich_findings([]) == []
+
+    def test_finding_with_line_field_alias(self, flask_file):
+        finding = {"file_path": flask_file, "line": 14, "confidence_score": 70}
+        results = CallGraphReachability().enrich_findings([finding])
+        assert results[0]["reachability_status"] == "REACHABLE"
+
+    def test_confidence_never_below_zero(self, tmp_path):
+        f = tmp_path / "app.py"
+        f.write_text(
+            "from flask import Flask\napp=Flask(__name__)\n" "@app.route('/')\ndef index(): pass\n" "def dead(): pass\n"
+        )
+        finding = {"file_path": str(f), "line_number": 5, "confidence_score": 10}
+        results = CallGraphReachability().enrich_findings([finding])
+        assert results[0]["confidence_score"] >= 0
+
+    def test_target_dir_resolves_relative_paths(self, tmp_path):
+        f = tmp_path / "app.py"
+        f.write_text("from flask import Flask\napp=Flask(__name__)\n" "@app.route('/')\ndef index(): pass\n")
+        finding = {"file_path": "app.py", "line_number": 4, "confidence_score": 80}
+        results = CallGraphReachability().enrich_findings([finding], target_dir=str(tmp_path))
+        assert results[0]["reachability_status"] == "REACHABLE"
 
 
 # ── Engine integration ────────────────────────────────────────────────────────

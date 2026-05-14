@@ -174,6 +174,28 @@ def _reachable_from(entry_points: set[str], graph: dict[str, set[str]]) -> set[s
     return visited
 
 
+def get_function_at_line(source: str, line: int) -> str | None:
+    """
+    Return the name of the innermost function definition that contains *line*.
+    Returns None if the line is at module level or the source is unparseable.
+    """
+    try:
+        tree = ast.parse(source)
+    except SyntaxError:
+        return None
+
+    best: ast.FunctionDef | ast.AsyncFunctionDef | None = None
+    for node in ast.walk(tree):
+        if isinstance(node, ast.FunctionDef | ast.AsyncFunctionDef):
+            end_line = getattr(node, "end_lineno", node.lineno)
+            if node.lineno <= line <= end_line:
+                # Pick the innermost (highest start line)
+                if best is None or node.lineno > best.lineno:
+                    best = node
+
+    return best.name if best else None
+
+
 class CallGraphReachability:
     """Static call graph analyser for a single Python file."""
 
@@ -239,3 +261,63 @@ class CallGraphReachability:
             result["confidence_score"] = result.get("confidence_score", 0) + penalty
 
         return result
+
+    def enrich_findings(
+        self,
+        findings: list[dict],
+        target_dir: str | None = None,
+    ) -> list[dict]:
+        """
+        Enrich a list of pipeline findings with reachability status and penalty.
+        Only Python files are analysed; non-Python findings pass through as UNKNOWN.
+        Per-file analysis is cached — each file is parsed at most once.
+        """
+        cg_cache: dict[str, CallGraphResult | None] = {}
+        src_cache: dict[str, str] = {}
+        enriched: list[dict] = []
+
+        for finding in findings:
+            file_path = finding.get("file_path") or finding.get("file", "")
+
+            if not file_path or not file_path.endswith(".py"):
+                enriched.append({**finding, "reachability_status": "UNKNOWN"})
+                continue
+
+            # Resolve to absolute path when target_dir is given
+            abs_path = file_path
+            if target_dir and not Path(file_path).is_absolute():
+                abs_path = str(Path(target_dir) / file_path)
+
+            # Parse + analyse the file once
+            if abs_path not in cg_cache:
+                try:
+                    cg_cache[abs_path] = self.analyze(abs_path)
+                    src_cache[abs_path] = Path(abs_path).read_text(encoding="utf-8")
+                except (FileNotFoundError, SyntaxError):
+                    cg_cache[abs_path] = None
+                    src_cache[abs_path] = ""
+
+            cg = cg_cache[abs_path]
+            if cg is None or not cg.entry_points:
+                enriched.append({**finding, "reachability_status": "UNKNOWN"})
+                continue
+
+            # Locate the containing function from the finding's line number
+            line = int(finding.get("line_number") or finding.get("line") or 0)
+            func_name = get_function_at_line(src_cache[abs_path], line) if line else None
+
+            result = dict(finding)
+            if func_name is None:
+                result["reachability_status"] = "UNKNOWN"
+                result["reachability_penalty"] = 0
+            elif func_name in cg.unreachable:
+                result["reachability_status"] = "UNREACHABLE"
+                result["reachability_penalty"] = _UNREACHABLE_PENALTY
+                result["confidence_score"] = max(0, int(result.get("confidence_score") or 50) + _UNREACHABLE_PENALTY)
+            else:
+                result["reachability_status"] = "REACHABLE"
+                result["reachability_penalty"] = 0
+
+            enriched.append(result)
+
+        return enriched
