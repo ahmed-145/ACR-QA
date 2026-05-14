@@ -355,7 +355,7 @@ class AnalysisPipeline:
             logger.info(f"\n   Run ID: {run_id}")
             logger.info(f"   Explanations Generated: {len(findings_to_process)}")
             logger.info("\nNext Steps:")
-            logger.info("   View dashboard: python3 FRONTEND/app.py")
+            logger.info("   View dashboard: uvicorn FRONTEND.api.main:app --port 8000")
             logger.info(f"   Generate report: python3 scripts/generate_report.py {run_id}")
             logger.info(f"   Export SARIF: python3 scripts/export_sarif.py --run-id {run_id}")
 
@@ -510,7 +510,7 @@ class AnalysisPipeline:
             f"🟢 Low: {counts['low']}\n\n"
             f"{checks_text}\n"
             f"  [dim]Run ID: {run_id}  │  Explanations: {num_explained}[/dim]\n"
-            f"  [dim]Dashboard: python3 FRONTEND/app.py[/dim]\n"
+            f"  [dim]Dashboard: uvicorn FRONTEND.api.main:app --port 8000[/dim]\n"
             f"  [dim]Report: python3 scripts/generate_report.py {run_id}[/dim]\n"
             f"  [dim]SARIF: python3 scripts/export_sarif.py --run-id {run_id}[/dim]"
         )
@@ -912,7 +912,7 @@ class AnalysisPipeline:
             logger.info(f"\n   Run ID: {run_id}")
             logger.info(f"   Explanations Generated: {len(findings_with_snippets)}")
             logger.info("\nNext Steps:")
-            logger.info("   View dashboard: python3 FRONTEND/app.py")
+            logger.info("   View dashboard: uvicorn FRONTEND.api.main:app --port 8000")
             logger.info(f"   Generate report: python3 scripts/generate_report.py {run_id}")
 
         # Feature 9: Cross-language correlation

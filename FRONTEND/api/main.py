@@ -19,6 +19,7 @@ from fastapi.middleware.cors import CORSMiddleware
 sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 
 from CORE import __version__
+from CORE.utils.metrics import metrics
 from DATABASE.database import Database
 from FRONTEND.api.deps import get_current_user, get_db
 from FRONTEND.api.models import HealthOut
@@ -53,6 +54,16 @@ app.include_router(scans.router, prefix="/v1")
 @app.get("/health", response_model=HealthOut, tags=["system"], summary="Liveness probe")
 async def health():
     return HealthOut(status="healthy", version=__version__)
+
+
+@app.get("/metrics", tags=["system"], summary="Prometheus metrics")
+async def prometheus_metrics():
+    from fastapi.responses import PlainTextResponse
+
+    return PlainTextResponse(
+        metrics.format_prometheus(),
+        media_type="text/plain; version=0.0.4; charset=utf-8",
+    )
 
 
 # ── Misc v1 endpoints (not grouped into a router) ────────────────────────────

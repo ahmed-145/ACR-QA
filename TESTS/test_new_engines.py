@@ -1522,41 +1522,64 @@ class TestFeature10TrendDashboard:
         test_repos = [r for r in repos if r.startswith("test-")]
         assert test_repos == []
 
-    def test_trends_api_returns_success(self):
-        from FRONTEND.app import app
+    def test_repos_fastapi_returns_success(self):
+        from unittest.mock import MagicMock
 
-        app.config["TESTING"] = True
-        with app.test_client() as client:
-            r = client.get("/api/trends?limit=5")
-            assert r.status_code == 200
-            data = r.get_json()
-            assert data["success"] is True
-            assert "labels" in data
-            assert "severity_series" in data
-            assert "confidence_series" in data
-            assert "total_series" in data
-            assert "repos" in data
-            assert "run_count" in data
+        from starlette.testclient import TestClient
 
-    def test_repos_api_returns_success(self):
-        from FRONTEND.app import app
+        from FRONTEND.api.deps import get_current_user, get_db
+        from FRONTEND.api.main import app as fastapi_app
 
-        app.config["TESTING"] = True
-        with app.test_client() as client:
-            r = client.get("/api/repos")
-            assert r.status_code == 200
-            data = r.get_json()
-            assert data["success"] is True
-            assert "repos" in data
-            assert isinstance(data["repos"], list)
+        mock_db = MagicMock()
+        mock_db.get_repos_with_runs.return_value = ["repo-a", "repo-b"]
+        fastapi_app.dependency_overrides[get_db] = lambda: mock_db
+        fastapi_app.dependency_overrides[get_current_user] = lambda: {"id": 1, "role": "admin"}
 
-    def test_trends_api_repo_filter(self):
-        from FRONTEND.app import app
+        with TestClient(fastapi_app, raise_server_exceptions=False) as c:
+            r = c.get("/v1/repos")
+        fastapi_app.dependency_overrides.clear()
 
-        app.config["TESTING"] = True
-        with app.test_client() as client:
-            r = client.get("/api/trends?limit=5&repo=nonexistent-xyz")
-            assert r.status_code == 200
-            data = r.get_json()
-            assert data["success"] is True
-            assert data["run_count"] == 0
+        assert r.status_code == 200
+        data = r.json()
+        assert data["success"] is True
+        assert "repos" in data
+        assert isinstance(data["repos"], list)
+
+    def test_repos_fastapi_empty_db(self):
+        from unittest.mock import MagicMock
+
+        from starlette.testclient import TestClient
+
+        from FRONTEND.api.deps import get_current_user, get_db
+        from FRONTEND.api.main import app as fastapi_app
+
+        mock_db = MagicMock()
+        mock_db.get_repos_with_runs.return_value = []
+        fastapi_app.dependency_overrides[get_db] = lambda: mock_db
+        fastapi_app.dependency_overrides[get_current_user] = lambda: {"id": 1, "role": "admin"}
+
+        with TestClient(fastapi_app, raise_server_exceptions=False) as c:
+            r = c.get("/v1/repos")
+        fastapi_app.dependency_overrides.clear()
+
+        assert r.status_code == 200
+        assert r.json()["repos"] == []
+
+    def test_repos_fastapi_contains_expected_repos(self):
+        from unittest.mock import MagicMock
+
+        from starlette.testclient import TestClient
+
+        from FRONTEND.api.deps import get_current_user, get_db
+        from FRONTEND.api.main import app as fastapi_app
+
+        mock_db = MagicMock()
+        mock_db.get_repos_with_runs.return_value = ["flask", "httpx", "django"]
+        fastapi_app.dependency_overrides[get_db] = lambda: mock_db
+        fastapi_app.dependency_overrides[get_current_user] = lambda: {"id": 1, "role": "admin"}
+
+        with TestClient(fastapi_app, raise_server_exceptions=False) as c:
+            r = c.get("/v1/repos")
+        fastapi_app.dependency_overrides.clear()
+
+        assert "flask" in r.json()["repos"]

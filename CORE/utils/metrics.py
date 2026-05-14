@@ -153,16 +153,18 @@ def track_request(endpoint: str):
 
 
 def register_metrics_endpoint(app):
-    """Register the /metrics endpoint on a Flask app."""
-    from flask import Response
+    """Register the /metrics endpoint on a Flask-like app (legacy helper)."""
+    try:
+        from flask import Response as FlaskResponse
 
-    @app.route("/metrics")
-    def prometheus_metrics():
-        """Prometheus metrics endpoint."""
-        return Response(
-            metrics.format_prometheus(),
-            mimetype="text/plain; version=0.0.4; charset=utf-8",
-        )
+        @app.route("/metrics")
+        def prometheus_metrics():
+            return FlaskResponse(
+                metrics.format_prometheus(),
+                mimetype="text/plain; version=0.0.4; charset=utf-8",
+            )
+    except ImportError:
+        app.route("/metrics")(lambda: (metrics.format_prometheus(), 200))
 
 
 # Pre-define key ACR-QA metrics

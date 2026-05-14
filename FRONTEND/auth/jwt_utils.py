@@ -1,9 +1,11 @@
 """JWT utilities — access (15 min) + refresh (7 days) tokens using HS256."""
 
 import os
-from datetime import UTC, datetime, timedelta
+from datetime import datetime, timedelta, timezone
 
 from jose import JWTError, jwt
+
+UTC = timezone.utc  # noqa: UP017 — datetime.UTC requires Python 3.11+
 
 _SECRET = os.getenv("JWT_SECRET_KEY", "dev-secret-change-in-prod-acrqa-2026")
 _ALGORITHM = "HS256"

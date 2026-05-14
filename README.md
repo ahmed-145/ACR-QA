@@ -7,7 +7,7 @@
 
 [![Python 3.11+](https://img.shields.io/badge/Python-3.11+-3776ab?logo=python&logoColor=white)](https://www.python.org/)
 [![Version](https://img.shields.io/badge/Version-3.6.0-blue)](docs/CHANGELOG.md)
-[![Tests](https://img.shields.io/badge/Tests-1995%20passing-22c55e?logo=pytest&logoColor=white)](./TESTS/)
+[![Tests](https://img.shields.io/badge/Tests-1970%20passing-22c55e?logo=pytest&logoColor=white)](./TESTS/)
 [![Coverage](https://img.shields.io/badge/Coverage-85%25-22c55e?logo=codecov&logoColor=white)](./htmlcov/)
 [![Precision](https://img.shields.io/badge/Precision-97.1%25-22c55e)](./docs/evaluation/PER_TOOL_EVALUATION.md)
 [![OWASP](https://img.shields.io/badge/OWASP-9%2F10-8b5cf6)](./docs/evaluation/EVALUATION.md)
@@ -30,7 +30,7 @@ ACR-QA is a **provenance-first, AI-augmented code review platform** built as a g
 | **LLM hallucination** — AI assistants give confident but wrong security advice | RAG: the LLM can only explain rules it can cite from a curated 66-rule knowledge base; semantic entropy (3× runs) detects contradictions |
 | **Invisible test gaps** — code coverage % doesn't tell you *which* complex functions have no test | AST-based Test Gap Analyzer ranks untested symbols by cyclomatic complexity |
 
-**Key numbers:** 97.1% precision · 9/10 OWASP Top 10 · **1,995 tests** · $0 recurring cost
+**Key numbers:** 97.1% precision · 9/10 OWASP Top 10 · **1,970 tests** · $0 recurring cost
 
 ---
 
@@ -47,7 +47,6 @@ C4Container
         Container(core, "Analysis Engine", "Python 3.11", "10 tools → normalise → score → dedup → AI explain → quality gate")
         Container(api, "Async REST API", "FastAPI :8000", "28 /v1/ endpoints · JWT + API key auth · Swagger at /docs")
         Container(worker, "Background Worker", "Celery + Redis", "Async scan execution — POST /v1/scans returns 202 + job_id")
-        Container(dash, "Web Dashboard", "Flask + Jinja2 :5000", "Legacy UI · being migrated onto FastAPI StaticFiles")
         ContainerDb(pg, "PostgreSQL 15", "", "Provenance: runs · findings · LLM calls · feedback · users · api_keys")
         ContainerDb(redis, "Redis 5.2", "", "Rate limiting · explanation cache · Celery broker + result backend")
     }
@@ -61,8 +60,6 @@ C4Container
     Rel(core, redis, "rate limit / cache")
     Rel(core, groq, "RAG explanations")
     Rel(core, gh, "PR comments + SARIF")
-    Rel(dash, pg, "reads findings")
-    Rel(dev, dash, "reviews at :5000")
 ```
 
 > Full C4 diagrams: [C1 Context](docs/architecture/c1-context.md) · [C2 Containers](docs/architecture/c2-containers.md) · [C3 Components](docs/architecture/c3-components.md) · [C4 Code](docs/architecture/c4-code.md)
@@ -81,8 +78,7 @@ make up
 
 | Service | URL |
 |---------|-----|
-| Dashboard + App | http://localhost:5001 |
-| FastAPI | http://localhost:8001 |
+| FastAPI | http://localhost:8000 |
 | Grafana | http://localhost:3005 (admin/admin) |
 | Prometheus | http://localhost:9091 |
 
@@ -92,7 +88,7 @@ make up
 pip install -r requirements.txt
 createdb acrqa && psql -d acrqa -f DATABASE/schema.sql
 cp .env.example .env && source .env
-python3 FRONTEND/app.py       # → http://localhost:5001
+uvicorn FRONTEND.api.main:app --port 8000    # → http://localhost:8000/docs
 ```
 
 ### Run your first analysis
@@ -197,7 +193,7 @@ result = eval(user_input)      # acr-qa:ignore
 password = "secret123"         # acrqa:disable SECURITY-005
 ```
 
-### Web Dashboard (http://localhost:5000)
+### FastAPI Dashboard (http://localhost:8000/docs)
 
 - Severity counters with live counts
 - Finding cards with collapsible AI explanations + 🎯 confidence badge
@@ -319,7 +315,7 @@ make run               # pipeline on sample files
 | `test_go_adapter.py` | 51 | Go adapter, tools, Semgrep local rules |
 | `test_explainer.py` | 90+ | RAG, entropy, self-eval, Redis cache |
 | `test_autofix.py` | 70 | Every fix type + verification |
-| `test_flask_app.py` | 107 | Full REST API simulation with DB mocks |
+| `test_fastapi_app.py` | 32 | FastAPI endpoint tests with mocked DB + auth |
 | *(+ 7 more files)* | 1,049 | Additional coverage |
 
 ---

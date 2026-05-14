@@ -10,28 +10,12 @@ from fastapi import APIRouter, Depends, HTTPException, Query
 
 sys.path.insert(0, str(Path(__file__).parent.parent.parent.parent))
 
+from CORE.confidence_utils import calculate_confidence
 from DATABASE.database import Database
 from FRONTEND.api.deps import get_current_user, get_db
 from FRONTEND.api.models import FindingsListOut, RunsListOut
 
 router = APIRouter(prefix="/runs", tags=["runs"])
-
-
-def _confidence(finding: dict) -> float:
-    score = 0.5
-    explanation = finding.get("explanation_text", "") or ""
-    rule_id = finding.get("canonical_rule_id", "") or ""
-    severity = finding.get("canonical_severity", "low")
-    category = finding.get("category", "")
-    if rule_id and rule_id in explanation:
-        score += 0.2
-    if explanation:
-        score += 0.1
-    if severity == "high":
-        score += 0.1
-    if category == "security":
-        score += 0.1
-    return min(1.0, round(score, 2))
 
 
 @router.get("", response_model=RunsListOut, summary="List recent analysis runs")
@@ -60,7 +44,7 @@ async def list_runs(
     return RunsListOut(runs=out)
 
 
-@router.get("/{run_id}/findings", response_model=FindingsListOut, summary="Get findings for a run")
+@router.get("/{run_id}/findings", summary="Get findings for a run")
 async def get_findings(
     run_id: int,
     severity: str | None = None,
@@ -84,7 +68,7 @@ async def get_findings(
             if search.lower() not in searchable:
                 continue
         db_conf = f.get("confidence_score")
-        confidence = db_conf if db_conf is not None else _confidence(f)
+        confidence = db_conf if db_conf is not None else calculate_confidence(f)
         if min_confidence is not None and confidence < min_confidence:
             continue
         filtered.append(

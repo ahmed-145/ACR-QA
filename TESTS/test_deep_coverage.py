@@ -737,108 +737,70 @@ class TestPythonAdapterDeep:
 # ═════════════════════════════════════════════════════════════
 # Flask App Endpoint Tests
 # ═════════════════════════════════════════════════════════════
-class TestFlaskEndpoints:
-    def setup_method(self):
-        from FRONTEND.app import app
+class TestFastAPIEndpoints:
+    """FastAPI endpoints that replaced the old Flask /api/* routes."""
 
-        app.config["TESTING"] = True
-        self.client = app.test_client()
+    def setup_method(self):
+        from unittest.mock import MagicMock
+
+        from starlette.testclient import TestClient
+
+        from FRONTEND.api.deps import get_current_user, get_db
+        from FRONTEND.api.main import app as fastapi_app
+
+        self._mock_db = MagicMock()
+        self._mock_db.get_recent_runs.return_value = []
+        self._mock_db.get_findings_with_explanations.return_value = []
+        self._mock_db.get_run_summary.return_value = None
+        self._mock_db.get_findings.return_value = []
+
+        fastapi_app.dependency_overrides[get_db] = lambda: self._mock_db
+        fastapi_app.dependency_overrides[get_current_user] = lambda: {"id": 1, "role": "admin"}
+
+        self._app = fastapi_app
+        self.client = TestClient(fastapi_app, raise_server_exceptions=False)
+
+    def teardown_method(self):
+        self._app.dependency_overrides.clear()
 
     def test_health_endpoint(self):
-        r = self.client.get("/api/health")
+        r = self.client.get("/health")
         assert r.status_code == 200
-        data = r.get_json()
+        data = r.json()
         assert data["status"] == "healthy"
         assert "version" in data
 
-    def test_index_page(self):
-        r = self.client.get("/")
-        assert r.status_code == 200
-        assert len(r.data) > 0
-
     def test_runs_endpoint(self):
-        r = self.client.get("/api/runs")
+        r = self.client.get("/v1/runs")
         assert r.status_code == 200
-        data = r.get_json()
-        assert "runs" in data
+        assert "runs" in r.json()
 
     def test_runs_with_limit(self):
-        r = self.client.get("/api/runs?limit=3")
+        r = self.client.get("/v1/runs?limit=3")
         assert r.status_code == 200
 
-    def test_trends_endpoint(self):
-        r = self.client.get("/api/trends")
+    def test_findings_endpoint(self):
+        r = self.client.get("/v1/runs/1/findings")
         assert r.status_code == 200
-
-    def test_quick_stats_endpoint(self):
-        r = self.client.get("/api/quick-stats")
-        assert r.status_code == 200
-        data = r.get_json()
-        assert "stats" in data
-
-    def test_categories_endpoint(self):
-        r = self.client.get("/api/categories")
-        assert r.status_code == 200
-
-    def test_fix_confidence_known_rule(self):
-        r = self.client.get("/api/fix-confidence/IMPORT-001")
-        assert r.status_code == 200
-        data = r.get_json()
-        assert data["confidence"] == 95
-
-    def test_fix_confidence_unknown_rule(self):
-        r = self.client.get("/api/fix-confidence/UNKNOWN-999")
-        assert r.status_code == 200
+        data = r.json()
+        assert "findings" in data or "groups" in data
 
     def test_metrics_endpoint(self):
         r = self.client.get("/metrics")
         assert r.status_code == 200
 
-    def test_invalid_run_findings(self):
-        r = self.client.get("/api/runs/99999/findings")
-        assert r.status_code == 200  # Returns empty list
+    def test_invalid_run_findings_returns_empty(self):
+        r = self.client.get("/v1/runs/99999/findings")
+        assert r.status_code == 200
+        assert r.json()["total"] == 0
 
-    def test_invalid_run_stats(self):
-        r = self.client.get("/api/runs/99999/stats")
-        assert r.status_code in (200, 404)
-
-    def test_invalid_run_cost_benefit(self):
-        r = self.client.get("/api/runs/99999/cost-benefit")
-        assert r.status_code in (200, 404)
-
-    def test_false_positive_nonexistent_finding(self):
-        """Should return 404, not 500, for nonexistent finding."""
-        r = self.client.post(
-            "/api/findings/99999/mark-false-positive",
-            json={"reason": "test"},
-            content_type="application/json",
-        )
+    def test_invalid_run_stats_returns_404(self):
+        r = self.client.get("/v1/runs/99999/stats")
         assert r.status_code == 404
 
-    def test_feedback_nonexistent_finding(self):
-        """Should return 404, not 500, for nonexistent finding."""
-        r = self.client.post(
-            "/api/findings/99999/feedback",
-            json={"is_helpful": True},
-            content_type="application/json",
-        )
+    def test_invalid_run_cost_benefit_returns_404(self):
+        r = self.client.get("/v1/runs/99999/cost-benefit")
         assert r.status_code == 404
-
-    def test_secrets_scan(self):
-        r = self.client.post(
-            "/api/scan/secrets",
-            json={"target_dir": "TESTS/samples/comprehensive-issues"},
-            content_type="application/json",
-        )
-        assert r.status_code == 200
-
-    def test_ai_detection_scan(self):
-        r = self.client.post(
-            "/api/scan/ai-detection",
-            json={"target_dir": "TESTS/samples/comprehensive-issues"},
-            content_type="application/json",
-        )
-        assert r.status_code == 200
 
 
 # ═════════════════════════════════════════════════════════════
@@ -988,13 +950,17 @@ class TestMetricsDeep:
 
         assert callable(register_metrics_endpoint)
 
-    def test_register_on_flask_app(self):
-        from flask import Flask
+    def test_metrics_endpoint_on_fastapi(self):
+        from unittest.mock import MagicMock
 
-        from CORE.utils.metrics import register_metrics_endpoint
+        from starlette.testclient import TestClient
 
-        test_app = Flask(__name__)
-        register_metrics_endpoint(test_app)
-        client = test_app.test_client()
-        r = client.get("/metrics")
+        from FRONTEND.api.deps import get_current_user, get_db
+        from FRONTEND.api.main import app as fastapi_app
+
+        fastapi_app.dependency_overrides[get_db] = lambda: MagicMock()
+        fastapi_app.dependency_overrides[get_current_user] = lambda: {"id": 1, "role": "admin"}
+        with TestClient(fastapi_app, raise_server_exceptions=False) as c:
+            r = c.get("/metrics")
+        fastapi_app.dependency_overrides.clear()
         assert r.status_code == 200

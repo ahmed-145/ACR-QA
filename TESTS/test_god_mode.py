@@ -673,55 +673,62 @@ class TestConfigTemplate:
 
 
 class TestNewAPIEndpoints:
-    """Test the 3 new Flask API endpoints."""
+    """FastAPI endpoints that replaced the old Flask /api/* routes."""
 
     @pytest.fixture
     def client(self):
-        from FRONTEND.app import app
+        from unittest.mock import MagicMock
 
-        app.config["TESTING"] = True
-        with app.test_client() as c:
+        from starlette.testclient import TestClient
+
+        from FRONTEND.api.deps import get_current_user, get_db
+        from FRONTEND.api.main import app as fastapi_app
+
+        mock_db = MagicMock()
+        mock_db.get_recent_runs.return_value = []
+        mock_db.get_findings_with_explanations.return_value = []
+        mock_db.get_run_summary.return_value = None
+
+        fastapi_app.dependency_overrides[get_db] = lambda: mock_db
+        fastapi_app.dependency_overrides[get_current_user] = lambda: {"id": 1, "role": "admin"}
+
+        with TestClient(fastapi_app, raise_server_exceptions=False) as c:
             yield c
 
-    def test_test_gaps_endpoint_returns_200(self, client):
-        """GET /api/test-gaps should return 200."""
-        resp = client.get("/api/test-gaps")
+        fastapi_app.dependency_overrides.clear()
+
+    def test_health_endpoint_returns_200(self, client):
+        """GET /health should return 200."""
+        resp = client.get("/health")
         assert resp.status_code == 200
-        data = json.loads(resp.data)
-        assert "success" in data
+        assert resp.json()["status"] == "healthy"
 
-    def test_test_gaps_has_coverage_data(self, client):
-        """Test gaps response should include coverage metrics."""
-        resp = client.get("/api/test-gaps")
-        data = json.loads(resp.data)
-        if data["success"]:
-            assert "total_symbols" in data
-            assert "coverage_pct" in data
-
-    def test_policy_endpoint_returns_200(self, client):
-        """GET /api/policy should return 200."""
-        resp = client.get("/api/policy")
+    def test_runs_endpoint_returns_200(self, client):
+        """GET /v1/runs should return 200."""
+        resp = client.get("/v1/runs")
         assert resp.status_code == 200
-        data = json.loads(resp.data)
-        assert "success" in data
+        assert "runs" in resp.json()
 
-    def test_policy_has_config_sections(self, client):
-        """Policy response should include config sections."""
-        resp = client.get("/api/policy")
-        data = json.loads(resp.data)
-        if data["success"]:
-            assert "active_policy" in data
-
-    def test_compliance_endpoint_returns_200(self, client):
-        """GET /api/runs/1/compliance should return 200."""
-        resp = client.get("/api/runs/1/compliance")
-        # Should not crash — may be 200 or 500 if no run exists
-        assert resp.status_code in [200, 500]
-
-    def test_health_still_works(self, client):
-        """GET /api/health should still work."""
-        resp = client.get("/api/health")
+    def test_findings_endpoint_returns_200(self, client):
+        """GET /v1/runs/1/findings should return 200."""
+        resp = client.get("/v1/runs/1/findings")
         assert resp.status_code == 200
+        assert "findings" in resp.json() or "groups" in resp.json()
+
+    def test_metrics_endpoint_returns_200(self, client):
+        """GET /metrics should return 200."""
+        resp = client.get("/metrics")
+        assert resp.status_code == 200
+
+    def test_nonexistent_endpoint_returns_404(self, client):
+        """Non-existent API paths should return 404."""
+        resp = client.get("/v1/nonexistent")
+        assert resp.status_code == 404
+
+    def test_stats_not_found_returns_404(self, client):
+        """Stats for nonexistent run should return 404."""
+        resp = client.get("/v1/runs/99999/stats")
+        assert resp.status_code == 404
 
 
 # ═══════════════════════════════════════════════════════════════════════════
@@ -734,13 +741,13 @@ class TestConfidenceScoring:
 
     def test_confidence_has_function(self):
         """The app module should have _calculate_confidence."""
-        from FRONTEND.app import _calculate_confidence
+        from CORE.confidence_utils import calculate_confidence as _calculate_confidence
 
         assert callable(_calculate_confidence)
 
     def test_high_severity_security_with_explanation(self):
         """High severity + security + explanation should score high."""
-        from FRONTEND.app import _calculate_confidence
+        from CORE.confidence_utils import calculate_confidence as _calculate_confidence
 
         finding = {
             "canonical_severity": "high",
@@ -753,7 +760,7 @@ class TestConfidenceScoring:
 
     def test_low_severity_no_explanation(self):
         """Low severity without explanation should score low."""
-        from FRONTEND.app import _calculate_confidence
+        from CORE.confidence_utils import calculate_confidence as _calculate_confidence
 
         finding = {
             "canonical_severity": "low",
@@ -766,7 +773,7 @@ class TestConfidenceScoring:
 
     def test_confidence_always_0_to_1(self):
         """Confidence should always be between 0 and 1."""
-        from FRONTEND.app import _calculate_confidence
+        from CORE.confidence_utils import calculate_confidence as _calculate_confidence
 
         test_cases = [
             {"canonical_severity": "high", "category": "security", "explanation": "x", "canonical_rule_id": "X"},
@@ -785,7 +792,7 @@ class TestConfidenceScoring:
 
     def test_rule_citation_boosts_confidence(self):
         """Explanation citing rule ID should have higher confidence."""
-        from FRONTEND.app import _calculate_confidence
+        from CORE.confidence_utils import calculate_confidence as _calculate_confidence
 
         with_citation = {
             "canonical_severity": "medium",
@@ -842,11 +849,12 @@ class TestVersionConsistency:
                 assert '"2.4' not in content, f"{script_name} has hardcoded '2.4'"
                 assert '"2.5' not in content, f"{script_name} has hardcoded '2.5'"
 
-    def test_flask_secret_not_hardcoded(self):
-        """Flask app should not use a hardcoded secret key."""
-        app_path = Path(__file__).parent.parent / "FRONTEND" / "app.py"
-        content = app_path.read_text()
-        assert 'secret_key = "' not in content.lower() or "os.urandom" in content
+    def test_jwt_secret_uses_env_var(self):
+        """FastAPI JWT secret should come from env var, not be hardcoded."""
+        jwt_path = Path(__file__).parent.parent / "FRONTEND" / "auth" / "jwt_utils.py"
+        content = jwt_path.read_text()
+        assert "os.getenv" in content, "JWT secret must use os.getenv"
+        assert "JWT_SECRET_KEY" in content
 
 
 # ═══════════════════════════════════════════════════════════════════════════
@@ -969,8 +977,8 @@ class TestCrossFeatureIntegration:
 
     def test_severity_scorer_and_confidence(self):
         """SeverityScorer output should produce valid confidence scores."""
+        from CORE.confidence_utils import calculate_confidence as _calculate_confidence
         from CORE.engines.severity_scorer import SeverityScorer
-        from FRONTEND.app import _calculate_confidence
 
         scorer = SeverityScorer()
 
@@ -1123,7 +1131,7 @@ class TestEdgeCases:
 
     def test_confidence_empty_finding(self):
         """_calculate_confidence should handle empty/missing fields."""
-        from FRONTEND.app import _calculate_confidence
+        from CORE.confidence_utils import calculate_confidence as _calculate_confidence
 
         conf = _calculate_confidence({})
         assert 0 <= conf <= 1
@@ -1142,21 +1150,34 @@ class TestEdgeCases:
 
     @pytest.fixture
     def client(self):
-        from FRONTEND.app import app
+        from unittest.mock import MagicMock
 
-        app.config["TESTING"] = True
-        with app.test_client() as c:
+        from starlette.testclient import TestClient
+
+        from FRONTEND.api.deps import get_current_user, get_db
+        from FRONTEND.api.main import app as fastapi_app
+
+        mock_db = MagicMock()
+        mock_db.get_recent_runs.return_value = []
+        mock_db.get_findings_with_explanations.return_value = []
+
+        fastapi_app.dependency_overrides[get_db] = lambda: mock_db
+        fastapi_app.dependency_overrides[get_current_user] = lambda: {"id": 1, "role": "admin"}
+
+        with TestClient(fastapi_app, raise_server_exceptions=False) as c:
             yield c
+
+        fastapi_app.dependency_overrides.clear()
 
     def test_api_nonexistent_endpoints_404(self, client):
         """Non-existent API endpoints should return 404."""
-        resp = client.get("/api/nonexistent")
+        resp = client.get("/v1/nonexistent-endpoint-xyz")
         assert resp.status_code == 404
 
-    def test_api_test_gaps_doesnt_crash_under_load(self, client):
-        """Repeated calls to test-gaps should not crash."""
+    def test_api_runs_endpoint_stable_under_load(self, client):
+        """Repeated calls to /v1/runs should not crash."""
         for _ in range(5):
-            resp = client.get("/api/test-gaps")
+            resp = client.get("/v1/runs")
             assert resp.status_code == 200
 
 
