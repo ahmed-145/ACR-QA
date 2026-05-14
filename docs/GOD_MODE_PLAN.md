@@ -29,17 +29,15 @@ What v1 of this plan got wrong: it optimized for resume bullets (Helm, Terraform
 | **Phase 2 TypeScript rewrite** (from ROADMAP) | Procrastination dressed as ambition — the Python core is correct |
 | **Helm chart, Terraform, multi-tenancy, webhooks** (from v1 plan) | Generic resume-padding; 3 weeks of effort that buys zero differentiation |
 
-## 2. What Needs Finishing (Before New Features)
+## 2. What Needs Finishing (Before New Features) ✅ ALL DONE
 
-These are claimed-done features that are actually broken or untested:
+These were claimed-done features that were actually broken or untested. All resolved:
 
 | Fix | File | Status |
 |---|---|---|
-| Celery coverage | `CORE/tasks.py` — **0% coverage** | Write integration tests; currently untestable = unshippable |
-| Flask → FastAPI migration | `FRONTEND/app.py` still runs at :5000; `FRONTEND/api/main.py` at :8000 | Port `test_flask_app.py` (637 LOC) to FastAPI TestClient; delete Flask |
-| Graceful API key degradation | `path_feasibility.py`, `ai_code_detector.py` silently fail without `GROQ_API_KEY` | Feature flags + clean degradation path |
-
-**Do these in Week 1 before adding anything new.**
+| Celery coverage | `CORE/tasks.py` | ✅ DONE — ~75% coverage via integration tests (v3.3.0) |
+| Flask → FastAPI migration | `FRONTEND/app.py` deleted | ✅ DONE — Flask fully removed; `test_fastapi_app.py` (32 tests) added (v3.6.1) |
+| Graceful API key degradation | `path_feasibility.py`, `ai_code_detector.py` | ✅ DONE — `KeyPool` degrades with no key; `ACRQA_PATH_FEASIBILITY` + `ACRQA_AI_DETECTION` flags (v3.6.2) |
 
 ---
 
@@ -209,7 +207,7 @@ These appeared in v1. They're still wrong.
 
 ---
 
-## 7. The "Are We Done" Checklist (Updated May 14, 2026 — v3.5.0)
+## 7. The "Are We Done" Checklist (Updated May 14, 2026 — v3.6.2)
 
 - [ ] Can a stranger run the project with one command? (`make up && make db-migrate && make seed-admin`)
 - [ ] Is there a live URL anyone can hit? (Railway)

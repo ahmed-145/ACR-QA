@@ -2,6 +2,52 @@
 
 All notable changes to ACR-QA are documented here.
 
+## [v3.6.2] — Feature-flag path_feasibility + ai_code_detector (May 14, 2026)
+
+### Changed
+
+- **`CORE/engines/explainer.py`** — `KeyPool` no longer raises `ValueError` when no GROQ key is set; logs a warning instead so the app starts cleanly in key-less environments (local dev, CI, Railway staging)
+- **`KeyPool.has_keys`** property added; `next_key()` / `next_client()` now raise `RuntimeError` (not `IndexError`) if called on an empty pool
+- **Path feasibility block** in `ExplanationEngine._explain_one_async` — gated on `self.key_pool.has_keys` AND `ACRQA_PATH_FEASIBILITY != "0"`; sets `feasibility_skip_reason = "no_groq_key" | "disabled"` instead of silently returning `None`
+- **`FRONTEND/api/routers/scans.py`** — `POST /v1/scans/ai-detection` returns HTTP 503 when `ACRQA_AI_DETECTION=0` (ai_code_detector is pure AST — no Groq needed; the flag exists for staged rollouts)
+- **`TESTS/test_explainer.py`** — `test_raises_without_api_key` → `test_empty_key_pool_without_api_key` (reflects new non-raising behaviour)
+- **`TESTS/test_new_engines.py`** — 9 new tests: `TestKeyPoolDegradation` (4), `TestPathFeasibilityFeatureFlag` (3), `TestAIDetectionFeatureFlag` (2)
+- Tests: 1,979 passed, 13 skipped
+
+### New env vars
+
+| Variable | Default | Effect |
+|---|---|---|
+| `ACRQA_PATH_FEASIBILITY` | `1` | Set to `0` to disable path feasibility AI calls (no Groq cost) |
+| `ACRQA_AI_DETECTION` | `1` | Set to `0` to return 503 from `POST /v1/scans/ai-detection` |
+
+---
+
+## [v3.6.1] — Kill Flask — migrate all tests to FastAPI TestClient (May 14, 2026)
+
+### Removed
+
+- **`FRONTEND/app.py`** (1,031 lines) — legacy Flask dashboard at `:5000` fully deleted. FastAPI at `:8000` is the only server.
+- **`TESTS/test_flask_app.py`** (49 tests) — Flask-TestClient tests deleted.
+- **Flask dependencies** — `Flask==3.0.0`, `Flask-CORS==4.0.0`, `gunicorn==21.2.0` removed from `requirements.txt`
+
+### Added
+
+- **`TESTS/test_fastapi_app.py`** (32 tests) — full FastAPI TestClient coverage: `TestCalculateConfidence` (8), `TestHealthEndpoint` (3), `TestGetRuns` (4), `TestGetRunFindings` (8), `TestGetRunStats` (4), `TestGetComplianceReport` (2), `TestGetPRSummary` (2), `TestMetricsEndpoint` (2)
+- **`CORE/confidence_utils.py`** — `calculate_confidence(finding)` extracted from Flask app + deduplicated from `FRONTEND/api/routers/runs.py`; single source of truth
+- `starlette>=0.37.2,<0.39.0` pinned in `requirements.txt` (FastAPI 0.115.0 compatibility)
+
+### Changed
+
+- `FRONTEND/api/routers/runs.py` — removed local `_confidence()` lambda; imports `from CORE.confidence_utils import calculate_confidence`; removed `response_model=FindingsListOut` from `GET /{run_id}/findings` (grouped response has different shape)
+- `FRONTEND/api/main.py` — added `/metrics` Prometheus endpoint
+- `FRONTEND/auth/jwt_utils.py` — Python 3.10 compat fix: `UTC = timezone.utc  # noqa: UP017` (datetime.UTC is 3.11+)
+- `CORE/utils/metrics.py` — Flask import made optional; no ImportError in key-less envs
+- `CORE/main.py` — startup log now says `uvicorn FRONTEND.api.main:app --port 8000`
+- `TESTS/test_api.py`, `test_deep_coverage.py`, `test_god_mode.py`, `test_new_engines.py` — all ported to FastAPI TestClient
+
+---
+
 ## [v3.6.0] — Week 5: Signed Provenance Attestations + Railway Deploy (May 14, 2026)
 
 ### Added — Feature 13: Provenance Attestation Engine (`CORE/engines/attestation.py`)

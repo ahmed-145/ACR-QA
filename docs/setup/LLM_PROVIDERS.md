@@ -1,10 +1,12 @@
 # LLM Provider Configuration
 
-**Last Updated:** May 1, 2026
+**Last Updated:** May 14, 2026 (v3.6.2)
 
 ACR-QA uses LLMs for two tasks:
 1. **Explanation Engine** — generates natural-language explanations for findings (`CORE/engines/explainer.py`)
 2. **Path Feasibility Validator** — checks if HIGH-severity security paths are reachable (`CORE/engines/path_feasibility.py`)
+
+> **Graceful degradation (v3.6.2):** Both engines degrade cleanly when no GROQ key is present. The app starts without errors; AI features are simply skipped. Set `ACRQA_PATH_FEASIBILITY=0` to disable feasibility calls explicitly (no Groq charge), or `ACRQA_AI_DETECTION=0` to disable the AI code detector endpoint.
 
 ---
 
@@ -31,6 +33,13 @@ GROQ_API_KEY_4=gsk_...
 ```
 
 See [TOKEN_SETUP.md](TOKEN_SETUP.md) for key generation instructions.
+
+### Feature Flags
+
+| Variable | Default | Effect |
+|---|---|---|
+| `ACRQA_PATH_FEASIBILITY` | `1` | Set to `0` to skip path feasibility AI calls entirely |
+| `ACRQA_AI_DETECTION` | `1` | Set to `0` to disable `POST /v1/scans/ai-detection` (returns HTTP 503) |
 
 ---
 
