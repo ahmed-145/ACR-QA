@@ -336,13 +336,15 @@ class TestAlembicMigration:
     def test_migration_file_exists(self):
         from pathlib import Path
 
-        migrations = list(Path("/home/ahmeed/Documents/KSIU/GRAD/SOLO/alembic/versions").glob("*_finding_embeddings*"))
+        root = Path(__file__).parent.parent
+        migrations = list((root / "alembic" / "versions").glob("*_finding_embeddings*"))
         assert migrations, "Migration 0004 for finding_embeddings not found"
 
     def test_migration_has_correct_revision(self):
         from pathlib import Path
 
-        migration = next(Path("/home/ahmeed/Documents/KSIU/GRAD/SOLO/alembic/versions").glob("*_finding_embeddings*"))
+        root = Path(__file__).parent.parent
+        migration = next((root / "alembic" / "versions").glob("*_finding_embeddings*"))
         content = migration.read_text()
         assert 'revision: str = "0004"' in content
         assert "down_revision" in content and '"0003"' in content
@@ -354,7 +356,7 @@ class TestPipelineIntegration:
         """Verify main.py imports LearnedSuppressionEngine in both Python and JS pipelines."""
         from pathlib import Path
 
-        main_src = Path("/home/ahmeed/Documents/KSIU/GRAD/SOLO/CORE/main.py").read_text()
+        main_src = (Path(__file__).parent.parent / "CORE" / "main.py").read_text()
         occurrences = main_src.count("LearnedSuppressionEngine")
         assert occurrences >= 2, f"Expected ≥2 LearnedSuppressionEngine calls in main.py, got {occurrences}"
 
@@ -362,7 +364,7 @@ class TestPipelineIntegration:
         """triage_memory.py must call LearnedSuppressionEngine().store_dismissed after learning an FP rule."""
         from pathlib import Path
 
-        src = Path("/home/ahmeed/Documents/KSIU/GRAD/SOLO/CORE/engines/triage_memory.py").read_text()
+        src = (Path(__file__).parent.parent / "CORE" / "engines" / "triage_memory.py").read_text()
         assert "LearnedSuppressionEngine" in src
         assert "store_dismissed" in src
 

@@ -1394,7 +1394,8 @@ class TestLearnedSuppressionGodMode:
         assert LearnedSuppressionEngine().store_dismissed(99999, db) is False
 
     def test_migration_0004_exists(self):
-        migrations = list(Path("/home/ahmeed/Documents/KSIU/GRAD/SOLO/alembic/versions").glob("*_finding_embeddings*"))
+        root = Path(__file__).parent.parent
+        migrations = list((root / "alembic" / "versions").glob("*_finding_embeddings*"))
         assert migrations, "Alembic migration 0004 (finding_embeddings) not found"
 
     def test_db_has_embedding_methods(self):
@@ -1409,12 +1410,14 @@ class TestLearnedSuppressionGodMode:
             assert hasattr(Database, method), f"Database missing method: {method}"
 
     def test_triage_memory_embeds_on_fp(self):
-        src = Path("/home/ahmeed/Documents/KSIU/GRAD/SOLO/CORE/engines/triage_memory.py").read_text()
+        root = Path(__file__).parent.parent
+        src = (root / "CORE" / "engines" / "triage_memory.py").read_text()
         assert "store_dismissed" in src
         assert "LearnedSuppressionEngine" in src
 
     def test_pipeline_wires_suppression(self):
-        src = Path("/home/ahmeed/Documents/KSIU/GRAD/SOLO/CORE/main.py").read_text()
+        root = Path(__file__).parent.parent
+        src = (root / "CORE" / "main.py").read_text()
         assert src.count("LearnedSuppressionEngine") >= 2
 
     def test_is_available_returns_bool(self):
@@ -1427,28 +1430,33 @@ class TestMCPServerGodMode:
     """God-mode tests for Feature 11: MCP server."""
 
     def test_server_py_exists(self):
-        assert (Path("/home/ahmeed/Documents/KSIU/GRAD/SOLO/acrqa-mcp") / "server.py").exists()
+        root = Path(__file__).parent.parent
+        assert (root / "acrqa-mcp" / "server.py").exists()
 
     def test_pyproject_toml_exists(self):
-        assert (Path("/home/ahmeed/Documents/KSIU/GRAD/SOLO/acrqa-mcp") / "pyproject.toml").exists()
+        root = Path(__file__).parent.parent
+        assert (root / "acrqa-mcp" / "pyproject.toml").exists()
 
     def test_three_tool_functions_defined(self):
-        src = (Path("/home/ahmeed/Documents/KSIU/GRAD/SOLO/acrqa-mcp") / "server.py").read_text()
+        root = Path(__file__).parent.parent
+        src = (root / "acrqa-mcp" / "server.py").read_text()
         for fn in ("_tool_scan", "_tool_explain", "_tool_fix"):
             assert fn in src, f"Missing tool function: {fn}"
 
     def test_env_var_config(self):
-        src = (Path("/home/ahmeed/Documents/KSIU/GRAD/SOLO/acrqa-mcp") / "server.py").read_text()
+        root = Path(__file__).parent.parent
+        src = (root / "acrqa-mcp" / "server.py").read_text()
         assert "ACRQA_URL" in src and "ACRQA_TOKEN" in src
 
     def test_config_file_path(self):
-        src = (Path("/home/ahmeed/Documents/KSIU/GRAD/SOLO/acrqa-mcp") / "server.py").read_text()
+        root = Path(__file__).parent.parent
+        src = (root / "acrqa-mcp" / "server.py").read_text()
         assert ".config/acrqa/config.json" in src
 
     def test_scan_error_returns_dict_not_raises(self):
         import httpx
 
-        mcp_dir = str(Path("/home/ahmeed/Documents/KSIU/GRAD/SOLO/acrqa-mcp"))
+        mcp_dir = str(Path(__file__).parent.parent / "acrqa-mcp")
         if mcp_dir not in sys.path:
             sys.path.insert(0, mcp_dir)
         import server
@@ -1460,7 +1468,7 @@ class TestMCPServerGodMode:
     def test_explain_error_returns_dict(self):
         import httpx
 
-        mcp_dir = str(Path("/home/ahmeed/Documents/KSIU/GRAD/SOLO/acrqa-mcp"))
+        mcp_dir = str(Path(__file__).parent.parent / "acrqa-mcp")
         if mcp_dir not in sys.path:
             sys.path.insert(0, mcp_dir)
         import server
@@ -1472,7 +1480,7 @@ class TestMCPServerGodMode:
     def test_fix_error_returns_cannot_fix(self):
         import httpx
 
-        mcp_dir = str(Path("/home/ahmeed/Documents/KSIU/GRAD/SOLO/acrqa-mcp"))
+        mcp_dir = str(Path(__file__).parent.parent / "acrqa-mcp")
         if mcp_dir not in sys.path:
             sys.path.insert(0, mcp_dir)
         import server
@@ -1486,7 +1494,7 @@ class TestMCPServerGodMode:
 
         spec = importlib.util.spec_from_file_location(
             "acrqa_mcp_init",
-            Path("/home/ahmeed/Documents/KSIU/GRAD/SOLO/acrqa-mcp/__init__.py"),
+            Path(__file__).parent.parent / "acrqa-mcp" / "__init__.py",
         )
         mod = importlib.util.module_from_spec(spec)
         spec.loader.exec_module(mod)
