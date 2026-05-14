@@ -1440,6 +1440,16 @@ That's the headline. That's what gets the blog post on Hacker News and the paper
 **Status legend:** `[ ]` not started · `[~]` in progress · `[x]` done · `[-]` deferred / dropped
 **Last sync:** May 14, 2026 (v3.6.2 baseline)
 
+---
+
+> ## ➡️ NEXT PHASE: **Phase 0 — Foundation (Cloud + Observability)**
+>
+> Phase order (authoritative): **0 → 9 → 1 → 2 → 6 → 3 → 4 → 5 → 7 → 10 → 11 → 8 → 12**
+>
+> Reasoning for this order is in §13.2. Don't re-derive it — just execute.
+
+---
+
 ## Phase 0 — Foundation (Cloud + Observability) · runs in parallel from day 1
 
 - [ ] **0.1** Railway live deploy — `https://acr-qa.up.railway.app/health` returns 200
@@ -1646,24 +1656,73 @@ Phase 12 — Closeout                [ ▱▱▱▱▱▱▱▱▱▱▱▱▱�
 OVERALL: 0/145 tasks · 0% complete
 ```
 
-## 13.2 Recommended Execution Order
+## 13.2 THE Execution Order (authoritative — do exactly this)
 
-Independent tasks can run in parallel. The dependency chain forces this order:
+This order is the single answer to "what's next." It's derived from three rules:
+1. **Front-load moats** — taint + offline are the two biggest thesis differentiators; ship them early so everything else builds on them
+2. **Measure as you build** — eval repos cloned early means every new engine gets recall numbers from day one, not at the end
+3. **Defer the dashboard** — building UI against real engine output beats wiring mocks twice
 
-1. **Phase 0** (start NOW, parallel forever — cloud must be live for everything else)
-2. **Phase 1** (taint engine — keystone, blocks 3 and 4)
-3. **Phase 2** (offline mode — privacy moat, unlocks airplane-mode demo)
-4. **Phase 7.1–7.7** (dashboard scaffold + auth + scan list — can mock data while engines build)
-5. **Phase 6** (supply chain — independent, easy parallel win)
-6. **Phase 3** (incremental — uses Phase 1 taint context)
-7. **Phase 4** (triage agent — uses Phase 1 taint context)
-8. **Phase 5** (autofix PR)
-9. **Phase 7.8–7.29** (dashboard finish — wire in real engine data)
-10. **Phase 9** (eval repos)
-11. **Phase 10** (third-party audit)
-12. **Phase 11** (testing layers)
-13. **Phase 8** (Marimo — late, needs all engines done)
-14. **Phase 12** (closeout — strictly last)
+**Strict sequential order (each phase is atomic — no splitting):**
+
+### 1️⃣ Phase 0 — Foundation
+**Why first:** Cloud must be live for Sentry/UptimeRobot/PostHog/demo video. Doesn't block engine work, but every later phase wants a live URL to validate against. Set it up once, forget it.
+**Blocks:** nothing strictly, but unblocks: 10.8 (Lighthouse on live URL), 11.5 (live smoke test), 12.3 (demo video shoots against live URL).
+
+### 2️⃣ Phase 9 — Evaluation Expansion
+**Why second:** Pure repo-cloning + ground-truth YAML writing. **Zero engine dependencies.** Doing this NOW means every engine in Phases 1-6 immediately has 10 benchmark repos to measure recall + FP rate against. Doing it last means you discover engine weaknesses with no time to fix them.
+**Blocks:** Phase 10 (competitive baseline needs the repos).
+
+### 3️⃣ Phase 1 — Engine 1: Taint Analyzer ⭐ KEYSTONE
+**Why third:** It's the brain upgrade — Snyk Code / Semgrep Pro level capability. Phases 3 (incremental) and 4 (triage agent) both leverage taint context. Building taint first means downstream engines get richer input. Building it later means rewiring downstream engines twice.
+**Blocks:** 3 (incremental uses taint flow), 4 (triage agent reasons over taint chains), 7.10 (TaintFlowGraph component).
+
+### 4️⃣ Phase 2 — Engine 6: Offline Mode (privacy moat)
+**Why fourth:** Second-biggest thesis differentiator. Wires `OllamaProvider` into existing `explainer.py` + `path_feasibility.py` — both already exist, so payoff is fast. The egress guard and OSV-offline DB are independent of all engines. Defer 2.13 (airplane-mode demo recording) to Phase 12 since the dashboard needs to be done for a good demo.
+**Blocks:** 6.3 (supply chain uses OSV-offline), 12.3 (demo video features offline mode).
+
+### 5️⃣ Phase 6 — Engine 5: Supply Chain + SBOM
+**Why fifth:** Reuses §2's OSV-offline reader (built one phase earlier). Otherwise independent — doesn't need taint. Easy parallel win that adds the CycloneDX SBOM differentiator + dependency risk scoring. Quick momentum boost mid-plan.
+**Blocks:** 7.16 (Supply chain tab), 11.4 (dogfood test scans our own deps).
+
+### 6️⃣ Phase 3 — Engine 2: Incremental Scanner
+**Why sixth:** Needs Phase 1 taint context (incremental scans must preserve taint paths across cached files). Reuses existing reachability engine for the reverse call-graph. PR-latency killer = strong demo material.
+**Blocks:** 7.15 (run-vs-run diff page uses incremental data), 11.3 (Locust validates <8s SLO).
+
+### 7️⃣ Phase 4 — Engine 3: AI Triage Agent
+**Why seventh:** Needs Phase 1 (reasons over taint chains) AND Phase 2 (uses `KeyPool` dispatch, so works in cloud OR offline). Doing this after both means it ships with offline support built in — no rework.
+**Blocks:** 7.11 (ReasoningChain component).
+
+### 8️⃣ Phase 5 — Engine 4: Auto-Fix PR Generator
+**Why eighth:** Uses existing autofix engine (no engine dependency) but benefits from triage verdict (skip auto-fix on `likely-fp`). After Phase 4 = smarter auto-fix decisions. Independent otherwise.
+**Blocks:** 7.13 (AutofixDiff component button calls this endpoint).
+
+### 9️⃣ Phase 7 — Dashboard PRO Rebuild
+**Why ninth:** All 6 engines complete = real data to wire, zero stale mocks, no double-work. Dashboard is purely a *view* over the engines; building it last avoids rebuilding it three times as engines evolve. ~29 tasks, the heaviest single phase.
+**Blocks:** 8 (Marimo demo also benefits from dashboard screenshots), 10.9 (PostHog needs the React app), 11.1-11.2 (Playwright needs the React app), 12.3 (demo video screencasts the dashboard).
+
+### 🔟 Phase 10 — Third-Party Audit + Competitive Baseline
+**Why tenth:** Needs Phase 9's 10 eval repos AND a stable codebase to point Snyk/CodeQL/SonarCloud at. Running these tools mid-development against changing engines = noisy reports. Running them after engines stabilize = clean comparison.
+**Blocks:** 12.11 (release notes auto-include competitive baseline numbers).
+
+### 1️⃣1️⃣ Phase 11 — Testing Layers (target ≥2,200 tests)
+**Why eleventh:** Playwright E2E (11.1) needs the React dashboard. Locust load (11.3) needs all engines running. Dogfood test (11.4) needs every engine to scan against. Live smoke (11.5) needs the cloud deploy. All four prerequisites done = clean run.
+**Blocks:** 12.7 (AGENT_NOTES "What's Left" can't be fully checked without testing layers done).
+
+### 1️⃣2️⃣ Phase 8 — Marimo Notebook Walkthrough
+**Why twelfth:** Demonstrates every engine cell-by-cell. Can only be written once every engine works end-to-end. Notebook becomes the defense walkthrough — strictly the second-to-last task.
+**Blocks:** 12.3 (demo video can intercut Marimo cells), 12.13 (Hacker News post links the notebook).
+
+### 1️⃣3️⃣ Phase 12 — Closeout (v4.0.0)
+**Why last:** Demo video needs dashboard + Marimo + offline mode demo. User study needs live URL + dashboard. v4.0.0 tag needs everything. Release notes need competitive baseline. Cannot start until 0-11 are 100% green.
+
+---
+
+**Parallelization rule:** Don't multi-task across phases — each phase is short enough to finish in one session per logical unit. Sequential execution = clear "where are we", no merge conflicts on shared files (especially migrations, which must increment in order: 0007 → 0008 → 0009).
+
+**Exception:** Phase 0 sub-tasks (Sentry, UptimeRobot signup) can run in literal background while you write engine code. They're DNS / dashboard clicks, not code.
+
+**The arrow:** Whenever §13.1 progress snapshot shows the next phase ready, this is the answer to "what's next" — no judgment call needed.
 
 ## 13.3 Invocation
 
@@ -1671,14 +1730,20 @@ When Ahmed says one of these, do exactly that:
 
 | Say this | Agent does |
 |---|---|
-| `where are we` | Read §13, report % complete + next 3 unchecked tasks in priority order |
-| `whats next` | Same as above, but just the single next task |
-| `go god mode phase N` | Execute all unchecked tasks in phase N top-to-bottom; commit per logical unit; check boxes; push at end |
+| `where are we` | Read §13, report % complete + the "➡️ NEXT PHASE" pointer + next 3 unchecked tasks |
+| `whats next` | Single next unchecked task from the current phase (no judgment — strict §13.2 order) |
+| `go god mode phase N` | Execute all unchecked tasks in phase N top-to-bottom; commit per logical unit; check boxes; push at end; then update the "➡️ NEXT PHASE" pointer to N+1 in §13.2 sequence |
 | `go god mode N.M` | Execute single task N.M; commit; check box; report |
-| `go god mode` (no args) | Pick highest-priority phase with unchecked tasks per §13.2 order; execute until interrupted |
-| `sync the plan` | Re-read repo state, mark any tasks now done, update §13.1 snapshot |
+| `go god mode` (no args) | Read the "➡️ NEXT PHASE" pointer; execute that whole phase until interrupted or done |
+| `sync the plan` | Re-read repo state, mark any tasks now done, update §13.1 snapshot + "➡️ NEXT PHASE" pointer |
 
-After every task completes: agent must (a) commit, (b) tick the box in §13, (c) update §13.1 progress bar.
+**After every task completes, the agent MUST:**
+1. Commit the work with a meaningful message
+2. Tick the box in §13 (use `[x]` for done)
+3. Update §13.1 progress bar (the ASCII snapshot)
+4. When a phase finishes 100%: update the "➡️ NEXT PHASE" pointer at the top of §13 to the next phase in §13.2's strict order
+
+**No re-deriving the order.** §13.2 is authoritative. If a task is genuinely blocked (e.g. external API down), mark it `[-]` deferred and move to the next item in the same phase, NOT skip to a later phase.
 
 ---
 
