@@ -768,44 +768,196 @@ Each is independently a defensible contribution. Order is dependency-driven: Eng
 
 ---
 
-## 11.2 Phase B — Dashboard Pro Rebuild
+## 11.2 Phase B — Dashboard Pro Rebuild (React + shadcn/ui)
 
-**Current state:** `FRONTEND/templates/index.html` is 1,014 lines targeting `/api/*` endpoints that no longer exist (legacy v2.8.0 Flask URLs). Tailwind + Chart.js already loaded.
+**Current state:** `FRONTEND/templates/index.html` is 1,014 lines of vanilla JS targeting `/api/*` endpoints that no longer exist (legacy v2.8.0). Tailwind + Chart.js loaded via CDN.
 
-**The rebuild:** treat this as a v4 dashboard, not a v2 patch. Single-page app, vanilla JS + Alpine.js (no React build step), three tabs: **Scans**, **Findings**, **Supply Chain**.
+**The decision:** stop maintaining a hand-rolled HTML file. Build a real frontend as a separate sub-app in `dashboard/`, ship it as static assets mounted by FastAPI (single Docker container, no separate deploy).
 
-### Must-haves
+**Why React + shadcn:** recruiter signal + production-grade look out-of-the-box + every component customisable + no vendor lock-in. shadcn isn't a library — it's copy-paste components, owned by us.
 
-| Feature | Engine source | UI element |
+### Stack
+
+| Layer | Tool | Why |
 |---|---|---|
-| Repoint all fetches `/api/*` → `/v1/*` | — | search/replace + `Authorization: Bearer` header |
-| **Live scan progress** | new `GET /v1/scans/{job}/events` SSE | progress bar + step list ("running bandit... running semgrep... reachability... taint...") |
-| **Click finding → modal** | existing explainer + autofix | side-by-side: code (CodeMirror) · AI explanation · autofix diff · taint flow graph |
-| **Taint flow visualisation** | Engine 1 | mini directed graph showing source → hops → sink (use `cytoscape.js` 700KB, lazy load) |
-| **Triage reasoning chain** | Engine 3 | collapsible accordion: step 1 (triage), step 2 (investigate), step 3 (verdict) |
-| **OWASP A01–A10 heatmap** | existing compliance endpoint | 2×5 grid colored by `finding_count` per category |
-| **Reachability badge** | existing | green REACHABLE / yellow DEAD-CODE |
-| **Exploit-verified badge** | existing | red VERIFIED-EXPLOITABLE + click-to-expand proof JSON |
-| **Auto-fix PR button** | Engine 4 | per-scan button → preview modal → confirm → opens PRs |
-| **Supply chain tab** | Engine 5 | tree of deps with risk-colored badges, click for CVE list |
-| **Attestation download** | existing | "🔐 Download attestation" → JSON file |
-| **Trend chart** | new endpoint `GET /v1/repos/{name}/trend` | findings count per scan over time |
-| **Run-vs-run diff** | Engine 2 | dropdown "compare to scan #N" → new/fixed/regressed columns |
-| **SBOM download** | Engine 5 | "📦 Download CycloneDX SBOM" → JSON |
-| **Filters** | existing | severity + category + min_confidence + reachability + taint_status + exploit_tier |
-| **Mobile responsive** | — | Tailwind `md:` breakpoints |
-| **Dark/light toggle** | — | localStorage |
+| Build | **Vite** | Instant HMR, no Webpack misery, ESM-first |
+| Framework | **React 18** | Industry standard, recruiters expect it |
+| Language | **TypeScript** | Type safety for API responses, fewer runtime bugs |
+| Routing | **TanStack Router** (or React Router) | File-based, typesafe |
+| Data fetching | **TanStack Query** | Caching, optimistic updates, refetch invalidation |
+| UI components | **shadcn/ui** | Copy-paste Radix + Tailwind — owned by us, looks elite |
+| Styling | **Tailwind CSS** | Already in muscle memory |
+| Charts | **Recharts** | Composable, React-idiomatic |
+| Graph viz | **React Flow** | For taint source→sink diagrams |
+| Code viewer | **react-syntax-highlighter** | For vulnerable code snippets in modals |
+| Forms | **React Hook Form + Zod** | Typesafe forms, schema validation |
+| Auth state | **Zustand** | Tiny, no boilerplate |
+| Real-time | **Native EventSource** | For SSE scan progress |
+| Icons | **Lucide React** | Same family shadcn ships with |
+| Testing | **Vitest + Testing Library + Playwright** | Unit + component + E2E |
 
-### Nice-to-haves
+**Total bundle target:** <300KB gzipped first paint. Code-split everything heavy (React Flow, syntax highlighter).
 
-- Keyboard shortcuts: `/` focus search, `f` filter modal, `Esc` close, `j/k` next/prev finding
-- Findings export: CSV + SARIF + CycloneDX + PDF (use jsPDF) download
-- Repo settings UI: edit `.acrqa.yml` policy in the browser, POST to `/v1/policy/{repo}`
-- Admin user management: list/disable users, rotate API keys (`/v1/auth/users` already exists)
-- AI explanation streaming: SSE for tokens as Groq generates
-- Lighthouse audit pass: ≥90 perf, ≥95 a11y, ≥95 best practices
+### Directory layout
 
-**Acceptance:** 5 dashboard screenshots embedded in `docs/PROJECT_DEEP_DIVE.md`. Lighthouse score green.
+```
+dashboard/
+├── package.json
+├── vite.config.ts
+├── tsconfig.json
+├── tailwind.config.ts
+├── components.json          # shadcn config
+├── src/
+│   ├── main.tsx
+│   ├── App.tsx
+│   ├── routes/
+│   │   ├── _layout.tsx      # nav + auth gate
+│   │   ├── index.tsx        # Scans dashboard
+│   │   ├── runs.$id.tsx     # Findings for a scan
+│   │   ├── runs.$id.compare.tsx # run-vs-run diff
+│   │   ├── supply-chain.tsx
+│   │   ├── settings.tsx     # mode selector + status
+│   │   └── auth.login.tsx
+│   ├── components/
+│   │   ├── ui/              # shadcn primitives (button, card, dialog, …)
+│   │   ├── findings/
+│   │   │   ├── FindingsTable.tsx
+│   │   │   ├── FindingModal.tsx
+│   │   │   ├── TaintFlowGraph.tsx
+│   │   │   ├── ReasoningChain.tsx
+│   │   │   ├── AutofixDiff.tsx
+│   │   │   └── ExploitProofPanel.tsx
+│   │   ├── scans/
+│   │   │   ├── ScanProgress.tsx
+│   │   │   ├── ScanCard.tsx
+│   │   │   └── TrendChart.tsx
+│   │   ├── compliance/
+│   │   │   └── OwaspHeatmap.tsx
+│   │   ├── supply/
+│   │   │   ├── DependencyTree.tsx
+│   │   │   └── SbomDownload.tsx
+│   │   └── mode/
+│   │       ├── ModeBadge.tsx   # persistent header indicator
+│   │       └── ModeSelector.tsx
+│   ├── lib/
+│   │   ├── api.ts             # typed client (generated from OpenAPI)
+│   │   ├── auth.ts            # Zustand store, token refresh
+│   │   ├── queries.ts         # TanStack Query hooks
+│   │   └── sse.ts             # EventSource helper
+│   └── styles/globals.css
+└── tests/
+    ├── components/*.test.tsx
+    └── e2e/*.spec.ts          # Playwright
+```
+
+### Build → ship pipeline
+
+```bash
+cd dashboard && pnpm build
+# → produces dashboard/dist/ (static files)
+
+# FastAPI mount in FRONTEND/api/main.py:
+app.mount("/", StaticFiles(directory="dashboard/dist", html=True), name="dashboard")
+```
+
+`Dockerfile` adds a Node build stage:
+```
+FROM node:22-alpine AS dash-build
+WORKDIR /dash
+COPY dashboard/package.json dashboard/pnpm-lock.yaml ./
+RUN corepack enable && pnpm install --frozen-lockfile
+COPY dashboard/ ./
+RUN pnpm build
+# … then copy dist/ into the Python image
+```
+
+### OpenAPI-driven typed client
+
+FastAPI already publishes OpenAPI at `/openapi.json`. Generate the TS client at build time:
+```bash
+pnpm dlx openapi-typescript http://localhost:8000/openapi.json -o src/lib/api.d.ts
+```
+
+→ Every API change re-types the frontend automatically. No drift.
+
+### Pages & features
+
+**Scans (index)** — list of scans, status badges, search + filter, "New Scan" CTA
+- Cards: repo · status · time · severity counts · attestation badge · go-to button
+
+**Findings (`/runs/$id`)** — the meat
+- Header: scan summary, OWASP heatmap, attestation download, SBOM download
+- Filters bar: severity + category + min_confidence + reachability + taint + exploit_tier
+- Table (virtualised with `@tanstack/react-virtual` for 10k+ findings):
+  - Severity pill · rule_id · file:line · message preview · reachability badge · taint badge · exploit badge · click → modal
+- **Finding modal** (the showstopper):
+  - Tabs: Overview / Code / Taint Flow / Reasoning / Autofix / Exploit Proof
+  - Overview: AI explanation rendered as markdown, confidence breakdown chart
+  - Code: syntax-highlighted snippet with vulnerable line marked
+  - Taint Flow: React Flow graph — source node → hops → sink node, clickable
+  - Reasoning: Engine 3's reasoning chain as a step-by-step accordion
+  - Autofix: side-by-side diff (react-diff-viewer-continued), "Apply" → opens auto-fix-PR flow
+  - Exploit Proof: payload, response, container_id, "Re-verify" button
+
+**Run-vs-run compare (`/runs/$id/compare`)** — dropdown to pick base scan, tabs: New / Fixed / Regressed / Unchanged
+
+**Supply Chain (`/supply-chain`)** — dep tree, risk badges, click for CVE list + maintainer health, SBOM download
+
+**Settings (`/settings`)** — §12 mode selector with live status panel, "Test current mode", "Sync OSV DB", "Pull Ollama model"
+
+**Auth (`/auth/login`)** — JWT login, refresh token rotation, RBAC-aware navigation
+
+### Persistent UI elements
+
+- **Mode badge** in header: `🌐 Cloud Mode` / `🔒 Hybrid Mode` / `🛡️ Offline Mode` — always visible during demo
+- **Dark/light toggle** with system preference detection
+- **Keyboard shortcuts:** `⌘K` command palette (cmdk), `/` search, `j/k` next/prev finding, `Esc` close modal
+- **Toast notifications** (Sonner) for scan completion, error states
+- **Skeleton loaders** for every async card — no jank
+
+### Non-functional acceptance
+
+- Lighthouse: perf ≥ 90 / a11y ≥ 95 / best practices ≥ 95 / SEO ≥ 90
+- Bundle first-paint < 300KB gzip
+- Mobile responsive (Tailwind `md:`/`lg:`)
+- Works in offline mode (only calls localhost)
+- All API calls strictly typed from OpenAPI
+- ≥40 component tests + ≥10 Playwright E2E flows
+
+## 11.2b Phase B+ — Marimo Notebook (the defense weapon)
+
+In parallel with the React dashboard, ship `notebooks/walkthrough.py` — a Marimo reactive notebook that walks through the entire pipeline cell by cell:
+
+```
+notebooks/
+├── walkthrough.py      # full pipeline demo
+├── engine_demos/
+│   ├── taint.py        # Engine 1 deep dive
+│   ├── exploit.py      # Engine 4 deep dive (existing)
+│   ├── attestation.py  # Engine 5 deep dive
+│   └── offline.py      # §12 offline mode proof
+└── README.md
+```
+
+**Why Marimo over Jupyter:** reactive (no stale state), reproducible (just a `.py` file), git-friendly, runs as an app with `marimo run`.
+
+**Cells in `walkthrough.py`:**
+1. Load a vulnerable fixture file
+2. Run static analysis → show raw findings
+3. Apply normaliser → canonical schema
+4. Apply reachability engine → reachable / dead-code split
+5. Apply taint engine → show flow graph (Marimo supports rendering React Flow output)
+6. Apply triage agent → show reasoning chain
+7. Generate explanation (cloud OR offline — toggle widget)
+8. Generate autofix → side-by-side diff
+9. Verify exploit → Docker output capture
+10. Sign attestation → display + verify
+11. Generate SBOM + supply-chain risk
+12. Final dashboard JSON ready for the API
+
+Defense format: examiner runs the notebook, each cell takes <5s, the whole walkthrough is 5–8 minutes. Beats any slide deck.
+
+**Acceptance:** notebook runs end-to-end with zero edits, link from `README.md`, also exported as static HTML in `docs/walkthrough.html` for offline viewing.
 
 ---
 
@@ -1278,3 +1430,256 @@ That's the headline. That's what gets the blog post on Hacker News and the paper
 ---
 
 *Section 12 written May 14, 2026. Engine 6 + the 3-mode user-selectable architecture is the ACR-QA differentiator no commercial competitor can match. Built on top of all §11 engines — the engines work in any mode; this just chooses where the AI calls and CVE lookups land.*
+
+---
+
+# 13. MASTER TASK LIST — Single Source of Truth
+
+**This is the only checklist that matters.** Every task across §11 + §12 is here. When Ahmed asks "where are we?", read this section. When a task completes, check the box and commit. The next unchecked task at the top of the highest-priority phase is what's next.
+
+**Status legend:** `[ ]` not started · `[~]` in progress · `[x]` done · `[-]` deferred / dropped
+**Last sync:** May 14, 2026 (v3.6.2 baseline)
+
+## Phase 0 — Foundation (Cloud + Observability) · runs in parallel from day 1
+
+- [ ] **0.1** Railway live deploy — `https://acr-qa.up.railway.app/health` returns 200
+- [ ] **0.2** `.github/workflows/deploy.yml` — auto-deploy on merge to main, <5 min
+- [ ] **0.3** Sentry free tier wired in `FRONTEND/api/main.py`, synthetic error visible
+- [ ] **0.4** UptimeRobot 5-min polls on `/health` and `/metrics`, email alerts on
+- [ ] **0.5** Fix `docs/setup/RAILWAY_DEPLOY.md` — replace `FLASK_SECRET_KEY` → `JWT_SECRET_KEY`
+- [ ] **0.6** Smoke test live URL — real scan via `POST /v1/scans`, attestation signed + persisted
+- [ ] **0.7** README badge: "Live URL" pointing at Railway deployment
+
+## Phase 1 — Engine 1: Taint Analyzer (the keystone — A2 and A3 depend on it)
+
+- [ ] **1.1** `config/taint_sources.yml` — 30 sources (Flask/Django/sys/fs/net/db)
+- [ ] **1.2** `config/taint_sinks.yml` — 15 sinks (eval/exec/shell/sql/path/template/deser)
+- [ ] **1.3** `config/taint_sanitizers.yml` — 8 sanitizers (escape/quote/coerce/param-query)
+- [ ] **1.4** `CORE/engines/taint_analyzer.py` — AST visitor, intra-procedural propagation
+- [ ] **1.5** Multi-hop tracking (assign / fstring / format / call / attr / subscript)
+- [ ] **1.6** Pipeline wiring in `CORE/main.py.run()` after Bandit, before reachability
+- [ ] **1.7** Alembic migration `0007` — `taint_source`, `taint_path`, `taint_confidence` columns
+- [ ] **1.8** DB methods in `DATABASE/database.py` for taint fields
+- [ ] **1.9** `GET /v1/runs/{id}/findings` returns taint fields
+- [ ] **1.10** 6 fixture files in `TESTS/fixtures/taint/`
+- [ ] **1.11** `TESTS/test_taint_analyzer.py` — ~80 tests
+- [ ] **1.12** Docs: `docs/architecture/ARCHITECTURE.md` + ADR for taint engine
+
+## Phase 2 — Engine 6: Offline Mode (privacy moat, also unlocks airplane-mode demo)
+
+- [ ] **2.1** `CORE/engines/ollama_provider.py` — OpenAI-compatible client to `localhost:11434`
+- [ ] **2.2** `KeyPool` dispatch: `ACRQA_LLM_PROVIDER` ∈ `{groq, agentrouter, ollama, none}`
+- [ ] **2.3** `explainer.py` works with Ollama (streaming response parse)
+- [ ] **2.4** `path_feasibility.py` works with Ollama via `ACRQA_LLM_MODEL_FAST`
+- [ ] **2.5** `CORE/engines/osv_offline.py` — bundled OSV CVE snapshot reader
+- [ ] **2.6** `scripts/sync_osv_db.py` — daily snapshot downloader
+- [ ] **2.7** `CORE/utils/egress_guard.py` — httpx + requests monkey-patch
+- [ ] **2.8** `ACRQA_MODE` single-knob — sets `cloud` / `hybrid` / `offline` defaults
+- [ ] **2.9** `Makefile` target `make offline-pack` produces installable bundle <8GB
+- [ ] **2.10** `docs/PRIVACY.md` — per-mode data-flow disclosure table
+- [ ] **2.11** `docs/setup/OFFLINE_SETUP.md` — Ollama install walkthrough
+- [ ] **2.12** `TESTS/test_offline_mode.py` — ~40 tests including real zero-egress assertion
+- [ ] **2.13** Demo recording: laptop in airplane mode, full scan + AI + exploit
+
+## Phase 3 — Engine 2: Incremental Scanner (PR latency killer)
+
+- [ ] **3.1** `CORE/engines/incremental.py` — `IncrementalScanner.scan_diff(base, head)`
+- [ ] **3.2** Reverse call-graph traversal (reuse `reachability.py`)
+- [ ] **3.3** Redis cache layer: `file_hash → finding_list`, 30-day TTL
+- [ ] **3.4** Endpoint `POST /v1/scans/diff` with body `{repo, base_ref, head_ref}`
+- [ ] **3.5** PR comment template — `+ 3 new HIGH`, `- 2 fixed`
+- [ ] **3.6** Performance target: <8s on 50k LOC, 5 changed files (Locust benchmark)
+- [ ] **3.7** `TESTS/test_incremental.py` — ~35 tests
+
+## Phase 4 — Engine 3: AI Triage Agent (multi-step reasoning)
+
+- [ ] **4.1** `CORE/engines/triage_agent.py` — `TriageAgent` class, 3-step loop
+- [ ] **4.2** Tool functions: `get_imports`, `get_callers`, `get_function_body`, `grep`
+- [ ] **4.3** Cost guard — max 4 tool calls per finding, 1500 tokens per step
+- [ ] **4.4** Alembic migration `0008` — `triage_reasoning`, `triage_verdict`, `triage_confidence_delta`
+- [ ] **4.5** Pipeline wiring in `CORE/main.py` after explainer
+- [ ] **4.6** Graceful degradation when no key (skip with reason `no_groq_key`)
+- [ ] **4.7** `TESTS/test_triage_agent.py` — ~40 tests with mocked Groq responses
+
+## Phase 5 — Engine 4: Auto-Fix PR Generator (Snyk-killer demo)
+
+- [ ] **5.1** `CORE/engines/autofix_pr.py` — clone/patch/scan/push workflow
+- [ ] **5.2** Endpoint `POST /v1/runs/{id}/autofix-pr` with `dry_run` default true
+- [ ] **5.3** GitHub API integration (PyGithub or httpx)
+- [ ] **5.4** Per-category PR grouping
+- [ ] **5.5** Validation scan — only proceed if no new findings introduced
+- [ ] **5.6** Safeguards: no default-branch push, no `.github/workflows/*` mods, max 10 files / 100 LoC
+- [ ] **5.7** Signed-by trailer + SLSA attestation in PR comment
+- [ ] **5.8** `TESTS/test_autofix_pr.py` — ~30 tests with mocked GitHub + tempdir git
+
+## Phase 6 — Engine 5: Supply Chain + SBOM
+
+- [ ] **6.1** `CORE/engines/supply_chain.py` — `SupplyChainEngine` class
+- [ ] **6.2** Lockfile parsers: requirements.txt, package.json, go.mod, Pipfile.lock
+- [ ] **6.3** OSV.dev integration (`live` mode) + local snapshot (`local` mode, reuses Phase 2.5)
+- [ ] **6.4** GitHub API: stars, last commit, contributor count, archived flag
+- [ ] **6.5** Risk scoring math (CVE + age + contributors + license + archived = 0–100)
+- [ ] **6.6** CycloneDX SBOM export at `GET /v1/runs/{id}/sbom`
+- [ ] **6.7** Alembic migration `0009` — `dependency_findings` table
+- [ ] **6.8** `TESTS/test_supply_chain.py` — ~35 tests
+
+## Phase 7 — Dashboard PRO Rebuild (React + shadcn + Vite)
+
+- [ ] **7.1** `dashboard/` scaffold — Vite + React 18 + TypeScript + Tailwind
+- [ ] **7.2** shadcn/ui setup — `components.json`, copy first 10 primitives
+- [ ] **7.3** TanStack Query setup, Zustand auth store, JWT refresh logic
+- [ ] **7.4** Router (TanStack Router or React Router) with auth-gated routes
+- [ ] **7.5** OpenAPI client generation script (`openapi-typescript`)
+- [ ] **7.6** Layout shell — nav, mode badge, dark/light toggle, command palette
+- [ ] **7.7** `routes/index.tsx` — Scans dashboard with cards + filters
+- [ ] **7.8** `routes/runs.$id.tsx` — findings table (virtualised) + filters bar
+- [ ] **7.9** `FindingModal.tsx` with 6 tabs (Overview / Code / Taint / Reasoning / Autofix / Exploit)
+- [ ] **7.10** `TaintFlowGraph.tsx` — React Flow source→sink visualisation
+- [ ] **7.11** `ReasoningChain.tsx` — Engine 3 step-by-step accordion
+- [ ] **7.12** `OwaspHeatmap.tsx` — 2×5 grid coloured by finding_count
+- [ ] **7.13** `AutofixDiff.tsx` — react-diff-viewer-continued
+- [ ] **7.14** `ExploitProofPanel.tsx` — payload, response, re-verify button
+- [ ] **7.15** `routes/runs.$id.compare.tsx` — run-vs-run diff
+- [ ] **7.16** `routes/supply-chain.tsx` — dep tree + risk badges + SBOM download
+- [ ] **7.17** `routes/settings.tsx` — mode selector + live status panel
+- [ ] **7.18** Live scan progress SSE — `GET /v1/scans/{job}/events` + `ScanProgress.tsx`
+- [ ] **7.19** Trend chart with Recharts
+- [ ] **7.20** Toast notifications (Sonner) for scan complete, errors
+- [ ] **7.21** Keyboard shortcuts (cmdk command palette + `/`, `j/k`, `Esc`)
+- [ ] **7.22** Mobile responsive pass — Tailwind `md:`/`lg:` breakpoints
+- [ ] **7.23** Vite build → FastAPI `StaticFiles` mount
+- [ ] **7.24** Dockerfile multi-stage with Node build
+- [ ] **7.25** Component tests with Vitest + Testing Library (≥40 tests)
+- [ ] **7.26** Playwright E2E tests (≥10 flows)
+- [ ] **7.27** Lighthouse audit — perf ≥90, a11y ≥95, best practices ≥95
+- [ ] **7.28** 5 screenshots embedded in `docs/PROJECT_DEEP_DIVE.md`
+- [ ] **7.29** Delete legacy `FRONTEND/templates/index.html` after parity verified
+
+## Phase 8 — Marimo Notebook (defense weapon)
+
+- [ ] **8.1** `notebooks/walkthrough.py` — 12-cell pipeline demo
+- [ ] **8.2** `notebooks/engine_demos/taint.py`
+- [ ] **8.3** `notebooks/engine_demos/exploit.py`
+- [ ] **8.4** `notebooks/engine_demos/attestation.py`
+- [ ] **8.5** `notebooks/engine_demos/offline.py` — proves zero-egress
+- [ ] **8.6** Export static HTML → `docs/walkthrough.html`
+- [ ] **8.7** README link + thesis-defense rehearsal pass
+
+## Phase 9 — Evaluation Expansion (4 → 10 repos)
+
+- [ ] **9.1** Clone OWASP NodeGoat into `test_targets/eval-repos/nodegoat/`
+- [ ] **9.2** Clone OWASP Juice Shop
+- [ ] **9.3** Promote DVNA from `DATA/sandbox/dvna/` to `test_targets/eval-repos/dvna/`
+- [ ] **9.4** Clone Tiredful-API
+- [ ] **9.5** Clone bandit-test-cases (official corpus)
+- [ ] **9.6** Clone vulnerable-flask-app
+- [ ] **9.7** Write 6 new ground-truth YAMLs in `TESTS/evaluation/ground_truth/`
+- [ ] **9.8** Add 6 new `test_recall_<name>` tests in `test_recall.py`
+- [ ] **9.9** Fix DVPWA hardcoded password detection (B105 mapping or Semgrep rule)
+- [ ] **9.10** Fix DVPWA debug mode detection (Semgrep `python-debug-true`)
+- [ ] **9.11** Fix DVPWA CSRF detection
+- [ ] **9.12** DVPWA recall verified ≥80% (re-run + commit numbers)
+- [ ] **9.13** `docs/evaluation/EVALUATION.md` — 10-repo table updated
+
+## Phase 10 — Third-Party Audit Layer (validation track)
+
+- [ ] **10.1** `.github/workflows/snyk.yml` — PR comment integration
+- [ ] **10.2** `.github/workflows/codeql.yml` — weekly scheduled scan
+- [ ] **10.3** `.github/dependabot.yml` — enable dep updates
+- [ ] **10.4** GitGuardian GitHub App installed
+- [ ] **10.5** `sonar-project.properties` + `.github/workflows/sonar.yml`
+- [ ] **10.6** `.github/workflows/trivy.yml` — Docker image scanning
+- [ ] **10.7** Codecov integration — replace local `htmlcov/`
+- [ ] **10.8** `.github/workflows/lighthouse.yml` — perf budget on live URL
+- [ ] **10.9** PostHog `<script>` in `dashboard/index.html`, events fired
+- [ ] **10.10** Run Snyk + CodeQL + SonarCloud on all 10 eval repos
+- [ ] **10.11** `docs/evaluation/COMPETITIVE_BASELINE.md` — full table, zero `?` cells
+- [ ] **10.12** `docs/evaluation/THIRD_PARTY_VALIDATION.md` — agreement tracker
+
+## Phase 11 — Testing Layers (target ≥2,200 tests at v4.0.0)
+
+- [ ] **11.1** `TESTS/e2e/` directory with Playwright config
+- [ ] **11.2** Playwright E2E tests covered in 7.26 — verify ≥10 flows green
+- [ ] **11.3** `TESTS/load/locustfile.py` — 50 RPS, p95 <500ms, error <1%
+- [ ] **11.4** `TESTS/test_dogfood.py` — ACR-QA scans itself, asserts 0 HIGH in `CORE/`
+- [ ] **11.5** `TESTS/test_live_smoke.py` — post-deploy poll, runs in CI after Railway deploy
+- [ ] **11.6** Total test count ≥2,200 verified via `pytest --collect-only`
+- [ ] **11.7** Coverage gate ≥85% maintained in CI
+- [ ] **11.8** `docs/PERFORMANCE_BASELINE.md` updated with Locust numbers
+
+## Phase 12 — Closeout (v4.0.0 release)
+
+- [ ] **12.1** User study survey sent to ≥10 KSIU classmates
+- [ ] **12.2** ≥5 user study responses logged in `USER_STUDY_RESULTS.md`
+- [ ] **12.3** Demo video recorded (OBS, 5min, 1920×1080)
+- [ ] **12.4** Demo video uploaded YouTube unlisted, linked in README
+- [ ] **12.5** `CHANGELOG.md` v4.0.0 entry covering all 6 engines + dashboard
+- [ ] **12.6** `README.md` badges current: v4.0.0 · ≥2200 tests · live URL · 6 engines
+- [ ] **12.7** `AGENT_NOTES.md` What's Left fully ✅
+- [ ] **12.8** `docs/PROJECT_DEEP_DIVE.md` — full update with all 6 engines, 5 dashboard screenshots
+- [ ] **12.9** `docs/architecture/ARCHITECTURE.md` + C4 diagrams refresh
+- [ ] **12.10** `git tag v4.0.0` + push
+- [ ] **12.11** GitHub release with auto-attached `COMPETITIVE_BASELINE.md` numbers + Lighthouse + uptime
+- [ ] **12.12** `docs/BLOG_POST_DRAFT.md` written — 1500 words
+- [ ] **12.13** Submit to Hacker News, r/Python, r/netsec when blog publishes
+- [ ] **12.14** All MDs synced — final pass
+
+---
+
+## 13.1 Progress Snapshot
+
+```
+Phase 0  — Foundation              [ ▱▱▱▱▱▱▱ ]  0/7
+Phase 1  — Taint Analyzer          [ ▱▱▱▱▱▱▱▱▱▱▱▱ ]  0/12
+Phase 2  — Offline Mode            [ ▱▱▱▱▱▱▱▱▱▱▱▱▱ ]  0/13
+Phase 3  — Incremental Scanner     [ ▱▱▱▱▱▱▱ ]  0/7
+Phase 4  — Triage Agent            [ ▱▱▱▱▱▱▱ ]  0/7
+Phase 5  — Auto-Fix PR             [ ▱▱▱▱▱▱▱▱ ]  0/8
+Phase 6  — Supply Chain            [ ▱▱▱▱▱▱▱▱ ]  0/8
+Phase 7  — Dashboard React/shadcn  [ ▱▱▱▱▱▱▱▱▱▱▱▱▱▱▱▱▱▱▱▱▱▱▱▱▱▱▱▱▱ ]  0/29
+Phase 8  — Marimo Notebook         [ ▱▱▱▱▱▱▱ ]  0/7
+Phase 9  — Eval Expansion          [ ▱▱▱▱▱▱▱▱▱▱▱▱▱ ]  0/13
+Phase 10 — Third-Party Audit       [ ▱▱▱▱▱▱▱▱▱▱▱▱ ]  0/12
+Phase 11 — Testing Layers          [ ▱▱▱▱▱▱▱▱ ]  0/8
+Phase 12 — Closeout                [ ▱▱▱▱▱▱▱▱▱▱▱▱▱▱ ]  0/14
+
+OVERALL: 0/145 tasks · 0% complete
+```
+
+## 13.2 Recommended Execution Order
+
+Independent tasks can run in parallel. The dependency chain forces this order:
+
+1. **Phase 0** (start NOW, parallel forever — cloud must be live for everything else)
+2. **Phase 1** (taint engine — keystone, blocks 3 and 4)
+3. **Phase 2** (offline mode — privacy moat, unlocks airplane-mode demo)
+4. **Phase 7.1–7.7** (dashboard scaffold + auth + scan list — can mock data while engines build)
+5. **Phase 6** (supply chain — independent, easy parallel win)
+6. **Phase 3** (incremental — uses Phase 1 taint context)
+7. **Phase 4** (triage agent — uses Phase 1 taint context)
+8. **Phase 5** (autofix PR)
+9. **Phase 7.8–7.29** (dashboard finish — wire in real engine data)
+10. **Phase 9** (eval repos)
+11. **Phase 10** (third-party audit)
+12. **Phase 11** (testing layers)
+13. **Phase 8** (Marimo — late, needs all engines done)
+14. **Phase 12** (closeout — strictly last)
+
+## 13.3 Invocation
+
+When Ahmed says one of these, do exactly that:
+
+| Say this | Agent does |
+|---|---|
+| `where are we` | Read §13, report % complete + next 3 unchecked tasks in priority order |
+| `whats next` | Same as above, but just the single next task |
+| `go god mode phase N` | Execute all unchecked tasks in phase N top-to-bottom; commit per logical unit; check boxes; push at end |
+| `go god mode N.M` | Execute single task N.M; commit; check box; report |
+| `go god mode` (no args) | Pick highest-priority phase with unchecked tasks per §13.2 order; execute until interrupted |
+| `sync the plan` | Re-read repo state, mark any tasks now done, update §13.1 snapshot |
+
+After every task completes: agent must (a) commit, (b) tick the box in §13, (c) update §13.1 progress bar.
+
+---
+
+*Master task list written May 14, 2026 — single source of truth for v4.0.0 PRO. Update this file (and only this file) when tasks complete. Old `AGENT_NOTES.md` "What's Left" links here.*
