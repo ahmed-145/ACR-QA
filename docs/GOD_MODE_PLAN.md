@@ -603,3 +603,284 @@ The thesis chapter on evaluation cites these numbers in a single sentence each, 
 ---
 
 *Plan written May 5, 2026. Revisit every 2 weeks. If a section is untouched for 2 weeks, delete it — momentum beats planning.*
+
+---
+
+# 11. GOD MODE — 5-Day Compressed Push to v4.0.0
+
+**Written:** May 14, 2026 (v3.6.2 — all engines done)
+**Mode:** Full god mode — Ahmed compresses 6 weeks of work into 5 calendar days
+**Target end state:** v4.0.0 tagged, live URL, demo video recorded, user study sent, dashboard rebuilt, competitive baseline measured, 8+ eval repos with ground truth
+
+## 11.0 Why This Plan Exists
+
+The old §6 schedule had Week 6 as "polish + release." That's no longer enough. v3.6.2 is engineering-complete, but the thesis story is missing four pieces:
+
+1. **A live URL** — no examiner can hit the system today
+2. **A defensible dashboard** — the existing `index.html` is from v2.8.0 and shows none of the v3.x features (reachability, exploit, attestation)
+3. **Comparative evaluation** — "97.1% precision" is unconvincing without Snyk/CodeQL numbers next to it
+4. **Independent validation** — no third-party tools have audited ACR-QA itself
+
+Five days of god mode closes all four gaps. Each day has a single integrative theme; don't context-switch within a day.
+
+## 11.1 Day-by-Day Schedule
+
+### Day 1 — Cloud Live + Observability Wired (foundation)
+
+**Goal:** A URL anyone can hit. Crashes surface in Sentry. Uptime is monitored.
+
+| Task | Files | Done when |
+|---|---|---|
+| Railway deploy | `railway.toml` (already FastAPI-ready) | `curl https://acr-qa.up.railway.app/health` returns 200 |
+| Auto-deploy on merge | `.github/workflows/deploy.yml` (new) | A merge to `main` ships to Railway in <5 min |
+| `RAILWAY_DEPLOY.md` fix | replace `FLASK_SECRET_KEY` with `JWT_SECRET_KEY` | doc accurate |
+| Sentry free tier | `requirements.txt` + `FRONTEND/api/main.py` init | A forced `/v1/runs/999999` 500 shows in Sentry dashboard |
+| UptimeRobot (free 50 monitors) | external — point at `/health` + `/metrics` | 5-min polls active, email alert configured |
+| Smoke test live | run real scan via `POST /v1/scans` against deployed instance | scan completes, findings persisted, attestation signed |
+
+**Acceptance:** Live URL in README badge. CI green. Sentry receives at least one synthetic error. Update `docs/setup/RAILWAY_DEPLOY.md` with screenshots.
+
+### Day 2 — Dashboard Rebuild (the visual moat)
+
+**Goal:** The dashboard now SHOWS every v3.x feature. Defense judge sees reachability, exploit proofs, attestations, OWASP heatmap — not just a 2.8.0-era findings list.
+
+**Current state:** `FRONTEND/templates/index.html` is 1,014 lines (Tailwind + Chart.js already loaded), targets endpoints that no longer exist (e.g. `/api/*` instead of `/v1/*`).
+
+| Enhancement | How |
+|---|---|
+| **Repoint all fetches** from `/api/*` → `/v1/*` | search/replace; add `Authorization: Bearer` header from localStorage |
+| **Live scan progress** via Server-Sent Events | new endpoint `GET /v1/scans/{job_id}/events` streams Celery task state; frontend `EventSource` updates progress bar |
+| **Click finding → modal** | modal shows: vulnerable code snippet (CodeMirror or `<pre>`) + AI explanation + autofix diff side-by-side; pulls from `GET /v1/runs/findings/{id}/explanation` + `/fix` |
+| **OWASP A01–A10 heatmap** | 2×5 grid colored by `finding_count` per category; pulls `GET /v1/runs/{id}/compliance` |
+| **Reachability badge** | green "REACHABLE" / yellow "DEAD-CODE −20" pill on each finding card |
+| **Exploit-verified badge** | red "VERIFIED-EXPLOITABLE" with click-to-expand proof JSON; pulls `exploit_tier` field |
+| **Attestation download** | "🔐 Download attestation" button → `GET /v1/runs/{id}/attestation` → JSON file |
+| **Trend chart** | Chart.js line: findings count per scan over time across all runs for a repo |
+| **Run-vs-run diff** | dropdown "compare to scan #N" → shows new/fixed/regressed findings |
+| **Filters** | severity + category + min_confidence + reachability_status + exploit_tier (all already supported by `/v1/runs/{id}/findings`) |
+| **Mobile responsive** | Tailwind `md:` breakpoints; test in Chrome DevTools |
+| **Lighthouse audit** | run `npx lighthouse` against live URL; fix anything <90 |
+
+**Acceptance:** Take 5 screenshots of the new dashboard; embed in `docs/PROJECT_DEEP_DIVE.md`. Lighthouse score ≥90 perf, ≥95 a11y.
+
+### Day 3 — Evaluation Expansion (8+ repos, ground-truth coverage)
+
+**Goal:** Triple the evaluation surface. Fix the DVPWA recall gap. Have numbers ready for the thesis evaluation chapter.
+
+**Current eval surface:** 4 repos (dsvw, dvpwa, pygoat, vulpy) — all Python.
+
+**New repos to add** under `test_targets/eval-repos/`:
+
+| Repo | Language | Why | Ground-truth target |
+|---|---|---|---|
+| **OWASP NodeGoat** | JS | Exercises JS adapter on real OWASP benchmark | 11 OWASP categories, ~30 known vulns |
+| **OWASP Juice Shop** | TS | Modern JS/TS, used by half of academia | 100+ challenges; pick 20 SAST-detectable |
+| **DVNA** (Damn Vulnerable Node App) | JS | Already partially in `DATA/sandbox/dvna/` — promote to eval-repos | OWASP Top 10 mapping |
+| **Tiredful-API** | Python (Django) | Vulnerable REST, exercises framework rules | ~12 known vulns |
+| **bandit-test-cases** | Python | Official Bandit corpus — recall floor measurement | 109 labeled cases |
+| **vulnerable-flask-app** | Python | Tiny Flask, fast smoke test | 8 vulns |
+
+For each repo:
+1. Clone into `test_targets/eval-repos/<name>/`
+2. Write `TESTS/evaluation/ground_truth/<name>.yml` listing `(file, line, expected_rule_id)`
+3. Add `test_recall_<name>` to `TESTS/evaluation/test_recall.py`
+4. Update `docs/evaluation/EVALUATION.md` with recall/precision row
+
+**DVPWA fix (currently 50% recall):**
+- Hardcoded password missed → add to `RULE_MAPPING` if Bandit B105 isn't firing on the case
+- Debug mode (`DEBUG=True`) missed → custom Semgrep rule in `TOOLS/semgrep/python-rules.yml`
+- CSRF missed → custom rule or rely on Pylint
+- Re-run, target ≥80% recall
+
+**Acceptance:** `EVALUATION.md` table has 10+ rows. DVPWA recall ≥80%. `pytest -m slow TESTS/evaluation/` passes for all repos.
+
+### Day 4 — Third-Party Audit Layer (dogfood + competitive baseline)
+
+**Goal:** Prove ACR-QA's findings agree with industry tools (validation), and show where it BEATS them (differentiation).
+
+**Free third-party tools to wire in:**
+
+| Tool | What it does | Wire-in |
+|---|---|---|
+| **Snyk** (free for OSS) | Dep + SAST scanning | `.github/workflows/snyk.yml` — runs on PR, posts comment |
+| **CodeQL** (free GitHub native) | Semantic SAST | `.github/workflows/codeql.yml` — auto-init, weekly schedule |
+| **Dependabot** | Dep updates + alerts | `.github/dependabot.yml` (config only) |
+| **GitGuardian** | Secret scanning | free GitHub App install, no code |
+| **SonarCloud** | Code quality + security | `sonar-project.properties` + `.github/workflows/sonar.yml` |
+| **Trivy** | Docker image scanning | `.github/workflows/trivy.yml` runs on Dockerfile change |
+| **Codecov** | Coverage tracking | replace local `htmlcov/` reporting; PR coverage diff |
+| **Lighthouse CI** | Dashboard perf budget | `.github/workflows/lighthouse.yml` runs against deployed URL |
+| **PostHog** (free 1M events/mo) | Dashboard analytics | embedded `<script>` in `index.html` — needed for user study |
+
+**Competitive baseline document — `docs/evaluation/COMPETITIVE_BASELINE.md` (new):**
+
+Run Snyk + CodeQL + SonarCloud + Bandit-alone on the same 8+ eval repos. Build the table:
+
+| Repo | ACR-QA Recall | ACR-QA FP | Snyk Recall | Snyk FP | CodeQL Recall | CodeQL FP | Winner |
+|---|---|---|---|---|---|---|---|
+
+This is the thesis money-shot table. Even if ACR-QA loses on 2/8 repos, the story "open-source tool with $0 cost matches Snyk on 6/8 and adds proof-of-exploit nobody else has" is publishable.
+
+**Acceptance:** All 9 third-party tools running in CI. `COMPETITIVE_BASELINE.md` complete with real numbers (no `?` cells). PostHog tracking live before user study sends.
+
+### Day 5 — User Study + Demo Video + v4.0.0 Release
+
+**Goal:** Three closeout deliverables in one day. Possible because the live URL (Day 1) and dashboard (Day 2) unblock them all.
+
+**Morning (parallel):**
+- Send user study survey to 10–12 KSIU classmates via WhatsApp/email. Use `docs/evaluation/USER_STUDY_PROTOCOL.md`. Track responses in PostHog. Don't wait — start collection ASAP, responses trickle in over the day.
+- Record demo video. Script is at `docs/DEMO_VIDEO_SCRIPT.md`. OBS Studio, 1920×1080, 5-min limit. Shoot in 3 takes max. Upload to YouTube (unlisted) + commit MP4 to `docs/media/demo.mp4` if <50MB else release asset only.
+
+**Afternoon:**
+- Final docs sync: `CHANGELOG.md` v4.0.0 entry, `README.md` badges, `AGENT_NOTES.md` What's Left ✅ all done
+- Tag `v4.0.0`, push tag, create GitHub release with release notes (auto-include `COMPETITIVE_BASELINE.md` results + Lighthouse score + uptime stats)
+- Write blog post draft in `docs/BLOG_POST_DRAFT.md` — 1500 words, lead with the exploit verification GIF
+
+**Evening:**
+- Aggregate any received user study responses into `docs/evaluation/USER_STUDY_RESULTS.md`
+- Update thesis defense slide deck
+
+**Acceptance:** v4.0.0 on GitHub. Demo video link in README. ≥3 user study responses logged (more trickle in next week).
+
+---
+
+## 11.2 Dashboard Enhancement Backlog (detail)
+
+Beyond Day 2's must-have list, these are nice-to-have if time allows on Day 5:
+
+- **Dark/light toggle** (Tailwind already has `darkMode: 'class'` — just a button + localStorage)
+- **Keyboard shortcuts:** `/` focus search, `f` filter modal, `Esc` close modal
+- **Findings export:** CSV + SARIF download buttons
+- **Repo settings page:** edit `.acrqa.yml` policy from the UI, POST to `/v1/policy/{repo}`
+- **Admin user management:** list/disable users, rotate API keys (already supported by `/v1/auth/users`)
+- **AI explanation streaming:** SSE for tokens as Groq generates (use `stream=true` in groq SDK)
+
+---
+
+## 11.3 Comprehensive Testing Plan
+
+The goal is to verify **everything works end-to-end**, including third-party integrations. Not just unit tests — the *system* must hold up.
+
+### 11.3.1 Existing Layers (already in place)
+
+| Layer | What | Where |
+|---|---|---|
+| Unit | 1,979 tests, 85% coverage | `TESTS/test_*.py` |
+| Integration | Celery + DB + Redis | `TESTS/test_integration_benchmarks.py`, `test_celery_tasks.py` |
+| Recall battery | Layer 5 evaluation on 4 repos | `TESTS/evaluation/test_recall.py` |
+| God-mode | OWASP, compliance, edge cases | `TESTS/test_god_mode.py` |
+| Docker exploit | Real container PoC | `TESTS/test_exploit_verifier.py` (`-m exploit`) |
+
+### 11.3.2 New Layers to Add (Days 3–4)
+
+**E2E browser tests — Playwright (free):**
+```bash
+pip install playwright pytest-playwright
+playwright install chromium
+```
+- `TESTS/e2e/test_dashboard.py` — open dashboard, login, run scan, verify finding modal opens, download attestation
+- Runs against `localhost:8000` in CI, against live URL nightly
+
+**Load tests — Locust (free):**
+- `TESTS/load/locustfile.py` — simulate 50 concurrent users hitting `/v1/runs`, `/v1/runs/{id}/findings`, `/health`
+- Validate SLO targets: p95 latency <500ms, error rate <1%
+- Run before Day 5 release; document in `docs/PERFORMANCE_BASELINE.md`
+
+**Security regression — dogfooding:**
+- `pytest TESTS/test_dogfood.py` runs ACR-QA against itself, asserts: 0 HIGH findings in `CORE/`, ≤5 MEDIUM, no secrets, no eval/exec
+
+**Smoke test on live URL — `TESTS/test_live_smoke.py`:**
+- Polls `/health`, `/metrics`, `/v1/runs?limit=1` against `RAILWAY_URL` env var
+- Runs in CI after each Railway deploy
+- Fails the deploy if any 5xx within 60s post-deploy
+
+### 11.3.3 Third-Party Validation (Day 4)
+
+For each free tool wired in, document the result in `docs/evaluation/THIRD_PARTY_VALIDATION.md`:
+
+```
+| Tool        | What it found     | Status     | Notes |
+| Snyk        | 0 HIGH, 2 MEDIUM  | ✅ Agrees  | Both MEDIUM also in our output |
+| CodeQL      | 1 HIGH            | ❌ Disagrees | False positive on test fixture; suppressed |
+| GitGuardian | 0 secrets         | ✅          | Confirms no committed keys |
+| Trivy       | 3 HIGH in deps    | 🔄 Action   | Bump pydantic, fastapi |
+| SonarCloud  | B rating          | 🔄 Action   | 12 maintainability issues to address |
+```
+
+This table doubles as defense evidence ("Independent tools validate ACR-QA's findings").
+
+### 11.3.4 Manual Pre-Release Checklist
+
+Before tagging v4.0.0:
+
+- [ ] Fresh clone → `make up` → live in <10 min
+- [ ] `make seed-admin` → login on live URL works
+- [ ] Run scan via dashboard → completes → finding modal opens
+- [ ] Download attestation → `verify_attestation.py` returns valid
+- [ ] Trigger exploit verification on Docker fixture → proof JSON visible
+- [ ] All 9 third-party CI jobs green
+- [ ] Lighthouse ≥90 perf, ≥95 a11y on live URL
+- [ ] Sentry sees 0 unhandled errors in last hour
+- [ ] UptimeRobot uptime 99.5%+ since Day 1
+- [ ] All README badges current
+
+---
+
+## 11.4 Repos To Add — Strategic Choices
+
+The current 4 eval repos all skew Python. The thesis claims multi-language support (Python/JS/TS). The repo additions in §11.1 Day 3 fix this. Specific selection rationale:
+
+| Repo | Why this one |
+|---|---|
+| **NodeGoat** | OWASP-owned, widely cited in academia, lets us cite OWASP Top 10 mapping directly |
+| **Juice Shop** | The de-facto modern JS/TS benchmark. Examiners will know it. |
+| **DVNA** | Already partially in repo (`DATA/sandbox/dvna/`) — promotion is cheap |
+| **Tiredful-API** | Tests Django + DRF rules, broadens framework coverage |
+| **bandit-test-cases** | Official Bandit corpus — guarantees we don't regress against Bandit's intent |
+| **vulnerable-flask-app** | Tiny — fast smoke + CI cycle time |
+
+**Don't add:** WebGoat (Java — out of scope), Damn Vulnerable iOS App, Mutillidae (PHP). Stay focused on Python/JS/TS so the multi-language claim is defensible without scope creep.
+
+**Order of work:** clone all 6 on Day 3 morning, write ground-truth YAMLs on Day 3 afternoon (use ACR-QA's own findings as the seed — manually verify each), wire recall tests Day 3 evening. Don't optimize for perfect ground truth; "documented and reproducible" beats "perfect."
+
+---
+
+## 11.5 Acceptance Criteria for "v4.0.0 — Done"
+
+By end of Day 5, all of these must be ✅:
+
+- [ ] Live URL: `https://acr-qa.up.railway.app` returns 200 on `/health`
+- [ ] Auto-deploy: merge to main → live in <5 min
+- [ ] Sentry + UptimeRobot + PostHog wired
+- [ ] Dashboard shows: reachability, exploit, attestation, OWASP heatmap, trend chart, diff
+- [ ] 8+ eval repos in `test_targets/eval-repos/` with ground-truth YAMLs
+- [ ] DVPWA recall ≥80% (up from 50%)
+- [ ] `COMPETITIVE_BASELINE.md` complete with Snyk/CodeQL/SonarCloud numbers
+- [ ] 9 third-party CI jobs (Snyk, CodeQL, Dependabot, GitGuardian, SonarCloud, Trivy, Codecov, Lighthouse, custom smoke) all green
+- [ ] Playwright E2E + Locust load tests in CI
+- [ ] Demo video recorded + uploaded
+- [ ] ≥3 user study responses logged
+- [ ] v4.0.0 tagged, release notes published, blog post drafted
+- [ ] All MDs synced — `CHANGELOG`, `README`, `AGENT_NOTES`, `GOD_MODE_PLAN`, `EVALUATION`, `PROJECT_DEEP_DIVE`
+
+When all 13 are ✅: thesis is defensible, repo is portfolio-ready, blog post goes live.
+
+---
+
+## 11.6 Execution Mode — How To Run This With An Agent
+
+Ahmed says "go god mode day N" → agent reads §11.1 day N → executes top-to-bottom without asking permission per step → commits and pushes per deliverable → at end of day: updates §11.5 checkboxes + appends a daily summary below this section.
+
+| Day | Started | Ended | Commits | Notes |
+|---|---|---|---|---|
+| 1 | | | | |
+| 2 | | | | |
+| 3 | | | | |
+| 4 | | | | |
+| 5 | | | | |
+
+When all 5 rows are filled and §11.5 is fully ✅ → tag `v4.0.0` → ship the thesis.
+
+---
+
+*God-mode plan written May 14, 2026 — Ahmed compresses §6's Weeks 1–6 schedule into 5 calendar days. The old plan (§§0–10) stays as historical context; §11 supersedes §6's Week 6 row.*
