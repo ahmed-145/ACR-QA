@@ -1784,3 +1784,23 @@ Phase 6 ships a clean, functional React dashboard. Post-defense extras:
 - Full mobile responsive pass
 - Lighthouse audit ≥90 perf / ≥95 a11y
 - Dark/light mode persistence in localStorage
+
+### ⭐ Fine-Tuned Security Explanation Model (v4.1 — if time permits)
+
+> **Status:** Optional. Add to Phase 11 closeout as a stretch task if Phase 0–10 finish early.
+
+**What:** Fine-tune a small model specifically on ACR-QA scan data so the offline mode uses a security-specialized LLM instead of a general-purpose one.
+
+**Why it's strong:** Snyk Code and Semgrep Assistant are quietly working toward domain-adapted models. None have published a downloadable fine-tune. ACR-QA would be the first open-source scanner with a published security-explanation model.
+
+**How:**
+1. Use Groq free tier to generate ~1,000–2,000 high-quality `(finding → explanation)` pairs across the 10 eval repos
+2. Fine-tune `qwen2.5-coder:1.5b` or `codellama:7b` via QLoRA (runs on free Colab T4 or laptop GPU)
+3. Publish adapter on HuggingFace as `acr-qa/security-explainer-v1`
+4. Wire as default model when `ACRQA_MODE=offline` — replaces the generic Ollama model
+
+**Thesis claim:** *"ACR-QA ships a domain-adapted security explanation model fine-tuned on 2,000 real vulnerability findings. In offline mode, this replaces the general-purpose LLM, producing rule-citing explanations with higher self-eval scores at zero inference cost."*
+
+**Estimated effort:** 2–3 days (data collection 1 day, fine-tune + eval 1 day, integration 0.5 day).
+
+**Risk:** If fine-tuned model scores lower than base model on unseen findings, that's an awkward thesis result. Mitigate by publishing comparison data honestly — "fine-tune wins on in-distribution findings, base model wins on novel patterns" is still a valid finding.
