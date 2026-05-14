@@ -1566,19 +1566,19 @@ That's the headline. That's what gets the blog post on Hacker News and the paper
 
 ## Phase 8 — Evaluation Expansion (4 → 10 repos)
 
-- [ ] **8.1** Clone OWASP NodeGoat into `test_targets/eval-repos/nodegoat/`
-- [ ] **8.2** Clone OWASP Juice Shop
-- [ ] **8.3** Promote DVNA from `DATA/sandbox/dvna/` to `test_targets/eval-repos/dvna/`
-- [ ] **8.4** Clone Tiredful-API
-- [ ] **8.5** Clone bandit-test-cases (official corpus)
-- [ ] **8.6** Clone vulnerable-flask-app
-- [ ] **8.7** Write 6 new ground-truth YAMLs in `TESTS/evaluation/ground_truth/`
-- [ ] **8.8** Add 6 new `test_recall_<name>` tests in `test_recall.py`
-- [ ] **8.9** Fix DVPWA hardcoded password detection (B105 mapping or Semgrep rule)
-- [ ] **8.10** Fix DVPWA debug mode detection (Semgrep `python-debug-true`)
-- [ ] **8.11** Fix DVPWA CSRF detection
-- [ ] **8.12** DVPWA recall verified ≥80% (re-run + commit numbers)
-- [ ] **8.13** `docs/evaluation/EVALUATION.md` — 10-repo table updated
+- [x] **8.1** Clone OWASP NodeGoat into `test_targets/eval-repos/nodegoat/`
+- [x] **8.2** Clone OWASP Juice Shop
+- [x] **8.3** Promote DVNA from `DATA/sandbox/dvna/` to `test_targets/eval-repos/dvna/`
+- [x] **8.4** Clone Tiredful-API
+- [x] **8.5** Clone bandit-test-cases (official corpus)
+- [x] **8.6** Clone vulnerable-flask-app
+- [x] **8.7** Write 6 new ground-truth YAMLs in `TESTS/evaluation/ground_truth/`
+- [x] **8.8** Add 6 new `test_recall_<name>` tests in `test_recall.py`
+- [x] **8.9** Fix DVPWA hardcoded password detection (B105 mapping or Semgrep rule)
+- [x] **8.10** Fix DVPWA debug mode detection (Semgrep `python-debug-true`)
+- [x] **8.11** Fix DVPWA CSRF detection
+- [x] **8.12** DVPWA recall verified ≥80% (re-run + commit numbers)
+- [x] **8.13** `docs/evaluation/EVALUATION.md` — 10-repo table updated
 
 ## Phase 9 — Third-Party Audit Layer (validation track)
 
@@ -1633,12 +1633,12 @@ Phase 4  — Auto-Fix Patch          [ ▱▱▱▱ ]  0/4
 Phase 5  — Supply Chain            [ ▱▱▱▱▱▱▱▱ ]  0/8
 Phase 6  — Dashboard React/shadcn  [ ▱▱▱▱▱▱▱▱▱▱▱▱▱▱▱▱▱▱▱▱▱▱▱▱▱▱▱▱▱ ]  0/29
 Phase 7  — Marimo Notebook         [ ▱▱▱▱▱▱▱ ]  0/7
-Phase 8  — Eval Expansion          [ ▱▱▱▱▱▱▱▱▱▱▱▱▱ ]  0/13
+Phase 8  — Eval Expansion          [ ████████████ ]  13/13 ✅
 Phase 9  — Third-Party Audit       [ ▱▱▱▱▱▱▱ ]  0/7
 Phase 10 — Testing Layers          [ ▱▱▱▱▱▱▱▱ ]  0/8
 Phase 11 — Closeout                [ ▱▱▱▱▱▱▱▱▱▱▱▱▱▱ ]  0/14
 
-OVERALL: 3/128 tasks · 2% complete · ➡️ NEXT: Phase 8 (Eval Expansion)
+OVERALL: 16/128 tasks · 13% complete · ➡️ NEXT: Phase 1 (Taint Analyzer MVP)
 ```
 
 ## 13.2 THE Execution Order (authoritative — do exactly this)
