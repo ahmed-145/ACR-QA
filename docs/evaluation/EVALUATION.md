@@ -93,8 +93,8 @@ ACR-QA covers **9/10** OWASP Top 10 categories.
 
 | Metric | Value |
 |--------|:-----:|
-| Test Suite | **1,773 tests** (pytest) — v3.3.2 |
-| Code Coverage | **85.73%** |
+| Test Suite | **1,864 tests** (pytest) — v3.4.0 |
+| Code Coverage | **85.82%** |
 | CI/CD | GitHub Actions (test + lint + coverage) |
 | Docker | Dockerfile + docker-compose.yml |
 | API Endpoints | 28 async FastAPI endpoints + 22 Flask legacy |
@@ -135,4 +135,4 @@ Dead-code findings receive a **−20 confidence penalty** rather than outright s
 
 ---
 
-*Updated: May 14, 2026 — ACR-QA v3.3.2*
+*Updated: May 14, 2026 — ACR-QA v3.4.0*

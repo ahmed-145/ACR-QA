@@ -85,7 +85,7 @@ class AnalysisPipeline:
         json_output=False,
     ):
         """Run full analysis pipeline."""
-        logger.info("🚀 ACR-QA v3.3.2 Analysis Pipeline")
+        logger.info("🚀 ACR-QA v3.4.0 Analysis Pipeline")
         logger.info("=" * 50)
 
         # Step 0: Check rate limit

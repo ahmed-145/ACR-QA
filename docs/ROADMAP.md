@@ -12,7 +12,7 @@
 >
 > **The current plan (v3.3.0 → v4.0.0):**
 > - ✅ Reachability engine (Week 2) — **DONE, v3.3.2**
-> - MCP server + learned suppression (Week 3)
+> - ✅ MCP server + learned suppression (Week 3) — **DONE, v3.4.0**
 > - Proof-of-Exploit engine (Week 4)
 > - Provenance attestations + Railway deploy + user study (Week 5)
 > - v4.0.0 release + demo video + thesis defense (Week 6)
@@ -357,4 +357,4 @@ docs/
 
 ---
 
-*Last updated: May 14, 2026 — ACR-QA v3.3.2*
+*Last updated: May 14, 2026 — ACR-QA v3.4.0*

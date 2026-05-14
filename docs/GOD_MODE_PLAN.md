@@ -63,34 +63,35 @@ Every serious competitor in 2026 — Snyk, Semgrep, Aikido, Endor, Greptile, Cod
 
 **Resume bullet:** *"Built call-graph reachability engine in Python AST; validates findings against live entry-point call chains (Flask/FastAPI/Celery/main); 0% FP rate on benchmark fixtures; wired into production pipeline with DB persistence."*
 
-### 3.2 Embedding-Based Learned Suppression (Week 3)
+### 3.2 Embedding-Based Learned Suppression (Week 3) ✅ DONE — v3.4.0
 
 **What competitors do:** Greptile v4 learns per-repo from 👍/👎 feedback; Semgrep Assistant auto-triages with 97% human agreement; CodeRabbit adapts to team review patterns.
 
-**What ACR-QA has:** `triage_memory.py` writes exact-match suppression rules when a user marks a finding as FP. That's pattern-matching, not learning.
+**What was built:**
+- `CORE/engines/learned_suppression.py` — `LearnedSuppressionEngine` using `sentence-transformers` `all-MiniLM-L6-v2` (80MB, local, no API keys)
+- `suppress(findings, db)` → checks cosine similarity of each finding against stored dismissed embeddings; sets `confidence_score=0` and annotates `suppressed_by_embedding=True` when similarity ≥ 0.92
+- `store_dismissed(finding_id, db)` → embeds dismissed finding text (`rule_id | message | file | line`) and stores in DB
+- `_cosine_similarity(a, b)` — pure Python, no numpy at runtime
+- Alembic migration `0004`: `finding_embeddings` table (id, finding_id FK, rule_id, code_context, embedding_json TEXT, suppressed_at)
+- `TriageMemory.learn_from_fp` calls `store_dismissed` so every manually-dismissed finding also trains the semantic memory
+- Wired into both `run()` and `run_js()` pipelines after exact-match triage, gracefully degrades if package missing
+- 35 tests in `test_learned_suppression.py`; 12 god-mode tests in `TestLearnedSuppressionGodMode`
 
-**What to build:**
-- Extend `triage_memory.py`: when a finding is dismissed, embed its `(rule_id + code_snippet + file_context)` using `sentence-transformers` (local, free, 80MB, no API calls)
-- On next scan: for each finding, compute cosine similarity against the dismissed embedding store; if similarity > 0.92, auto-downgrade confidence to 0 and annotate `"suppressed: similar to previously-dismissed finding"`
-- Model: `all-MiniLM-L6-v2` — runs in <50ms per embedding, fits in RAM, no API keys
-- New Alembic migration: `finding_embeddings` table (id, rule_id, embedding BLOB, suppressed_at, workspace_id)
+**Thesis claim:** *"ACR-QA implements semantic FP suppression via sentence-transformer embeddings (all-MiniLM-L6-v2). When a user dismisses a finding, ACR-QA embeds the finding context and automatically zeroes confidence on semantically-similar findings (cosine ≥ 0.92) in future scans — without manual rule authoring. This matches Greptile/Semgrep Assistant's adaptive triage approach, running entirely locally at $0 cost."*
 
-**Thesis claim:** *"ACR-QA implements semantic deduplication via sentence-transformer embeddings. After 3 reviews of the same repo, FP rate drops to X% without manual rule-authoring."*
-
-### 3.3 MCP Server — Pre-PR Integration (Week 3)
+### 3.3 MCP Server — Pre-PR Integration (Week 3) ✅ DONE — v3.4.0
 
 **What competitors do:** Semgrep runs inside Cursor as the AI writes code. CodeRabbit has an IDE extension. Every OSS AI coding agent (Continue, Cline, Aider, Claude Code) consumes MCP servers.
 
-**What to build:** Replace the dead vscode-extension with an MCP server — 10x the reach, 1/10th the effort.
-
-- New `acrqa-mcp/` package at repo root: `server.py` implementing the MCP protocol
-- 3 exposed tools:
-  - `acrqa.scan(target_dir: str) → ScanResult` — triggers async Celery scan, returns job ID
-  - `acrqa.explain(finding_id: str) → Explanation` — returns AI explanation for a finding
-  - `acrqa.fix(finding_id: str) → FixSuggestion` — returns autofix diff
-- Distribute on PyPI: `pip install acrqa-mcp`
-- Config: `~/.config/acrqa/config.json` with `ACRQA_URL` pointing at the running FastAPI server
-- Works with Claude Code, Continue, Cursor — demo this in the thesis video
+**What was built:**
+- `acrqa-mcp/server.py` — `FastMCP` server (mcp[cli] ≥1.0.0) with 3 tools:
+  - `acrqa_scan(target_dir, repo_name)` — queues Celery scan via `POST /v1/scans`, polls until complete, returns findings summary + top 5
+  - `acrqa_explain(finding_id)` — returns stored AI explanation from `GET /v1/runs/findings/{id}/explanation`
+  - `acrqa_fix(finding_id)` — returns autofix diff + confidence from `GET /v1/runs/findings/{id}/fix`
+- Config: `ACRQA_URL` + `ACRQA_TOKEN` env vars or `~/.config/acrqa/config.json`
+- `acrqa-mcp/pyproject.toml` — packaged for `pip install acrqa-mcp`; entry point `acrqa-mcp → server:main`
+- Works with Claude Code (add to MCP config), Cursor, Continue — demo in thesis video
+- 35 tests in `test_mcp_server.py`; 9 god-mode tests in `TestMCPServerGodMode`
 
 **Resume bullet:** *"Shipped ACR-QA as an MCP server on PyPI, enabling integration with Claude Code, Cursor, and Continue; security review runs as the AI generates code, not after."*
 

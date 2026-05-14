@@ -2,6 +2,42 @@
 
 All notable changes to ACR-QA are documented here.
 
+## [v3.4.0] — Week 3: MCP Server + Embedding-Based Learned Suppression (May 14, 2026)
+
+### Added — Feature 10: Learned Suppression v2 (CORE/engines/learned_suppression.py)
+
+- **`LearnedSuppressionEngine`** — semantic FP suppression via `sentence-transformers` (`all-MiniLM-L6-v2`, 80MB, local, no API keys).
+  - `suppress(findings, db)` → checks each finding's cosine similarity against previously-dismissed embeddings; confidence set to 0 if similarity ≥ 0.92
+  - `store_dismissed(finding_id, db)` → embeds dismissed finding and stores in `finding_embeddings` table
+  - `embed_text(text)` → returns JSON-serialisable float list via `SentenceTransformer.encode`
+  - `is_available()` → graceful degradation if package not installed
+  - `_cosine_similarity(a, b)` → pure-Python cosine similarity (no numpy required at runtime)
+  - `_finding_to_text(finding)` → canonical text: `rule_id | message | file | line`
+- **Alembic migration `0004`** — `finding_embeddings` table: `id`, `finding_id` (FK → findings.id ON DELETE CASCADE), `rule_id`, `code_context`, `embedding_json` (TEXT), `suppressed_at` (TIMESTAMPTZ)
+- **DB methods** — `insert_finding_embedding`, `get_all_finding_embeddings`, `get_finding_embeddings_by_rule`, `delete_finding_embedding`
+- **`TriageMemory.learn_from_fp`** — now also calls `LearnedSuppressionEngine().store_dismissed()` so every exact-match FP rule also gets an embedding stored for future similarity matching
+- **Pipeline** — both `run()` and `run_js()` in `CORE/main.py` call `LearnedSuppressionEngine().suppress()` after exact-match triage memory, before deduplication; wrapped in `try/except` for graceful degradation
+
+### Added — Feature 11: MCP Server (`acrqa-mcp/`)
+
+- **`acrqa-mcp/server.py`** — `FastMCP` server exposing 3 tools:
+  - `acrqa_scan(target_dir, repo_name)` — queues a Celery scan via `POST /v1/scans`, polls until complete, returns findings summary (count, severity breakdown, top 5)
+  - `acrqa_explain(finding_id)` — retrieves AI explanation for a stored finding from `GET /v1/runs/findings/{id}/explanation`
+  - `acrqa_fix(finding_id)` — retrieves autofix diff from `GET /v1/runs/findings/{id}/fix`
+- **Config** — `ACRQA_URL` + `ACRQA_TOKEN` env vars, or `~/.config/acrqa/config.json`
+- **`acrqa-mcp/pyproject.toml`** — packaged for `pip install acrqa-mcp`; entry point `acrqa-mcp` → `server:main`
+- **Compatible with** Claude Code, Cursor, Continue — any MCP-capable AI coding agent
+
+### Tests
+
+- `TESTS/test_learned_suppression.py` — 35 tests: import, text repr, cosine similarity, embed mock, graceful degradation, semantic matching, store_dismissed, DB methods, migration, pipeline wiring
+- `TESTS/test_mcp_server.py` — 35 tests: import, config, `_tool_scan` success/error/timeout/sorting, `_tool_explain` success/404/error, `_tool_fix` success/404/error, FastMCP tool registration, package structure
+- `TESTS/test_god_mode.py` — +21 tests: `TestLearnedSuppressionGodMode` (12) + `TestMCPServerGodMode` (9)
+- **Total: 1,864 passed, 0 failed, 85.82% coverage**
+- **4 Alembic migrations** (baseline + users/api_keys + reachability + embeddings)
+
+---
+
 ## [v3.3.2] — Week 2: Call Graph Reachability Engine (May 14, 2026)
 
 ### Added — Feature 9a: Call Graph Reachability (CORE/engines/reachability.py)
