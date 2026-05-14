@@ -309,3 +309,57 @@ async def get_autofix(
         "valid": result["valid"],
         "validation_note": result["validation_note"],
     }
+
+
+@router.get("/{run_id}/sbom", summary="CycloneDX 1.4 SBOM for a run")
+async def get_sbom(
+    run_id: int,
+    user: dict = Depends(get_current_user),
+    db: Database = Depends(get_db),
+):
+    """Return the stored CycloneDX SBOM, or generate it on-the-fly from stored dependency findings."""
+    sbom = db.get_run_sbom(run_id)
+    if sbom is not None:
+        return {"success": True, "run_id": run_id, "sbom": sbom}
+
+    # On-the-fly generation from dependency_findings rows
+    deps = db.get_dependency_findings(run_id)
+    if not deps:
+        raise HTTPException(status_code=404, detail="No supply-chain data found for this run")
+
+    runs = db.get_recent_runs(limit=200)
+    run = next((r for r in runs if r["id"] == run_id), None)
+    repo_name = run["repo_name"] if run else "unknown"
+
+    from CORE.engines.supply_chain import build_cyclonedx_sbom
+
+    sbom = build_cyclonedx_sbom(run_id, repo_name, deps)
+    return {"success": True, "run_id": run_id, "sbom": sbom}
+
+
+@router.get("/{run_id}/supply-chain", summary="Supply-chain risk report for a run")
+async def get_supply_chain(
+    run_id: int,
+    risk_level: str | None = None,
+    user: dict = Depends(get_current_user),
+    db: Database = Depends(get_db),
+):
+    """Return dependency findings with CVE data and risk scores."""
+    deps = db.get_dependency_findings(run_id)
+    if risk_level:
+        deps = [d for d in deps if d.get("risk_level") == risk_level]
+
+    summary = {
+        "total": len(deps),
+        "high_risk": sum(1 for d in deps if d.get("risk_level") == "high"),
+        "medium_risk": sum(1 for d in deps if d.get("risk_level") == "medium"),
+        "low_risk": sum(1 for d in deps if d.get("risk_level") == "low"),
+        "total_cves": sum(d.get("cve_count", 0) for d in deps),
+    }
+
+    return {
+        "success": True,
+        "run_id": run_id,
+        "summary": summary,
+        "dependencies": deps,
+    }

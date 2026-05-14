@@ -1442,7 +1442,7 @@ That's the headline. That's what gets the blog post on Hacker News and the paper
 
 ---
 
-> ## ➡️ NEXT PHASE: **Phase 5 — Engine 5: Supply Chain + SBOM**
+> ## ➡️ NEXT PHASE: **Phase 6 — Dashboard PRO Rebuild (React + shadcn + Vite)**
 >
 > Phase order (authoritative): **0 → 9 → 1 → 2 → 6 → 3 → 4 → 5 → 7 → 10 → 11 → 8 → 12**
 >
@@ -1513,14 +1513,14 @@ That's the headline. That's what gets the blog post on Hacker News and the paper
 
 ## Phase 5 — Engine 5: Supply Chain + SBOM
 
-- [ ] **5.1** `CORE/engines/supply_chain.py` — `SupplyChainEngine` class
-- [ ] **5.2** Lockfile parsers: requirements.txt, package.json, go.mod, Pipfile.lock
-- [ ] **5.3** OSV.dev integration (`live` mode) + local snapshot (`local` mode, reuses Phase 2.5)
-- [ ] **5.4** GitHub API: stars, last commit, contributor count, archived flag
-- [ ] **5.5** Risk scoring math (CVE + age + contributors + license + archived = 0–100)
-- [ ] **5.6** CycloneDX SBOM export at `GET /v1/runs/{id}/sbom`
-- [ ] **5.7** Alembic migration `0009` — `dependency_findings` table
-- [ ] **5.8** `TESTS/test_supply_chain.py` — ~35 tests
+- [x] **5.1** `CORE/engines/supply_chain.py` — `SupplyChainEngine` class
+- [x] **5.2** Lockfile parsers: requirements.txt, package.json, go.mod, Pipfile.lock
+- [x] **5.3** OSV.dev integration (`live` mode) + local snapshot (`local` mode, reuses Phase 2.5)
+- [x] **5.4** GitHub API: stars, last commit, contributor count, archived flag
+- [x] **5.5** Risk scoring math (CVE + age + contributors + license + archived = 0–100)
+- [x] **5.6** CycloneDX SBOM export at `GET /v1/runs/{id}/sbom`
+- [x] **5.7** Alembic migration `0009` — `dependency_findings` table
+- [x] **5.8** `TESTS/test_supply_chain.py` — ~35 tests
 
 ## Phase 6 — Dashboard PRO Rebuild (React + shadcn + Vite)
 
@@ -1626,11 +1626,11 @@ That's the headline. That's what gets the blog post on Hacker News and the paper
 
 ```
 Phase 0  — Foundation              [ ██▱▱▱▱▱ ]  3/7  (4 deferred — external signups)
-Phase 1  — Taint Analyzer MVP      [ ▱▱▱▱▱▱▱▱▱▱▱ ]  0/11
-Phase 2  — Offline Mode            [ ████████████▱ ] 12/13
-Phase 3  — AI Triage Agent         [ ▱▱▱▱▱▱▱ ]  0/7
+Phase 1  — Taint Analyzer MVP      [ ███████████ ] 11/11 ✅
+Phase 2  — Offline Mode            [ ████████████▱ ] 12/13  (2.13 deferred — demo recording)
+Phase 3  — AI Triage Agent         [ ███████ ]  7/7 ✅
 Phase 4  — Auto-Fix Patch          [ ████ ]  4/4 ✅
-Phase 5  — Supply Chain            [ ▱▱▱▱▱▱▱▱ ]  0/8
+Phase 5  — Supply Chain            [ ████████ ]  8/8 ✅
 Phase 6  — Dashboard React/shadcn  [ ▱▱▱▱▱▱▱▱▱▱▱▱▱▱▱▱▱▱▱▱▱▱▱▱▱▱▱▱▱ ]  0/29
 Phase 7  — Marimo Notebook         [ ▱▱▱▱▱▱▱ ]  0/7
 Phase 8  — Eval Expansion          [ ████████████ ]  13/13 ✅
@@ -1638,7 +1638,7 @@ Phase 9  — Third-Party Audit       [ ▱▱▱▱▱▱▱ ]  0/7
 Phase 10 — Testing Layers          [ ▱▱▱▱▱▱▱▱ ]  0/8
 Phase 11 — Closeout                [ ▱▱▱▱▱▱▱▱▱▱▱▱▱▱ ]  0/14
 
-OVERALL: 50/128 tasks · 39% complete · ➡️ NEXT: Phase 5 (Supply Chain + SBOM)
+OVERALL: 58/128 tasks · 45% complete · ➡️ NEXT: Phase 6 (Dashboard PRO Rebuild)
 ```
 
 ## 13.2 THE Execution Order (authoritative — do exactly this)

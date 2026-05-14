@@ -3,6 +3,7 @@ PostgreSQL Database Interface for ACR-QA v2.0
 Handles provenance storage and retrieval
 """
 
+import json
 import logging
 import os
 from pathlib import Path
@@ -693,6 +694,74 @@ class Database:
         """
         rows = self.execute(query, (run_id,), fetch=True)
         return dict(rows[0]) if rows else None
+
+    def insert_dependency_finding(self, run_id: int, dep: dict) -> int | None:
+        """Insert one dependency finding; return the new row id."""
+        query = """
+            INSERT INTO dependency_findings
+                (run_id, name, version, ecosystem, risk_score, risk_level,
+                 cve_count, cve_ids, stars, last_commit_days, contributors,
+                 archived, license, repo_url, sbom_purl)
+            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+            RETURNING id
+        """
+        cve_ids = [v.get("id", "") for v in dep.get("cves", [])]
+        rows = self.execute(
+            query,
+            (
+                run_id,
+                dep.get("name", ""),
+                dep.get("version", "unknown"),
+                dep.get("ecosystem", ""),
+                dep.get("risk_score", 0),
+                dep.get("risk_level", "low"),
+                dep.get("cve_count", 0),
+                json.dumps(cve_ids),
+                dep.get("stars"),
+                dep.get("last_commit_days"),
+                dep.get("contributors"),
+                dep.get("archived"),
+                dep.get("license"),
+                dep.get("repo_url"),
+                dep.get("purl", ""),
+            ),
+            fetch=True,
+        )
+        return rows[0]["id"] if rows else None
+
+    def get_dependency_findings(self, run_id: int) -> list[dict]:
+        """Return all dependency findings for a run."""
+        query = """
+            SELECT id, run_id, name, version, ecosystem, risk_score, risk_level,
+                   cve_count, cve_ids, stars, last_commit_days, contributors,
+                   archived, license, repo_url, sbom_purl, created_at
+            FROM dependency_findings
+            WHERE run_id = %s
+            ORDER BY risk_score DESC
+        """
+        rows = self.execute(query, (run_id,), fetch=True)
+        return [dict(r) for r in rows] if rows else []
+
+    def upsert_run_sbom(self, run_id: int, sbom_json: dict) -> None:
+        """Store the CycloneDX SBOM for a run (upsert)."""
+        query = """
+            INSERT INTO run_sboms (run_id, sbom_json, created_at)
+            VALUES (%s, %s, NOW())
+            ON CONFLICT (run_id) DO UPDATE SET sbom_json = EXCLUDED.sbom_json,
+                                               created_at = NOW()
+        """
+        self.execute(query, (run_id, json.dumps(sbom_json)))
+
+    def get_run_sbom(self, run_id: int) -> dict | None:
+        """Return the stored SBOM for a run, or None."""
+        query = "SELECT sbom_json FROM run_sboms WHERE run_id = %s"
+        rows = self.execute(query, (run_id,), fetch=True)
+        if not rows:
+            return None
+        raw = rows[0]["sbom_json"]
+        if isinstance(raw, str):
+            return json.loads(raw)
+        return raw
 
     def close(self):
         """Close database connection pool"""
