@@ -1442,7 +1442,7 @@ That's the headline. That's what gets the blog post on Hacker News and the paper
 
 ---
 
-> ## ➡️ NEXT PHASE: **Phase 2 — Engine 6: Offline Mode**
+> ## ➡️ NEXT PHASE: **Phase 3 — Engine 3: AI Triage Agent**
 >
 > Phase order (authoritative): **0 → 9 → 1 → 2 → 6 → 3 → 4 → 5 → 7 → 10 → 11 → 8 → 12**
 >
@@ -1478,19 +1478,19 @@ That's the headline. That's what gets the blog post on Hacker News and the paper
 
 ## Phase 2 — Engine 6: Offline Mode (privacy moat, also unlocks airplane-mode demo)
 
-- [ ] **2.1** `CORE/engines/ollama_provider.py` — OpenAI-compatible client to `localhost:11434`
-- [ ] **2.2** `KeyPool` dispatch: `ACRQA_LLM_PROVIDER` ∈ `{groq, agentrouter, ollama, none}`
-- [ ] **2.3** `explainer.py` works with Ollama (streaming response parse)
-- [ ] **2.4** `path_feasibility.py` works with Ollama via `ACRQA_LLM_MODEL_FAST`
-- [ ] **2.5** `CORE/engines/osv_offline.py` — bundled OSV CVE snapshot reader
-- [ ] **2.6** `scripts/sync_osv_db.py` — daily snapshot downloader
-- [ ] **2.7** `CORE/utils/egress_guard.py` — httpx + requests monkey-patch
-- [ ] **2.8** `ACRQA_MODE` single-knob — sets `cloud` / `hybrid` / `offline` defaults
-- [ ] **2.9** `Makefile` target `make offline-pack` produces installable bundle <8GB
-- [ ] **2.10** `docs/PRIVACY.md` — per-mode data-flow disclosure table
-- [ ] **2.11** `docs/setup/OFFLINE_SETUP.md` — Ollama install walkthrough
-- [ ] **2.12** `TESTS/test_offline_mode.py` — ~40 tests including real zero-egress assertion
-- [ ] **2.13** Demo recording: laptop in airplane mode, full scan + AI + exploit
+- [x] **2.1** `CORE/engines/ollama_provider.py` — OpenAI-compatible client to `localhost:11434`
+- [x] **2.2** `KeyPool` dispatch: `ACRQA_LLM_PROVIDER` ∈ `{groq, agentrouter, ollama, none}`
+- [x] **2.3** `explainer.py` works with Ollama (streaming response parse)
+- [x] **2.4** `path_feasibility.py` works with Ollama via `ACRQA_LLM_MODEL_FAST`
+- [x] **2.5** `CORE/engines/osv_offline.py` — bundled OSV CVE snapshot reader
+- [x] **2.6** `scripts/sync_osv_db.py` — daily snapshot downloader
+- [x] **2.7** `CORE/utils/egress_guard.py` — httpx + requests monkey-patch
+- [x] **2.8** `ACRQA_MODE` single-knob — sets `cloud` / `hybrid` / `offline` defaults
+- [x] **2.9** `Makefile` target `make offline-pack` produces installable bundle <8GB
+- [x] **2.10** `docs/PRIVACY.md` — per-mode data-flow disclosure table
+- [x] **2.11** `docs/setup/OFFLINE_SETUP.md` — Ollama install walkthrough
+- [x] **2.12** `TESTS/test_offline_mode.py` — ~40 tests including real zero-egress assertion
+- [-] **2.13** Demo recording: laptop in airplane mode, full scan + AI + exploit
 
 ## Phase 3 — Engine 3: AI Triage Agent (multi-step reasoning)
 
@@ -1627,7 +1627,7 @@ That's the headline. That's what gets the blog post on Hacker News and the paper
 ```
 Phase 0  — Foundation              [ ██▱▱▱▱▱ ]  3/7  (4 deferred — external signups)
 Phase 1  — Taint Analyzer MVP      [ ▱▱▱▱▱▱▱▱▱▱▱ ]  0/11
-Phase 2  — Offline Mode            [ ▱▱▱▱▱▱▱▱▱▱▱▱▱ ]  0/13
+Phase 2  — Offline Mode            [ ████████████▱ ] 12/13
 Phase 3  — AI Triage Agent         [ ▱▱▱▱▱▱▱ ]  0/7
 Phase 4  — Auto-Fix Patch          [ ▱▱▱▱ ]  0/4
 Phase 5  — Supply Chain            [ ▱▱▱▱▱▱▱▱ ]  0/8
@@ -1638,7 +1638,7 @@ Phase 9  — Third-Party Audit       [ ▱▱▱▱▱▱▱ ]  0/7
 Phase 10 — Testing Layers          [ ▱▱▱▱▱▱▱▱ ]  0/8
 Phase 11 — Closeout                [ ▱▱▱▱▱▱▱▱▱▱▱▱▱▱ ]  0/14
 
-OVERALL: 27/128 tasks · 21% complete · ➡️ NEXT: Phase 2 (Offline Mode)
+OVERALL: 39/128 tasks · 30% complete · ➡️ NEXT: Phase 3 (AI Triage Agent)
 ```
 
 ## 13.2 THE Execution Order (authoritative — do exactly this)

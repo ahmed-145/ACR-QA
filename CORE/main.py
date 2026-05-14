@@ -65,8 +65,24 @@ from CORE.utils.rate_limiter import get_rate_limiter  # noqa: E402
 from DATABASE.database import Database  # noqa: E402
 
 
+def _apply_acrqa_mode() -> None:
+    """Map ACRQA_MODE single-knob to individual provider/guard env vars if not already set."""
+    mode = os.getenv("ACRQA_MODE", "cloud").lower()
+    if mode == "offline":
+        os.environ.setdefault("ACRQA_LLM_PROVIDER", "ollama")
+        os.environ.setdefault("ACRQA_OFFLINE", "1")
+        from CORE.utils.egress_guard import maybe_install
+
+        maybe_install()
+    elif mode == "hybrid":
+        # Cloud LLM + local OSV snapshot — no egress block
+        os.environ.setdefault("ACRQA_LLM_PROVIDER", "groq")
+    # cloud (default): nothing to override
+
+
 class AnalysisPipeline:
     def __init__(self, target_dir="samples/realistic-issues", files=None):
+        _apply_acrqa_mode()
         self.target_dir = target_dir
         self.db = Database()
         self.explainer = ExplanationEngine()

@@ -1614,7 +1614,7 @@ class TestKeyPoolDegradation:
 
         with mpatch.dict(os.environ, {"ACRQA_LLM_PROVIDER": "groq"}, clear=True):
             pool = KeyPool()
-        with pytest.raises(RuntimeError, match="No GROQ API keys"):
+        with pytest.raises(RuntimeError, match="No LLM provider"):
             pool.next_key()
 
     def test_next_client_raises_on_empty_pool(self, monkeypatch):
@@ -1625,7 +1625,7 @@ class TestKeyPoolDegradation:
 
         with mpatch.dict(os.environ, {"ACRQA_LLM_PROVIDER": "groq"}, clear=True):
             pool = KeyPool()
-        with pytest.raises(RuntimeError, match="No GROQ API keys"):
+        with pytest.raises(RuntimeError, match="No LLM provider"):
             pool.next_client()
 
     def test_has_keys_true_when_key_present(self, monkeypatch):

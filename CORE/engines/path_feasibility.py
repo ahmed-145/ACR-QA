@@ -174,13 +174,21 @@ class PathFeasibilityValidator:
 
         import os
 
+        from CORE.engines.ollama_provider import ollama_chat_url, ollama_model_fast
+
         provider = os.getenv("ACRQA_LLM_PROVIDER", "groq")
-        if provider == "agentrouter":
+        if provider == "ollama":
+            base_url = ollama_chat_url()
+            actual_api_key = "ollama"
+            payload["model"] = os.getenv("ACRQA_LLM_MODEL_FAST", ollama_model_fast())
+        elif provider == "agentrouter":
             base_url = "https://agentrouter.org/v1/chat/completions"
             actual_api_key = os.getenv("AGENTROUTER_API_KEY", api_key)
         else:
             base_url = "https://api.groq.com/openai/v1/chat/completions"
             actual_api_key = api_key
+            if os.getenv("ACRQA_LLM_MODEL_FAST"):
+                payload["model"] = os.getenv("ACRQA_LLM_MODEL_FAST")
 
         try:
             response = await client.post(

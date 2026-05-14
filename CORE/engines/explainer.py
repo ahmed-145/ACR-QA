@@ -34,9 +34,21 @@ class KeyPool:
 
     def __init__(self):
         self._keys: list[str] = []
-        provider = os.getenv("ACRQA_LLM_PROVIDER", "groq")
+        self._provider = os.getenv("ACRQA_LLM_PROVIDER", "groq")
 
-        if provider == "agentrouter":
+        if self._provider == "ollama":
+            from CORE.engines.ollama_provider import OllamaClient, ollama_model
+
+            self._ollama_client = OllamaClient()
+            self._clients = [self._ollama_client]
+            self._keys = ["ollama"]
+            self.base_url = f"{self._ollama_client._base_url}/v1/chat/completions"
+            self._model_override = ollama_model()
+        elif self._provider == "none":
+            self._clients = []
+            self.base_url = ""
+            self._model_override = None
+        elif self._provider == "agentrouter":
             key = os.getenv("AGENTROUTER_API_KEY")
             if key:
                 self._keys.append(key)
@@ -44,7 +56,8 @@ class KeyPool:
                 raise ValueError("No AGENTROUTER_API_KEY found in environment.")
             self._clients = [Groq(api_key=k, base_url="https://agentrouter.org/v1") for k in self._keys]
             self.base_url = "https://agentrouter.org/v1/chat/completions"
-        else:
+            self._model_override = None
+        else:  # groq (default)
             i = 1
             while True:
                 key = os.getenv(f"GROQ_API_KEY_{i}")
@@ -53,7 +66,6 @@ class KeyPool:
                     i += 1
                 else:
                     break
-            # Fallback: single GROQ_API_KEY
             if not self._keys:
                 single = os.getenv("GROQ_API_KEY")
                 if single:
@@ -66,12 +78,13 @@ class KeyPool:
                 )
             self._clients = [Groq(api_key=k) for k in self._keys]
             self.base_url = "https://api.groq.com/openai/v1/chat/completions"
+            self._model_override = None
         self._index = 0
 
-    def next_client(self) -> Groq:
-        """Return next Groq SDK client (round-robin)."""
+    def next_client(self):
+        """Return next client (round-robin). Returns Groq or OllamaClient."""
         if not self._clients:
-            raise RuntimeError("No GROQ API keys configured — cannot create Groq client.")
+            raise RuntimeError("No LLM provider configured — cannot create client.")
         client = self._clients[self._index % len(self._clients)]
         self._index += 1
         return client
@@ -79,14 +92,18 @@ class KeyPool:
     def next_key(self) -> str:
         """Return next raw API key string (for async httpx calls)."""
         if not self._keys:
-            raise RuntimeError("No GROQ API keys configured — cannot return API key.")
+            raise RuntimeError("No LLM provider configured — cannot return API key.")
         key = self._keys[self._index % len(self._keys)]
         self._index += 1
         return key
 
     @property
+    def provider(self) -> str:
+        return self._provider
+
+    @property
     def pool_size(self) -> int:
-        """Number of API keys in the pool."""
+        """Number of API keys / clients in the pool."""
         return len(self._keys)
 
     @property
@@ -96,9 +113,9 @@ class KeyPool:
 
 class ExplanationEngine:
     def __init__(self, redis_client=None):
-        # Initialize Groq key pool (round-robin across multiple accounts)
+        # Initialize LLM key pool (round-robin; supports groq / agentrouter / ollama / none)
         self.key_pool = KeyPool()
-        self.model = "llama-3.3-70b-versatile"
+        self.model = self.key_pool._model_override or "llama-3.3-70b-versatile"
         self.temperature = 0.3
         self.max_tokens = 300
 

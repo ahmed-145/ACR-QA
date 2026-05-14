@@ -1,7 +1,7 @@
 # ACR-QA v2.5 - Makefile
 # One-click setup and common operations
 
-.PHONY: help up down setup install-deps install-tools init-db db-migrate db-rollback docker-up docker-down run dashboard api worker seed-admin test test-all lint coverage version clean
+.PHONY: help up down setup install-deps install-tools init-db db-migrate db-rollback docker-up docker-down run dashboard api worker seed-admin test test-all lint coverage version clean offline-pack sync-osv
 
 # Default target
 help:
@@ -277,3 +277,27 @@ coverage:
 
 version:
 	@.venv/bin/python3 -c "from CORE import __version__; print(f'ACR-QA v{__version__}')"
+
+# ============================================
+# Offline Mode
+# ============================================
+
+sync-osv:
+	@echo "📥 Syncing OSV vulnerability snapshots..."
+	.venv/bin/python3 scripts/sync_osv_db.py
+	@echo "✅ OSV snapshot ready at ~/.acrqa/osv-snapshot/"
+
+offline-pack:
+	@echo "📦 Building offline bundle..."
+	@echo "  1. Pulling Ollama model: $(OLLAMA_MODEL)"
+	@OLLAMA_MODEL=$${OLLAMA_MODEL:-qwen2.5-coder:1.5b}; ollama pull $$OLLAMA_MODEL || echo "  ⚠  Ollama not installed — skip model pull"
+	@echo "  2. Syncing OSV snapshots..."
+	@$(MAKE) sync-osv
+	@echo "  3. Exporting Python wheels..."
+	@mkdir -p offline-bundle/wheels
+	.venv/bin/pip download -r requirements.txt -d offline-bundle/wheels --quiet
+	@echo "  4. Writing offline .env template..."
+	@printf 'ACRQA_MODE=offline\nANTHROPIC_API_KEY=\nOLLAMA_BASE_URL=http://localhost:11434\nOSV_SNAPSHOT_DIR=%s/.acrqa/osv-snapshot\n' "$$HOME" > offline-bundle/.env.offline
+	@echo ""
+	@echo "✅ Offline bundle ready in ./offline-bundle/"
+	@echo "   Run: ACRQA_MODE=offline python -m CORE.main <target>"
