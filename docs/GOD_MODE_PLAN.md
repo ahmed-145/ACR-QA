@@ -1442,7 +1442,7 @@ That's the headline. That's what gets the blog post on Hacker News and the paper
 
 ---
 
-> ## ➡️ NEXT PHASE: **Phase 3 — Engine 3: AI Triage Agent**
+> ## ➡️ NEXT PHASE: **Phase 4 — Engine 4: Auto-Fix Patch Generator**
 >
 > Phase order (authoritative): **0 → 9 → 1 → 2 → 6 → 3 → 4 → 5 → 7 → 10 → 11 → 8 → 12**
 >
@@ -1494,13 +1494,13 @@ That's the headline. That's what gets the blog post on Hacker News and the paper
 
 ## Phase 3 — Engine 3: AI Triage Agent (multi-step reasoning)
 
-- [ ] **3.1** `CORE/engines/triage_agent.py` — `TriageAgent` class, 3-step loop
-- [ ] **3.2** Tool functions: `get_imports`, `get_callers`, `get_function_body`, `grep`
-- [ ] **3.3** Cost guard — max 4 tool calls per finding, 1500 tokens per step
-- [ ] **3.4** Alembic migration `0008` — `triage_reasoning`, `triage_verdict`, `triage_confidence_delta`
-- [ ] **3.5** Pipeline wiring in `CORE/main.py` after explainer
-- [ ] **3.6** Graceful degradation when no key (skip with reason `no_groq_key`)
-- [ ] **3.7** `TESTS/test_triage_agent.py` — ~40 tests with mocked Groq responses
+- [x] **3.1** `CORE/engines/triage_agent.py` — `TriageAgent` class, 3-step loop
+- [x] **3.2** Tool functions: `get_imports`, `get_callers`, `get_function_body`, `grep`
+- [x] **3.3** Cost guard — max 4 tool calls per finding, 1500 tokens per step
+- [x] **3.4** Alembic migration `0008` — `triage_reasoning`, `triage_verdict`, `triage_confidence_delta`
+- [x] **3.5** Pipeline wiring in `CORE/main.py` after explainer
+- [x] **3.6** Graceful degradation when no key (skip with reason `no_groq_key`)
+- [x] **3.7** `TESTS/test_triage_agent.py` — ~40 tests with mocked Groq responses
 
 ## Phase 4 — Engine 4: Auto-Fix Patch Generator (Snyk-killer demo)
 
@@ -1638,7 +1638,7 @@ Phase 9  — Third-Party Audit       [ ▱▱▱▱▱▱▱ ]  0/7
 Phase 10 — Testing Layers          [ ▱▱▱▱▱▱▱▱ ]  0/8
 Phase 11 — Closeout                [ ▱▱▱▱▱▱▱▱▱▱▱▱▱▱ ]  0/14
 
-OVERALL: 39/128 tasks · 30% complete · ➡️ NEXT: Phase 3 (AI Triage Agent)
+OVERALL: 46/128 tasks · 36% complete · ➡️ NEXT: Phase 4 (Auto-Fix Patch Generator)
 ```
 
 ## 13.2 THE Execution Order (authoritative — do exactly this)

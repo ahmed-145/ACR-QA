@@ -357,6 +357,26 @@ class AnalysisPipeline:
                 logger.info(f"      [{i}/{len(findings_to_process)}] {rule_id} ✓ ({latency}ms)")
                 self.db.insert_explanation(f["_db_id"], expl)
 
+        # Triage Agent: multi-step LLM reasoning on HIGH/CRITICAL findings (Phase 3)
+        try:
+            from CORE.engines.triage_agent import TriageAgent
+
+            agent = TriageAgent()
+            if agent.is_available:
+                findings = agent.enrich_findings(findings, target_dir=str(self.target_dir))
+                for f in findings:
+                    if "_db_id" in f and f.get("triage_verdict"):
+                        self.db.update_finding_triage(
+                            f["_db_id"],
+                            f["triage_verdict"],
+                            f.get("triage_reasoning", ""),
+                            f.get("triage_confidence_delta", 0.0),
+                        )
+            else:
+                logger.debug("Triage agent skipped: no LLM key")
+        except Exception as _ta_err:
+            logger.warning(f"Triage agent skipped: {_ta_err}")
+
         # Mark run as complete
         self.db.complete_analysis_run(run_id, total_findings)
 

@@ -199,6 +199,21 @@ class Database:
         """
         self.execute(query, (status, penalty, finding_id))
 
+    def update_finding_triage(
+        self,
+        finding_id: int,
+        verdict: str,
+        reasoning: str,
+        confidence_delta: float,
+    ) -> None:
+        """Persist triage agent verdict for a finding (Phase 3)."""
+        query = """
+            UPDATE findings
+            SET triage_verdict = %s, triage_reasoning = %s, triage_confidence_delta = %s
+            WHERE id = %s
+        """
+        self.execute(query, (verdict, reasoning, confidence_delta, finding_id))
+
     def update_finding_taint(
         self,
         finding_id: int,

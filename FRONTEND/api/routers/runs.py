@@ -89,6 +89,9 @@ async def get_findings(
                 "taint_source": f.get("taint_source"),
                 "taint_path": f.get("taint_path"),
                 "taint_confidence": f.get("taint_confidence"),
+                "triage_verdict": f.get("triage_verdict"),
+                "triage_reasoning": f.get("triage_reasoning"),
+                "triage_confidence_delta": f.get("triage_confidence_delta"),
             }
         )
 
