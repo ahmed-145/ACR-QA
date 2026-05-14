@@ -1493,5 +1493,96 @@ class TestMCPServerGodMode:
         assert mod.__version__ == "1.0.0"
 
 
+class TestExploitVerifierGodMode:
+    """God-mode tests for Feature 12: Proof-of-Exploit Engine."""
+
+    def test_module_imports_cleanly(self):
+        from CORE.engines.exploit_verifier import ExploitVerifier  # noqa: F401
+
+    def test_exploit_result_dataclass_fields(self):
+        from CORE.engines.exploit_verifier import ExploitResult
+
+        r = ExploitResult(finding_id=1, category="ssti", verified=True, tier="verified-exploitable")
+        assert r.tier == "verified-exploitable"
+        assert r.verified is True
+        assert r.extra == {}
+
+    def test_can_verify_high_sqli(self):
+        from CORE.engines.exploit_verifier import ExploitVerifier
+
+        ev = ExploitVerifier()
+        f = {"severity": "high", "canonical_rule_id": "SECURITY-027"}
+        assert ev.can_verify(f) is True
+
+    def test_cannot_verify_medium(self):
+        from CORE.engines.exploit_verifier import ExploitVerifier
+
+        ev = ExploitVerifier()
+        f = {"severity": "medium", "canonical_rule_id": "SECURITY-027"}
+        assert ev.can_verify(f) is False
+
+    def test_enrich_findings_adds_exploit_tier_to_all(self):
+        from CORE.engines.exploit_verifier import ExploitVerifier
+
+        ev = ExploitVerifier(use_docker=False)
+        findings = [
+            {"id": 1, "severity": "high", "canonical_rule_id": "SECURITY-027"},
+            {"id": 2, "severity": "low", "canonical_rule_id": "STYLE-001"},
+        ]
+        result = ev.enrich_findings(findings, "/tmp")
+        for f in result:
+            assert "exploit_tier" in f
+
+    def test_enrich_findings_does_not_crash_on_exception(self):
+        from CORE.engines.exploit_verifier import ExploitVerifier
+
+        ev = ExploitVerifier()
+        findings = [{"id": 1, "severity": "high", "canonical_rule_id": "SECURITY-032"}]
+        with patch.object(ev, "verify_finding", side_effect=Exception("network down")):
+            result = ev.enrich_findings(findings, "/tmp")
+        assert result[0]["exploit_tier"] == "unverified"
+
+    def test_proof_json_is_valid_json(self):
+        from CORE.engines.exploit_verifier import ExploitResult
+
+        r = ExploitResult(
+            finding_id=99,
+            category="command-injection",
+            verified=True,
+            tier="verified-exploitable",
+            payload="localhost; echo EXPLOITED",
+            evidence="EXPLOITED",
+        )
+        proof = r.to_proof_json()
+        obj = json.loads(proof)
+        assert obj["verified"] is True
+        assert obj["tier"] == "verified-exploitable"
+
+    def test_db_method_exists(self):
+        from DATABASE.database import Database
+
+        assert callable(getattr(Database, "update_finding_exploit_status", None))
+
+    def test_alembic_0005_exists(self):
+        versions_dir = Path(__file__).parent.parent / "alembic" / "versions"
+        assert any(versions_dir.glob("*0005*"))
+
+    def test_exploit_marker_in_pyproject(self):
+        pyproject = Path(__file__).parent.parent / "pyproject.toml"
+        content = pyproject.read_text()
+        assert "exploit" in content
+
+    def test_docker_fixture_dockerfiles_exist(self):
+        fixtures = Path(__file__).parent / "fixtures" / "exploits"
+        for app_name in ["flask_sqli", "flask_cmdi", "flask_ssti", "flask_safe"]:
+            dockerfile = fixtures / app_name / "Dockerfile"
+            assert dockerfile.exists(), f"Missing {dockerfile}"
+
+    def test_version_is_350(self):
+        from CORE import __version__
+
+        assert __version__ == "3.5.0"
+
+
 if __name__ == "__main__":
     pytest.main([__file__, "-v", "--tb=short"])

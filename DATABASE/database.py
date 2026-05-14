@@ -615,6 +615,25 @@ class Database:
         """Remove a stored embedding (e.g. when a suppression is reverted)."""
         self.execute("DELETE FROM finding_embeddings WHERE id = %s", (embedding_id,))
 
+    # ===== EXPLOIT VERIFICATION (Feature 12) =====
+
+    def update_finding_exploit_status(
+        self,
+        finding_id: int,
+        tier: str,
+        proof_json: str | None = None,
+        verified: bool = False,
+    ) -> None:
+        """Persist exploit verification result onto an existing findings row."""
+        query = """
+            UPDATE findings
+            SET exploit_tier = %s,
+                exploit_proof = %s,
+                exploit_verified = %s
+            WHERE id = %s
+        """
+        self.execute(query, (tier, proof_json, verified, finding_id))
+
     def close(self):
         """Close database connection pool"""
         if Database._pool:

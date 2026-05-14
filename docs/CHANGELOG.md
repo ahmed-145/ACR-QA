@@ -2,6 +2,41 @@
 
 All notable changes to ACR-QA are documented here.
 
+## [v3.5.0] — Week 4: Proof-of-Exploit Engine (May 14, 2026)
+
+### Added — Feature 12: Proof-of-Exploit Engine (`CORE/engines/exploit_verifier.py`)
+
+- **`ExploitVerifier`** — Docker-based DAST verification for HIGH findings in 4 categories: SQL injection, command injection, SSTI, path traversal.
+  - `enrich_findings(findings, target_dir)` → adds `exploit_tier`, `exploit_verified`, `exploit_proof` to each finding dict; never crashes the pipeline
+  - `verify_finding(finding, target_dir)` → builds ephemeral Docker image, starts container with `--memory=128m --cpus=0.5`, sends category-specific PoC payloads, analyzes HTTP responses for exploitation signals
+  - Three-tier verdict: `verified-exploitable` | `verified-unexploitable` | `unverified`
+  - `can_verify(finding)` → only HIGH severity + supported rule category
+  - `is_docker_available()` → graceful no-op when Docker daemon absent
+  - `_infer_route_and_param(file_path, line)` → AST-based Flask route + param inference
+  - `_detect_exploitation(response, category)` → regex-based signal matching per category
+  - Safeguards: `--memory=128m`, `--cpus=0.5`, 30s timeout, random free localhost port, cleanup on `finally`
+- **`ExploitResult` dataclass** — `finding_id`, `category`, `verified`, `tier`, `payload`, `evidence`, `container_id`, `image_tag`, `attempts`, `duration_seconds`, `route`, `param`, plus `to_proof_json()` and `to_dict()`
+- **Payload database** — 4–5 safe PoC payloads per category (no destructive side effects)
+- **Exploitation signals** — regex patterns for SQLi (sqlite_version, row leak), CMDI (EXPLOITED, uid=), SSTI (49 from 7×7, class introspection), path traversal (etc/passwd, Linux version)
+- **`RULE_TO_CATEGORY`** — maps 10 rule IDs (SECURITY-{001,021,027,028,032,049,052,053,054,062}) to exploit categories
+- **Alembic migration `0005`** — adds `exploit_tier` (VARCHAR 30), `exploit_proof` (TEXT), `exploit_verified` (BOOLEAN) to `findings` table; index on `exploit_tier`
+- **DB method** — `Database.update_finding_exploit_status(finding_id, tier, proof_json, verified)` — persists exploit result after `insert_finding`
+- **Pipeline wiring** — both `run()` and `run_js()` call `ExploitVerifier().enrich_findings()` after reachability enrichment, before cap+sort; wrapped in `try/except`; DB persistence of exploit fields inline with `insert_finding`
+- **`exploit` pytest marker** — `pyproject.toml` gains `exploit:` marker for real Docker tests (separate from `slow` and `integration`)
+- **Docker test fixtures** — 4 apps in `TESTS/fixtures/exploits/`:
+  - `flask_sqli/` — raw f-string query (SQLi vulnerable)
+  - `flask_cmdi/` — `subprocess.run(shell=True)` with user input (CMDI vulnerable)
+  - `flask_ssti/` — `env.from_string(template_src).render()` (SSTI vulnerable)
+  - `flask_safe/` — parameterized query (control: should NOT verify as exploitable)
+- **Tests** — `TESTS/test_exploit_verifier.py` (59 tests, all Docker mocked) + 12 god-mode tests in `test_god_mode.py::TestExploitVerifierGodMode`
+
+### Changed
+
+- Version bumped: `v3.4.0` → `v3.5.0`
+- Total tests: 1864 → 1932
+
+---
+
 ## [v3.4.0] — Week 3: MCP Server + Embedding-Based Learned Suppression (May 14, 2026)
 
 ### Added — Feature 10: Learned Suppression v2 (CORE/engines/learned_suppression.py)

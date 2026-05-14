@@ -101,7 +101,22 @@ Every serious competitor in 2026 — Snyk, Semgrep, Aikido, Endor, Greptile, Cod
 
 These are categories where every serious competitor is weak or absent. Pick **at least one** to ship by Week 5. Both together is the thesis story that wins awards.
 
-### 4.1 Proof-of-Exploit Engine (Week 4) — HIGH PRIORITY
+### 4.1 Proof-of-Exploit Engine (Week 4) ✅ DONE — v3.5.0
+
+**Delivered:**
+- `CORE/engines/exploit_verifier.py` — `ExploitVerifier` class with `enrich_findings()` pipeline method
+- `ExploitResult` dataclass with three-tier verdict: `verified-exploitable` | `verified-unexploitable` | `unverified`
+- 10 rule IDs → 4 exploit categories (SQLi, CMDI, SSTI, path-traversal)
+- Safe PoC payloads per category; regex-based exploitation signal detection
+- AST-based Flask route + param inference (`_infer_route_and_param`)
+- Safeguards: `--memory=128m`, `--cpus=0.5`, 30s timeout, random free localhost port, `finally` cleanup
+- Alembic migration `0005`: `exploit_tier`, `exploit_proof`, `exploit_verified` columns on `findings`
+- `Database.update_finding_exploit_status()` — persists tier+proof after `insert_finding`
+- Both `run()` and `run_js()` pipelines enriched; `exploit` pytest marker added
+- 4 Docker test fixtures (`flask_sqli`, `flask_cmdi`, `flask_ssti`, `flask_safe`)
+- 59 unit tests (all Docker mocked) + 12 god-mode tests; 1932 total passing
+
+### 4.1 Proof-of-Exploit Engine (Week 4) — Original Spec
 
 **The gap:** Every competitor stops at "this looks vulnerable." Nobody ships a sandbox that *proves* the finding is exploitable.
 

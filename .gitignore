@@ -99,3 +99,6 @@ scratch/
 coverage.xml
 .coverage
 htmlcov/
+
+INTERVIEW_CHEATSHEET.md
+ACR-QA-Book.zip

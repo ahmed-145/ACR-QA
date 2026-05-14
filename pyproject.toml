@@ -76,4 +76,5 @@ addopts = [
 markers = [
     "slow: end-to-end evaluation tests that invoke the full pipeline against real repos (run nightly, skipped on PR by default)",
     "integration: tests that require live external services (Postgres, Redis, Celery worker)",
+    "exploit: tests that spin up real Docker containers to verify exploit PoCs (requires Docker daemon)",
 ]

@@ -85,7 +85,7 @@ class AnalysisPipeline:
         json_output=False,
     ):
         """Run full analysis pipeline."""
-        logger.info("🚀 ACR-QA v3.4.0 Analysis Pipeline")
+        logger.info("🚀 ACR-QA v3.5.0 Analysis Pipeline")
         logger.info("=" * 50)
 
         # Step 0: Check rate limit
@@ -191,6 +191,17 @@ class AnalysisPipeline:
         except Exception as _reach_err:
             logger.warning(f"Reachability enrichment skipped: {_reach_err}")
 
+        # Proof-of-Exploit: Docker-based DAST verification for HIGH findings (Feature 12)
+        try:
+            from CORE.engines.exploit_verifier import ExploitVerifier
+
+            findings = ExploitVerifier().enrich_findings(findings, str(self.target_dir))
+            verified = sum(1 for f in findings if f.get("exploit_tier") == "verified-exploitable")
+            if verified:
+                logger.info(f"      - Exploit Verifier: {verified} finding(s) confirmed exploitable via Docker PoC")
+        except Exception as _ev_err:
+            logger.warning(f"Exploit verification skipped: {_ev_err}")
+
         # Cap findings per rule (max 5 per rule to prevent flooding)
         findings = self._cap_per_rule(findings, max_per_rule=5)
 
@@ -269,6 +280,17 @@ class AnalysisPipeline:
                         f["_db_id"],
                         f["reachability_status"],
                         f.get("reachability_penalty", 0),
+                    )
+                except Exception:
+                    pass
+            # Persist exploit verification result when available
+            if f.get("exploit_tier") and f["_db_id"]:
+                try:
+                    self.db.update_finding_exploit_status(
+                        f["_db_id"],
+                        f["exploit_tier"],
+                        f.get("exploit_proof"),
+                        f.get("exploit_verified", False),
                     )
                 except Exception:
                     pass
@@ -778,6 +800,17 @@ class AnalysisPipeline:
         except Exception as _reach_err:
             logger.warning(f"Reachability enrichment skipped: {_reach_err}")
 
+        # Proof-of-Exploit: Docker-based DAST verification for HIGH findings (Feature 12)
+        try:
+            from CORE.engines.exploit_verifier import ExploitVerifier
+
+            findings = ExploitVerifier().enrich_findings(findings, str(self.target_dir))
+            verified = sum(1 for f in findings if f.get("exploit_tier") == "verified-exploitable")
+            if verified:
+                logger.info(f"      - Exploit Verifier: {verified} finding(s) confirmed exploitable via Docker PoC")
+        except Exception as _ev_err:
+            logger.warning(f"Exploit verification skipped: {_ev_err}")
+
         findings = self._sort_by_priority(findings)
         total_findings = len(findings)
         logger.info(f"      ✓ {total_findings} issues after filtering & dedup")
@@ -802,6 +835,17 @@ class AnalysisPipeline:
         findings_with_snippets = []
         for f in findings:
             f["_db_id"] = self.db.insert_finding(run_id, f)
+            # Persist exploit verification result when available
+            if f.get("exploit_tier") and f["_db_id"]:
+                try:
+                    self.db.update_finding_exploit_status(
+                        f["_db_id"],
+                        f["exploit_tier"],
+                        f.get("exploit_proof"),
+                        f.get("exploit_verified", False),
+                    )
+                except Exception:
+                    pass
             if f in findings_to_explain:
                 snippet = extract_code_snippet(
                     f.get("file_path", f.get("file", "")),
