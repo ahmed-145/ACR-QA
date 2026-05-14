@@ -1460,20 +1460,21 @@ That's the headline. That's what gets the blog post on Hacker News and the paper
 - [ ] **0.6** Smoke test live URL — real scan via `POST /v1/scans`, attestation signed + persisted
 - [ ] **0.7** README badge: "Live URL" pointing at Railway deployment
 
-## Phase 1 — Engine 1: Taint Analyzer (the keystone — A2 and A3 depend on it)
+## Phase 1 — Engine 1: Taint Analyzer MVP (the keystone — A3 and A4 depend on it)
 
-- [ ] **1.1** `config/taint_sources.yml` — 30 sources (Flask/Django/sys/fs/net/db)
-- [ ] **1.2** `config/taint_sinks.yml` — 15 sinks (eval/exec/shell/sql/path/template/deser)
-- [ ] **1.3** `config/taint_sanitizers.yml` — 8 sanitizers (escape/quote/coerce/param-query)
-- [ ] **1.4** `CORE/engines/taint_analyzer.py` — AST visitor, intra-procedural propagation
-- [ ] **1.5** Multi-hop tracking (assign / fstring / format / call / attr / subscript)
-- [ ] **1.6** Pipeline wiring in `CORE/main.py.run()` after Bandit, before reachability
-- [ ] **1.7** Alembic migration `0007` — `taint_source`, `taint_path`, `taint_confidence` columns
-- [ ] **1.8** DB methods in `DATABASE/database.py` for taint fields
-- [ ] **1.9** `GET /v1/runs/{id}/findings` returns taint fields
-- [ ] **1.10** 6 fixture files in `TESTS/fixtures/taint/`
-- [ ] **1.11** `TESTS/test_taint_analyzer.py` — ~80 tests
-- [ ] **1.12** Docs: `docs/architecture/ARCHITECTURE.md` + ADR for taint engine
+> **Scope decision (May 14 2026):** MVP only. 5 sources + 3 sinks + no sanitizers. Intra-procedural, single function scope. Enough to claim "Snyk-level taint analysis" in the thesis; inter-procedural + sanitizer support is post-defense.
+
+- [ ] **1.1** `config/taint_sources.yml` — 5 sources: `request.args`, `request.form`, `request.json`, `request.cookies`, `os.environ`
+- [ ] **1.2** `config/taint_sinks.yml` — 3 sinks: `execute(`, `eval(`, `subprocess.`
+- [ ] **1.3** `CORE/engines/taint_analyzer.py` — AST visitor, intra-procedural propagation
+- [ ] **1.4** Multi-hop tracking (assign / fstring / format / call / attr / subscript)
+- [ ] **1.5** Pipeline wiring in `CORE/main.py.run()` after Bandit, before reachability
+- [ ] **1.6** Alembic migration `0007` — `taint_source`, `taint_path`, `taint_confidence` columns
+- [ ] **1.7** DB methods in `DATABASE/database.py` for taint fields
+- [ ] **1.8** `GET /v1/runs/{id}/findings` returns taint fields
+- [ ] **1.9** 4 fixture files in `TESTS/fixtures/taint/`
+- [ ] **1.10** `TESTS/test_taint_analyzer.py` — ~40 tests
+- [ ] **1.11** Docs: `docs/architecture/ARCHITECTURE.md` + ADR for taint engine
 
 ## Phase 2 — Engine 6: Offline Mode (privacy moat, also unlocks airplane-mode demo)
 
@@ -1491,148 +1492,136 @@ That's the headline. That's what gets the blog post on Hacker News and the paper
 - [ ] **2.12** `TESTS/test_offline_mode.py` — ~40 tests including real zero-egress assertion
 - [ ] **2.13** Demo recording: laptop in airplane mode, full scan + AI + exploit
 
-## Phase 3 — Engine 2: Incremental Scanner (PR latency killer)
+## Phase 3 — Engine 3: AI Triage Agent (multi-step reasoning)
 
-- [ ] **3.1** `CORE/engines/incremental.py` — `IncrementalScanner.scan_diff(base, head)`
-- [ ] **3.2** Reverse call-graph traversal (reuse `reachability.py`)
-- [ ] **3.3** Redis cache layer: `file_hash → finding_list`, 30-day TTL
-- [ ] **3.4** Endpoint `POST /v1/scans/diff` with body `{repo, base_ref, head_ref}`
-- [ ] **3.5** PR comment template — `+ 3 new HIGH`, `- 2 fixed`
-- [ ] **3.6** Performance target: <8s on 50k LOC, 5 changed files (Locust benchmark)
-- [ ] **3.7** `TESTS/test_incremental.py` — ~35 tests
+- [ ] **3.1** `CORE/engines/triage_agent.py` — `TriageAgent` class, 3-step loop
+- [ ] **3.2** Tool functions: `get_imports`, `get_callers`, `get_function_body`, `grep`
+- [ ] **3.3** Cost guard — max 4 tool calls per finding, 1500 tokens per step
+- [ ] **3.4** Alembic migration `0008` — `triage_reasoning`, `triage_verdict`, `triage_confidence_delta`
+- [ ] **3.5** Pipeline wiring in `CORE/main.py` after explainer
+- [ ] **3.6** Graceful degradation when no key (skip with reason `no_groq_key`)
+- [ ] **3.7** `TESTS/test_triage_agent.py` — ~40 tests with mocked Groq responses
 
-## Phase 4 — Engine 3: AI Triage Agent (multi-step reasoning)
+## Phase 4 — Engine 4: Auto-Fix Patch Generator (Snyk-killer demo)
 
-- [ ] **4.1** `CORE/engines/triage_agent.py` — `TriageAgent` class, 3-step loop
-- [ ] **4.2** Tool functions: `get_imports`, `get_callers`, `get_function_body`, `grep`
-- [ ] **4.3** Cost guard — max 4 tool calls per finding, 1500 tokens per step
-- [ ] **4.4** Alembic migration `0008` — `triage_reasoning`, `triage_verdict`, `triage_confidence_delta`
-- [ ] **4.5** Pipeline wiring in `CORE/main.py` after explainer
-- [ ] **4.6** Graceful degradation when no key (skip with reason `no_groq_key`)
-- [ ] **4.7** `TESTS/test_triage_agent.py` — ~40 tests with mocked Groq responses
+> **Scope decision (May 14 2026):** Generates patch diff + shows it in the dashboard. NO GitHub PR creation (complex, fragile, risky for a thesis demo). "Here's the suggested fix" is 80% of the value at 30% of the work.
 
-## Phase 5 — Engine 4: Auto-Fix PR Generator (Snyk-killer demo)
+- [ ] **5.1** `CORE/engines/autofix.py` — `AutofixEngine.generate_patch(finding)` → unified diff string
+- [ ] **5.2** Endpoint `GET /v1/runs/{id}/findings/{fid}/autofix` returns `{patch, confidence, explanation}`
+- [ ] **5.3** Patch validation: re-scan patched snippet, assert no new findings
+- [ ] **5.4** `TESTS/test_autofix.py` — ~25 tests with fixture code snippets
 
-- [ ] **5.1** `CORE/engines/autofix_pr.py` — clone/patch/scan/push workflow
-- [ ] **5.2** Endpoint `POST /v1/runs/{id}/autofix-pr` with `dry_run` default true
-- [ ] **5.3** GitHub API integration (PyGithub or httpx)
-- [ ] **5.4** Per-category PR grouping
-- [ ] **5.5** Validation scan — only proceed if no new findings introduced
-- [ ] **5.6** Safeguards: no default-branch push, no `.github/workflows/*` mods, max 10 files / 100 LoC
-- [ ] **5.7** Signed-by trailer + SLSA attestation in PR comment
-- [ ] **5.8** `TESTS/test_autofix_pr.py` — ~30 tests with mocked GitHub + tempdir git
+## Phase 5 — Engine 5: Supply Chain + SBOM
 
-## Phase 6 — Engine 5: Supply Chain + SBOM
+- [ ] **5.1** `CORE/engines/supply_chain.py` — `SupplyChainEngine` class
+- [ ] **5.2** Lockfile parsers: requirements.txt, package.json, go.mod, Pipfile.lock
+- [ ] **5.3** OSV.dev integration (`live` mode) + local snapshot (`local` mode, reuses Phase 2.5)
+- [ ] **5.4** GitHub API: stars, last commit, contributor count, archived flag
+- [ ] **5.5** Risk scoring math (CVE + age + contributors + license + archived = 0–100)
+- [ ] **5.6** CycloneDX SBOM export at `GET /v1/runs/{id}/sbom`
+- [ ] **5.7** Alembic migration `0009` — `dependency_findings` table
+- [ ] **5.8** `TESTS/test_supply_chain.py` — ~35 tests
 
-- [ ] **6.1** `CORE/engines/supply_chain.py` — `SupplyChainEngine` class
-- [ ] **6.2** Lockfile parsers: requirements.txt, package.json, go.mod, Pipfile.lock
-- [ ] **6.3** OSV.dev integration (`live` mode) + local snapshot (`local` mode, reuses Phase 2.5)
-- [ ] **6.4** GitHub API: stars, last commit, contributor count, archived flag
-- [ ] **6.5** Risk scoring math (CVE + age + contributors + license + archived = 0–100)
-- [ ] **6.6** CycloneDX SBOM export at `GET /v1/runs/{id}/sbom`
-- [ ] **6.7** Alembic migration `0009` — `dependency_findings` table
-- [ ] **6.8** `TESTS/test_supply_chain.py` — ~35 tests
+## Phase 6 — Dashboard PRO Rebuild (React + shadcn + Vite)
 
-## Phase 7 — Dashboard PRO Rebuild (React + shadcn + Vite)
+- [ ] **6.1** `dashboard/` scaffold — Vite + React 18 + TypeScript + Tailwind
+- [ ] **6.2** shadcn/ui setup — `components.json`, copy first 10 primitives
+- [ ] **6.3** TanStack Query setup, Zustand auth store, JWT refresh logic
+- [ ] **6.4** Router (TanStack Router or React Router) with auth-gated routes
+- [ ] **6.5** OpenAPI client generation script (`openapi-typescript`)
+- [ ] **6.6** Layout shell — nav, mode badge, dark/light toggle, command palette
+- [ ] **6.7** `routes/index.tsx` — Scans dashboard with cards + filters
+- [ ] **6.8** `routes/runs.$id.tsx` — findings table (virtualised) + filters bar
+- [ ] **6.9** `FindingModal.tsx` with 6 tabs (Overview / Code / Taint / Reasoning / Autofix / Exploit)
+- [ ] **6.10** `TaintFlowGraph.tsx` — React Flow source→sink visualisation
+- [ ] **6.11** `ReasoningChain.tsx` — Engine 3 step-by-step accordion
+- [ ] **6.12** `OwaspHeatmap.tsx` — 2×5 grid coloured by finding_count
+- [ ] **6.13** `AutofixDiff.tsx` — react-diff-viewer-continued
+- [ ] **6.14** `ExploitProofPanel.tsx` — payload, response, re-verify button
+- [ ] **6.15** `routes/runs.$id.compare.tsx` — run-vs-run diff
+- [ ] **6.16** `routes/supply-chain.tsx` — dep tree + risk badges + SBOM download
+- [ ] **6.17** `routes/settings.tsx` — mode selector + live status panel
+- [ ] **6.18** Live scan progress SSE — `GET /v1/scans/{job}/events` + `ScanProgress.tsx`
+- [ ] **6.19** Trend chart with Recharts
+- [ ] **6.20** Toast notifications (Sonner) for scan complete, errors
+- [ ] **6.21** Keyboard shortcuts (cmdk command palette + `/`, `j/k`, `Esc`)
+- [ ] **6.22** Mobile responsive pass — Tailwind `md:`/`lg:` breakpoints
+- [ ] **6.23** Vite build → FastAPI `StaticFiles` mount
+- [ ] **6.24** Dockerfile multi-stage with Node build
+- [ ] **6.25** Component tests with Vitest + Testing Library (≥40 tests)
+- [ ] **6.26** Playwright E2E tests (≥10 flows)
+- [ ] **6.27** Lighthouse audit — perf ≥90, a11y ≥95, best practices ≥95
+- [ ] **6.28** 5 screenshots embedded in `docs/PROJECT_DEEP_DIVE.md`
+- [ ] **6.29** Delete legacy `FRONTEND/templates/index.html` after parity verified
 
-- [ ] **7.1** `dashboard/` scaffold — Vite + React 18 + TypeScript + Tailwind
-- [ ] **7.2** shadcn/ui setup — `components.json`, copy first 10 primitives
-- [ ] **7.3** TanStack Query setup, Zustand auth store, JWT refresh logic
-- [ ] **7.4** Router (TanStack Router or React Router) with auth-gated routes
-- [ ] **7.5** OpenAPI client generation script (`openapi-typescript`)
-- [ ] **7.6** Layout shell — nav, mode badge, dark/light toggle, command palette
-- [ ] **7.7** `routes/index.tsx` — Scans dashboard with cards + filters
-- [ ] **7.8** `routes/runs.$id.tsx` — findings table (virtualised) + filters bar
-- [ ] **7.9** `FindingModal.tsx` with 6 tabs (Overview / Code / Taint / Reasoning / Autofix / Exploit)
-- [ ] **7.10** `TaintFlowGraph.tsx` — React Flow source→sink visualisation
-- [ ] **7.11** `ReasoningChain.tsx` — Engine 3 step-by-step accordion
-- [ ] **7.12** `OwaspHeatmap.tsx` — 2×5 grid coloured by finding_count
-- [ ] **7.13** `AutofixDiff.tsx` — react-diff-viewer-continued
-- [ ] **7.14** `ExploitProofPanel.tsx` — payload, response, re-verify button
-- [ ] **7.15** `routes/runs.$id.compare.tsx` — run-vs-run diff
-- [ ] **7.16** `routes/supply-chain.tsx` — dep tree + risk badges + SBOM download
-- [ ] **7.17** `routes/settings.tsx` — mode selector + live status panel
-- [ ] **7.18** Live scan progress SSE — `GET /v1/scans/{job}/events` + `ScanProgress.tsx`
-- [ ] **7.19** Trend chart with Recharts
-- [ ] **7.20** Toast notifications (Sonner) for scan complete, errors
-- [ ] **7.21** Keyboard shortcuts (cmdk command palette + `/`, `j/k`, `Esc`)
-- [ ] **7.22** Mobile responsive pass — Tailwind `md:`/`lg:` breakpoints
-- [ ] **7.23** Vite build → FastAPI `StaticFiles` mount
-- [ ] **7.24** Dockerfile multi-stage with Node build
-- [ ] **7.25** Component tests with Vitest + Testing Library (≥40 tests)
-- [ ] **7.26** Playwright E2E tests (≥10 flows)
-- [ ] **7.27** Lighthouse audit — perf ≥90, a11y ≥95, best practices ≥95
-- [ ] **7.28** 5 screenshots embedded in `docs/PROJECT_DEEP_DIVE.md`
-- [ ] **7.29** Delete legacy `FRONTEND/templates/index.html` after parity verified
+## Phase 7 — Marimo Notebook (defense weapon)
 
-## Phase 8 — Marimo Notebook (defense weapon)
+- [ ] **7.1** `notebooks/walkthrough.py` — 12-cell pipeline demo
+- [ ] **7.2** `notebooks/engine_demos/taint.py`
+- [ ] **7.3** `notebooks/engine_demos/exploit.py`
+- [ ] **7.4** `notebooks/engine_demos/attestation.py`
+- [ ] **7.5** `notebooks/engine_demos/offline.py` — proves zero-egress
+- [ ] **7.6** Export static HTML → `docs/walkthrough.html`
+- [ ] **7.7** README link + thesis-defense rehearsal pass
 
-- [ ] **8.1** `notebooks/walkthrough.py` — 12-cell pipeline demo
-- [ ] **8.2** `notebooks/engine_demos/taint.py`
-- [ ] **8.3** `notebooks/engine_demos/exploit.py`
-- [ ] **8.4** `notebooks/engine_demos/attestation.py`
-- [ ] **8.5** `notebooks/engine_demos/offline.py` — proves zero-egress
-- [ ] **8.6** Export static HTML → `docs/walkthrough.html`
-- [ ] **8.7** README link + thesis-defense rehearsal pass
+## Phase 8 — Evaluation Expansion (4 → 10 repos)
 
-## Phase 9 — Evaluation Expansion (4 → 10 repos)
+- [ ] **8.1** Clone OWASP NodeGoat into `test_targets/eval-repos/nodegoat/`
+- [ ] **8.2** Clone OWASP Juice Shop
+- [ ] **8.3** Promote DVNA from `DATA/sandbox/dvna/` to `test_targets/eval-repos/dvna/`
+- [ ] **8.4** Clone Tiredful-API
+- [ ] **8.5** Clone bandit-test-cases (official corpus)
+- [ ] **8.6** Clone vulnerable-flask-app
+- [ ] **8.7** Write 6 new ground-truth YAMLs in `TESTS/evaluation/ground_truth/`
+- [ ] **8.8** Add 6 new `test_recall_<name>` tests in `test_recall.py`
+- [ ] **8.9** Fix DVPWA hardcoded password detection (B105 mapping or Semgrep rule)
+- [ ] **8.10** Fix DVPWA debug mode detection (Semgrep `python-debug-true`)
+- [ ] **8.11** Fix DVPWA CSRF detection
+- [ ] **8.12** DVPWA recall verified ≥80% (re-run + commit numbers)
+- [ ] **8.13** `docs/evaluation/EVALUATION.md` — 10-repo table updated
 
-- [ ] **9.1** Clone OWASP NodeGoat into `test_targets/eval-repos/nodegoat/`
-- [ ] **9.2** Clone OWASP Juice Shop
-- [ ] **9.3** Promote DVNA from `DATA/sandbox/dvna/` to `test_targets/eval-repos/dvna/`
-- [ ] **9.4** Clone Tiredful-API
-- [ ] **9.5** Clone bandit-test-cases (official corpus)
-- [ ] **9.6** Clone vulnerable-flask-app
-- [ ] **9.7** Write 6 new ground-truth YAMLs in `TESTS/evaluation/ground_truth/`
-- [ ] **9.8** Add 6 new `test_recall_<name>` tests in `test_recall.py`
-- [ ] **9.9** Fix DVPWA hardcoded password detection (B105 mapping or Semgrep rule)
-- [ ] **9.10** Fix DVPWA debug mode detection (Semgrep `python-debug-true`)
-- [ ] **9.11** Fix DVPWA CSRF detection
-- [ ] **9.12** DVPWA recall verified ≥80% (re-run + commit numbers)
-- [ ] **9.13** `docs/evaluation/EVALUATION.md` — 10-repo table updated
+## Phase 9 — Third-Party Audit Layer (validation track)
 
-## Phase 10 — Third-Party Audit Layer (validation track)
+- [ ] **9.1** `.github/workflows/snyk.yml` — PR comment integration
+- [ ] **9.2** `.github/workflows/codeql.yml` — weekly scheduled scan
+- [ ] **9.3** `.github/dependabot.yml` — enable dep updates
+- [ ] **9.4** GitGuardian GitHub App installed
+- [ ] **9.5** `sonar-project.properties` + `.github/workflows/sonar.yml`
+- [ ] **9.6** `.github/workflows/trivy.yml` — Docker image scanning
+- [ ] **9.7** Codecov integration — replace local `htmlcov/`
+- [ ] **9.8** `.github/workflows/lighthouse.yml` — perf budget on live URL
+- [ ] **9.9** PostHog `<script>` in `dashboard/index.html`, events fired
+- [ ] **9.10** Run Snyk + CodeQL + SonarCloud on all 10 eval repos
+- [ ] **9.11** `docs/evaluation/COMPETITIVE_BASELINE.md` — full table, zero `?` cells
+- [ ] **9.12** `docs/evaluation/THIRD_PARTY_VALIDATION.md` — agreement tracker
 
-- [ ] **10.1** `.github/workflows/snyk.yml` — PR comment integration
-- [ ] **10.2** `.github/workflows/codeql.yml` — weekly scheduled scan
-- [ ] **10.3** `.github/dependabot.yml` — enable dep updates
-- [ ] **10.4** GitGuardian GitHub App installed
-- [ ] **10.5** `sonar-project.properties` + `.github/workflows/sonar.yml`
-- [ ] **10.6** `.github/workflows/trivy.yml` — Docker image scanning
-- [ ] **10.7** Codecov integration — replace local `htmlcov/`
-- [ ] **10.8** `.github/workflows/lighthouse.yml` — perf budget on live URL
-- [ ] **10.9** PostHog `<script>` in `dashboard/index.html`, events fired
-- [ ] **10.10** Run Snyk + CodeQL + SonarCloud on all 10 eval repos
-- [ ] **10.11** `docs/evaluation/COMPETITIVE_BASELINE.md` — full table, zero `?` cells
-- [ ] **10.12** `docs/evaluation/THIRD_PARTY_VALIDATION.md` — agreement tracker
+## Phase 10 — Testing Layers (target ≥2,200 tests at v4.0.0)
 
-## Phase 11 — Testing Layers (target ≥2,200 tests at v4.0.0)
+- [ ] **10.1** `TESTS/e2e/` directory with Playwright config
+- [ ] **10.2** Playwright E2E tests covered in 6.26 — verify ≥10 flows green
+- [ ] **10.3** `TESTS/load/locustfile.py` — 50 RPS, p95 <500ms, error <1%
+- [ ] **10.4** `TESTS/test_dogfood.py` — ACR-QA scans itself, asserts 0 HIGH in `CORE/`
+- [ ] **10.5** `TESTS/test_live_smoke.py` — post-deploy poll, runs in CI after Railway deploy
+- [ ] **10.6** Total test count ≥2,200 verified via `pytest --collect-only`
+- [ ] **10.7** Coverage gate ≥85% maintained in CI
+- [ ] **10.8** `docs/PERFORMANCE_BASELINE.md` updated with Locust numbers
 
-- [ ] **11.1** `TESTS/e2e/` directory with Playwright config
-- [ ] **11.2** Playwright E2E tests covered in 7.26 — verify ≥10 flows green
-- [ ] **11.3** `TESTS/load/locustfile.py` — 50 RPS, p95 <500ms, error <1%
-- [ ] **11.4** `TESTS/test_dogfood.py` — ACR-QA scans itself, asserts 0 HIGH in `CORE/`
-- [ ] **11.5** `TESTS/test_live_smoke.py` — post-deploy poll, runs in CI after Railway deploy
-- [ ] **11.6** Total test count ≥2,200 verified via `pytest --collect-only`
-- [ ] **11.7** Coverage gate ≥85% maintained in CI
-- [ ] **11.8** `docs/PERFORMANCE_BASELINE.md` updated with Locust numbers
+## Phase 11 — Closeout (v4.0.0 release)
 
-## Phase 12 — Closeout (v4.0.0 release)
-
-- [ ] **12.1** User study survey sent to ≥10 KSIU classmates
-- [ ] **12.2** ≥5 user study responses logged in `USER_STUDY_RESULTS.md`
-- [ ] **12.3** Demo video recorded (OBS, 5min, 1920×1080)
-- [ ] **12.4** Demo video uploaded YouTube unlisted, linked in README
-- [ ] **12.5** `CHANGELOG.md` v4.0.0 entry covering all 6 engines + dashboard
-- [ ] **12.6** `README.md` badges current: v4.0.0 · ≥2200 tests · live URL · 6 engines
-- [ ] **12.7** `AGENT_NOTES.md` What's Left fully ✅
-- [ ] **12.8** `docs/PROJECT_DEEP_DIVE.md` — full update with all 6 engines, 5 dashboard screenshots
-- [ ] **12.9** `docs/architecture/ARCHITECTURE.md` + C4 diagrams refresh
-- [ ] **12.10** `git tag v4.0.0` + push
-- [ ] **12.11** GitHub release with auto-attached `COMPETITIVE_BASELINE.md` numbers + Lighthouse + uptime
-- [ ] **12.12** `docs/BLOG_POST_DRAFT.md` written — 1500 words
-- [ ] **12.13** Submit to Hacker News, r/Python, r/netsec when blog publishes
-- [ ] **12.14** All MDs synced — final pass
+- [ ] **11.1** User study survey sent to ≥10 KSIU classmates
+- [ ] **11.2** ≥5 user study responses logged in `USER_STUDY_RESULTS.md`
+- [ ] **11.3** Demo video recorded (OBS, 5min, 1920×1080)
+- [ ] **11.4** Demo video uploaded YouTube unlisted, linked in README
+- [ ] **11.5** `CHANGELOG.md` v4.0.0 entry covering all 6 engines + dashboard
+- [ ] **11.6** `README.md` badges current: v4.0.0 · ≥2200 tests · live URL · 6 engines
+- [ ] **11.7** `AGENT_NOTES.md` What's Left fully ✅
+- [ ] **11.8** `docs/PROJECT_DEEP_DIVE.md` — full update with all 6 engines, 5 dashboard screenshots
+- [ ] **11.9** `docs/architecture/ARCHITECTURE.md` + C4 diagrams refresh
+- [ ] **11.10** `git tag v4.0.0` + push
+- [ ] **11.11** GitHub release with auto-attached `COMPETITIVE_BASELINE.md` numbers + Lighthouse + uptime
+- [ ] **11.12** `docs/BLOG_POST_DRAFT.md` written — 1500 words
+- [ ] **11.13** Submit to Hacker News, r/Python, r/netsec when blog publishes
+- [ ] **11.14** All MDs synced — final pass
 
 ---
 
@@ -1640,20 +1629,19 @@ That's the headline. That's what gets the blog post on Hacker News and the paper
 
 ```
 Phase 0  — Foundation              [ ▱▱▱▱▱▱▱ ]  0/7
-Phase 1  — Taint Analyzer          [ ▱▱▱▱▱▱▱▱▱▱▱▱ ]  0/12
+Phase 1  — Taint Analyzer MVP      [ ▱▱▱▱▱▱▱▱▱▱▱ ]  0/11
 Phase 2  — Offline Mode            [ ▱▱▱▱▱▱▱▱▱▱▱▱▱ ]  0/13
-Phase 3  — Incremental Scanner     [ ▱▱▱▱▱▱▱ ]  0/7
-Phase 4  — Triage Agent            [ ▱▱▱▱▱▱▱ ]  0/7
-Phase 5  — Auto-Fix PR             [ ▱▱▱▱▱▱▱▱ ]  0/8
-Phase 6  — Supply Chain            [ ▱▱▱▱▱▱▱▱ ]  0/8
-Phase 7  — Dashboard React/shadcn  [ ▱▱▱▱▱▱▱▱▱▱▱▱▱▱▱▱▱▱▱▱▱▱▱▱▱▱▱▱▱ ]  0/29
-Phase 8  — Marimo Notebook         [ ▱▱▱▱▱▱▱ ]  0/7
-Phase 9  — Eval Expansion          [ ▱▱▱▱▱▱▱▱▱▱▱▱▱ ]  0/13
-Phase 10 — Third-Party Audit       [ ▱▱▱▱▱▱▱▱▱▱▱▱ ]  0/12
-Phase 11 — Testing Layers          [ ▱▱▱▱▱▱▱▱ ]  0/8
-Phase 12 — Closeout                [ ▱▱▱▱▱▱▱▱▱▱▱▱▱▱ ]  0/14
+Phase 3  — AI Triage Agent         [ ▱▱▱▱▱▱▱ ]  0/7
+Phase 4  — Auto-Fix Patch          [ ▱▱▱▱ ]  0/4
+Phase 5  — Supply Chain            [ ▱▱▱▱▱▱▱▱ ]  0/8
+Phase 6  — Dashboard React/shadcn  [ ▱▱▱▱▱▱▱▱▱▱▱▱▱▱▱▱▱▱▱▱▱▱▱▱▱▱▱▱▱ ]  0/29
+Phase 7  — Marimo Notebook         [ ▱▱▱▱▱▱▱ ]  0/7
+Phase 8  — Eval Expansion          [ ▱▱▱▱▱▱▱▱▱▱▱▱▱ ]  0/13
+Phase 9  — Third-Party Audit       [ ▱▱▱▱▱▱▱▱▱▱▱▱ ]  0/12
+Phase 10 — Testing Layers          [ ▱▱▱▱▱▱▱▱ ]  0/8
+Phase 11 — Closeout                [ ▱▱▱▱▱▱▱▱▱▱▱▱▱▱ ]  0/14
 
-OVERALL: 0/145 tasks · 0% complete
+OVERALL: 0/133 tasks · 0% complete
 ```
 
 ## 13.2 THE Execution Order (authoritative — do exactly this)
@@ -1667,54 +1655,50 @@ This order is the single answer to "what's next." It's derived from three rules:
 
 ### 1️⃣ Phase 0 — Foundation
 **Why first:** Cloud must be live for Sentry/UptimeRobot/PostHog/demo video. Doesn't block engine work, but every later phase wants a live URL to validate against. Set it up once, forget it.
-**Blocks:** nothing strictly, but unblocks: 10.8 (Lighthouse on live URL), 11.5 (live smoke test), 12.3 (demo video shoots against live URL).
+**Blocks:** nothing strictly, but unblocks: 9.8 (Lighthouse on live URL), 10.5 (live smoke test), 11.3 (demo video shoots against live URL).
 
-### 2️⃣ Phase 9 — Evaluation Expansion
+### 2️⃣ Phase 8 — Evaluation Expansion
 **Why second:** Pure repo-cloning + ground-truth YAML writing. **Zero engine dependencies.** Doing this NOW means every engine in Phases 1-6 immediately has 10 benchmark repos to measure recall + FP rate against. Doing it last means you discover engine weaknesses with no time to fix them.
-**Blocks:** Phase 10 (competitive baseline needs the repos).
+**Blocks:** Phase 9 (competitive baseline needs the repos).
 
-### 3️⃣ Phase 1 — Engine 1: Taint Analyzer ⭐ KEYSTONE
-**Why third:** It's the brain upgrade — Snyk Code / Semgrep Pro level capability. Phases 3 (incremental) and 4 (triage agent) both leverage taint context. Building taint first means downstream engines get richer input. Building it later means rewiring downstream engines twice.
-**Blocks:** 3 (incremental uses taint flow), 4 (triage agent reasons over taint chains), 7.10 (TaintFlowGraph component).
+### 3️⃣ Phase 1 — Engine 1: Taint Analyzer MVP ⭐ KEYSTONE
+**Why third:** It's the brain upgrade — Snyk Code / Semgrep Pro level capability. Phase 3 (triage agent) leverages taint context. Building taint first means downstream engines get richer input.
+**Blocks:** 3 (triage agent reasons over taint chains), 6.10 (TaintFlowGraph component).
 
 ### 4️⃣ Phase 2 — Engine 6: Offline Mode (privacy moat)
-**Why fourth:** Second-biggest thesis differentiator. Wires `OllamaProvider` into existing `explainer.py` + `path_feasibility.py` — both already exist, so payoff is fast. The egress guard and OSV-offline DB are independent of all engines. Defer 2.13 (airplane-mode demo recording) to Phase 12 since the dashboard needs to be done for a good demo.
-**Blocks:** 6.3 (supply chain uses OSV-offline), 12.3 (demo video features offline mode).
+**Why fourth:** Second-biggest thesis differentiator. Wires `OllamaProvider` into existing `explainer.py` + `path_feasibility.py` — both already exist, so payoff is fast. The egress guard and OSV-offline DB are independent of all engines. Defer 2.13 (airplane-mode demo recording) to after Phase 6 (dashboard) since the dashboard needs to be done for a good demo.
+**Blocks:** 5.3 (supply chain uses OSV-offline), 11.3 (demo video features offline mode).
 
-### 5️⃣ Phase 6 — Engine 5: Supply Chain + SBOM
-**Why fifth:** Reuses §2's OSV-offline reader (built one phase earlier). Otherwise independent — doesn't need taint. Easy parallel win that adds the CycloneDX SBOM differentiator + dependency risk scoring. Quick momentum boost mid-plan.
-**Blocks:** 7.16 (Supply chain tab), 11.4 (dogfood test scans our own deps).
+### 5️⃣ Phase 5 — Engine 5: Supply Chain + SBOM
+**Why fifth:** Reuses Phase 2's OSV-offline reader (built one phase earlier). Otherwise independent — doesn't need taint. Easy parallel win that adds the CycloneDX SBOM differentiator + dependency risk scoring. Quick momentum boost mid-plan.
+**Blocks:** 6.16 (Supply chain tab), 10.4 (dogfood test scans our own deps).
 
-### 6️⃣ Phase 3 — Engine 2: Incremental Scanner
-**Why sixth:** Needs Phase 1 taint context (incremental scans must preserve taint paths across cached files). Reuses existing reachability engine for the reverse call-graph. PR-latency killer = strong demo material.
-**Blocks:** 7.15 (run-vs-run diff page uses incremental data), 11.3 (Locust validates <8s SLO).
+### 6️⃣ Phase 3 — Engine 3: AI Triage Agent
+**Why sixth:** Needs Phase 1 (reasons over taint chains) AND Phase 2 (uses `KeyPool` dispatch, works in cloud OR offline). Doing this after both means it ships with offline support built in — no rework.
+**Blocks:** 6.11 (ReasoningChain component).
 
-### 7️⃣ Phase 4 — Engine 3: AI Triage Agent
-**Why seventh:** Needs Phase 1 (reasons over taint chains) AND Phase 2 (uses `KeyPool` dispatch, so works in cloud OR offline). Doing this after both means it ships with offline support built in — no rework.
-**Blocks:** 7.11 (ReasoningChain component).
+### 7️⃣ Phase 4 — Engine 4: Auto-Fix Patch Generator
+**Why seventh:** Benefits from triage verdict (skip auto-fix on `likely-fp`). After Phase 3 = smarter patch decisions. Independent otherwise.
+**Blocks:** 6.13 (AutofixDiff component button calls this endpoint).
 
-### 8️⃣ Phase 5 — Engine 4: Auto-Fix PR Generator
-**Why eighth:** Uses existing autofix engine (no engine dependency) but benefits from triage verdict (skip auto-fix on `likely-fp`). After Phase 4 = smarter auto-fix decisions. Independent otherwise.
-**Blocks:** 7.13 (AutofixDiff component button calls this endpoint).
+### 8️⃣ Phase 6 — Dashboard PRO Rebuild
+**Why eighth:** All 5 engines complete = real data to wire, zero stale mocks, no double-work. Dashboard is purely a *view* over the engines; building it last avoids rebuilding it three times as engines evolve. ~29 tasks, the heaviest single phase.
+**Blocks:** 7 (Marimo demo also benefits from dashboard screenshots), 9.9 (PostHog needs the React app), 10.1-10.2 (Playwright needs the React app), 11.3 (demo video screencasts the dashboard).
 
-### 9️⃣ Phase 7 — Dashboard PRO Rebuild
-**Why ninth:** All 6 engines complete = real data to wire, zero stale mocks, no double-work. Dashboard is purely a *view* over the engines; building it last avoids rebuilding it three times as engines evolve. ~29 tasks, the heaviest single phase.
-**Blocks:** 8 (Marimo demo also benefits from dashboard screenshots), 10.9 (PostHog needs the React app), 11.1-11.2 (Playwright needs the React app), 12.3 (demo video screencasts the dashboard).
+### 9️⃣ Phase 9 — Third-Party Audit + Competitive Baseline
+**Why ninth:** Needs Phase 8's 10 eval repos AND a stable codebase to point Snyk/CodeQL/SonarCloud at. Running these tools mid-development against changing engines = noisy reports. Running them after engines stabilize = clean comparison.
+**Blocks:** 11.11 (release notes auto-include competitive baseline numbers).
 
-### 🔟 Phase 10 — Third-Party Audit + Competitive Baseline
-**Why tenth:** Needs Phase 9's 10 eval repos AND a stable codebase to point Snyk/CodeQL/SonarCloud at. Running these tools mid-development against changing engines = noisy reports. Running them after engines stabilize = clean comparison.
-**Blocks:** 12.11 (release notes auto-include competitive baseline numbers).
+### 🔟 Phase 10 — Testing Layers (target ≥2,200 tests)
+**Why tenth:** Playwright E2E needs the React dashboard. Locust load needs all engines running. Dogfood test needs every engine to scan against. Live smoke needs the cloud deploy. All four prerequisites done = clean run.
+**Blocks:** 11.7 (AGENT_NOTES "What's Left" can't be fully checked without testing layers done).
 
-### 1️⃣1️⃣ Phase 11 — Testing Layers (target ≥2,200 tests)
-**Why eleventh:** Playwright E2E (11.1) needs the React dashboard. Locust load (11.3) needs all engines running. Dogfood test (11.4) needs every engine to scan against. Live smoke (11.5) needs the cloud deploy. All four prerequisites done = clean run.
-**Blocks:** 12.7 (AGENT_NOTES "What's Left" can't be fully checked without testing layers done).
+### 1️⃣1️⃣ Phase 7 — Marimo Notebook Walkthrough
+**Why eleventh:** Demonstrates every engine cell-by-cell. Can only be written once every engine works end-to-end. Notebook becomes the defense walkthrough — strictly the second-to-last task.
+**Blocks:** 11.3 (demo video can intercut Marimo cells), 11.13 (Hacker News post links the notebook).
 
-### 1️⃣2️⃣ Phase 8 — Marimo Notebook Walkthrough
-**Why twelfth:** Demonstrates every engine cell-by-cell. Can only be written once every engine works end-to-end. Notebook becomes the defense walkthrough — strictly the second-to-last task.
-**Blocks:** 12.3 (demo video can intercut Marimo cells), 12.13 (Hacker News post links the notebook).
-
-### 1️⃣3️⃣ Phase 12 — Closeout (v4.0.0)
-**Why last:** Demo video needs dashboard + Marimo + offline mode demo. User study needs live URL + dashboard. v4.0.0 tag needs everything. Release notes need competitive baseline. Cannot start until 0-11 are 100% green.
+### 1️⃣2️⃣ Phase 11 — Closeout (v4.0.0)
+**Why last:** Demo video needs dashboard + Marimo + offline mode demo. User study needs live URL + dashboard. v4.0.0 tag needs everything. Release notes need competitive baseline. Cannot start until 0-10 are 100% green.
 
 ---
 
@@ -1748,3 +1732,32 @@ When Ahmed says one of these, do exactly that:
 ---
 
 *Master task list written May 14, 2026 — single source of truth for v4.0.0 PRO. Update this file (and only this file) when tasks complete. Old `AGENT_NOTES.md` "What's Left" links here.*
+
+---
+
+## Post-Defense Parking Lot
+
+> These features are **deliberately deferred**. They're real and worth building — just not needed for the thesis defense. Come back to them after June 2026.
+
+### Engine 2 — Incremental / Differential Scanner (v4.1)
+
+Original Phase 3 from the pre-May-14 plan. Cut because it requires Phase 1 taint as input, adds 7 tasks mid-stream, and the PR-latency story doesn't strengthen the thesis defense presentation.
+
+**What it is:**
+- `CORE/engines/incremental.py` — `IncrementalScanner.scan_diff(base_ref, head_ref)`
+- Reverse call-graph traversal (reuse `reachability.py`)
+- Redis cache layer: `file_hash → finding_list`, 30-day TTL
+- Endpoint `POST /v1/scans/diff` with body `{repo, base_ref, head_ref}`
+- PR comment template — `+ 3 new HIGH`, `- 2 fixed`
+- Performance target: <8s on 50k LOC, 5 changed files (Locust benchmark)
+- ~35 tests in `TESTS/test_incremental.py`
+
+**Thesis claim (save for v4.1 paper):** *"PR scan latency reduced 7× via incremental analysis. Submission-blocking SLO p95 <10s achieved on 50k LOC repos."*
+
+### Full Taint Sanitizer Support (v4.1)
+
+The MVP taint engine ships with 5 sources + 3 sinks + no sanitizers. Post-defense:
+- Add 8 sanitizers: `html.escape`, `bleach.clean`, `quote_plus`, parameterized queries, etc.
+- Expand to 30 sources (Django, sys.argv, file reads, network sockets)
+- Expand to 15 sinks (template injection, path traversal, pickle, YAML load, etc.)
+- Inter-procedural propagation (cross-function taint flows)
