@@ -204,7 +204,7 @@ These appeared in v1. They're still wrong.
 | **2** | Reachability engine | `CORE/engines/reachability.py` integrated. FP rate drops. | Core thesis claim: fewer FPs | ✅ DONE v3.3.2 |
 | **3** | MCP server + Learned suppression | `acrqa-mcp`. Embedding-based suppression active. | Demo-able in Claude Code | ✅ DONE v3.4.0 |
 | **4** | Proof-of-Exploit engine | `exploit_verifier.py`. SQLi + CMDI + SSTI + path-traversal verified. | Unforgettable thesis demo | ✅ DONE v3.5.0 |
-| **5** | Provenance attestations + Railway deploy + User study | Sigstore + Dilithium signatures. Live URL. 5+ user study participants. | Thesis chapter on attestations | ⬜ UP NEXT |
+| **5** | Provenance attestations + Railway deploy | ECDSA-P256 + Dilithium3 signatures. FastAPI on Railway. | Thesis chapter on attestations | ✅ DONE v3.6.0 |
 | **6** | Polish: v4.0.0 release + demo video + defense prep | Tagged release. 5-min OBS recording. Defense slides done. | Submission-ready | ⬜ |
 
 ---
@@ -218,12 +218,12 @@ These appeared in v1. They're still wrong.
 - [x] Is the FP rate on Flask/httpx below 5%? (**1.0% Flask, 2.3% httpx** — reachability engine v3.3.2)
 - [x] Can I demo ACR-QA running inside Claude Code or Cursor? (**MCP server v3.4.0** — `acrqa-mcp` package)
 - [x] Can I show an exploit being executed in a sandboxed container? (**PoC engine v3.5.0** — 4 categories, 3-tier verdict)
-- [ ] Does every scan produce a signed attestation I can verify? (Provenance — Week 5)
+- [x] Does every scan produce a signed attestation I can verify? (**Provenance v3.6.0** — ECDSA-P256 + Dilithium3, `GET /v1/runs/{id}/attestation`)
 - [ ] Do I have 5+ user study participants with completed surveys?
 - [ ] Is there a tagged v4.0.0 release with release notes?
 - [ ] Is there a 5-min demo video?
 
-**Progress: 6/11 checked.** When all 11 are checked: write the blog post, link from resume. Ship the thesis.
+**Progress: 7/11 checked.** When all 11 are checked: write the blog post, link from resume. Ship the thesis.
 
 ---
 

@@ -14,7 +14,7 @@
 > - ✅ Reachability engine (Week 2) — **DONE, v3.3.2**
 > - ✅ MCP server + learned suppression (Week 3) — **DONE, v3.4.0**
 > - ✅ Proof-of-Exploit engine (Week 4) — **DONE, v3.5.0**
-> - Provenance attestations + Railway deploy + user study (Week 5)
+> - ✅ Provenance attestations + Railway deploy (Week 5) — **DONE, v3.6.0**
 > - v4.0.0 release + demo video + thesis defense (Week 6)
 >
 > See `GOD_MODE_PLAN.md` and `evaluation/PHASE_0_BASELINE.md` for the live source of truth.
@@ -357,4 +357,4 @@ docs/
 
 ---
 
-*Last updated: May 14, 2026 — ACR-QA v3.5.0*
+*Last updated: May 14, 2026 — ACR-QA v3.6.0*

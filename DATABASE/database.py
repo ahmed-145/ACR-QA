@@ -634,6 +634,36 @@ class Database:
         """
         self.execute(query, (tier, proof_json, verified, finding_id))
 
+    # ===== SCAN ATTESTATIONS (Feature 13) =====
+
+    def store_attestation(
+        self,
+        run_id: int,
+        attestation_json: str,
+        signature: str | None = None,
+        key_id: str | None = None,
+    ) -> int | None:
+        """Persist a signed attestation bundle for a completed scan run."""
+        query = """
+            INSERT INTO scan_attestations (run_id, attestation_json, signature, key_id)
+            VALUES (%s, %s, %s, %s)
+            RETURNING id
+        """
+        result = self.execute(query, (run_id, attestation_json, signature, key_id), fetch=True)
+        return result[0]["id"] if result else None
+
+    def get_attestation(self, run_id: int) -> dict | None:
+        """Retrieve the most recent attestation for a run, or None."""
+        query = """
+            SELECT id, run_id, attestation_json, signature, key_id, created_at
+            FROM scan_attestations
+            WHERE run_id = %s
+            ORDER BY created_at DESC
+            LIMIT 1
+        """
+        rows = self.execute(query, (run_id,), fetch=True)
+        return dict(rows[0]) if rows else None
+
     def close(self):
         """Close database connection pool"""
         if Database._pool:

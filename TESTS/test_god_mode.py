@@ -1589,7 +1589,90 @@ class TestExploitVerifierGodMode:
     def test_version_is_350(self):
         from CORE import __version__
 
-        assert __version__ == "3.5.0"
+        assert __version__ == "3.6.0"
+
+
+class TestAttestationGodMode:
+    """God-mode tests for Feature 13: Provenance Attestation Engine."""
+
+    def test_engine_importable(self):
+        from CORE.engines.attestation import AttestationEngine  # noqa: F401
+
+    def test_sign_returns_ecdsa_and_dilithium3(self):
+        from CORE.engines.attestation import AttestationEngine, build_attestation
+
+        eng = AttestationEngine()
+        bundle = eng.sign(build_attestation(1, {"repo_name": "test"}))
+        algorithms = [s["algorithm"] for s in bundle["signatures"]]
+        assert "ECDSA-P256" in algorithms
+        assert "Dilithium3" in algorithms
+
+    def test_verify_roundtrip(self):
+        from CORE.engines.attestation import AttestationEngine, build_attestation
+
+        eng = AttestationEngine()
+        bundle = eng.sign(build_attestation(1, {}))
+        assert eng.verify(bundle) is True
+
+    def test_tamper_invalidates_signature(self):
+        from CORE.engines.attestation import AttestationEngine, build_attestation
+
+        eng = AttestationEngine()
+        bundle = eng.sign(build_attestation(1, {}))
+        bundle["attestation"]["predicate"]["findings_count"] = 9999
+        assert eng.verify(bundle) is False
+
+    def test_attest_scan_persists_to_db(self):
+        from unittest.mock import MagicMock
+
+        from CORE.engines.attestation import AttestationEngine
+
+        eng = AttestationEngine()
+        db = MagicMock()
+        db.store_attestation.return_value = 1
+        result = eng.attest_scan(42, {"repo_name": "test", "total_findings": 3}, db)
+        assert result is not None
+        db.store_attestation.assert_called_once()
+
+    def test_attest_scan_never_crashes(self):
+        from unittest.mock import MagicMock
+
+        from CORE.engines.attestation import AttestationEngine
+
+        eng = AttestationEngine()
+        db = MagicMock()
+        db.store_attestation.side_effect = Exception("connection refused")
+        result = eng.attest_scan(1, {}, db)
+        assert result is None
+
+    def test_predicate_has_verified_exploitable_count(self):
+        from CORE.engines.attestation import build_predicate
+
+        p = build_predicate(1, {"verified_exploitable": 3})
+        assert p["verified_exploitable"] == 3
+
+    def test_migration_0006_exists(self):
+        versions_dir = Path(__file__).parent.parent / "alembic" / "versions"
+        assert any(versions_dir.glob("*0006*"))
+
+    def test_db_has_attestation_methods(self):
+        from DATABASE.database import Database
+
+        assert callable(getattr(Database, "store_attestation", None))
+        assert callable(getattr(Database, "get_attestation", None))
+
+    def test_api_endpoint_in_runs_router(self):
+        src = (Path(__file__).parent.parent / "FRONTEND" / "api" / "routers" / "runs.py").read_text()
+        assert "/attestation" in src
+
+    def test_pipeline_wired_python_and_js(self):
+        src = (Path(__file__).parent.parent / "CORE" / "main.py").read_text()
+        assert src.count("AttestationEngine") >= 2
+
+    def test_version_is_360(self):
+        from CORE import __version__
+
+        assert __version__ == "3.6.0"
 
 
 if __name__ == "__main__":

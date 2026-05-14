@@ -85,7 +85,7 @@ class AnalysisPipeline:
         json_output=False,
     ):
         """Run full analysis pipeline."""
-        logger.info("🚀 ACR-QA v3.5.0 Analysis Pipeline")
+        logger.info("🚀 ACR-QA v3.6.0 Analysis Pipeline")
         logger.info("=" * 50)
 
         # Step 0: Check rate limit
@@ -409,6 +409,24 @@ class AnalysisPipeline:
             _json.dump(findings, _fp, indent=2, default=str)
         with open(output_path / f"findings_pid{_os.getpid()}.json", "w") as _fp:
             _json.dump(findings, _fp, indent=2, default=str)
+
+        # Provenance Attestation: sign scan metadata (Feature 13)
+        try:
+            from CORE.engines.attestation import AttestationEngine
+
+            scan_summary = {
+                "repo_name": str(self.target_dir),
+                "total_findings": len(findings),
+                "high_count": sum(1 for f in findings if f.get("canonical_severity") == "high"),
+                "medium_count": sum(1 for f in findings if f.get("canonical_severity") == "medium"),
+                "low_count": sum(1 for f in findings if f.get("canonical_severity") == "low"),
+                "reachability_enabled": True,
+                "verified_exploitable": sum(1 for f in findings if f.get("exploit_tier") == "verified-exploitable"),
+                "suppressed_by_embedding": sum(1 for f in findings if f.get("suppressed_by_embedding")),
+            }
+            AttestationEngine().attest_scan(run_id, scan_summary, self.db)
+        except Exception as _att_err:
+            logger.warning(f"Attestation skipped: {_att_err}")
 
         return run_id
 
@@ -953,6 +971,24 @@ class AnalysisPipeline:
             _json.dump(findings, _fp, indent=2, default=str)
         with open(output_path / f"findings_pid{_os.getpid()}.json", "w") as _fp:
             _json.dump(findings, _fp, indent=2, default=str)
+
+        # Provenance Attestation: sign scan metadata (Feature 13)
+        try:
+            from CORE.engines.attestation import AttestationEngine
+
+            scan_summary = {
+                "repo_name": str(self.target_dir),
+                "total_findings": len(findings),
+                "high_count": sum(1 for f in findings if f.get("canonical_severity") == "high"),
+                "medium_count": sum(1 for f in findings if f.get("canonical_severity") == "medium"),
+                "low_count": sum(1 for f in findings if f.get("canonical_severity") == "low"),
+                "reachability_enabled": True,
+                "verified_exploitable": sum(1 for f in findings if f.get("exploit_tier") == "verified-exploitable"),
+                "suppressed_by_embedding": sum(1 for f in findings if f.get("suppressed_by_embedding")),
+            }
+            AttestationEngine().attest_scan(run_id, scan_summary, self.db)
+        except Exception as _att_err:
+            logger.warning(f"Attestation skipped: {_att_err}")
 
         return run_id
 

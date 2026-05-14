@@ -61,3 +61,6 @@ mcp[cli]>=1.0.0
 
 # Learned Suppression — semantic FP memory (Feature 10, Week 3)
 sentence-transformers>=3.0.0
+
+# Provenance Attestations — post-quantum signing (Feature 13, Week 5)
+dilithium-py>=1.0.0

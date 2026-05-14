@@ -238,3 +238,39 @@ async def cost_benefit(
         "cost_per_finding": round(total_cost / len(findings), 4) if findings else 0,
         "total_findings": len(findings),
     }
+
+
+@router.get("/runs/{run_id}/attestation")
+async def get_attestation(
+    run_id: int,
+    db: Database = Depends(get_db),
+    _current_user: dict = Depends(get_current_user),
+):
+    """
+    Return the SLSA-grade provenance attestation for a completed scan run.
+
+    The bundle contains the attestation envelope (scan metadata) plus one or more
+    signatures: always ECDSA-P256, optionally Dilithium3 (post-quantum) if available.
+    """
+    from CORE.engines.attestation import AttestationEngine, load_bundle_from_db
+
+    row = db.get_attestation(run_id)
+    if row is None:
+        raise HTTPException(status_code=404, detail=f"No attestation found for run {run_id}")
+
+    bundle = load_bundle_from_db(run_id, db)
+    if bundle is None:
+        raise HTTPException(status_code=500, detail="Attestation data is corrupt")
+
+    verified = AttestationEngine().verify(bundle)
+    algorithms = [s["algorithm"] for s in bundle.get("signatures", [])]
+
+    return {
+        "run_id": run_id,
+        "key_id": row.get("key_id"),
+        "created_at": str(row.get("created_at", "")),
+        "signature_algorithms": algorithms,
+        "post_quantum": "Dilithium3" in algorithms,
+        "signature_valid": verified,
+        "bundle": bundle,
+    }

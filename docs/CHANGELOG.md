@@ -2,6 +2,34 @@
 
 All notable changes to ACR-QA are documented here.
 
+## [v3.6.0] — Week 5: Signed Provenance Attestations + Railway Deploy (May 14, 2026)
+
+### Added — Feature 13: Provenance Attestation Engine (`CORE/engines/attestation.py`)
+
+- **`AttestationEngine`** — generates and verifies SLSA-grade provenance attestations after every scan.
+  - `sign(attestation)` → ECDSA-P256 (always) + Dilithium3 post-quantum (when `dilithium-py` is installed); graceful degradation if PQ unavailable
+  - `verify(bundle)` → verifies ECDSA-P256 signature on the canonical JSON payload
+  - `attest_scan(run_id, scan_result, db)` → build + sign + store; never crashes the pipeline
+  - `public_key_pem()` → PEM-encoded public key for out-of-band distribution
+- **Attestation format** — SLSA-compatible envelope: `predicateType`, `subject` (repo + commit SHA), `predicate` (version, findings counts, reachability enabled, verified_exploitable count, timestamp)
+- **Dual-signature strategy** — ECDSA-P256 (NIST standard, `cryptography` package, no infra) + Dilithium3 (NIST PQC standard, `dilithium-py`). Post-quantum signature future-proofs against harvest-now-decrypt-later attacks on audit logs.
+- **Alembic migration `0006`** — `scan_attestations` table: `id`, `run_id` (FK → analysis_runs.id CASCADE), `attestation_json` (TEXT), `signature`, `key_id`, `created_at` (TIMESTAMPTZ)
+- **DB methods** — `store_attestation(run_id, attestation_json, signature, key_id)` + `get_attestation(run_id)` in `DATABASE/database.py`
+- **FastAPI endpoint** — `GET /v1/runs/{run_id}/attestation` — returns bundle + signature validity + algorithm list + `post_quantum` flag
+- **Pipeline wiring** — both `run()` and `run_js()` call `AttestationEngine().attest_scan()` after scan finalization; wrapped in `try/except`
+- **`scripts/verify_attestation.py`** — CLI: `python scripts/verify_attestation.py --run-id 42 [--json]`; exits 0 if valid, 1 if invalid
+- **Key management** — `ACRQA_SIGNING_KEY` env var (PEM ECDSA private key) for stable key_id across restarts; ephemeral key if unset (dev/demo)
+- **Tests** — `TESTS/test_attestation.py` (60 tests: import, predicate, signing, verification, DB, migration, pipeline) + 12 god-mode tests in `TestAttestationGodMode`
+
+### Changed
+
+- `railway.toml` — `startCommand` updated to use FastAPI/uvicorn (`FRONTEND.api.main:app`) instead of legacy Flask app
+- `requirements.txt` — added `dilithium-py>=1.0.0`
+- Version bumped: `v3.5.0` → `v3.6.0`
+- Total tests: 1932 → ~2005
+
+---
+
 ## [v3.5.0] — Week 4: Proof-of-Exploit Engine (May 14, 2026)
 
 ### Added — Feature 12: Proof-of-Exploit Engine (`CORE/engines/exploit_verifier.py`)
