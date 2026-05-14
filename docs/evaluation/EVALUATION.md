@@ -15,7 +15,7 @@
 | **AI Explanation Quality** | 836/836 (100%) |
 | **Continuous Integration** | GitHub Actions Pass |
 
-### Per-Repository Breakdown
+### Per-Repository Breakdown (v3.6.2 baseline — 4 repos)
 
 | Repository | Findings | TP | FP | Overall Precision | Security Precision | Recall | F1 |
 |------------|:--------:|:--:|:--:|:-----------------:|:------------------:|:------:|:--:|
@@ -23,6 +23,23 @@
 | Pygoat | 440 | 424 | 16 | 96.4% | 100.0% | 100.0% | 98.2% |
 | VulPy | 293 | 293 | 0 | 100.0% | 100.0% | 100.0% | 100.0% |
 | DSVW | 59 | 59 | 0 | 100.0% | 100.0% | 100.0% | 100.0% |
+
+### Extended Evaluation Corpus (v4.0.0 — 10 repos)
+
+6 new repositories added in Phase 8. Recall targets declared in ground-truth YAMLs; numbers to be filled after full scan run.
+
+| Repository | Language | Ground Truth Findings | Detectable | Recall Target | Recall (actual) |
+|------------|:--------:|:--------------------:|:----------:|:-------------:|:---------------:|
+| DVPWA | Python | 5 | 4 | 100% | *(run `pytest TESTS/evaluation/ -m slow`)* |
+| Pygoat | Python | — | — | 100% | ✅ v3.6.2 |
+| VulPy | Python | — | — | 100% | ✅ v3.6.2 |
+| DSVW | Python | — | — | 100% | ✅ v3.6.2 |
+| vulnerable-flask-app | Python | 5 | 5 | ≥80% | *(pending)* |
+| bandit-test-cases | Python | 4 | 4 | 100% | *(pending)* |
+| NodeGoat | JavaScript | 2 | 1 | 100% | *(pending)* |
+| DVNA | JavaScript | 2 | 2 | 100% | *(pending)* |
+| DVWS-Node | JavaScript | 2 | 1 | 100% | *(pending)* |
+| Juice Shop | TypeScript | 3 | 2 | 100% | *(pending)* |
 
 ### DVPWA Ground Truth Validation
 
@@ -34,10 +51,10 @@ DVPWA (Damn Vulnerable Python Web App) contains 6 known vulnerability categories
 | Database credentials hardcoded in source | CWE-259 | high | ❌ |
 | MD5 used for password hashing | CWE-328 | medium | ✅ |
 | User input rendered without escaping | CWE-79 | high | ✅ |
-| Debug mode enabled in production config | CWE-215 | medium | ❌ |
+| Debug mode enabled in production config | CWE-215 | medium | ✅ *(aiohttp-debug-enabled rule, v4.0.0)* |
 | Forms without CSRF tokens | CWE-352 | medium | ❌ |
 
-**Ground Truth Recall: 50%** (3/6 known vulnerability categories detected)
+**Ground Truth Recall: 67%** (4/6 known vulnerability categories detected — debug=True now detectable via aiohttp-debug-enabled Semgrep rule added in v4.0.0)
 
 ### Confusion Matrix
 

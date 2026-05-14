@@ -2,13 +2,13 @@ rules:
   # ============================================================
   # SECURITY RULES
   # ============================================================
-  
+
   - id: dangerous-eval-usage
     pattern-either:
       - pattern: eval($X)
       - pattern: exec($X)
     message: |
-      Dangerous use of eval() or exec(). These functions execute arbitrary 
+      Dangerous use of eval() or exec(). These functions execute arbitrary
       Python code and should NEVER be used with user input.
     severity: ERROR
     languages: [python]
@@ -156,6 +156,18 @@ rules:
       category: security
       cwe: CWE-347
       canonical_rule_id: SECURITY-047
+
+  - id: aiohttp-debug-enabled
+    pattern: Application(..., debug=True, ...)
+    message: "aiohttp Application started with debug=True. This exposes internal error details and enables debug middleware. Set debug=False or remove the debug parameter in production."
+    languages:
+      - python
+    severity: WARNING
+    metadata:
+      cwe: CWE-215
+      owasp: A05:2021
+      category: security
+      canonical_rule_id: SECURITY-065
 
   - id: aiohttp-jinja2-autoescape-false
     patterns:

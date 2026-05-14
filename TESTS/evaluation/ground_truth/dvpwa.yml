@@ -40,11 +40,10 @@ expected_findings:
 
   - id: dvpwa-debug-mode-aiohttp
     cwe: CWE-215
+    canonical_id: SECURITY-065
     file: sqli/app.py
     severity: medium
     description: aiohttp Application(debug=True)
-    out_of_scope: bandit_b201_only_covers_flask_not_aiohttp
-    rationale: Bandit B201 has a Flask-specific check; aiohttp's debug flag is not pattern-matched.
 
   - id: dvpwa-no-csrf-protection
     cwe: CWE-352
@@ -56,5 +55,5 @@ expected_findings:
 
 # ── Targets ──
 # Recall is computed only over findings NOT marked out_of_scope.
-recall_target: 1.0   # 3/3 detectable categories
+recall_target: 1.0   # 4/4 detectable categories (debug=True now detectable via aiohttp-debug-enabled rule)
 precision_target: 0.80

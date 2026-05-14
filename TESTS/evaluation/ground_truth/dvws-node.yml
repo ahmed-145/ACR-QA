@@ -1,0 +1,29 @@
+# DVWS-Node — Damn Vulnerable Web Service (Node.js)
+# https://github.com/snoopysecurity/dvws-node
+# Paths verified against repo on 2026-05-14.
+
+repo: dvws-node
+url: https://github.com/snoopysecurity/dvws-node
+language: javascript
+local_path: test_targets/eval-repos/dvws-node
+
+expected_findings:
+  - id: dvws-xss-innerhtml
+    cwe: CWE-79
+    canonical_id: SECURITY-045
+    file: public/static/receiver.js
+    severity: high
+    description: "messageEle.innerHTML = e.data - DOM XSS via innerHTML assignment with message event data"
+
+  # ── Out-of-scope ──
+  - id: dvws-nosql-injection-graphql
+    cwe: CWE-943
+    file: graphql/schema.js
+    severity: high
+    description: "MongoDB User.find({ username: user }) with unsanitized GraphQL input"
+    out_of_scope: nosql_injection_via_graphql_requires_taint_tracking
+    rationale: The Mongoose .find() call uses a variable from GraphQL args; detecting this requires inter-procedural taint from GraphQL resolver to DB query, beyond current pattern-matching capability.
+
+# ── Targets ──
+recall_target: 1.0   # 1/1 detectable — innerHTML assignment is a direct pattern match
+precision_target: 0.65

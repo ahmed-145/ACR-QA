@@ -166,6 +166,7 @@ RULE_MAPPING = {
     # ── New Semgrep rules (added in precision/recall overhaul) ──
     "flask-xss-render-string": "SECURITY-045",
     "aiohttp-jinja2-autoescape-false": "SECURITY-045",
+    "aiohttp-debug-enabled": "SECURITY-065",  # aiohttp Application(debug=True)
     "ssrf-requests-user-url": "SECURITY-046",
     "jwt-none-algorithm": "SECURITY-047",
     "lxml-xxe": "SECURITY-044",  # XXE via lxml (maps to existing lxml rule)

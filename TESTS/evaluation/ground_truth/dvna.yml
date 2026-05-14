@@ -1,0 +1,27 @@
+# DVNA — Damn Vulnerable NodeJS Application
+# https://github.com/appsecco/dvna
+# Paths verified against repo on 2026-05-14.
+
+repo: dvna
+url: https://github.com/appsecco/dvna
+language: javascript
+local_path: test_targets/eval-repos/dvna
+
+expected_findings:
+  - id: dvna-command-injection
+    cwe: CWE-78
+    canonical_id: SECURITY-021
+    file: core/appHandler.js
+    severity: high
+    description: exec('ping -c 2 ' + req.body.address) — OS command injection via child_process.exec
+
+  - id: dvna-code-injection-eval
+    cwe: CWE-94
+    canonical_id: SECURITY-001
+    file: core/appHandler.js
+    severity: high
+    description: mathjs.eval(req.body.eqn) — code injection via eval with user input
+
+# ── Targets ──
+recall_target: 1.0   # 2/2 detectable — both are direct pattern matches
+precision_target: 0.70

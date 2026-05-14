@@ -1,0 +1,48 @@
+# vulnerable-flask-app — we45 intentionally vulnerable Flask app
+# https://github.com/we45/Vulnerable-Flask-App
+# Paths verified against repo on 2026-05-14.
+
+repo: vulnerable-flask-app
+url: https://github.com/we45/Vulnerable-Flask-App
+language: python
+local_path: test_targets/eval-repos/vulnerable-flask-app
+
+expected_findings:
+  - id: vulnflask-weak-hash-md5
+    cwe: CWE-328
+    canonical_id: SECURITY-009
+    file: app/app.py
+    severity: medium
+    description: hashlib.md5 used for password hashing
+
+  - id: vulnflask-sql-injection
+    cwe: CWE-89
+    canonical_id: SECURITY-027
+    file: app/app.py
+    severity: high
+    description: Raw SQL string built with % formatting passed to db.engine.execute()
+
+  - id: vulnflask-ssti
+    cwe: CWE-94
+    canonical_id: SECURITY-044
+    file: app/app.py
+    severity: high
+    description: render_template_string() with request.url injected into template — SSTI
+
+  - id: vulnflask-yaml-unsafe
+    cwe: CWE-20
+    canonical_id: SECURITY-018
+    file: app/app.py
+    severity: medium
+    description: yaml.load() called without Loader argument — arbitrary code execution
+
+  - id: vulnflask-hardcoded-secret
+    cwe: CWE-259
+    canonical_id: SECURITY-005
+    file: app/app.py
+    severity: high
+    description: app.secret_key and SECRET_KEY_HMAC hardcoded as string literals
+
+# ── Targets ──
+recall_target: 0.80   # 4/5 — SSTI via render_template_string may match SECURITY-033 not SECURITY-044
+precision_target: 0.70

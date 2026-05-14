@@ -1,0 +1,36 @@
+# OWASP Juice Shop — flagship intentionally vulnerable web application
+# https://github.com/juice-shop/juice-shop
+# Paths verified against repo on 2026-05-14. TypeScript routes scanned via JS adapter.
+
+repo: juiceshop
+url: https://github.com/juice-shop/juice-shop
+language: javascript
+local_path: test_targets/eval-repos/juiceshop
+
+expected_findings:
+  - id: juiceshop-eval-captcha
+    cwe: CWE-94
+    canonical_id: SECURITY-001
+    file: routes/captcha.ts
+    severity: high
+    description: eval(expression) used to compute CAPTCHA answer — code injection if expression is user-controlled
+
+  - id: juiceshop-eval-userprofile
+    cwe: CWE-94
+    canonical_id: SECURITY-001
+    file: routes/userProfile.ts
+    severity: high
+    description: eval(code) in user profile update handler — server-side JS injection
+
+  # ── Out-of-scope ──
+  - id: juiceshop-sqli-sequelize
+    cwe: CWE-89
+    file: routes/search.ts
+    severity: high
+    description: Raw SQL via Sequelize query() with user input
+    out_of_scope: orm_raw_query_requires_taint_tracking
+    rationale: Sequelize raw queries require taint flow from request params through ORM — not detectable by pattern matching without full taint analysis.
+
+# ── Targets ──
+recall_target: 1.0   # 2/2 detectable — eval() calls are direct pattern matches
+precision_target: 0.60   # large repo, many JS files, expect noise

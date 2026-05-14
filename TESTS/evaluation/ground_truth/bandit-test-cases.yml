@@ -1,0 +1,43 @@
+# bandit-test-cases — PyCQA/bandit official test corpus
+# https://github.com/PyCQA/bandit
+# The examples/ directory contains intentional vulnerability samples per rule.
+# Paths verified against repo on 2026-05-14.
+
+repo: bandit-test-cases
+url: https://github.com/PyCQA/bandit
+language: python
+local_path: test_targets/eval-repos/bandit-test-cases
+
+expected_findings:
+  - id: bandit-exec-injection
+    cwe: CWE-78
+    canonical_id: SECURITY-001
+    file: examples/exec.py
+    severity: high
+    description: exec("do evil") — B102 exec used
+
+  - id: bandit-weak-hash-md5
+    cwe: CWE-328
+    canonical_id: SECURITY-009
+    file: examples/crypto-md5.py
+    severity: medium
+    description: hashlib.md5 and Crypto.Hash.MD5 usage — B303/B324
+
+  - id: bandit-flask-debug
+    cwe: CWE-94
+    canonical_id: SECURITY-065
+    file: examples/flask_debug.py
+    severity: medium
+    description: app.run(debug=True) — B201 flask debug enabled
+
+  - id: bandit-hardcoded-password
+    cwe: CWE-259
+    canonical_id: SECURITY-005
+    file: examples/hardcoded-passwords.py
+    severity: low
+    description: password = "class_password" — B105 hardcoded password string
+
+# ── Targets ──
+# This corpus is designed to test Bandit exactly — recall should be near-perfect.
+recall_target: 1.0   # 4/4 — all are canonical Bandit detections
+precision_target: 0.60   # many examples/ files, expect some noise findings

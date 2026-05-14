@@ -1,0 +1,29 @@
+# OWASP NodeGoat — intentionally vulnerable Node.js application
+# https://github.com/OWASP/NodeGoat
+# Paths verified against repo on 2026-05-14.
+
+repo: nodegoat
+url: https://github.com/OWASP/NodeGoat
+language: javascript
+local_path: test_targets/eval-repos/nodegoat
+
+expected_findings:
+  - id: nodegoat-ssjs-injection
+    cwe: CWE-94
+    canonical_id: SECURITY-001
+    file: app/routes/contributions.js
+    severity: high
+    description: eval(req.body.preTax/afterTax/roth) — server-side JS injection via user input
+
+  # ── Out-of-scope ──
+  - id: nodegoat-nosql-injection
+    cwe: CWE-943
+    file: app/data/allocations-dao.js
+    severity: high
+    description: MongoDB query built from unsanitized user input ($where clause)
+    out_of_scope: nosql_injection_requires_taint_tracking
+    rationale: NoSQL injection via $where requires taint flow from req.body through MongoDB driver — pattern matching alone is insufficient without the full taint path.
+
+# ── Targets ──
+recall_target: 1.0   # 1/1 detectable — eval() injection is a direct pattern match
+precision_target: 0.70
