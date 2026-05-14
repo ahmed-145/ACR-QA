@@ -59,8 +59,9 @@ class KeyPool:
                 if single:
                     self._keys.append(single)
             if not self._keys:
-                raise ValueError(
+                logger.warning(
                     "No GROQ_API_KEY found in environment. "
+                    "Explanation engine will be unavailable. "
                     "Set GROQ_API_KEY_1, GROQ_API_KEY_2, ... or a single GROQ_API_KEY."
                 )
             self._clients = [Groq(api_key=k) for k in self._keys]
@@ -69,12 +70,16 @@ class KeyPool:
 
     def next_client(self) -> Groq:
         """Return next Groq SDK client (round-robin)."""
+        if not self._clients:
+            raise RuntimeError("No GROQ API keys configured — cannot create Groq client.")
         client = self._clients[self._index % len(self._clients)]
         self._index += 1
         return client
 
     def next_key(self) -> str:
         """Return next raw API key string (for async httpx calls)."""
+        if not self._keys:
+            raise RuntimeError("No GROQ API keys configured — cannot return API key.")
         key = self._keys[self._index % len(self._keys)]
         self._index += 1
         return key
@@ -83,6 +88,10 @@ class KeyPool:
     def pool_size(self) -> int:
         """Number of API keys in the pool."""
         return len(self._keys)
+
+    @property
+    def has_keys(self) -> bool:
+        return bool(self._keys)
 
 
 class ExplanationEngine:
@@ -399,33 +408,37 @@ Start with: "This code violates {canonical_id}..." and end with a ```python code
             # -----------------------------------------
 
             # --- Feature 7: Path Feasibility Validation ---
-            # Run a second AI call for HIGH security findings to check
-            # if the execution path is actually reachable (LLM4PFA approach).
-            try:
-                from CORE.engines.path_feasibility import PathFeasibilityValidator
+            # Requires GROQ key; skip cleanly if key is absent or flag is off.
+            _pf_has_key = self.key_pool.has_keys
+            _pf_enabled = _pf_has_key and os.getenv("ACRQA_PATH_FEASIBILITY", "1") != "0"
+            if _pf_enabled:
+                try:
+                    from CORE.engines.path_feasibility import PathFeasibilityValidator
 
-                _pf_validator = PathFeasibilityValidator(
-                    model="llama-3.1-8b-instant",
-                    max_tokens=150,
-                    temperature=0.1,
-                )
-                if _pf_validator.is_eligible(finding):
-                    # Use a separate key for feasibility to spread load
-                    pf_key = self.key_pool.next_key()
-                    _pf_result = await _pf_validator.validate_async(client, finding, code_snippet, pf_key)
-                    result["feasibility_verdict"] = _pf_result.verdict
-                    result["feasibility_confidence"] = _pf_result.confidence
-                    result["feasibility_reasoning"] = _pf_result.reasoning
-                    result["feasibility_latency_ms"] = _pf_result.latency_ms
-                    result["feasibility_penalty"] = _pf_result.confidence_penalty
-                    result["feasibility_checked"] = True
-                else:
+                    _pf_validator = PathFeasibilityValidator(
+                        model="llama-3.1-8b-instant",
+                        max_tokens=150,
+                        temperature=0.1,
+                    )
+                    if _pf_validator.is_eligible(finding):
+                        pf_key = self.key_pool.next_key()
+                        _pf_result = await _pf_validator.validate_async(client, finding, code_snippet, pf_key)
+                        result["feasibility_verdict"] = _pf_result.verdict
+                        result["feasibility_confidence"] = _pf_result.confidence
+                        result["feasibility_reasoning"] = _pf_result.reasoning
+                        result["feasibility_latency_ms"] = _pf_result.latency_ms
+                        result["feasibility_penalty"] = _pf_result.confidence_penalty
+                        result["feasibility_checked"] = True
+                    else:
+                        result["feasibility_verdict"] = None
+                        result["feasibility_checked"] = False
+                except Exception:
                     result["feasibility_verdict"] = None
                     result["feasibility_checked"] = False
-            except Exception:
-                # Never let feasibility check crash the explanation pipeline
+            else:
                 result["feasibility_verdict"] = None
                 result["feasibility_checked"] = False
+                result["feasibility_skip_reason"] = "no_groq_key" if not _pf_has_key else "disabled"
             # ------------------------------------------------
 
             if self.redis:

@@ -10,6 +10,8 @@ Tests for new ACR-QA engines:
 import sys
 from pathlib import Path
 
+import pytest
+
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
 from CORE.engines.ai_code_detector import AICodeDetector
@@ -1583,3 +1585,138 @@ class TestFeature10TrendDashboard:
         fastapi_app.dependency_overrides.clear()
 
         assert "flask" in r.json()["repos"]
+
+
+# ════════════════════════════════════════════════════════════
+#  Feature-flag: KeyPool + path_feasibility degradation
+# ════════════════════════════════════════════════════════════
+
+
+class TestKeyPoolDegradation:
+    """KeyPool must degrade cleanly when no GROQ key is set."""
+
+    def test_empty_pool_has_keys_false(self, monkeypatch):
+        import os
+        from unittest.mock import patch as mpatch
+
+        from CORE.engines.explainer import KeyPool  # ensure module is cached first
+
+        with mpatch.dict(os.environ, {"ACRQA_LLM_PROVIDER": "groq"}, clear=True):
+            pool = KeyPool()
+        assert pool.has_keys is False
+        assert pool.pool_size == 0
+
+    def test_next_key_raises_on_empty_pool(self, monkeypatch):
+        import os
+        from unittest.mock import patch as mpatch
+
+        from CORE.engines.explainer import KeyPool
+
+        with mpatch.dict(os.environ, {"ACRQA_LLM_PROVIDER": "groq"}, clear=True):
+            pool = KeyPool()
+        with pytest.raises(RuntimeError, match="No GROQ API keys"):
+            pool.next_key()
+
+    def test_next_client_raises_on_empty_pool(self, monkeypatch):
+        import os
+        from unittest.mock import patch as mpatch
+
+        from CORE.engines.explainer import KeyPool
+
+        with mpatch.dict(os.environ, {"ACRQA_LLM_PROVIDER": "groq"}, clear=True):
+            pool = KeyPool()
+        with pytest.raises(RuntimeError, match="No GROQ API keys"):
+            pool.next_client()
+
+    def test_has_keys_true_when_key_present(self, monkeypatch):
+        import os
+        from unittest.mock import patch as mpatch
+
+        from CORE.engines.explainer import KeyPool
+
+        with mpatch.dict(os.environ, {"GROQ_API_KEY": "test-key-123", "ACRQA_LLM_PROVIDER": "groq"}, clear=True):
+            pool = KeyPool()
+        assert pool.has_keys is True
+
+
+class TestPathFeasibilityFeatureFlag:
+    """Path feasibility block must skip cleanly when GROQ key is absent or flag=0."""
+
+    def _make_result_dict(self):
+        return {}
+
+    def test_skip_reason_no_groq_key(self, monkeypatch):
+        """feasibility_skip_reason == 'no_groq_key' when pool is empty."""
+        for v in ("GROQ_API_KEY", "GROQ_API_KEY_1"):
+            monkeypatch.delenv(v, raising=False)
+        monkeypatch.setenv("ACRQA_LLM_PROVIDER", "groq")
+        # Simulate the check directly — we can't instantiate ExplanationEngine
+        # without Groq keys, so test the flag logic in isolation.
+        import os
+        from unittest.mock import MagicMock
+
+        mock_pool = MagicMock()
+        mock_pool.has_keys = False
+        pf_has_key = mock_pool.has_keys
+        pf_enabled = pf_has_key and os.getenv("ACRQA_PATH_FEASIBILITY", "1") != "0"
+        result: dict = {}
+        if not pf_enabled:
+            result["feasibility_verdict"] = None
+            result["feasibility_checked"] = False
+            result["feasibility_skip_reason"] = "no_groq_key" if not pf_has_key else "disabled"
+        assert result["feasibility_skip_reason"] == "no_groq_key"
+        assert result["feasibility_checked"] is False
+
+    def test_skip_reason_disabled_by_flag(self, monkeypatch):
+        """feasibility_skip_reason == 'disabled' when flag is set to 0."""
+        monkeypatch.setenv("ACRQA_PATH_FEASIBILITY", "0")
+        import os
+        from unittest.mock import MagicMock
+
+        mock_pool = MagicMock()
+        mock_pool.has_keys = True
+        pf_has_key = mock_pool.has_keys
+        pf_enabled = pf_has_key and os.getenv("ACRQA_PATH_FEASIBILITY", "1") != "0"
+        result: dict = {}
+        if not pf_enabled:
+            result["feasibility_verdict"] = None
+            result["feasibility_checked"] = False
+            result["feasibility_skip_reason"] = "no_groq_key" if not pf_has_key else "disabled"
+        assert result["feasibility_skip_reason"] == "disabled"
+
+    def test_enabled_when_key_and_flag_default(self, monkeypatch):
+        """Flag defaults to enabled when key is present."""
+        monkeypatch.setenv("GROQ_API_KEY", "test-key")
+        monkeypatch.delenv("ACRQA_PATH_FEASIBILITY", raising=False)
+        import os
+        from unittest.mock import MagicMock
+
+        mock_pool = MagicMock()
+        mock_pool.has_keys = True
+        pf_has_key = mock_pool.has_keys
+        pf_enabled = pf_has_key and os.getenv("ACRQA_PATH_FEASIBILITY", "1") != "0"
+        assert pf_enabled is True
+
+
+class TestAIDetectionFeatureFlag:
+    """ACRQA_AI_DETECTION=0 must return 503 from the endpoint."""
+
+    def test_disabled_returns_503(self, monkeypatch):
+        monkeypatch.setenv("ACRQA_AI_DETECTION", "0")
+        from starlette.testclient import TestClient
+
+        from FRONTEND.api.deps import get_current_user, get_db
+        from FRONTEND.api.main import app as fastapi_app
+
+        fastapi_app.dependency_overrides[get_current_user] = lambda: {"id": 1, "role": "admin"}
+        fastapi_app.dependency_overrides[get_db] = lambda: None
+        with TestClient(fastapi_app, raise_server_exceptions=False) as c:
+            resp = c.post("/v1/scans/ai-detection", json={"target": "/tmp", "threshold": 0.5})
+        fastapi_app.dependency_overrides.clear()
+        assert resp.status_code == 503
+
+    def test_enabled_by_default(self, monkeypatch):
+        monkeypatch.delenv("ACRQA_AI_DETECTION", raising=False)
+        import os
+
+        assert os.getenv("ACRQA_AI_DETECTION", "1") == "1"

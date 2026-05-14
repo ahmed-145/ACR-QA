@@ -73,14 +73,12 @@ def _finding(
 
 
 class TestExplanationEngineInit:
-    def test_raises_without_api_key(self):
-        with patch.dict("os.environ", {}, clear=True):
-            with patch("os.getenv", return_value=None):
-                with patch("CORE.engines.explainer.Groq"):
-                    from CORE.engines.explainer import ExplanationEngine
+    def test_empty_key_pool_without_api_key(self):
+        from CORE.engines.explainer import KeyPool
 
-                    with pytest.raises(ValueError, match="GROQ_API_KEY"):
-                        ExplanationEngine()
+        with patch.dict("os.environ", {"ACRQA_LLM_PROVIDER": "groq"}, clear=True):
+            pool = KeyPool()
+        assert pool.has_keys is False
 
     def test_model_is_llama(self):
         eng = _engine()

@@ -228,6 +228,12 @@ async def scan_sca(body: SCAScanRequest, user: dict = Depends(get_current_user))
 
 @router.post("/ai-detection", summary="Run AI-generated code detection")
 async def scan_ai_detection(body: AIDetectRequest, user: dict = Depends(get_current_user)):
+    import os
+
+    if os.getenv("ACRQA_AI_DETECTION", "1") == "0":
+        from fastapi import HTTPException
+
+        raise HTTPException(status_code=503, detail="AI detection engine is disabled (ACRQA_AI_DETECTION=0)")
     from CORE.engines.ai_code_detector import AICodeDetector
 
     detector = AICodeDetector(threshold=body.threshold)
