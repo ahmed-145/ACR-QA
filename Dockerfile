@@ -2,7 +2,7 @@
 # ACR-QA Multi-Stage Dockerfile  v3.8.0
 # Stage 1 (node-builder)  — build React dashboard with Vite
 # Stage 2 (py-builder)    — install Python deps into a venv
-# Stage 3 (go-tools)      — compile gosec + staticcheck from source
+# Stage 3 (go-tools)      — pre-built gosec + staticcheck binaries (no Go compile)
 # Stage 4 (runtime)       — lean runtime image, non-root user
 # =============================================================================
 
@@ -42,15 +42,19 @@ RUN pip install --no-cache-dir --upgrade pip \
         bandit==1.7.5 \
         alembic==1.13.1
 
-# ── Stage 3: Go security tools ────────────────────────────────────────────────
-FROM golang:1.22-alpine AS go-tools
+# ── Stage 3: Go security tools (pre-built binaries — no Go compilation) ───────
+FROM alpine:3.19 AS go-tools
 
-RUN apk add --no-cache git
+RUN apk add --no-cache curl tar
 
-ENV GOPROXY=https://goproxy.io,direct
+RUN curl -sSL \
+    https://github.com/securego/gosec/releases/download/v2.18.2/gosec_2.18.2_linux_amd64.tar.gz \
+    | tar -xz -C /usr/local/bin gosec
 
-RUN go install github.com/securego/gosec/v2/cmd/gosec@v2.18.2 \
-    && go install honnef.co/go/tools/cmd/staticcheck@v0.4.3
+RUN curl -sSL \
+    https://github.com/dominikh/go-tools/releases/download/v0.4.3/staticcheck_linux_amd64.tar.gz \
+    | tar -xz -C /tmp \
+    && mv /tmp/staticcheck/staticcheck /usr/local/bin/staticcheck
 
 # ── Stage 4: Runtime image ────────────────────────────────────────────────────
 FROM python:3.11-slim AS runtime
@@ -73,8 +77,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 COPY --from=py-builder /opt/venv /opt/venv
 ENV PATH="/opt/venv/bin:$PATH"
 
-COPY --from=go-tools /go/bin/gosec /usr/local/bin/gosec
-COPY --from=go-tools /go/bin/staticcheck /usr/local/bin/staticcheck
+COPY --from=go-tools /usr/local/bin/gosec /usr/local/bin/gosec
+COPY --from=go-tools /usr/local/bin/staticcheck /usr/local/bin/staticcheck
 
 RUN groupadd -r acrqa && useradd -r -g acrqa -d /app -s /sbin/nologin acrqa
 
