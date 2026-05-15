@@ -8,7 +8,7 @@
 [![Python 3.11+](https://img.shields.io/badge/Python-3.11+-3776ab?logo=python&logoColor=white)](https://www.python.org/)
 [![Version](https://img.shields.io/badge/Version-4.0.0-blue)](docs/CHANGELOG.md)
 [![Live](https://img.shields.io/badge/Live-acrqa--api--production.up.railway.app-22c55e?logo=railway&logoColor=white)](https://acrqa-api-production.up.railway.app/health)
-[![Tests](https://img.shields.io/badge/Tests-2282%20passing-22c55e?logo=pytest&logoColor=white)](./TESTS/)
+[![Tests](https://img.shields.io/badge/Tests-2297%20passing-22c55e?logo=pytest&logoColor=white)](./TESTS/)
 [![Coverage](https://img.shields.io/badge/Coverage-85%25-22c55e?logo=codecov&logoColor=white)](./htmlcov/)
 [![Precision](https://img.shields.io/badge/Precision-97.1%25-22c55e)](./docs/evaluation/PER_TOOL_EVALUATION.md)
 [![OWASP](https://img.shields.io/badge/OWASP-9%2F10-8b5cf6)](./docs/evaluation/EVALUATION.md)

@@ -1,7 +1,7 @@
 # ACR-QA REST API Reference
 
 **Base URL:** `http://localhost:8000`
-**Version:** v3.8.0
+**Version:** v4.0.0 (Phase 12)
 **Format:** All responses are `application/json`
 **Auth:** All `/v1/` endpoints require `Authorization: Bearer <token>` or `X-API-Key: <key>`
 
@@ -400,4 +400,36 @@ The `GET /v1/runs/{id}/findings` response now includes taint and triage fields:
 
 ---
 
-*Last updated: May 15, 2026 — ACR-QA v3.8.0*
+---
+
+## New Endpoints (Phase 12 Week 5 — v4.0.0)
+
+### `GET /v1/runs/{run_id}/cost` [Phase 12 W5 — Task 12.32]
+
+Per-run Groq token cost telemetry (FinOps). Written after each analysis run completes via `Database.update_run_cost()`.
+
+**Response:**
+```json
+{
+  "success": true,
+  "run_id": 42,
+  "groq_tokens_used": 18450,
+  "groq_cost_usd": 0.004982,
+  "groq_requests": 12
+}
+```
+
+**Fields:**
+| Field | Type | Description |
+|---|---|---|
+| `groq_tokens_used` | integer\|null | Total Groq tokens consumed across all explanations |
+| `groq_cost_usd` | float | Estimated USD cost at $0.27/1M tokens (llama3-8b-8192) |
+| `groq_requests` | integer\|null | Number of Groq API calls (excludes cache hits and fallbacks) |
+
+**Notes:**
+- Returns `null` fields for runs completed before migration 0010 (pre-Phase 12 Week 5)
+- Aggregate cost across all runs available at `GET /v1/cost-summary`
+
+---
+
+*Last updated: May 15, 2026 — ACR-QA v4.0.0 (Phase 12 Week 5)*

@@ -10,15 +10,18 @@
 >
 > The "Phase 2 — Full TypeScript/JS Engine Rewrite" section below is **explicitly killed** in the v2 god mode plan. Reasons documented in `GOD_MODE_PLAN.md` §5 ("Don't-do list"): the Python core works, the rewrite is procrastination dressed as ambition, and the same career signals can be earned by shipping the MCP server (PyPI distribution, IDE/agent integration) without a 6-week port.
 >
-> **The current plan (v3.3.0 → v4.0.0):**
+> **✅ v4.0.0 shipped (Phase 11). Now in Phase 12 "Make It Bulletproof" → targeting v4.5.0:**
 > - ✅ Reachability engine (Week 2) — **DONE, v3.3.2**
 > - ✅ MCP server + learned suppression (Week 3) — **DONE, v3.4.0**
 > - ✅ Proof-of-Exploit engine (Week 4) — **DONE, v3.5.0**
 > - ✅ Provenance attestations + Railway deploy (Week 5) — **DONE, v3.6.0**
-> - ✅ FastAPI migration + auth + 2,160 tests (Phases 7–10) — **DONE, v3.9.5**
-> - v4.0.0 release + demo video + thesis defense (Phase 11)
+> - ✅ FastAPI migration + auth + 2,282 tests (Phases 7–10) — **DONE, v3.9.5**
+> - ✅ v4.0.0 released, Phase 11 complete
+> - ✅ Phase 12 Weeks 1–5 complete: mutation testing, inter-proc taint, Trivy/TruffleHog,
+>   Helm/Terraform/OTel/Cosign, WCAG/i18n/a11y, chaos engineering, SLO alerts, cost telemetry
+> - ⏳ Phase 12 Week 6: eval re-run, demo video, v4.5.0 tag, thesis appendix
 >
-> See `GOD_MODE_PLAN.md` and `evaluation/PHASE_0_BASELINE.md` for the live source of truth.
+> See `GOD_MODE_PLAN.md` and `docs/PHASE_12_PLAN.md` for the live source of truth.
 
 ---
 

@@ -437,6 +437,25 @@ Detects vulnerability chains that span Python backend code, Jinja2/HTML template
 
 ---
 
+## Phase 12 Week 5 — Chaos + Observability Additions
+
+### Cost Telemetry (Task 12.32)
+
+After `complete_analysis_run()`, `CORE/main.py` aggregates Groq token usage across all explanations and writes to `analysis_runs` via `Database.update_run_cost()`. Three new columns (migration 0010): `groq_tokens_used`, `groq_cost_usd` (Numeric 10,6), `groq_requests`. Exposed via `GET /v1/runs/{id}/cost`.
+
+### SLO Burn-Rate Alerting (Task 12.31)
+
+`config/alerts/slo_burn_rate.yml` — multi-window Prometheus recording rules and alerts:
+- **Fast burn** (1h+5h window): pages at 14.4× budget burn rate
+- **Slow burn** (6h+1d window): warns at 3× budget burn rate
+- Error budget: 0.1% over 30 days
+
+### Graceful Degradation (Tasks 12.28 + 12.29)
+
+`Database._connect()` no longer re-raises `psycopg2.OperationalError` — it logs and sets `_pool = None`. `execute()` raises a clean `OperationalError("pool unavailable")` rather than `AttributeError`. `ExplanationEngine._get_cached_explanation()` returns `None` on any Redis error. `RateLimiter` allows all requests when Redis is `None`. Validated by 13 chaos tests in `TESTS/test_chaos.py`.
+
+---
+
 ## Security Architecture
 
 - **Non-root Docker** — Container runs as `acrqa` user

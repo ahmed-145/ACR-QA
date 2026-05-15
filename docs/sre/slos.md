@@ -88,4 +88,18 @@ SLO panels are on the ACR-QA dashboard at **http://localhost:3000**:
 
 ---
 
-*Last updated: 2026-05-05*
+---
+
+## Alerting Implementation (Phase 12 Week 5)
+
+Multi-window burn-rate alerting is implemented in `config/alerts/slo_burn_rate.yml` (Prometheus).
+
+| Alert | Window | Threshold | Severity |
+|---|---|---|---|
+| `SLOBudgetBurnRateFast` | 1h + 5h | 14.4× budget | page (P1) |
+| `SLOBudgetBurnRateSlow` | 6h + 1d | 3× budget | warning (P2) |
+
+Error budget: 0.1% over 30 days. Recording rules pre-compute 1h/5h/6h/1d error-rate windows.
+Load-tested at 500 RPS via `tests/load/locustfile.py` — targets: p99 < 2s, error rate < 1%.
+
+*Last updated: 2026-05-15 — Phase 12 Week 5*
