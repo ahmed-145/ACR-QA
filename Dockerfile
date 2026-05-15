@@ -15,6 +15,7 @@ COPY dashboard/package*.json ./
 RUN npm ci --prefer-offline 2>/dev/null || npm ci
 
 COPY dashboard/ .
+# outDir is ../FRONTEND/static/dashboard (relative to /build/dashboard)
 RUN npm run build
 
 # ── Stage 2: Python dependency builder ───────────────────────────────────────
@@ -52,9 +53,8 @@ RUN curl -sSL \
     | tar -xz -C /usr/local/bin gosec
 
 RUN curl -sSL \
-    https://github.com/dominikh/go-tools/releases/download/v0.4.3/staticcheck_linux_amd64.tar.gz \
-    | tar -xz -C /tmp \
-    && mv /tmp/staticcheck/staticcheck /usr/local/bin/staticcheck
+    https://github.com/dominikh/go-tools/releases/download/2023.1.3/staticcheck_linux_amd64.tar.gz \
+    | tar -xz --strip-components=1 -C /usr/local/bin
 
 # ── Stage 4: Runtime image ────────────────────────────────────────────────────
 FROM python:3.11-slim AS runtime
