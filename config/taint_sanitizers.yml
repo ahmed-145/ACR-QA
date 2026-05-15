@@ -1,0 +1,59 @@
+# Taint sanitizers — functions that neutralize taint.
+# When a tainted value passes through one of these, taint is dropped.
+# This reduces false positives from properly-sanitized data flows.
+#
+# Pattern matching: the function name or dotted attribute chain must match
+# one entry in `patterns`. Matching is suffix-aware (bleach.clean == clean).
+
+sanitizers:
+  - name: html_escape
+    description: "HTML entity escaping — neutralizes XSS in HTML contexts"
+    patterns:
+      - "html.escape"
+      - "escape"
+      - "markupsafe.escape"
+      - "flask.escape"
+      - "jinja2.escape"
+      - "bleach.clean"
+      - "cgi.escape"
+
+  - name: sql_parameterize
+    description: "Parameterized query wrappers — neutralizes SQL injection"
+    patterns:
+      - "sqlalchemy.text"
+      - "django.db.connection.cursor"
+      - "psycopg2.sql.SQL"
+      - "psycopg2.sql.Identifier"
+      - "psycopg2.sql.Literal"
+
+  - name: shell_quote
+    description: "Shell quoting — neutralizes OS command injection"
+    patterns:
+      - "shlex.quote"
+      - "pipes.quote"
+
+  - name: path_sanitize
+    description: "Path normalization — prevents path traversal"
+    patterns:
+      - "os.path.basename"
+      - "pathlib.Path"
+      - "secure_filename"
+
+  - name: input_validate
+    description: "Validation/casting that narrows the type to a safe value"
+    patterns:
+      - "int"
+      - "float"
+      - "bool"
+      - "uuid.UUID"
+      - "re.fullmatch"
+      - "re.match"
+
+  - name: hash_digest
+    description: "Cryptographic hashing — data is one-way transformed"
+    patterns:
+      - "hashlib.sha256"
+      - "hashlib.sha512"
+      - "hashlib.md5"
+      - "bcrypt.hashpw"
+      - "passlib.hash"

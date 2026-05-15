@@ -1,8 +1,8 @@
-"""Intra-procedural taint analysis engine.
+"""Inter-procedural taint analysis engine.
 
 Tracks user-controlled data from HTTP/env sources to dangerous sinks.
-Operates per-function using a single-pass AST visitor; no cross-function
-propagation (MVP scope).
+Supports cross-function propagation (call-graph taint) and sanitizer
+recognition to reduce false positives.
 """
 
 from __future__ import annotations
@@ -32,6 +32,23 @@ def _load_sinks() -> list[dict]:
         return yaml.safe_load(f)["sinks"]
 
 
+def _load_sanitizers() -> set[str]:
+    """Return the set of all sanitizer pattern strings."""
+    path = _CONFIG_DIR / "taint_sanitizers.yml"
+    try:
+        with open(path) as f:
+            raw = yaml.safe_load(f)
+        patterns: set[str] = set()
+        for entry in raw.get("sanitizers", []):
+            for p in entry.get("patterns", []):
+                patterns.add(p)
+                # Also index by bare function name for quick suffix matching
+                patterns.add(p.rsplit(".", 1)[-1])
+        return patterns
+    except FileNotFoundError:
+        return set()
+
+
 @dataclass
 class TaintInfo:
     source: str
@@ -42,19 +59,30 @@ class TaintInfo:
 
 
 class _FunctionTaintVisitor(ast.NodeVisitor):
-    """Single-function intra-procedural taint visitor."""
+    """Intra-procedural taint visitor (one function scope)."""
 
     def __init__(
         self,
         source_patterns: set[str],
         sinks_by_name: dict[str, dict],
         filepath: str,
+        sanitizer_patterns: set[str] | None = None,
+        call_graph: dict[str, ast.FunctionDef | ast.AsyncFunctionDef] | None = None,
+        initial_tainted: dict[str, TaintInfo] | None = None,
+        depth: int = 0,
     ) -> None:
         self._source_patterns = source_patterns
         self._sinks = sinks_by_name
+        self._sanitizer_patterns = sanitizer_patterns if sanitizer_patterns is not None else set()
         self._filepath = filepath
+        # Call graph: local function name → AST node (for inter-procedural)
+        self._call_graph = call_graph or {}
+        # Functions whose return value is tainted (from internal sources)
+        self._taint_returning: set[str] = set()
+        # Recursion depth guard (prevents infinite loops on recursive calls)
+        self._depth = depth
         # variable name → TaintInfo
-        self._tainted: dict[str, TaintInfo] = {}
+        self._tainted: dict[str, TaintInfo] = dict(initial_tainted or {})
         self.findings: list[dict] = []
 
     # ── source detection ──────────────────────────────────────────────────────
@@ -118,6 +146,17 @@ class _FunctionTaintVisitor(ast.NodeVisitor):
                         return t.hop(ast.unparse(node))
 
         if isinstance(node, ast.Call):
+            # If this is a sanitizer call, drop taint regardless of args
+            if self._is_sanitizer(node.func):
+                return None
+            # Function known to return taint from its own internal sources
+            func_name: str | None = None
+            if isinstance(node.func, ast.Name):
+                func_name = node.func.id
+            elif isinstance(node.func, ast.Attribute):
+                func_name = node.func.attr
+            if func_name and func_name in self._taint_returning:
+                return TaintInfo(source=f"{func_name}()", steps=[ast.unparse(node)])
             # method call on a tainted object: tainted_var.strip()
             if isinstance(node.func, ast.Attribute):
                 base = self._propagate(node.func.value)
@@ -178,13 +217,89 @@ class _FunctionTaintVisitor(ast.NodeVisitor):
                 taint = self._extract_source(arg) or self._propagate(arg)
                 if taint:
                     self._emit_finding(node, sink_name, taint)
-            # also check keyword args (e.g. execute(statement=...))
             for kw in node.keywords:
                 if kw.value is not None:
                     taint = self._extract_source(kw.value) or self._propagate(kw.value)
                     if taint:
                         self._emit_finding(node, sink_name, taint)
+        else:
+            # Inter-procedural: if tainted args are passed to a local function,
+            # recurse into that function to find transitive sink hits.
+            tainted_args = []
+            for arg in node.args:
+                t = self._extract_source(arg) or self._propagate(arg)
+                if t:
+                    tainted_args.append(t)
+            if tainted_args and self._depth < 5:
+                result = self._resolve_interprocedural(node, tainted_args)
+                # If callee propagates taint to return, mark call result as tainted
+                if result is not None:
+                    # Assign to a synthetic variable for subsequent propagation
+                    self._tainted[f"__ret_{ast.unparse(node.func)}"] = result
         self.generic_visit(node)
+
+    def _is_sanitizer(self, func: ast.expr) -> bool:
+        """Return True if this call is a known sanitizer that drops taint."""
+        if isinstance(func, ast.Name):
+            return func.id in self._sanitizer_patterns
+        if isinstance(func, ast.Attribute):
+            chain = self._attr_chain(func)
+            # Match full chain (e.g. "html.escape") or bare name (e.g. "escape")
+            return chain in self._sanitizer_patterns or func.attr in self._sanitizer_patterns
+        return False
+
+    def _resolve_interprocedural(self, node: ast.Call, tainted_args: list[TaintInfo]) -> TaintInfo | None:
+        """
+        If the call targets a locally-defined function and we have tainted args,
+        re-analyze that function with the tainted parameters to check for sink
+        hits inside it. Returns TaintInfo if the callee propagates taint to
+        its return value (conservative approximation).
+        """
+        if self._depth >= 5:
+            # Depth guard: treat deep calls as opaque taint propagators
+            return tainted_args[0].hop(f"→ {ast.unparse(node)} [depth limit]") if tainted_args else None
+
+        func_name: str | None = None
+        if isinstance(node.func, ast.Name):
+            func_name = node.func.id
+        elif isinstance(node.func, ast.Attribute):
+            func_name = node.func.attr
+
+        if func_name is None or func_name not in self._call_graph:
+            return None
+
+        callee = self._call_graph[func_name]
+        # Map positional args to parameter names
+        params = [arg.arg for arg in callee.args.args]
+        initial: dict[str, TaintInfo] = {}
+        for i, t in enumerate(tainted_args):
+            if i < len(params):
+                initial[params[i]] = t.hop(f"{func_name}({params[i]})")
+
+        if not initial:
+            return None
+
+        # Recurse into callee
+        sub = _FunctionTaintVisitor(
+            source_patterns=self._source_patterns,
+            sinks_by_name=self._sinks,
+            filepath=self._filepath,
+            sanitizer_patterns=self._sanitizer_patterns,
+            call_graph=self._call_graph,
+            initial_tainted=initial,
+            depth=self._depth + 1,
+        )
+        sub._taint_returning = self._taint_returning
+        sub.visit(callee)
+        # Collect sink findings from callee
+        self.findings.extend(sub.findings)
+
+        # Check if callee returns taint (conservative: yes if any return stmt propagates)
+        for child in ast.walk(callee):
+            if isinstance(child, ast.Return) and child.value is not None:
+                if sub._propagate(child.value) is not None:
+                    return tainted_args[0].hop(f"return {func_name}()")
+        return None
 
     def _get_sink_name(self, func: ast.expr) -> str | None:
         if isinstance(func, ast.Name):
@@ -221,8 +336,57 @@ class _FunctionTaintVisitor(ast.NodeVisitor):
         )
 
 
+def _build_call_graph(
+    tree: ast.AST,
+) -> dict[str, ast.FunctionDef | ast.AsyncFunctionDef]:
+    """Build a map of function names to their AST nodes."""
+    graph: dict[str, ast.FunctionDef | ast.AsyncFunctionDef] = {}
+    for node in ast.walk(tree):
+        if isinstance(node, ast.FunctionDef | ast.AsyncFunctionDef):
+            graph[node.name] = node
+    return graph
+
+
+def _compute_taint_returning_functions(
+    call_graph: dict[str, ast.FunctionDef | ast.AsyncFunctionDef],
+    source_patterns: set[str],
+    sinks_by_name: dict[str, dict],
+    sanitizer_patterns: set[str],
+    filepath: str,
+) -> set[str]:
+    """Pre-analysis pass: identify functions that return a tainted value.
+
+    These functions produce taint from internal sources (e.g. request.args)
+    even when called with no tainted arguments. Used by the inter-procedural
+    visitor to mark call-site return values as tainted.
+    """
+    taint_returning: set[str] = set()
+    for func_name, func_node in call_graph.items():
+        sub = _FunctionTaintVisitor(
+            source_patterns=source_patterns,
+            sinks_by_name=sinks_by_name,
+            filepath=filepath,
+            sanitizer_patterns=sanitizer_patterns,
+            call_graph={},  # flat — no recursion in summary pass
+            depth=99,  # prevent further inter-procedural calls
+        )
+        sub.visit(func_node)
+        # Check every return statement: does the returned value carry taint?
+        for child in ast.walk(func_node):
+            if isinstance(child, ast.Return) and child.value is not None:
+                tainted = sub._extract_source(child.value) or sub._propagate(child.value)
+                if tainted is not None:
+                    taint_returning.add(func_name)
+                    break
+    return taint_returning
+
+
 class TaintAnalyzer:
-    """Public interface: analyze a file or directory for taint flows."""
+    """Public interface: analyze a file or directory for taint flows.
+
+    Supports inter-procedural analysis (taint across function calls) and
+    sanitizer recognition (drops taint at bleach.clean, shlex.quote, etc.).
+    """
 
     def __init__(self) -> None:
         sources = _load_sources()
@@ -233,6 +397,8 @@ class TaintAnalyzer:
         sinks_raw = _load_sinks()
         self._sinks_by_name: dict[str, dict] = {s["name"]: s for s in sinks_raw}
 
+        self._sanitizer_patterns: set[str] = _load_sanitizers()
+
     def analyze_file(self, filepath: str | Path) -> list[dict[str, Any]]:
         filepath = Path(filepath)
         try:
@@ -241,14 +407,28 @@ class TaintAnalyzer:
         except SyntaxError:
             return []
 
+        # Build call graph + function summaries for inter-procedural analysis
+        call_graph = _build_call_graph(tree)
+        taint_returning = _compute_taint_returning_functions(
+            call_graph,
+            self._source_patterns,
+            self._sinks_by_name,
+            self._sanitizer_patterns,
+            str(filepath),
+        )
+
         all_findings: list[dict] = []
         for node in ast.walk(tree):
             if isinstance(node, ast.FunctionDef | ast.AsyncFunctionDef):
                 visitor = _FunctionTaintVisitor(
-                    self._source_patterns,
-                    self._sinks_by_name,
-                    str(filepath),
+                    source_patterns=self._source_patterns,
+                    sinks_by_name=self._sinks_by_name,
+                    filepath=str(filepath),
+                    sanitizer_patterns=self._sanitizer_patterns,
+                    call_graph=call_graph,
+                    depth=0,
                 )
+                visitor._taint_returning = taint_returning
                 visitor.visit(node)
                 all_findings.extend(visitor.findings)
 
