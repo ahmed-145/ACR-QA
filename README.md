@@ -378,6 +378,29 @@ Key design decisions are documented in [`docs/adr/`](docs/adr/):
 
 ---
 
+## Interactive Demo Notebooks
+
+Run these [Marimo](https://marimo.io) notebooks locally or view the exported HTML:
+
+| Notebook | Description | HTML Preview |
+|----------|-------------|--------------|
+| [`notebooks/walkthrough.py`](notebooks/walkthrough.py) | 12-cell full pipeline walkthrough | [walkthrough.html](docs/walkthrough.html) |
+| [`notebooks/engine_demos/taint.py`](notebooks/engine_demos/taint.py) | Taint analyzer — source→sink data-flow | [demo_taint.html](docs/demo_taint.html) |
+| [`notebooks/engine_demos/exploit.py`](notebooks/engine_demos/exploit.py) | Exploit verifier — DAST-in-Docker | [demo_exploit.html](docs/demo_exploit.html) |
+| [`notebooks/engine_demos/attestation.py`](notebooks/engine_demos/attestation.py) | Attestation + post-quantum hybrid signatures | [demo_attestation.html](docs/demo_attestation.html) |
+| [`notebooks/engine_demos/offline.py`](notebooks/engine_demos/offline.py) | Zero-egress / Ollama mode proof | [demo_offline.html](docs/demo_offline.html) |
+
+```bash
+# Run interactively (edit cells live)
+pip install marimo
+marimo run notebooks/walkthrough.py
+
+# Or open in edit mode for defense demo
+marimo edit notebooks/walkthrough.py
+```
+
+---
+
 ## Documentation
 
 | Document | Description |

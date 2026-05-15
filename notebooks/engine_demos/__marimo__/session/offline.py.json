@@ -1,0 +1,198 @@
+{
+  "version": "1",
+  "metadata": {
+    "marimo_version": "0.23.6",
+    "script_metadata_hash": null
+  },
+  "cells": [
+    {
+      "id": "Hbol",
+      "code_hash": "1d0db38904205bec4d6f6f6a1f6cec3e",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/plain": ""
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "MJUe",
+      "code_hash": "f220d5515b9e54ae08676ec6457bbb95",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><h1 id=\"offline-mode-zero-egress-demo\">Offline Mode \u2014 Zero-Egress Demo</h1>\n<h3 id=\"acr-qa-v380-defense-exhibit-e\">ACR-QA v3.8.0 \u00b7 Defense Exhibit E</h3>\n<span class=\"paragraph\">ACR-QA v3.6.4 introduced <strong>fully air-gapped operation</strong>:</span>\n<table>\n<thead>\n<tr>\n<th>Component</th>\n<th>Online mode</th>\n<th>Offline mode</th>\n</tr>\n</thead>\n<tbody>\n<tr>\n<td>LLM calls</td>\n<td>OpenAI / Anthropic API</td>\n<td>Local Ollama endpoint</td>\n</tr>\n<tr>\n<td>CVE lookups</td>\n<td>OSV.dev API (HTTPS)</td>\n<td>Local OSV snapshot (JSON)</td>\n</tr>\n<tr>\n<td>GitHub signals</td>\n<td>api.github.com</td>\n<td>Disabled (cached values)</td>\n</tr>\n<tr>\n<td>Network egress</td>\n<td>Required</td>\n<td><strong>Zero</strong></td>\n</tr>\n</tbody>\n</table>\n<span class=\"paragraph\"><strong>Use cases:</strong></span>\n<ul>\n<li>Air-gapped government / defence environments</li>\n<li>CI pipelines with no outbound internet</li>\n<li>GDPR / data-residency requirements (no code leaves the network)</li>\n<li>Offline demo at thesis defense (no Wi-Fi dependency)</li>\n</ul>\n<span class=\"paragraph\"><strong>Env vars:</strong>\n<div class=\"language-bash codehilite\"><pre><span></span><code><span class=\"nv\">ACRQA_MODE</span><span class=\"o\">=</span>offline\n<span class=\"nv\">ACRQA_LLM_PROVIDER</span><span class=\"o\">=</span>ollama\n<span class=\"nv\">ACRQA_OLLAMA_URL</span><span class=\"o\">=</span>http://localhost:11434\n<span class=\"nv\">ACRQA_OSV_SNAPSHOT_DIR</span><span class=\"o\">=</span>/data/osv-snapshot\n</code></pre></div></span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "vblA",
+      "code_hash": "26e584b16cacb1bfeeec8377c35df17b",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><h2 id=\"step-1-mode-selector\">Step 1 \u2014 Mode Selector</h2></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "bkHC",
+      "code_hash": "9085e31c02851100d46100d1b1ffdb7b",
+      "outputs": [
+        {
+          "type": "error",
+          "ename": "exception",
+          "evalue": "'offline'",
+          "traceback": null
+        }
+      ],
+      "console": [
+        {
+          "type": "stream",
+          "name": "stderr",
+          "text": "<span class=\"codehilite\"><div class=\"highlight\"><pre><span></span><span class=\"gt\">Traceback (most recent call last):</span>\n  File <span class=\"nb\">&quot;/tmp/marimo_613154/__marimo__cell_bkHC_.py&quot;</span>, line <span class=\"m\">1</span>, in <span class=\"n\">&lt;module&gt;</span>\n<span class=\"w\">    </span><span class=\"n\">mode_switch</span> <span class=\"o\">=</span> <span class=\"n\">mo</span><span class=\"o\">.</span><span class=\"n\">ui</span><span class=\"o\">.</span><span class=\"n\">radio</span><span class=\"p\">(</span>\n  File <span class=\"nb\">&quot;/home/ahmeed/Documents/KSIU/GRAD/SOLO/.venv/lib/python3.10/site-packages/marimo/_plugins/ui/_impl/input.py&quot;</span>, line <span class=\"m\">684</span>, in <span class=\"n\">__init__</span>\n<span class=\"w\">    </span><span class=\"nb\">super</span><span class=\"p\">()</span><span class=\"o\">.</span><span class=\"fm\">__init__</span><span class=\"p\">(</span>\n  File <span class=\"nb\">&quot;/home/ahmeed/Documents/KSIU/GRAD/SOLO/.venv/lib/python3.10/site-packages/marimo/_plugins/ui/_core/ui_element.py&quot;</span>, line <span class=\"m\">165</span>, in <span class=\"n\">__init__</span>\n<span class=\"w\">    </span><span class=\"bp\">self</span><span class=\"o\">.</span><span class=\"n\">_initialize</span><span class=\"p\">(</span><span class=\"bp\">self</span><span class=\"o\">.</span><span class=\"n\">_args</span><span class=\"p\">)</span>\n  File <span class=\"nb\">&quot;/home/ahmeed/Documents/KSIU/GRAD/SOLO/.venv/lib/python3.10/site-packages/marimo/_plugins/ui/_core/ui_element.py&quot;</span>, line <span class=\"m\">272</span>, in <span class=\"n\">_initialize</span>\n<span class=\"w\">    </span><span class=\"bp\">self</span><span class=\"o\">.</span><span class=\"n\">_value</span> <span class=\"o\">=</span> <span class=\"bp\">self</span><span class=\"o\">.</span><span class=\"n\">_initial_value</span> <span class=\"o\">=</span> <span class=\"bp\">self</span><span class=\"o\">.</span><span class=\"n\">_convert_value</span><span class=\"p\">(</span><span class=\"n\">initial_value</span><span class=\"p\">)</span>\n  File <span class=\"nb\">&quot;/home/ahmeed/Documents/KSIU/GRAD/SOLO/.venv/lib/python3.10/site-packages/marimo/_plugins/ui/_impl/input.py&quot;</span>, line <span class=\"m\">705</span>, in <span class=\"n\">_convert_value</span>\n<span class=\"w\">    </span><span class=\"k\">return</span> <span class=\"bp\">self</span><span class=\"o\">.</span><span class=\"n\">options</span><span class=\"p\">[</span><span class=\"n\">value</span><span class=\"p\">]</span> <span class=\"k\">if</span> <span class=\"n\">value</span> <span class=\"ow\">is</span> <span class=\"ow\">not</span> <span class=\"kc\">None</span> <span class=\"k\">else</span> <span class=\"kc\">None</span>\n<span class=\"gr\">KeyError</span>: <span class=\"n\">&#39;offline&#39;</span>\n</pre></div>\n</span>",
+          "mimetype": "application/vnd.marimo+traceback"
+        }
+      ]
+    },
+    {
+      "id": "lEQa",
+      "code_hash": "488f03bd2cd52e6ef40a7285c0c41b55",
+      "outputs": [
+        {
+          "type": "error",
+          "ename": "exception",
+          "evalue": "An ancestor raised an exception (KeyError): ",
+          "traceback": null
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "PKri",
+      "code_hash": "c61302bd4c5a617be67639e21d082203",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><h2 id=\"step-2-egressguard\">Step 2 \u2014 EgressGuard</h2></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "Xref",
+      "code_hash": "769adea3e08403c6c0a29292bc9cc1e3",
+      "outputs": [
+        {
+          "type": "error",
+          "ename": "exception",
+          "evalue": "An ancestor raised an exception (KeyError): ",
+          "traceback": null
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "SFPL",
+      "code_hash": "346b09ac3d651b929f4547ba7691a245",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><h2 id=\"step-3-ollama-provider-check\">Step 3 \u2014 Ollama Provider Check</h2></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "BYtC",
+      "code_hash": "a2c9c53a958df96130fe0243912b7169",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/plain": ""
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "RGSE",
+      "code_hash": "42904bfdc07deb21f98cdd769beeea29",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><h2 id=\"step-4-osv-offline-reader\">Step 4 \u2014 OSV Offline Reader</h2></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "Kclp",
+      "code_hash": "e21fec08f53b6f960d950cce7f9d43fa",
+      "outputs": [
+        {
+          "type": "error",
+          "ename": "exception",
+          "evalue": "An ancestor raised an exception (KeyError): ",
+          "traceback": null
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "emfo",
+      "code_hash": "e4f42e3298b911c090bb062953703eb8",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><h2 id=\"step-5-network-egress-proof\">Step 5 \u2014 Network Egress Proof</h2></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "Hstk",
+      "code_hash": "140908bf83768033b098384571bd7419",
+      "outputs": [
+        {
+          "type": "error",
+          "ename": "exception",
+          "evalue": "An ancestor raised an exception (KeyError): ",
+          "traceback": null
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "nWHF",
+      "code_hash": "50d4d56b2c0ceb2b5c87880cfef64fe7",
+      "outputs": [
+        {
+          "type": "error",
+          "ename": "exception",
+          "evalue": "An ancestor raised an exception (KeyError): ",
+          "traceback": null
+        }
+      ],
+      "console": []
+    }
+  ]
+}

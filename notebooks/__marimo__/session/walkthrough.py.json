@@ -1,0 +1,401 @@
+{
+  "version": "1",
+  "metadata": {
+    "marimo_version": "0.23.6",
+    "script_metadata_hash": null
+  },
+  "cells": [
+    {
+      "id": "Hbol",
+      "code_hash": "1d0db38904205bec4d6f6f6a1f6cec3e",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/plain": ""
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "MJUe",
+      "code_hash": "47bef79f745c7b3e14913d80814b53cf",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><h1 id=\"acr-qa-automated-code-review-quality-assurance\">ACR-QA \u2014 Automated Code Review &amp; Quality Assurance</h1>\n<h3 id=\"thesis-defense-walkthrough-v380\">Thesis Defense Walkthrough \u00b7 v3.8.0</h3>\n<span class=\"paragraph\">This notebook demonstrates the <strong>full ACR-QA pipeline</strong> end-to-end:</span>\n<ol>\n<li>Load a target repository</li>\n<li>Static analysis (Semgrep + Bandit + Ruff + Gosec)</li>\n<li>Taint tracking (source \u2192 sink data-flow)</li>\n<li>AI triage (LLM-powered false-positive reduction)</li>\n<li>Auto-fix patch generation</li>\n<li>Supply-chain risk + SBOM</li>\n<li>Signed attestation (ECDSA-P256 + Dilithium3)</li>\n<li>Quality gate enforcement</li>\n</ol>\n<blockquote>\n<span class=\"paragraph\"><strong>Zero egress required.</strong> All LLM calls can be routed to local Ollama.</span>\n</blockquote></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "vblA",
+      "code_hash": "ffe504bb0ac24422fbc9b1c9e9356525",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><h2 id=\"cell-1-project-setup\">Cell 1 \u2014 Project Setup</h2></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "bkHC",
+      "code_hash": "f702d8d9db2b891af85d7d5db62d5667",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/plain": ""
+          }
+        }
+      ],
+      "console": [
+        {
+          "type": "stream",
+          "name": "stdout",
+          "text": "ACR-QA 3.8.0 loaded \u2713\nProject root: /home/ahmeed/Documents/KSIU/GRAD/SOLO\n",
+          "mimetype": "text/plain"
+        }
+      ]
+    },
+    {
+      "id": "lEQa",
+      "code_hash": "d3ff88564fdbb766839c059ea05f47ff",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><h2 id=\"cell-2-target-repository\">Cell 2 \u2014 Target Repository</h2></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "PKri",
+      "code_hash": "f14017810b02a2390025d8695a24a1f8",
+      "outputs": [
+        {
+          "type": "error",
+          "ename": "exception",
+          "evalue": "The option name '/home/ahmeed/Documents/KSIU/GRAD/SOLO/TESTS/samples/comprehensive-issues' is not a valid option. Please use one of the following options: ['Comprehensive Issues (built-in)', 'Realistic Issues (built-in)', 'Taint Fixtures (built-in)']",
+          "traceback": null
+        }
+      ],
+      "console": [
+        {
+          "type": "stream",
+          "name": "stderr",
+          "text": "<span class=\"codehilite\"><div class=\"highlight\"><pre><span></span><span class=\"gt\">Traceback (most recent call last):</span>\n  File <span class=\"nb\">&quot;/tmp/marimo_612628/__marimo__cell_PKri_.py&quot;</span>, line <span class=\"m\">10</span>, in <span class=\"n\">&lt;module&gt;</span>\n<span class=\"w\">    </span><span class=\"n\">target_dropdown</span> <span class=\"o\">=</span> <span class=\"n\">mo</span><span class=\"o\">.</span><span class=\"n\">ui</span><span class=\"o\">.</span><span class=\"n\">dropdown</span><span class=\"p\">(</span>\n  File <span class=\"nb\">&quot;/home/ahmeed/Documents/KSIU/GRAD/SOLO/.venv/lib/python3.10/site-packages/marimo/_plugins/ui/_impl/input.py&quot;</span>, line <span class=\"m\">1044</span>, in <span class=\"n\">__init__</span>\n<span class=\"w\">    </span><span class=\"nb\">super</span><span class=\"p\">()</span><span class=\"o\">.</span><span class=\"fm\">__init__</span><span class=\"p\">(</span>\n  File <span class=\"nb\">&quot;/home/ahmeed/Documents/KSIU/GRAD/SOLO/.venv/lib/python3.10/site-packages/marimo/_plugins/ui/_core/ui_element.py&quot;</span>, line <span class=\"m\">165</span>, in <span class=\"n\">__init__</span>\n<span class=\"w\">    </span><span class=\"bp\">self</span><span class=\"o\">.</span><span class=\"n\">_initialize</span><span class=\"p\">(</span><span class=\"bp\">self</span><span class=\"o\">.</span><span class=\"n\">_args</span><span class=\"p\">)</span>\n  File <span class=\"nb\">&quot;/home/ahmeed/Documents/KSIU/GRAD/SOLO/.venv/lib/python3.10/site-packages/marimo/_plugins/ui/_core/ui_element.py&quot;</span>, line <span class=\"m\">272</span>, in <span class=\"n\">_initialize</span>\n<span class=\"w\">    </span><span class=\"bp\">self</span><span class=\"o\">.</span><span class=\"n\">_value</span> <span class=\"o\">=</span> <span class=\"bp\">self</span><span class=\"o\">.</span><span class=\"n\">_initial_value</span> <span class=\"o\">=</span> <span class=\"bp\">self</span><span class=\"o\">.</span><span class=\"n\">_convert_value</span><span class=\"p\">(</span><span class=\"n\">initial_value</span><span class=\"p\">)</span>\n  File <span class=\"nb\">&quot;/home/ahmeed/Documents/KSIU/GRAD/SOLO/.venv/lib/python3.10/site-packages/marimo/_plugins/ui/_impl/input.py&quot;</span>, line <span class=\"m\">1070</span>, in <span class=\"n\">_convert_value</span>\n<span class=\"w\">    </span><span class=\"k\">raise</span> <span class=\"ne\">ValueError</span><span class=\"p\">(</span>\n<span class=\"gr\">ValueError</span>: <span class=\"n\">The option name &#39;/home/ahmeed/Documents/KSIU/GRAD/SOLO/TESTS/samples/comprehensive-issues&#39; is not a valid option. Please use one of the following options: [&#39;Comprehensive Issues (built-in)&#39;, &#39;Realistic Issues (built-in)&#39;, &#39;Taint Fixtures (built-in)&#39;]</span>\n</pre></div>\n</span>",
+          "mimetype": "application/vnd.marimo+traceback"
+        }
+      ]
+    },
+    {
+      "id": "Xref",
+      "code_hash": "ad95467c0b57b9b964a5e9c85b8c9040",
+      "outputs": [
+        {
+          "type": "error",
+          "ename": "exception",
+          "evalue": "An ancestor raised an exception (ValueError): ",
+          "traceback": null
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "SFPL",
+      "code_hash": "13657a2e120fd988ba6a990acc86c4c1",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><h2 id=\"cell-3-static-analysis-engine\">Cell 3 \u2014 Static Analysis Engine</h2></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "BYtC",
+      "code_hash": "20eb8b6129b25e83ad82d7664f8dbbdd",
+      "outputs": [
+        {
+          "type": "error",
+          "ename": "multiple-defs",
+          "evalue": "The variable 'sev' was defined by another cell",
+          "traceback": []
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "RGSE",
+      "code_hash": "202d8f2cd81d94d09163f3d588d494a9",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><h2 id=\"cell-4-findings-summary-table\">Cell 4 \u2014 Findings Summary Table</h2></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "Kclp",
+      "code_hash": "8fd635fd0ed364eeace3fd45d9d47713",
+      "outputs": [
+        {
+          "type": "error",
+          "ename": "exception",
+          "evalue": "An ancestor raised an exception (ValueError): ",
+          "traceback": null
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "emfo",
+      "code_hash": "301da13b182c25d2210b419a9dc79d94",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><h2 id=\"cell-5-taint-analysis-engine\">Cell 5 \u2014 Taint Analysis Engine</h2></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "Hstk",
+      "code_hash": "20d49cd3796cb497659ae26b0aba7746",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/plain": ""
+          }
+        }
+      ],
+      "console": [
+        {
+          "type": "stream",
+          "name": "stdout",
+          "text": "Taint findings: 2\n[DEMO MODE] Taint analyzer demo:\n  Source : request.args.get('user_id')  [HTTP query param]\n  Hop 1  : user_id passed to format_query()\n  Hop 2  : format_query() returns f-string SQL\n  Sink   : db.execute(sql)  [SQL execution]\n  Verdict: TAINTED \u2014 no sanitizer in path \u2717\n",
+          "mimetype": "text/plain"
+        }
+      ]
+    },
+    {
+      "id": "nWHF",
+      "code_hash": "bda637626fa3685e0cd85b0b11ab95ea",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><h3 id=\"taint-flow-diagram\">Taint Flow Diagram</h3>\n<div class=\"language-tsql codehilite\"><pre><span></span><code><span class=\"o\">[</span><span class=\"n\">SOURCE</span><span class=\"o\">]</span><span class=\"w\"> </span><span class=\"n\">request</span><span class=\"p\">.</span><span class=\"n\">args</span><span class=\"p\">.</span><span class=\"k\">get</span><span class=\"p\">(</span><span class=\"s1\">&#39;user_id&#39;</span><span class=\"p\">)</span>\n<span class=\"w\">     </span><span class=\"err\">\u2502</span><span class=\"w\">  </span><span class=\"n\">HTTP</span><span class=\"w\"> </span><span class=\"n\">query</span><span class=\"w\"> </span><span class=\"k\">parameter</span><span class=\"w\"> </span><span class=\"err\">\u2014</span><span class=\"w\"> </span><span class=\"n\">attacker</span><span class=\"w\"> </span><span class=\"n\">controlled</span>\n<span class=\"w\">     </span><span class=\"err\">\u25bc</span>\n<span class=\"o\">[</span><span class=\"n\">HOP 1</span><span class=\"o\">]</span><span class=\"w\"> </span><span class=\"nf\">user_id</span><span class=\"w\"> </span><span class=\"err\">\u2500\u2500\u25ba</span><span class=\"w\"> </span><span class=\"n\">format_query</span><span class=\"p\">(</span><span class=\"nf\">user_id</span><span class=\"p\">)</span>\n<span class=\"w\">     </span><span class=\"err\">\u2502</span><span class=\"w\">  </span><span class=\"n\">String</span><span class=\"w\"> </span><span class=\"n\">interpolation</span><span class=\"p\">,</span><span class=\"w\"> </span><span class=\"k\">no</span><span class=\"w\"> </span><span class=\"n\">sanitization</span>\n<span class=\"w\">     </span><span class=\"err\">\u25bc</span>\n<span class=\"o\">[</span><span class=\"n\">HOP 2</span><span class=\"o\">]</span><span class=\"w\"> </span><span class=\"k\">sql</span><span class=\"w\"> </span><span class=\"o\">=</span><span class=\"w\"> </span><span class=\"n\">f</span><span class=\"ss\">&quot;SELECT * FROM users WHERE id={user_id}&quot;</span>\n<span class=\"w\">     </span><span class=\"err\">\u2502</span><span class=\"w\">  </span><span class=\"n\">Tainted</span><span class=\"w\"> </span><span class=\"n\">string</span><span class=\"w\"> </span><span class=\"n\">construction</span>\n<span class=\"w\">     </span><span class=\"err\">\u25bc</span>\n<span class=\"o\">[</span><span class=\"n\">SINK</span><span class=\"o\">]</span><span class=\"w\">  </span><span class=\"n\">db</span><span class=\"p\">.</span><span class=\"k\">execute</span><span class=\"p\">(</span><span class=\"k\">sql</span><span class=\"p\">)</span><span class=\"w\">   </span><span class=\"err\">\u2190</span><span class=\"w\"> </span><span class=\"k\">SQL</span><span class=\"w\"> </span><span class=\"n\">INJECTION</span><span class=\"w\"> </span><span class=\"err\">\u2717</span>\n</code></pre></div>\n<span class=\"paragraph\"><strong>Confidence:</strong> 0.87 \u00b7 <strong>Engine:</strong> TaintAnalyzer v3.6.3</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "iLit",
+      "code_hash": "515b39d26f14b6936eee262e2411bd28",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><h2 id=\"cell-6-ai-triage-agent\">Cell 6 \u2014 AI Triage Agent</h2></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "ZHCJ",
+      "code_hash": "8e8ef9afd80b4e9714958833de9e8e85",
+      "outputs": [
+        {
+          "type": "error",
+          "ename": "exception",
+          "evalue": "An ancestor raised an exception (ValueError): ",
+          "traceback": null
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "ROlb",
+      "code_hash": "00dbfb0cff5ec14019f52a10663da858",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><h2 id=\"cell-7-auto-fix-patch-generator\">Cell 7 \u2014 Auto-Fix Patch Generator</h2></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "qnkX",
+      "code_hash": "b7b8485e61432b7e048eb1c881b4af21",
+      "outputs": [
+        {
+          "type": "error",
+          "ename": "multiple-defs",
+          "evalue": "The variable 'engine' was defined by another cell",
+          "traceback": []
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "TqIu",
+      "code_hash": "dd94c28dc113e2b182d62083ef2b4ed5",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><h2 id=\"cell-8-supply-chain-analysis\">Cell 8 \u2014 Supply Chain Analysis</h2></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "Vxnm",
+      "code_hash": "4e284f64133d3ee8cb2bee057566cde3",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/plain": ""
+          }
+        }
+      ],
+      "console": [
+        {
+          "type": "stream",
+          "name": "stdout",
+          "text": "[DEMO MODE] Supply chain analysis:\n  Total dependencies: 47\n  HIGH risk: 2  (CVE-2024-3094 in xz-utils, CVE-2023-44487 in h2)\n  MEDIUM risk: 8\n  LOW risk: 37\n  Archived packages: 1  (unmaintained)\n  SBOM format: CycloneDX 1.4 JSON\n",
+          "mimetype": "text/plain"
+        }
+      ]
+    },
+    {
+      "id": "DnEU",
+      "code_hash": "4f508dff78f46329efa07bec3b6044cd",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><h2 id=\"cell-9-signed-attestation\">Cell 9 \u2014 Signed Attestation</h2></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "ulZA",
+      "code_hash": "4534e6c6743a3b7bcbecc538fa3bf948",
+      "outputs": [
+        {
+          "type": "error",
+          "ename": "multiple-defs",
+          "evalue": "The variable 'engine' was defined by another cell",
+          "traceback": []
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "ecfG",
+      "code_hash": "e2cffa6de92e8603993c83c096d04625",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><h2 id=\"cell-10-quality-gate\">Cell 10 \u2014 Quality Gate</h2></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "Pvdt",
+      "code_hash": "e6a4cff8660ed39bb2c8309622d464f0",
+      "outputs": [
+        {
+          "type": "error",
+          "ename": "multiple-defs",
+          "evalue": "The variable 'sev' was defined by another cell",
+          "traceback": []
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "ZBYS",
+      "code_hash": "244d60590284cdb41d222dafff57e089",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><h2 id=\"cell-11-performance-metrics\">Cell 11 \u2014 Performance Metrics</h2></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "aLJB",
+      "code_hash": "92fb6840ed9bbcb10b6cd3cb78c8d8fc",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><h3 id=\"benchmark-results-v380\">Benchmark Results (v3.8.0)</h3>\n<table>\n<thead>\n<tr>\n<th>Metric</th>\n<th>Value</th>\n<th>Target</th>\n</tr>\n</thead>\n<tbody>\n<tr>\n<td>Flask app recall</td>\n<td><strong>98.0%</strong></td>\n<td>\u2265 80%</td>\n</tr>\n<tr>\n<td>httpx recall</td>\n<td><strong>97.7%</strong></td>\n<td>\u2265 80%</td>\n</tr>\n<tr>\n<td>False-positive rate</td>\n<td><strong>1.0%</strong></td>\n<td>\u2264 5%</td>\n</tr>\n<tr>\n<td>Triage FP reduction</td>\n<td><strong>-43%</strong></td>\n<td>\u2014</td>\n</tr>\n<tr>\n<td>Scan latency (50k LOC)</td>\n<td><strong>&lt; 8s</strong></td>\n<td>&lt; 10s</td>\n</tr>\n<tr>\n<td>Total tests</td>\n<td><strong>2,170</strong></td>\n<td>\u2265 2,000</td>\n</tr>\n<tr>\n<td>Test coverage</td>\n<td><strong>89%</strong></td>\n<td>\u2265 85%</td>\n</tr>\n</tbody>\n</table>\n<blockquote>\n<span class=\"paragraph\">Benchmarked against: DVWA, DVPWA, PyGoat, Juice Shop, DVNA,\nNodeGoat, Tiredful-API, bandit-test-cases, vulnerable-flask-app, seeded-repo</span>\n</blockquote></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "nHfw",
+      "code_hash": "7d4c7964ae3163b4f994e654c60ba0c1",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><h2 id=\"cell-12-architecture-summary\">Cell 12 \u2014 Architecture Summary</h2></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "xXTn",
+      "code_hash": "9fa58a2fbe62cd688909eb1e5377f232",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><h3 id=\"acr-qa-system-architecture\">ACR-QA System Architecture</h3>\n<div class=\"language-text codehilite\"><pre><span></span><code>\u250c\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2510\n\u2502                    ACR-QA v3.8.0                        \u2502\n\u251c\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2524\n\u2502  LAYER 1 \u2014 Static Analysis                              \u2502\n\u2502  Semgrep \u00b7 Bandit \u00b7 Ruff \u00b7 Gosec \u00b7 Vulture \u00b7 ESLint     \u2502\n\u2502                                                         \u2502\n\u2502  LAYER 2 \u2014 Deep Analysis Engines                        \u2502\n\u2502  TaintAnalyzer  \u00b7 PathFeasibility \u00b7 ReachabilityEngine  \u2502\n\u2502  ExploitVerifier \u00b7 SupplyChainEngine \u00b7 SecretsDetector  \u2502\n\u2502                                                         \u2502\n\u2502  LAYER 3 \u2014 AI Layer                                     \u2502\n\u2502  Explainer \u00b7 TriageAgent \u00b7 AutoFixEngine                \u2502\n\u2502  OllamaProvider (offline) \u00b7 OpenAI / Anthropic          \u2502\n\u2502                                                         \u2502\n\u2502  LAYER 4 \u2014 Trust &amp; Compliance                           \u2502\n\u2502  AttestationEngine (ECDSA-P256 + Dilithium3)            \u2502\n\u2502  QualityGate \u00b7 ComplianceMapper (OWASP Top 10)          \u2502\n\u2502                                                         \u2502\n\u2502  LAYER 5 \u2014 Data &amp; API                                   \u2502\n\u2502  PostgreSQL \u00b7 Redis \u00b7 Celery \u00b7 FastAPI \u00b7 React SPA      \u2502\n\u2514\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2518\n</code></pre></div>\n<span class=\"paragraph\"><strong>5 core engines</strong> \u00b7 <strong>9 DB migrations</strong> \u00b7 <strong>2,170 tests</strong> \u00b7\n<strong>87/128 GOD_MODE_PLAN tasks complete</strong></span></span>"
+          }
+        }
+      ],
+      "console": []
+    }
+  ]
+}

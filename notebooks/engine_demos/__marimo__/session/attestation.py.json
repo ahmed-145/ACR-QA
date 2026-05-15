@@ -1,0 +1,198 @@
+{
+  "version": "1",
+  "metadata": {
+    "marimo_version": "0.23.6",
+    "script_metadata_hash": null
+  },
+  "cells": [
+    {
+      "id": "Hbol",
+      "code_hash": "1d0db38904205bec4d6f6f6a1f6cec3e",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/plain": ""
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "MJUe",
+      "code_hash": "d7f57d4eb36a34aa7653a738ffb63257",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><h1 id=\"attestation-engine-engine-demo\">Attestation Engine \u2014 Engine Demo</h1>\n<h3 id=\"acr-qa-v380-defense-exhibit-d\">ACR-QA v3.8.0 \u00b7 Defense Exhibit D</h3>\n<span class=\"paragraph\">The <strong>AttestationEngine</strong> (v3.6.0) produces <strong>cryptographically signed provenance bundles</strong>\nfor every scan run. This lets any downstream consumer verify:</span>\n<ul>\n<li><em>Which</em> findings were produced</li>\n<li><em>When</em> the scan ran</li>\n<li><em>That the output has not been tampered with</em></li>\n</ul>\n<span class=\"paragraph\"><strong>Signature scheme:</strong> Hybrid ECDSA-P256 + Dilithium3 (post-quantum)</span>\n<span class=\"paragraph\">The bundle is stored in <code>DATA/provenance/</code> and served via\n<code>GET /v1/runs/{run_id}/attestation</code>.</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "vblA",
+      "code_hash": "0e45f09a849501d85bbad6aa92a21f0b",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><h2 id=\"step-1-generate-an-attestation-bundle\">Step 1 \u2014 Generate an Attestation Bundle</h2></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "bkHC",
+      "code_hash": "2ac6fe8b9a4bb0185fa37f239bf67b02",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/plain": ""
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "lEQa",
+      "code_hash": "fb1f60fb622e816ac74fae3a2f0abb03",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/html": "<marimo-ui-element object-id='lEQa-0' random-id='1683fd53-eb4f-0e7b-befe-589cc5f8697e'><marimo-slider data-initial-value='42' data-label='&quot;&lt;span class=&#92;&quot;markdown prose dark:prose-invert contents&#92;&quot;&gt;&lt;span class=&#92;&quot;paragraph&#92;&quot;&gt;Simulated run ID&lt;/span&gt;&lt;/span&gt;&quot;' data-start='1' data-stop='999' data-steps='[]' data-debounce='false' data-disabled='false' data-orientation='&quot;horizontal&quot;' data-show-value='false' data-include-input='false' data-full-width='false'></marimo-slider></marimo-ui-element>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "PKri",
+      "code_hash": "51c152944150071ffdc9da1ba395808c",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/plain": ""
+          }
+        }
+      ],
+      "console": [
+        {
+          "type": "stream",
+          "name": "stdout",
+          "text": "Bundle generated (live engine):\n{\n  \"attestation\": {\n    \"run_id\": 42,\n    \"repo_name\": \"demo-service\",\n    \"findings_count\": 5,\n    \"high_count\": 2,\n    \"medium_count\": 2,\n    \"low_count\": 1,\n    \"tool_versions\": {\n      \"semgrep\": \"1.45.0\",\n      \"bandit\": \"1.7.5\",\n      \"ruff\": \"0.6.0\"\n    }\n  },\n  \"signatures\": [\n    {\n      \"algorithm\": \"ECDSA-P256\",\n      \"signature\": \"304502200664182d06808eb97e421d950eaddd97c14eac82452f85c3d35aa84dabbd7bfe02210087ab01084d3a6220a1a31e8d8f8649c21b90f17e262d2b6a5721176279ecae6c\",\n      \"key_id\": \"1481063473243f04\"\n    },\n    {\n      \"algorithm\": \"Dilithium3\",\n      \"signature\": \"959793b6\n",
+          "mimetype": "text/plain"
+        }
+      ]
+    },
+    {
+      "id": "Xref",
+      "code_hash": "f5b6d09a2c8d651f440a1b82b03ea048",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><h2 id=\"step-2-bundle-contents\">Step 2 \u2014 Bundle Contents</h2></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "SFPL",
+      "code_hash": "2d6b1151f2fbce1a8cbe417b6f6d158b",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/html": "<marimo-ui-element object-id='SFPL-0' random-id='24c11f99-f5fb-310c-b206-1bc85213280e'><marimo-table data-initial-value='[]' data-label='&quot;&lt;span class=&#92;&quot;markdown prose dark:prose-invert contents&#92;&quot;&gt;&lt;span class=&#92;&quot;paragraph&#92;&quot;&gt;Attestation Bundle Fields&lt;/span&gt;&lt;/span&gt;&quot;' data-data='&quot;[{&#92;&quot;Field&#92;&quot;:&#92;&quot;attestation&#92;&quot;,&#92;&quot;Value&#92;&quot;:&#92;&quot;{&#x27;run_id&#x27;: 42, &#x27;repo_name&#x27;: &#x27;demo-service&#x27;, &#x27;findings_count&#x27;: 5, &#x27;high_count&#x27;: 2&#92;&quot;},{&#92;&quot;Field&#92;&quot;:&#92;&quot;signatures&#92;&quot;,&#92;&quot;Value&#92;&quot;:&#92;&quot;[{&#x27;algorithm&#x27;: &#x27;ECDSA-P256&#x27;, &#x27;signature&#x27;: &#x27;304502200664182d06808eb97e421d950eadd&#92;&quot;}]&quot;' data-total-rows='2' data-total-columns='2' data-max-columns='50' data-banner-text='&quot;&quot;' data-pagination='false' data-page-size='10' data-selection='&quot;multi&quot;' data-show-filters='false' data-show-download='true' data-show-column-summaries='false' data-show-data-types='true' data-show-page-size-selector='false' data-show-column-explorer='true' data-show-chart-builder='true' data-row-headers='[]' data-has-stable-row-id='false' data-lazy='false' data-preload='false'></marimo-table></marimo-ui-element>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "BYtC",
+      "code_hash": "7f65b6b3b86635bd0319433b0ed7d776",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><h2 id=\"step-3-verify-the-bundle\">Step 3 \u2014 Verify the Bundle</h2></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "RGSE",
+      "code_hash": "c7e5e51ceb6a6507dc0ef2c09319d7a5",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/html": "<marimo-callout-output data-html='&quot;&lt;span class=&#92;&quot;markdown prose dark:prose-invert contents&#92;&quot;&gt;&lt;span class=&#92;&quot;paragraph&#92;&quot;&gt;&lt;strong&gt;Verification result: \u274c INVALID&lt;/strong&gt;&lt;/span&gt;&#92;n&lt;span class=&#92;&quot;paragraph&#92;&quot;&gt;The signature matches the findings hash \u2014 the scan output has not been&#92;ntampered with since it was produced.&lt;/span&gt;&#92;n&lt;div class=&#92;&quot;language-scdoc codehilite&#92;&quot;&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;code&gt;python3 /home/ahmeed/Documents/KSIU/GRAD/SOLO/verify_attestation.py --run None&#92;n&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/span&gt;&quot;' data-kind='&quot;danger&quot;'></marimo-callout-output>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "Kclp",
+      "code_hash": "67497842765abf3df72334c39ea9aa8d",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><h2 id=\"step-4-tamper-demonstration\">Step 4 \u2014 Tamper Demonstration</h2></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "emfo",
+      "code_hash": "4474d2e8531d504bab93d17fceb95658",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/html": "<marimo-callout-output data-html='&quot;&lt;span class=&#92;&quot;markdown prose dark:prose-invert contents&#92;&quot;&gt;&lt;span class=&#92;&quot;paragraph&#92;&quot;&gt;&lt;strong&gt;Tampered bundle verification: \u274c INVALID \u2014 tampering detected!&lt;/strong&gt;&lt;/span&gt;&#92;n&lt;span class=&#92;&quot;paragraph&#92;&quot;&gt;Modification: &lt;code&gt;findings_count&lt;/code&gt; changed from 5 \u2192 0&lt;/span&gt;&#92;n&lt;span class=&#92;&quot;paragraph&#92;&quot;&gt;The cryptographic signature covers the &lt;strong&gt;SHA-256 hash of the full findings set&lt;/strong&gt;.&#92;nAny change to the findings invalidates the signature \u2014 even removing a single LOW finding.&lt;/span&gt;&lt;/span&gt;&quot;' data-kind='&quot;danger&quot;'></marimo-callout-output>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "Hstk",
+      "code_hash": "1b40b135d9f010775a3998834ebec790",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><h2 id=\"step-5-why-post-quantum-hybrid\">Step 5 \u2014 Why Post-Quantum Hybrid?</h2></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "nWHF",
+      "code_hash": "91e5121fa6fa4072f2329859e0a0d02e",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><h3 id=\"ecdsa-p256-alone-is-not-future-proof\">ECDSA-P256 alone is not future-proof</h3>\n<span class=\"paragraph\">NIST projects that <strong>Shor's algorithm on a cryptographically-relevant quantum computer</strong>\ncould break ECDSA within 10\u201315 years. For compliance-driven security tooling where\nattestation records may need to remain valid for years (audit trails, CI artifacts),\nthis matters.</span>\n<span class=\"paragraph\">ACR-QA uses a <strong>hybrid scheme</strong>:</span>\n<table>\n<thead>\n<tr>\n<th>Component</th>\n<th>Algorithm</th>\n<th>Quantum-safe?</th>\n</tr>\n</thead>\n<tbody>\n<tr>\n<td>Primary sig</td>\n<td>ECDSA-P256</td>\n<td>\u2717 (classical)</td>\n</tr>\n<tr>\n<td>Secondary sig</td>\n<td>Dilithium3 (CRYSTALS)</td>\n<td>\u2705 NIST PQC standard</td>\n</tr>\n<tr>\n<td>Hash</td>\n<td>SHA-256</td>\n<td>\u2705 (Grover's gives 128-bit)</td>\n</tr>\n</tbody>\n</table>\n<span class=\"paragraph\">A verifier accepts the bundle if <strong>either</strong> signature is valid today,\nand <strong>only the Dilithium3</strong> signature if P-256 is later broken.</span>\n<blockquote>\n<span class=\"paragraph\"><strong>Thesis claim:</strong> ACR-QA is the only open-source SAST tool\nwith post-quantum hybrid attestation as of v3.6.0.</span>\n</blockquote></span>"
+          }
+        }
+      ],
+      "console": []
+    }
+  ]
+}

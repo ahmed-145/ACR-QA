@@ -1442,7 +1442,7 @@ That's the headline. That's what gets the blog post on Hacker News and the paper
 
 ---
 
-> ## ✅ COMPLETED: **Phase 6 — Dashboard PRO Rebuild (React + shadcn + Vite)** · ➡️ NEXT: **Phase 7 — Marimo Notebook**
+> ## ✅ COMPLETED: **Phase 7 — Marimo Notebook** · ➡️ NEXT: **Phase 9 — Third-Party Audit**
 >
 > Phase order (authoritative): **0 → 9 → 1 → 2 → 6 → 3 → 4 → 5 → 7 → 10 → 11 → 8 → 12**
 >
@@ -1556,13 +1556,13 @@ That's the headline. That's what gets the blog post on Hacker News and the paper
 
 ## Phase 7 — Marimo Notebook (defense weapon)
 
-- [ ] **7.1** `notebooks/walkthrough.py` — 12-cell pipeline demo
-- [ ] **7.2** `notebooks/engine_demos/taint.py`
-- [ ] **7.3** `notebooks/engine_demos/exploit.py`
-- [ ] **7.4** `notebooks/engine_demos/attestation.py`
-- [ ] **7.5** `notebooks/engine_demos/offline.py` — proves zero-egress
-- [ ] **7.6** Export static HTML → `docs/walkthrough.html`
-- [ ] **7.7** README link + thesis-defense rehearsal pass
+- [x] **7.1** `notebooks/walkthrough.py` — 12-cell pipeline demo
+- [x] **7.2** `notebooks/engine_demos/taint.py`
+- [x] **7.3** `notebooks/engine_demos/exploit.py`
+- [x] **7.4** `notebooks/engine_demos/attestation.py`
+- [x] **7.5** `notebooks/engine_demos/offline.py` — proves zero-egress
+- [x] **7.6** Export static HTML → `docs/walkthrough.html`
+- [x] **7.7** README link + thesis-defense rehearsal pass
 
 ## Phase 8 — Evaluation Expansion (4 → 10 repos)
 
@@ -1632,13 +1632,13 @@ Phase 3  — AI Triage Agent         [ ███████ ]  7/7 ✅
 Phase 4  — Auto-Fix Patch          [ ████ ]  4/4 ✅
 Phase 5  — Supply Chain            [ ████████ ]  8/8 ✅
 Phase 6  — Dashboard React/shadcn  [ █████████████████████████████ ]  29/29 ✅
-Phase 7  — Marimo Notebook         [ ▱▱▱▱▱▱▱ ]  0/7
+Phase 7  — Marimo Notebook         [ ███████ ]  7/7 ✅
 Phase 8  — Eval Expansion          [ ████████████ ]  13/13 ✅
 Phase 9  — Third-Party Audit       [ ▱▱▱▱▱▱▱ ]  0/7
 Phase 10 — Testing Layers          [ ▱▱▱▱▱▱▱▱ ]  0/8
 Phase 11 — Closeout                [ ▱▱▱▱▱▱▱▱▱▱▱▱▱▱ ]  0/14
 
-OVERALL: 87/128 tasks · 68% complete · ➡️ NEXT: Phase 7 (Marimo Notebook)
+OVERALL: 94/128 tasks · 73% complete · ➡️ NEXT: Phase 9 (Third-Party Audit)
 ```
 
 ## 13.2 THE Execution Order (authoritative — do exactly this)

@@ -1,0 +1,205 @@
+{
+  "version": "1",
+  "metadata": {
+    "marimo_version": "0.23.6",
+    "script_metadata_hash": null
+  },
+  "cells": [
+    {
+      "id": "Hbol",
+      "code_hash": "1d0db38904205bec4d6f6f6a1f6cec3e",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/plain": ""
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "MJUe",
+      "code_hash": "9a123c1089e912ffc1564b4fe5a497d6",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><h1 id=\"taint-analyzer-engine-demo\">Taint Analyzer \u2014 Engine Demo</h1>\n<h3 id=\"acr-qa-v380-defense-exhibit-b\">ACR-QA v3.8.0 \u00b7 Defense Exhibit B</h3>\n<span class=\"paragraph\">The <strong>TaintAnalyzer</strong> performs intra-procedural data-flow analysis using\na single-pass AST visitor. It tracks user-controlled data from HTTP/env\n<em>sources</em> to dangerous <em>sinks</em>, propagating taint through variable\nassignments, function arguments, and string operations.</span>\n<span class=\"paragraph\"><strong>Capabilities:</strong></span>\n<ul>\n<li>30 source patterns (Flask/Django/FastAPI request objects, env vars, CLI args)</li>\n<li>15 sink categories (SQL execution, OS commands, file writes, eval, pickle)</li>\n<li>8 sanitizer patterns (parameterization, escaping, validation)</li>\n<li>Multi-hop propagation: <code>request.args</code> \u2192 intermediate var \u2192 sink</li>\n</ul></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "vblA",
+      "code_hash": "c8a7ff37f22ceec9b5cacddd0f4ef2ba",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><h2 id=\"step-1-load-fixture-files\">Step 1 \u2014 Load Fixture Files</h2></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "bkHC",
+      "code_hash": "177f5c87196434a2f00a63a8f09a83db",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/plain": ""
+          }
+        }
+      ],
+      "console": [
+        {
+          "type": "stream",
+          "name": "stdout",
+          "text": "Fixture files:\n  \u2713 direct_sqli.py\n  \u2713 multihop_sqli.py\n  \u2713 fstring_eval.py\n  \u2713 clean.py\n",
+          "mimetype": "text/plain"
+        }
+      ]
+    },
+    {
+      "id": "lEQa",
+      "code_hash": "9afe8846c5742c0d1184ad30afc5311b",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><h2 id=\"step-2-choose-a-fixture\">Step 2 \u2014 Choose a Fixture</h2></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "PKri",
+      "code_hash": "e1514bf1a9cee9f9d7240e33ae6ad8d6",
+      "outputs": [
+        {
+          "type": "error",
+          "ename": "exception",
+          "evalue": "'/home/ahmeed/Documents/KSIU/GRAD/SOLO/TESTS/fixtures/taint/direct_sqli.py'",
+          "traceback": null
+        }
+      ],
+      "console": [
+        {
+          "type": "stream",
+          "name": "stderr",
+          "text": "<span class=\"codehilite\"><div class=\"highlight\"><pre><span></span><span class=\"gt\">Traceback (most recent call last):</span>\n  File <span class=\"nb\">&quot;/tmp/marimo_612888/__marimo__cell_PKri_.py&quot;</span>, line <span class=\"m\">3</span>, in <span class=\"n\">&lt;module&gt;</span>\n<span class=\"w\">    </span><span class=\"n\">fixture_select</span> <span class=\"o\">=</span> <span class=\"n\">mo</span><span class=\"o\">.</span><span class=\"n\">ui</span><span class=\"o\">.</span><span class=\"n\">radio</span><span class=\"p\">(</span>\n  File <span class=\"nb\">&quot;/home/ahmeed/Documents/KSIU/GRAD/SOLO/.venv/lib/python3.10/site-packages/marimo/_plugins/ui/_impl/input.py&quot;</span>, line <span class=\"m\">684</span>, in <span class=\"n\">__init__</span>\n<span class=\"w\">    </span><span class=\"nb\">super</span><span class=\"p\">()</span><span class=\"o\">.</span><span class=\"fm\">__init__</span><span class=\"p\">(</span>\n  File <span class=\"nb\">&quot;/home/ahmeed/Documents/KSIU/GRAD/SOLO/.venv/lib/python3.10/site-packages/marimo/_plugins/ui/_core/ui_element.py&quot;</span>, line <span class=\"m\">165</span>, in <span class=\"n\">__init__</span>\n<span class=\"w\">    </span><span class=\"bp\">self</span><span class=\"o\">.</span><span class=\"n\">_initialize</span><span class=\"p\">(</span><span class=\"bp\">self</span><span class=\"o\">.</span><span class=\"n\">_args</span><span class=\"p\">)</span>\n  File <span class=\"nb\">&quot;/home/ahmeed/Documents/KSIU/GRAD/SOLO/.venv/lib/python3.10/site-packages/marimo/_plugins/ui/_core/ui_element.py&quot;</span>, line <span class=\"m\">272</span>, in <span class=\"n\">_initialize</span>\n<span class=\"w\">    </span><span class=\"bp\">self</span><span class=\"o\">.</span><span class=\"n\">_value</span> <span class=\"o\">=</span> <span class=\"bp\">self</span><span class=\"o\">.</span><span class=\"n\">_initial_value</span> <span class=\"o\">=</span> <span class=\"bp\">self</span><span class=\"o\">.</span><span class=\"n\">_convert_value</span><span class=\"p\">(</span><span class=\"n\">initial_value</span><span class=\"p\">)</span>\n  File <span class=\"nb\">&quot;/home/ahmeed/Documents/KSIU/GRAD/SOLO/.venv/lib/python3.10/site-packages/marimo/_plugins/ui/_impl/input.py&quot;</span>, line <span class=\"m\">705</span>, in <span class=\"n\">_convert_value</span>\n<span class=\"w\">    </span><span class=\"k\">return</span> <span class=\"bp\">self</span><span class=\"o\">.</span><span class=\"n\">options</span><span class=\"p\">[</span><span class=\"n\">value</span><span class=\"p\">]</span> <span class=\"k\">if</span> <span class=\"n\">value</span> <span class=\"ow\">is</span> <span class=\"ow\">not</span> <span class=\"kc\">None</span> <span class=\"k\">else</span> <span class=\"kc\">None</span>\n<span class=\"gr\">KeyError</span>: <span class=\"n\">&#39;/home/ahmeed/Documents/KSIU/GRAD/SOLO/TESTS/fixtures/taint/direct_sqli.py&#39;</span>\n</pre></div>\n</span>",
+          "mimetype": "application/vnd.marimo+traceback"
+        }
+      ]
+    },
+    {
+      "id": "Xref",
+      "code_hash": "f9ef483be00a404430276777729d898f",
+      "outputs": [
+        {
+          "type": "error",
+          "ename": "exception",
+          "evalue": "An ancestor raised an exception (KeyError): ",
+          "traceback": null
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "SFPL",
+      "code_hash": "c80f29c10d162397647f712d3433cb6c",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><h2 id=\"step-3-run-taint-analysis\">Step 3 \u2014 Run Taint Analysis</h2></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "BYtC",
+      "code_hash": "6c0f54b027c2355256ac7be990ae6ea5",
+      "outputs": [
+        {
+          "type": "error",
+          "ename": "exception",
+          "evalue": "An ancestor raised an exception (KeyError): ",
+          "traceback": null
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "RGSE",
+      "code_hash": "ce62ae1a0009828c56126b656d3739cb",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><h2 id=\"step-4-results\">Step 4 \u2014 Results</h2></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "Kclp",
+      "code_hash": "c75260ba83b4a6d323cacb512c37197b",
+      "outputs": [
+        {
+          "type": "error",
+          "ename": "exception",
+          "evalue": "An ancestor raised an exception (KeyError): ",
+          "traceback": null
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "emfo",
+      "code_hash": "dec6334b6639cd7e63269bc016144cb0",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><h2 id=\"step-5-taint-flow-visualisation\">Step 5 \u2014 Taint Flow Visualisation</h2></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "Hstk",
+      "code_hash": "51562f6ddf6bf4460673c4a4addc0c88",
+      "outputs": [
+        {
+          "type": "error",
+          "ename": "exception",
+          "evalue": "An ancestor raised an exception (KeyError): ",
+          "traceback": null
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "nWHF",
+      "code_hash": "e01b647b553c55edbf0a7093e151ad87",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><h2 id=\"step-6-why-taint-analysis-matters\">Step 6 \u2014 Why Taint Analysis Matters</h2>\n<span class=\"paragraph\">Traditional SAST tools produce <strong>binary yes/no</strong> results per line.\nThe TaintAnalyzer adds:</span>\n<table>\n<thead>\n<tr>\n<th>Feature</th>\n<th>Traditional SAST</th>\n<th>ACR-QA TaintAnalyzer</th>\n</tr>\n</thead>\n<tbody>\n<tr>\n<td>Data-flow tracking</td>\n<td>\u2717</td>\n<td>\u2713 multi-hop</td>\n</tr>\n<tr>\n<td>False positive rate</td>\n<td>~15\u201325%</td>\n<td>~1\u20135%</td>\n</tr>\n<tr>\n<td>Sanitizer awareness</td>\n<td>partial</td>\n<td>\u2713 8 patterns</td>\n</tr>\n<tr>\n<td>Triage integration</td>\n<td>\u2717</td>\n<td>\u2713 confidence delta</td>\n</tr>\n<tr>\n<td>JSON taint path</td>\n<td>\u2717</td>\n<td>\u2713 stored in DB</td>\n</tr>\n</tbody>\n</table>\n<span class=\"paragraph\">The taint path is persisted to PostgreSQL and surfaced in the dashboard\nas an interactive <strong>flow graph</strong> (React + SVG arrows).</span></span>"
+          }
+        }
+      ],
+      "console": []
+    }
+  ]
+}
