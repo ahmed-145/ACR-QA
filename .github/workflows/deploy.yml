@@ -1,8 +1,10 @@
 # =============================================================================
-# ACR-QA — Production Deploy (Railway)
+# ACR-QA — Production Health Gate
 # =============================================================================
-# Auto-deploys to Railway production on every push to main.
-# Requires: RAILWAY_TOKEN secret set in repo Settings → Secrets.
+# Railway auto-deploys on every push to main via its GitHub integration.
+# This workflow just waits for the production URL to become healthy after
+# each push, acting as a deployment smoke-test gate.
+# Requires: RAILWAY_PRODUCTION_URL secret set in repo Settings → Secrets.
 # =============================================================================
 
 name: Deploy to Production
@@ -21,35 +23,19 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Install Railway CLI
-        run: npm install -g @railway/cli
-
-      - name: Deploy to production
+      - name: Wait for Railway health check
         run: |
-          railway up \
-            --service acr-qa \
-            --environment production \
-            --detach
-        env:
-          RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
-
-      - name: Wait for health check
-        run: |
-          echo "Waiting for deployment to become healthy..."
-          for i in $(seq 1 24); do
+          echo "Waiting for Railway deployment to become healthy..."
+          sleep 30
+          for i in $(seq 1 30); do
             STATUS=$(curl -sf "${{ secrets.RAILWAY_PRODUCTION_URL }}/health" \
               -o /dev/null -w "%{http_code}" 2>/dev/null || echo "000")
             if [ "$STATUS" = "200" ]; then
-              echo "✅ Deployment healthy (attempt $i)"
+              echo "Deployment healthy (attempt $i)"
               exit 0
             fi
-            echo "⏳ Attempt $i/24 — status $STATUS, retrying in 10s..."
+            echo "Attempt $i/30 — status $STATUS, retrying in 10s..."
             sleep 10
           done
-          echo "❌ Health check timed out after 4 minutes"
+          echo "Health check timed out after ~5 minutes"
           exit 1
-        env:
-          RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
