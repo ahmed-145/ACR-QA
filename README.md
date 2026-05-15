@@ -6,7 +6,8 @@
 *10 static analysis tools. One canonical schema. RAG-enhanced AI explanations. $0 recurring cost.*
 
 [![Python 3.11+](https://img.shields.io/badge/Python-3.11+-3776ab?logo=python&logoColor=white)](https://www.python.org/)
-[![Version](https://img.shields.io/badge/Version-3.8.0-blue)](docs/CHANGELOG.md)
+[![Version](https://img.shields.io/badge/Version-3.9.6-blue)](docs/CHANGELOG.md)
+[![Live](https://img.shields.io/badge/Live-acrqa--api--production.up.railway.app-22c55e?logo=railway&logoColor=white)](https://acrqa-api-production.up.railway.app/health)
 [![Tests](https://img.shields.io/badge/Tests-2160%20passing-22c55e?logo=pytest&logoColor=white)](./TESTS/)
 [![Coverage](https://img.shields.io/badge/Coverage-85%25-22c55e?logo=codecov&logoColor=white)](./htmlcov/)
 [![Precision](https://img.shields.io/badge/Precision-97.1%25-22c55e)](./docs/evaluation/PER_TOOL_EVALUATION.md)
@@ -45,7 +46,7 @@ C4Container
     Container_Boundary(sys, "ACR-QA") {
         Container(cli, "CLI / GitHub Action", "Python", "Entry point. Detects language, routes to adapter.")
         Container(core, "Analysis Engine", "Python 3.11", "10 tools → normalise → score → dedup → AI explain → quality gate")
-        Container(api, "Async REST API", "FastAPI :8000", "28 /v1/ endpoints · JWT + API key auth · Swagger at /docs")
+        Container(api, "Async REST API", "FastAPI :8000", "32 /v1/ endpoints · JWT + API key auth · Swagger at /docs")
         Container(worker, "Background Worker", "Celery + Redis", "Async scan execution — POST /v1/scans returns 202 + job_id")
         ContainerDb(pg, "PostgreSQL 15", "", "Provenance: runs · findings · LLM calls · feedback · users · api_keys")
         ContainerDb(redis, "Redis 5.2", "", "Rate limiting · explanation cache · Celery broker + result backend")
@@ -408,7 +409,7 @@ marimo edit notebooks/walkthrough.py
 |----------|-------------|
 | [C1–C4 Architecture](docs/architecture/) | Full C4 model: context, containers, components, code flow |
 | [ADRs](docs/adr/) | Architecture decision records — why each major choice was made |
-| [API Reference](docs/API_REFERENCE.md) | All 22+ REST endpoints |
+| [API Reference](docs/API_REFERENCE.md) | All 32 REST endpoints |
 | [Policy Engine](docs/POLICY_ENGINE.md) | `.acrqa.yml` full reference |
 | [Evaluation Report](docs/evaluation/EVALUATION.md) | Precision/recall, OWASP coverage, competitive analysis |
 | [Per-Tool Evaluation](docs/evaluation/PER_TOOL_EVALUATION.md) | Per-engine accuracy across benchmark repos |

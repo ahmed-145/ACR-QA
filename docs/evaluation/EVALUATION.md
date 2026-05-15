@@ -110,7 +110,7 @@ ACR-QA covers **9/10** OWASP Top 10 categories.
 
 | Metric | Value |
 |--------|:-----:|
-| Test Suite | **2,160 tests** (pytest) · 0 failed · 0 warnings — v3.9.5 |
+| Test Suite | **2,162 tests** (pytest) · 0 failed · 0 warnings — v3.9.6 |
 | Code Coverage | **84.89%** (CORE) · 82.66% (CORE+DATABASE, CI gate 82% ✅) |
 | CI/CD | GitHub Actions (test + lint + coverage + E2E + deploy) |
 | Docker | Multi-stage Dockerfile + docker-compose.yml (7 services) |

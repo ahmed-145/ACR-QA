@@ -2,6 +2,36 @@
 
 All notable changes to ACR-QA are documented here.
 
+## [v3.9.6] — CI 10/10 green · pytest 8.x · Railway live (May 15, 2026)
+
+### Fixed
+
+- **`requirements.txt`** — bumped `pytest==7.4.3` → `8.3.5`, `pytest-cov==4.1.0` → `5.0.0`, `pytest-mock==3.12.0` → `3.14.0` to resolve `pytest-asyncio==1.3.0` dep conflict (`requires pytest>=8.2`)
+- **SonarCloud** and **Railway** builds were failing with `ResolutionImpossible`; pip now resolves cleanly
+
+### CI Status (all 10 checks green)
+
+| Check | Status |
+|-------|--------|
+| CodeQL — python | ✅ |
+| CodeQL — javascript-typescript | ✅ |
+| Deploy to Railway | ✅ |
+| Lint & Format Check | ✅ |
+| Playwright E2E (≥10 flows) | ✅ |
+| Run Test Suite | ✅ |
+| Snyk SCA + SAST | ✅ |
+| SonarCloud Analysis | ✅ Quality Gate passed |
+| SonarCloud Code Analysis | ✅ |
+| Railway Production Deploy | ✅ acrqa-api-production.up.railway.app |
+
+### Stats
+
+- Tests: **2,162 passed** · 0 failed · 44 skipped (integration/recall — need live Postgres)
+- Coverage: 84.89% (CORE) · CI gate 82% ✅
+- Live URL: `https://acrqa-api-production.up.railway.app/health`
+
+---
+
 ## [v3.9.5] — Phase audit: markers, asyncio, zero warnings (May 15, 2026)
 
 ### Fixed

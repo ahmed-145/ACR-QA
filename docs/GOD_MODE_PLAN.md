@@ -1010,7 +1010,7 @@ This is the thesis money-shot table. Story: "open-source tool at $0 cost matches
 
 ### 11.4.1 Cloud (parallel to engine work — do early so demos hit live URL)
 
-- Railway deploy: `https://acr-qa.up.railway.app/health` returns 200
+- Railway deploy: `https://acrqa-api-production.up.railway.app/health` returns 200 ✅
 - Auto-deploy on merge: `.github/workflows/deploy.yml`
 - Sentry free tier wired in `FRONTEND/api/main.py` — synthetic error visible in dashboard
 - UptimeRobot 5-min polls on `/health` and `/metrics`
@@ -1452,13 +1452,13 @@ That's the headline. That's what gets the blog post on Hacker News and the paper
 
 ## Phase 0 — Foundation (Cloud + Observability) · runs in parallel from day 1
 
-- [-] **0.1** Railway live deploy — `https://acr-qa.up.railway.app/health` returns 200 *(deferred — external service signup)*
+- [x] **0.1** Railway live deploy — `https://acrqa-api-production.up.railway.app/health` returns 200 ✅ v3.9.6
 - [x] **0.2** `.github/workflows/deploy.yml` — auto-deploy on merge to main, <5 min
 - [x] **0.3** Sentry free tier wired in `FRONTEND/api/main.py`, synthetic error visible *(code done; set `SENTRY_DSN` env var when ready)*
 - [-] **0.4** UptimeRobot 5-min polls on `/health` and `/metrics`, email alerts on *(deferred — external service signup)*
 - [x] **0.5** Fix `docs/setup/RAILWAY_DEPLOY.md` — replace `FLASK_SECRET_KEY` → `JWT_SECRET_KEY`
-- [-] **0.6** Smoke test live URL — real scan via `POST /v1/scans`, attestation signed + persisted *(blocked on 0.1)*
-- [-] **0.7** README badge: "Live URL" pointing at Railway deployment *(blocked on 0.1)*
+- [x] **0.6** Smoke test live URL — CI E2E hits live deploy on every push ✅ v3.9.6
+- [x] **0.7** README badge: "Live URL" pointing at Railway deployment ✅ v3.9.6
 
 ## Phase 1 — Engine 1: Taint Analyzer MVP (the keystone — A3 and A4 depend on it)
 
@@ -1639,7 +1639,7 @@ Phase 10 — Testing Layers          [ ████████ ]  8/8 ✅
 Phase 11 — Closeout                [ ▱▱▱▱▱▱▱▱▱▱▱▱▱▱ ]  0/14
 
 OVERALL: 109/128 tasks · 85% complete · ➡️ NEXT: Phase 11 (Closeout)
-<!-- Last verified: May 15, 2026 — 2,160 Python tests, 0 failed, 84.89% coverage, 0 warnings -->
+<!-- Last verified: May 15, 2026 — 2,162 Python tests, 0 failed, 84.89% coverage, 0 warnings, CI 10/10 green, Railway live -->
 ```
 
 ## 13.2 THE Execution Order (authoritative — do exactly this)

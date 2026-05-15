@@ -57,7 +57,7 @@ Go to: **GitHub repo → Settings → Secrets and variables → Actions → New 
 | Name | Value |
 |------|-------|
 | `RAILWAY_TOKEN` | `<token from railway whoami --token>` |
-| `RAILWAY_PRODUCTION_URL` | `https://acr-qa.up.railway.app` (your Railway domain) |
+| `RAILWAY_PRODUCTION_URL` | `https://acrqa-api-production.up.railway.app` (your Railway domain) |
 
 ### Step 5: Push to trigger the first deploy
 
