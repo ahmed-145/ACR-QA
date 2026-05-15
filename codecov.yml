@@ -1,0 +1,24 @@
+coverage:
+  status:
+    project:
+      default:
+        target: 40%
+        threshold: 2%
+        if_not_found: success
+    patch:
+      default:
+        target: 30%
+        threshold: 5%
+        if_not_found: success
+
+comment:
+  layout: "reach,diff,flags,tree"
+  behavior: default
+  require_changes: true
+
+ignore:
+  - "TESTS/**"
+  - "scripts/**"
+  - "alembic/**"
+  - "dashboard/**"
+  - "docs/**"

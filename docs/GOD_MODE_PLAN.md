@@ -1442,7 +1442,7 @@ That's the headline. That's what gets the blog post on Hacker News and the paper
 
 ---
 
-> ## ✅ COMPLETED: **Phase 7 — Marimo Notebook** · ➡️ NEXT: **Phase 9 — Third-Party Audit**
+> ## ✅ COMPLETED: **Phase 9 — Third-Party Audit** · ➡️ NEXT: **Phase 10 — Testing Layers**
 >
 > Phase order (authoritative): **0 → 9 → 1 → 2 → 6 → 3 → 4 → 5 → 7 → 10 → 11 → 8 → 12**
 >
@@ -1584,13 +1584,13 @@ That's the headline. That's what gets the blog post on Hacker News and the paper
 
 > **Scope decision (May 14 2026):** Keep the three tools that produce competitive comparison data (Snyk, CodeQL, SonarCloud) + two free automations (Dependabot, Codecov). Cut GitGuardian, Trivy, Lighthouse CI, PostHog — moved to post-defense parking lot.
 
-- [ ] **9.1** `.github/workflows/snyk.yml` — PR comment integration
-- [ ] **9.2** `.github/workflows/codeql.yml` — weekly scheduled scan
-- [ ] **9.3** `.github/dependabot.yml` — enable dep updates
-- [ ] **9.4** `sonar-project.properties` + `.github/workflows/sonar.yml`
-- [ ] **9.5** Codecov integration — replace local `htmlcov/`
-- [ ] **9.6** `docs/evaluation/COMPETITIVE_BASELINE.md` — full table, zero `?` cells
-- [ ] **9.7** `docs/evaluation/THIRD_PARTY_VALIDATION.md` — agreement tracker
+- [x] **9.1** `.github/workflows/snyk.yml` — PR comment integration
+- [x] **9.2** `.github/workflows/codeql.yml` — weekly scheduled scan
+- [x] **9.3** `.github/dependabot.yml` — enable dep updates
+- [x] **9.4** `sonar-project.properties` + `.github/workflows/sonar.yml`
+- [x] **9.5** Codecov integration — `codecov/codecov-action@v4` in `tests.yml` + `codecov.yml` config
+- [x] **9.6** `docs/evaluation/COMPETITIVE_BASELINE.md` — full table, zero `?` cells
+- [x] **9.7** `docs/evaluation/THIRD_PARTY_VALIDATION.md` — agreement tracker (15/15 = 100%)
 
 ## Phase 10 — Testing Layers (target ≥2,200 tests at v4.0.0)
 
@@ -1634,11 +1634,11 @@ Phase 5  — Supply Chain            [ ████████ ]  8/8 ✅
 Phase 6  — Dashboard React/shadcn  [ █████████████████████████████ ]  29/29 ✅
 Phase 7  — Marimo Notebook         [ ███████ ]  7/7 ✅
 Phase 8  — Eval Expansion          [ ████████████ ]  13/13 ✅
-Phase 9  — Third-Party Audit       [ ▱▱▱▱▱▱▱ ]  0/7
+Phase 9  — Third-Party Audit       [ ███████ ]  7/7 ✅
 Phase 10 — Testing Layers          [ ▱▱▱▱▱▱▱▱ ]  0/8
 Phase 11 — Closeout                [ ▱▱▱▱▱▱▱▱▱▱▱▱▱▱ ]  0/14
 
-OVERALL: 94/128 tasks · 73% complete · ➡️ NEXT: Phase 9 (Third-Party Audit)
+OVERALL: 101/128 tasks · 79% complete · ➡️ NEXT: Phase 10 (Testing Layers)
 ```
 
 ## 13.2 THE Execution Order (authoritative — do exactly this)

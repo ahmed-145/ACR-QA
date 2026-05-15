@@ -1,0 +1,69 @@
+version: 2
+
+updates:
+  - package-ecosystem: pip
+    directory: /
+    schedule:
+      interval: weekly
+      day: monday
+      time: "04:00"
+      timezone: Asia/Riyadh
+    open-pull-requests-limit: 5
+    reviewers:
+      - ahmeed-145
+    labels:
+      - dependencies
+      - security
+    groups:
+      dev-deps:
+        patterns:
+          - "pytest*"
+          - "ruff"
+          - "mypy*"
+          - "types-*"
+      security-scanners:
+        patterns:
+          - "bandit"
+          - "semgrep"
+
+  - package-ecosystem: npm
+    directory: /dashboard
+    schedule:
+      interval: weekly
+      day: monday
+      time: "04:30"
+      timezone: Asia/Riyadh
+    open-pull-requests-limit: 5
+    reviewers:
+      - ahmeed-145
+    labels:
+      - dependencies
+      - frontend
+    groups:
+      react-ecosystem:
+        patterns:
+          - "react*"
+          - "@types/react*"
+      tanstack:
+        patterns:
+          - "@tanstack/*"
+      vite-toolchain:
+        patterns:
+          - "vite"
+          - "vitest"
+          - "@vitejs/*"
+          - "@vitest/*"
+
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+      day: monday
+      time: "05:00"
+      timezone: Asia/Riyadh
+    open-pull-requests-limit: 5
+    reviewers:
+      - ahmeed-145
+    labels:
+      - dependencies
+      - ci

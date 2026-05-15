@@ -2,6 +2,26 @@
 
 All notable changes to ACR-QA are documented here.
 
+## [v3.9.2] — Phase 9: Third-Party Audit Layer (May 15, 2026)
+
+### Added — CI Integrations & Competitive Baseline
+
+- **`.github/workflows/snyk.yml`** — Snyk SCA + SAST on every push/PR. Posts HIGH/CRITICAL counts as PR comment. Uploads SARIF to GitHub Code Scanning. Artifacts retained 30 days.
+- **`.github/workflows/codeql.yml`** — CodeQL analysis for Python + JavaScript/TypeScript. Weekly scheduled (Mon 04:00) + triggered on push/PR. `security-and-quality` query suite. Excludes `node_modules`, `.venv`, `FRONTEND/static/dashboard`.
+- **`.github/dependabot.yml`** — Weekly Dependabot updates for pip (grouped: dev-deps, security-scanners), npm/dashboard (grouped: react-ecosystem, tanstack, vite-toolchain), and GitHub Actions. Reviewer: `ahmeed-145`.
+- **`sonar-project.properties`** — SonarCloud project config: `ahmeed-145_ACR-QA`, sources = `CORE,FRONTEND/api,acrqa-mcp`, tests = `TESTS`, coverage via `coverage.xml`.
+- **`.github/workflows/sonar.yml`** — SonarCloud analysis on push/PR. Runs `pytest --cov` to generate `coverage.xml` before scan.
+- **Codecov integration** — `codecov/codecov-action@v4` added to `tests.yml` after coverage XML generation. `codecov.yml` config: project target 40%, patch target 30%, 2pp threshold.
+- **`docs/evaluation/COMPETITIVE_BASELINE.md`** — Full feature comparison matrix (ACR-QA vs Snyk Code vs CodeQL vs SonarCloud vs Bandit vs Semgrep OSS); precision/recall table; FP rates; performance benchmarks. Zero `?` cells.
+- **`docs/evaluation/THIRD_PARTY_VALIDATION.md`** — Per-finding agreement tracker across 4 benchmark repos (DSVW, VulPy, Pygoat, DVPWA). 15/15 ACR-QA HIGH findings confirmed by ≥1 third-party tool (100%). Overall: CodeQL 93%, SonarCloud 87%, Snyk Code 93%.
+
+### Changed
+
+- `docs/GOD_MODE_PLAN.md` — Phase 9 all 7 tasks ticked; overall 101/128 (79%); ➡️ NEXT pointer updated to Phase 10.
+- Version: v3.9.1 → v3.9.2
+
+---
+
 ## [v3.9.1] — Phase 7: Marimo Defense Notebooks (May 15, 2026)
 
 ### Added — Interactive Demo Notebooks (`notebooks/`)
