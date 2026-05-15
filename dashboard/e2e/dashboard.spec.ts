@@ -39,7 +39,7 @@ test.describe("Dashboard layout", () => {
     await page.goto("/");
     const html = page.locator("html");
     const hasDark = await html.evaluate((el) => el.classList.contains("dark"));
-    await page.getByRole("button", { name: /dark|light|moon|sun/i }).first().click();
+    await page.getByRole("button", { name: /switch to (dark|light) mode/i }).click();
     const nowDark = await html.evaluate((el) => el.classList.contains("dark"));
     expect(nowDark).toBe(!hasDark);
   });
@@ -84,7 +84,7 @@ test.describe("Settings page", () => {
     await mockAuth(page);
     await page.route("/v1/**", (route) => route.fulfill({ status: 200, json: {} }));
     await page.goto("/settings");
-    await expect(page.getByText("test@example.com")).toBeVisible();
+    await expect(page.getByRole("main").getByText("test@example.com")).toBeVisible();
   });
 });
 

@@ -22,7 +22,7 @@ export function Dialog({ open, onClose, title, children, className }: DialogProp
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center">
       <div className="fixed inset-0 bg-black/40" onClick={onClose} />
-      <div className={cn("relative z-50 w-full max-w-3xl max-h-[90vh] overflow-y-auto rounded-xl border bg-background shadow-xl", className)}>
+      <div role="dialog" aria-modal="true" aria-label={title} className={cn("relative z-50 w-full max-w-3xl max-h-[90vh] overflow-y-auto rounded-xl border bg-background shadow-xl", className)}>
         {title && (
           <div className="flex items-center justify-between border-b px-6 py-4">
             <h2 className="text-lg font-semibold">{title}</h2>

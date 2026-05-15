@@ -51,7 +51,7 @@ export function Layout() {
 
           <div className="ml-auto flex items-center gap-2">
             <ModeBadge />
-            <Button variant="ghost" size="icon" onClick={() => setDark(!dark)}>
+            <Button variant="ghost" size="icon" aria-label={dark ? "Switch to light mode" : "Switch to dark mode"} onClick={() => setDark(!dark)}>
               {dark ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
             </Button>
             {user && <span className="text-xs text-muted-foreground hidden md:inline">{user.email}</span>}
