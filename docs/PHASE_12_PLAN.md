@@ -81,6 +81,16 @@ Each task is sized so it can finish in a single focused session. Don't start the
 
 **Explicitly skipped** (too senior for the cost): ArgoCD GitOps, Backstage portal, full DORA dashboard, service mesh, Falco runtime sec.
 
+#### Week 3 Status
+
+| Task | Status | Commit / Notes |
+|------|--------|----------------|
+| 12.14 Helm chart | ✅ | `deploy/helm/acrqa/` — Chart.yaml, values.yaml, 8 templates; HPA 2→20, PDB, NetworkPolicy, Ingress (cert-manager TLS), Secrets |
+| 12.15 Terraform IaC | ✅ | `deploy/terraform/aws/` — VPC, RDS Postgres 16, ElastiCache Redis, ECS Fargate, ALB, SSM secrets, S3+DynamoDB state backend |
+| 12.16 OpenTelemetry | ✅ | `opentelemetry-instrumentation-fastapi` wired in `FRONTEND/api/main.py`; Jaeger all-in-one in docker-compose (:16686 UI, :4317 gRPC) |
+| 12.17 Cosign signing | ✅ | `.github/workflows/sign-images.yml` — keyless Sigstore/Fulcio OIDC, no long-lived keys; SLSA Level 2 |
+| 12.18 README badges | ✅ | Added Helm / Terraform / OpenTelemetry / Cosign / SLSA badges to README.md |
+
 ---
 
 ### 🏅 Week 4 — UI Production Polish
@@ -201,12 +211,12 @@ DevOps / Platform Engineering
 ```
 Week 1 — Test Quality Audit        [ ██▱▱▱▱ ]  2/6
 Week 2 — Engine Depth + Benchmark  [ ███████ ]  7/7 ✅
-Week 3 — DevOps Portfolio          [ ▱▱▱▱▱ ]  0/5
+Week 3 — DevOps Portfolio          [ █████ ]  5/5 ✅
 Week 4 — UI Production Polish      [ ▱▱▱▱▱▱▱▱▱ ]  0/9
 Week 5 — Chaos + Observability     [ ▱▱▱▱▱▱ ]  0/6
 Week 6 — Closeout v4.5.0           [ ▱▱▱▱▱▱ ]  0/6
 
-OVERALL: 9/39 tasks · 23% complete
+OVERALL: 14/39 tasks · 36% complete
 <!-- Last updated: May 15, 2026 -->
 ```
 

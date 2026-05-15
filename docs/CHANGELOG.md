@@ -2,6 +2,58 @@
 
 All notable changes to ACR-QA are documented here.
 
+## [Phase 12 Week 3 — Complete] — DevOps Portfolio (May 15, 2026)
+
+### Summary
+
+Week 3 of Phase 12: production-grade Kubernetes Helm chart, Terraform IaC for AWS,
+OpenTelemetry distributed tracing, Cosign keyless image signing, and README badges.
+All 5 tasks done. Zero new Python tests (infra week), but the entire stack is now
+deployable to K8s and AWS with one command.
+
+### Added
+
+- **`deploy/helm/acrqa/`** — Full Helm chart for Kubernetes deployment:
+  - `Chart.yaml` (version 1.0.0, appVersion 4.0.0)
+  - `values.yaml` — API replicas:2, HPA min:2/max:20 on CPU 70%/memory 80%
+  - `templates/deployment.yaml` — API + Celery worker; non-root securityContext;
+    secrets via `secretKeyRef`; liveness/readiness probes on `/health`
+  - `templates/hpa.yaml` — HorizontalPodAutoscaler (autoscaling/v2)
+  - `templates/pdb.yaml` — PodDisruptionBudget (minAvailable: 1)
+  - `templates/networkpolicy.yaml` — ingress from ingress-nginx + monitoring;
+    egress: DNS + PostgreSQL + Redis + HTTPS only
+  - `templates/ingress.yaml` — nginx IngressClass + cert-manager TLS
+  - `templates/secret.yaml` — Kubernetes Secret with stringData
+  - `templates/service.yaml` — ClusterIP on port 8000
+  - `deploy/helm/acrqa/README.md` — install/upgrade commands + values table
+
+- **`deploy/terraform/aws/`** — Terraform IaC for full AWS production stack:
+  - VPC with public/private subnets across 3 AZs, NAT gateway
+  - RDS PostgreSQL 16 (encrypted, 7-day backups, deletion protection in prod)
+  - ElastiCache Redis with TLS auth token, multi-AZ in prod
+  - ECS Fargate cluster with deployment circuit breaker + automatic rollback
+  - ALB: HTTPS listener (TLS 1.3), HTTP→HTTPS redirect, health check on `/health`
+  - SSM Parameter Store for all secrets (DATABASE_URL, REDIS_URL, GROQ_API_KEY, SECRET_KEY)
+  - `bootstrap/main.tf` — one-time S3 + DynamoDB remote state setup
+
+- **`FRONTEND/api/main.py`** — OpenTelemetry distributed tracing:
+  - `opentelemetry-instrumentation-fastapi` auto-traces every route
+  - Initialised only when `OTEL_EXPORTER_OTLP_ENDPOINT` env var is set
+  - Jaeger all-in-one added to docker-compose (UI :16686, gRPC :4317)
+
+- **`.github/workflows/sign-images.yml`** — Cosign keyless image signing:
+  - Signs image digest via Sigstore/Fulcio OIDC (no long-lived key material)
+  - SLSA Level 2: signed provenance traceable to this CI pipeline
+
+- **`README.md`** — Added badges: Helm, Terraform, OpenTelemetry, Cosign, SLSA Level 2
+
+### Stats
+
+- Total tasks: **14/39** (Week 1: 2, Week 2: 7, Week 3: 5)
+- Helm templates: 8 files, Terraform resources: ~20
+
+---
+
 ## [Phase 12 Week 2 — Complete] — Engine Depth + Real Benchmarks (May 15, 2026)
 
 ### Summary

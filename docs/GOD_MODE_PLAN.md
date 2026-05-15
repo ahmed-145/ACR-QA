@@ -1637,10 +1637,11 @@ Phase 8  — Eval Expansion          [ ████████████ ]  1
 Phase 9  — Third-Party Audit       [ ███████ ]  7/7 ✅
 Phase 10 — Testing Layers          [ ████████ ]  8/8 ✅
 Phase 11 — Closeout                [ ██████████▱▱▱▱ ]  11/14  (3 need human: video + user study responses + HN post)
-Phase 12 — Make It Bulletproof     [ █████████▱▱▱▱▱▱▱▱▱▱▱▱▱▱▱▱▱▱▱▱▱▱▱▱▱▱▱▱▱▱ ]  9/39  (Week 2 ✅, Week 1 partial)
+Phase 12 — Make It Bulletproof     [ ██████████████▱▱▱▱▱▱▱▱▱▱▱▱▱▱▱▱▱▱▱▱▱▱▱▱▱ ]  14/39  (Week 3 ✅, Week 2 ✅, Week 1 partial)
 
-OVERALL: 129/167 tasks · 77% of full scope complete · ✅ v4.0.0 tagged and released
+OVERALL: 134/167 tasks · 80% of full scope complete · ✅ v4.0.0 tagged and released
 <!-- Last verified: May 15, 2026 — 1891 Python tests + 57 TS = 1948 total, CI green, Railway live -->
+<!-- Phase 12: Week 3 ALL 5 DONE (12.14 Helm, 12.15 Terraform, 12.16 OTel, 12.17 Cosign, 12.18 badges) -->
 <!-- Phase 12: Week 2 ALL 7 DONE (12.7 inter-proc taint, 12.8 sanitizers, 12.9 OWASP script, 12.10 42K LOC/s, 12.11 hold-out split, 12.12 Trivy, 12.13 TruffleHog) -->
 <!-- Phase 12 Week 1: 12.1+12.2 done; 12.3-12.6 pending -->
 
