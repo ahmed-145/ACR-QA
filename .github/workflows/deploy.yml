@@ -25,11 +25,11 @@ jobs:
     steps:
       - name: Wait for Railway health check
         run: |
+          URL="https://acrqa-api-production.up.railway.app/health"
           echo "Waiting for Railway deployment to become healthy..."
           sleep 30
           for i in $(seq 1 30); do
-            STATUS=$(curl -sf "${{ secrets.RAILWAY_PRODUCTION_URL }}/health" \
-              -o /dev/null -w "%{http_code}" 2>/dev/null || echo "000")
+            STATUS=$(curl -sf "$URL" -o /dev/null -w "%{http_code}" 2>/dev/null || echo "000")
             if [ "$STATUS" = "200" ]; then
               echo "Deployment healthy (attempt $i)"
               exit 0
