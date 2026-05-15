@@ -2,6 +2,21 @@
 
 All notable changes to ACR-QA are documented here.
 
+## [v3.9.5] — Phase audit: markers, asyncio, zero warnings (May 15, 2026)
+
+### Fixed
+
+- **`pyproject.toml`** — registered 3 missing pytest markers (`smoke`, `e2e`, `offline`); added `asyncio_mode = "auto"`
+- **`requirements.txt`** — added `pytest-asyncio==1.3.0` (was installed in venv but missing from deps)
+- **9 async tests** in `TESTS/test_path_feasibility.py` now run instead of being silently skipped
+- **0 warnings** in default pytest run (was 20 PytestUnknownMarkWarning + PytestUnhandledCoroutineWarning)
+
+### Stats
+
+- Tests: **2,160 passed** (was 2,151 — 9 previously-skipped async tests now active)
+- Coverage: 84.89% (CORE) · 82.66% (CORE+DATABASE, CI gate)
+- CI gate: 82% ✅
+
 ## [v3.9.4] — Fix: test_new_engines.py DB-connection failures (May 15, 2026)
 
 ### Fixed

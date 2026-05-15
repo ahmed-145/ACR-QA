@@ -1599,7 +1599,7 @@ That's the headline. That's what gets the blog post on Hacker News and the paper
 - [x] **10.3** `TESTS/load/locustfile.py` — 50 RPS target; ReadOnlyUser (70%) + ScanSubmitUser (30%); FastAPI v1 endpoints
 - [x] **10.4** `TESTS/test_dogfood.py` — 3 tests: zero HIGH in CORE/, no CUSTOM-* in CORE/, scan returns output
 - [x] **10.5** `TESTS/test_live_smoke.py` — 10 smoke tests; auto-skip when server unreachable
-- [x] **10.6** 2,183 Python + 57 TS = 2,240 total ≥2,200 ✅
+- [x] **10.6** 2,160 Python + 57 TS = 2,217 total ≥2,200 ✅ (9 async tests now run via pytest-asyncio)
 - [x] **10.7** CI `--cov-fail-under` raised from 40 → 82%; `e2e/slow/exploit/smoke` excluded from default run
 - [x] **10.8** `docs/PERFORMANCE_BASELINE.md` updated: Locust results (52 RPS, p95 287ms, 0.3% errors) + FastAPI latency table + scan throughput
 
@@ -1639,6 +1639,7 @@ Phase 10 — Testing Layers          [ ████████ ]  8/8 ✅
 Phase 11 — Closeout                [ ▱▱▱▱▱▱▱▱▱▱▱▱▱▱ ]  0/14
 
 OVERALL: 109/128 tasks · 85% complete · ➡️ NEXT: Phase 11 (Closeout)
+<!-- Last verified: May 15, 2026 — 2,160 Python tests, 0 failed, 84.89% coverage, 0 warnings -->
 ```
 
 ## 13.2 THE Execution Order (authoritative — do exactly this)

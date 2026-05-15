@@ -73,8 +73,12 @@ addopts = [
     "-m", "not slow",
     "-v",
 ]
+asyncio_mode = "auto"
 markers = [
     "slow: end-to-end evaluation tests that invoke the full pipeline against real repos (run nightly, skipped on PR by default)",
     "integration: tests that require live external services (Postgres, Redis, Celery worker)",
     "exploit: tests that spin up real Docker containers to verify exploit PoCs (requires Docker daemon)",
+    "smoke: tests that hit a live deployed server (auto-skip when ACRQA_TEST_URL is unreachable)",
+    "e2e: API-level end-to-end tests against a running FastAPI server (auto-skip when unreachable)",
+    "offline: tests that require Ollama running locally (auto-skip when not installed)",
 ]

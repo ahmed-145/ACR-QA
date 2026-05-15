@@ -1,7 +1,7 @@
 # ACR-QA Testing & Calibration Report
 
-**Latest Run:** May 15, 2026 · **Version:** v3.9.4
-**Unit Tests:** 2,151 passed, 52 skipped · **Coverage:** 84.80%
+**Latest Run:** May 15, 2026 · **Version:** v3.9.5
+**Unit Tests:** 2,160 passed, 43 skipped · **Coverage:** 84.89% · **0 warnings**
 
 > 📋 **For the strategic testing plan** (6-layer pyramid, ground-truth-as-evidence approach, why coverage is a tripwire not a target), see [`GOD_MODE_PLAN.md` §9](GOD_MODE_PLAN.md#9-testing-strategy--read-this-before-writing-any-code).
 > 📊 **For honest current numbers** on 6 real repos, see [`evaluation/PHASE_0_BASELINE.md`](evaluation/PHASE_0_BASELINE.md).
