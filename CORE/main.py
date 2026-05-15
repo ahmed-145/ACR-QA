@@ -377,6 +377,19 @@ class AnalysisPipeline:
         except Exception as _ta_err:
             logger.warning(f"Triage agent skipped: {_ta_err}")
 
+        # FinOps: aggregate token cost across all explanations (task 12.32)
+        try:
+            total_tokens = sum((e.get("tokens_used") or 0) for e in explanations if isinstance(e, dict))
+            total_cost = sum((e.get("cost_usd") or 0.0) for e in explanations if isinstance(e, dict))
+            groq_reqs = sum(
+                1 for e in explanations if isinstance(e, dict) and e.get("status") not in ("fallback", "cached")
+            )
+            if total_tokens > 0:
+                self.db.update_run_cost(run_id, total_tokens, total_cost, groq_reqs)
+                logger.info(f"   FinOps: {total_tokens} tokens · ${total_cost:.6f} · {groq_reqs} requests")
+        except Exception as _cost_err:
+            logger.debug(f"Cost telemetry skipped: {_cost_err}")
+
         # Mark run as complete
         self.db.complete_analysis_run(run_id, total_findings)
 

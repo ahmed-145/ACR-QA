@@ -226,6 +226,31 @@ async def cost_summary(
     }
 
 
+@app.get("/v1/runs/{run_id}/cost", tags=["runs"], summary="Per-run Groq token cost telemetry (task 12.32)")
+async def run_cost(
+    run_id: int,
+    user: dict = Depends(get_current_user),
+    db: Database = Depends(get_db),
+):
+    rows = db.execute(
+        "SELECT groq_tokens_used, groq_cost_usd, groq_requests FROM analysis_runs WHERE id = %s",
+        (run_id,),
+        fetch=True,
+    )
+    if not rows:
+        from fastapi import HTTPException
+
+        raise HTTPException(status_code=404, detail=f"Run {run_id} not found")
+    row = rows[0]
+    return {
+        "success": True,
+        "run_id": run_id,
+        "groq_tokens_used": row.get("groq_tokens_used"),
+        "groq_cost_usd": float(row.get("groq_cost_usd") or 0),
+        "groq_requests": row.get("groq_requests"),
+    }
+
+
 @app.get("/v1/fix-confidence/{rule_id}", tags=["runs"], summary="Auto-fix confidence for a rule")
 async def fix_confidence(rule_id: str, user: dict = Depends(get_current_user)):
     HIGH = {"IMPORT-001": 95, "VAR-001": 90, "BOOL-001": 95, "F401": 95, "F841": 85}

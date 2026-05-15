@@ -140,6 +140,20 @@ class ExplanationEngine:
         norm = re.sub(r"\s+", " ", norm).strip()
         return norm
 
+    def _get_cached_explanation(self, cache_key: str):
+        """Return cached explanation bytes/dict for key, or None on miss/error."""
+        if not self.redis:
+            return None
+        try:
+            raw = self.redis.get(cache_key)
+            if raw is None:
+                return None
+            import json as _json
+
+            return _json.loads(raw)
+        except Exception:
+            return None
+
     def _get_cache_key(self, finding, code_snippet):
         """Generate cache key from finding characteristics"""
         canonical_id = finding.get("canonical_rule_id", finding.get("rule_id", "UNKNOWN"))

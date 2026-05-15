@@ -42,7 +42,7 @@ class Database:
                 Database._pool = ThreadedConnectionPool(1, 10, **self.conn_params)
             except psycopg2.Error as e:
                 logger.error(f"❌ Database connection pool failed: {e}")
-                raise
+                Database._pool = None
 
     def execute(self, query, params=None, fetch=False):
         """
@@ -58,6 +58,8 @@ class Database:
         """
         if Database._pool is None:
             self._connect()
+        if Database._pool is None:
+            raise psycopg2.OperationalError("Database connection pool unavailable")
 
         conn = Database._pool.getconn()
         try:
@@ -106,6 +108,17 @@ class Database:
             WHERE id = %s
         """
         self.execute(query, (total_findings, run_id))
+
+    def update_run_cost(self, run_id: int, tokens_used: int, cost_usd: float, requests: int) -> None:
+        """Record Groq token cost telemetry for a completed run (task 12.32)."""
+        query = """
+            UPDATE analysis_runs
+            SET groq_tokens_used = %s,
+                groq_cost_usd    = %s,
+                groq_requests    = %s
+            WHERE id = %s
+        """
+        self.execute(query, (tokens_used, cost_usd, requests, run_id))
 
     def fail_analysis_run(self, run_id, _error_message=None):
         """Mark analysis run as failed

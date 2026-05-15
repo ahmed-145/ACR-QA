@@ -142,6 +142,7 @@ services:
       - "9091:9090"
     volumes:
       - ./config/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - ./config/alerts:/etc/prometheus/alerts:ro
       - prometheus_data:/prometheus
     depends_on:
       - app

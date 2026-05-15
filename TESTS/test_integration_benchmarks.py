@@ -32,7 +32,9 @@ class TestIntegration:
     @pytest.fixture
     def db(self):
         try:
-            return Database()
+            instance = Database()
+            instance.execute("SELECT 1", fetch=True)
+            return instance
         except Exception:
             pytest.skip("Database not available")
 
@@ -206,6 +208,7 @@ class TestPerformanceBenchmarks:
         """Benchmark database query speed"""
         try:
             db = Database()
+            db.execute("SELECT 1", fetch=True)
         except Exception:
             pytest.skip("Database not available")
 

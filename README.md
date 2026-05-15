@@ -23,6 +23,7 @@
 [![OpenTelemetry](https://img.shields.io/badge/OpenTelemetry-traces-425CC7?logo=opentelemetry&logoColor=white)](./FRONTEND/api/main.py)
 [![Signed](https://img.shields.io/badge/Cosign-signed-green?logo=sigstore&logoColor=white)](./.github/workflows/sign-images.yml)
 [![SLSA](https://img.shields.io/badge/SLSA-Level%202-blueviolet)](https://slsa.dev/)
+[![Uptime](https://img.shields.io/badge/Uptime-monitored-22c55e?logo=uptimerobot&logoColor=white)](./docs/setup/UPTIMEROBOT_SETUP.md)
 
 </div>
 

@@ -814,6 +814,7 @@ class TestDatabaseDeep:
 
         try:
             self.db = Database()
+            self.db.execute("SELECT 1", fetch=True)
         except Exception:
             pytest.skip("PostgreSQL not available")
 

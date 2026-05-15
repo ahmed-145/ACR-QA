@@ -1,0 +1,165 @@
+# SLO Burn-Rate Alerting Rules — Phase 12 Week 5 (Task 12.31)
+#
+# Strategy: Multi-window burn rate (Google SRE Workbook, Chapter 5)
+#
+# SLO targets:
+#   Availability SLO:  99.5%  (error budget: 0.5%  = 43.8 min/month)
+#   Latency SLO (p99): 95.0%  of requests < 500ms
+#
+# Burn-rate windows:
+#   Fast burn  (1h  + 5h  windows) → 2% budget / hour  → page immediately
+#   Slow burn  (6h  + 1d  windows) → 5% budget / 6h    → ticket (non-paging)
+#   Trend burn (3d  window)        → weekly review only
+
+groups:
+  - name: acrqa.slo.availability
+    rules:
+      # ── Error rate recording rules ──────────────────────────────────────────
+      - record: job:acrqa_http_request_duration_seconds_count:rate1h
+        expr: |
+          sum(rate(http_request_duration_seconds_count{job="acr-qa-fastapi"}[1h]))
+            by (status_code)
+
+      - record: job:acrqa_http_errors:rate1h
+        expr: |
+          sum(rate(http_request_duration_seconds_count{
+            job="acr-qa-fastapi", status_code=~"5.."
+          }[1h]))
+
+      - record: job:acrqa_http_errors:rate5h
+        expr: |
+          sum(rate(http_request_duration_seconds_count{
+            job="acr-qa-fastapi", status_code=~"5.."
+          }[5h]))
+
+      - record: job:acrqa_http_errors:rate6h
+        expr: |
+          sum(rate(http_request_duration_seconds_count{
+            job="acr-qa-fastapi", status_code=~"5.."
+          }[6h]))
+
+      - record: job:acrqa_http_errors:rate1d
+        expr: |
+          sum(rate(http_request_duration_seconds_count{
+            job="acr-qa-fastapi", status_code=~"5.."
+          }[1d]))
+
+      - record: job:acrqa_http_total:rate1h
+        expr: |
+          sum(rate(http_request_duration_seconds_count{job="acr-qa-fastapi"}[1h]))
+
+      # ── Fast burn alert: 1h + 5h windows (page immediately) ────────────────
+      # Fires when error rate is high enough to exhaust 2% of monthly budget in 1h
+      # burn_rate = (error_rate / error_budget) — threshold 14.4× = exhausts in 50min
+      - alert: SLO_AvailabilityFastBurn
+        expr: |
+          (
+            job:acrqa_http_errors:rate1h / job:acrqa_http_total:rate1h > 0.072
+          ) and (
+            job:acrqa_http_errors:rate5h
+            / sum(rate(http_request_duration_seconds_count{job="acr-qa-fastapi"}[5h]))
+            > 0.072
+          )
+        for: 2m
+        labels:
+          severity: critical
+          slo: availability
+          window: fast
+        annotations:
+          summary: "ACR-QA SLO: availability fast burn (>14.4× budget rate)"
+          description: |
+            Error rate {{ $value | humanizePercentage }} over 1h AND 5h windows.
+            At this rate the monthly error budget will be exhausted in < 1 hour.
+            Check: kubectl logs deploy/acrqa-api | grep ERROR
+          runbook: https://github.com/ahmeed-145/acrqa/blob/main/docs/sre/runbooks/high-error-rate-5xx.md
+
+      # ── Slow burn alert: 6h + 1d windows (ticket, non-paging) ──────────────
+      # burn_rate 6× = exhausts budget in 5 days → catch early, don't page at night
+      - alert: SLO_AvailabilitySlowBurn
+        expr: |
+          (
+            job:acrqa_http_errors:rate6h
+            / sum(rate(http_request_duration_seconds_count{job="acr-qa-fastapi"}[6h]))
+            > 0.03
+          ) and (
+            job:acrqa_http_errors:rate1d
+            / sum(rate(http_request_duration_seconds_count{job="acr-qa-fastapi"}[1d]))
+            > 0.03
+          )
+        for: 15m
+        labels:
+          severity: warning
+          slo: availability
+          window: slow
+        annotations:
+          summary: "ACR-QA SLO: availability slow burn (>6× budget rate over 6h+1d)"
+          description: |
+            Error rate {{ $value | humanizePercentage }} — budget will deplete in ~5 days.
+            No immediate page required; create a ticket and investigate.
+
+  # ── Latency SLO: p99 < 500ms on 95% of requests ──────────────────────────
+  - name: acrqa.slo.latency
+    rules:
+      - record: job:acrqa_latency_p99:rate1h
+        expr: |
+          histogram_quantile(0.99,
+            sum(rate(http_request_duration_seconds_bucket{job="acr-qa-fastapi"}[1h]))
+            by (le)
+          )
+
+      - record: job:acrqa_latency_p99:rate5h
+        expr: |
+          histogram_quantile(0.99,
+            sum(rate(http_request_duration_seconds_bucket{job="acr-qa-fastapi"}[5h]))
+            by (le)
+          )
+
+      - alert: SLO_LatencyFastBurn
+        expr: |
+          job:acrqa_latency_p99:rate1h > 0.5
+          and
+          job:acrqa_latency_p99:rate5h > 0.5
+        for: 5m
+        labels:
+          severity: critical
+          slo: latency
+          window: fast
+        annotations:
+          summary: "ACR-QA SLO: p99 latency breach (>500ms sustained)"
+          description: |
+            p99 latency is {{ $value | humanizeDuration }} over 1h and 5h windows.
+            SLO target: p99 < 500ms on 95% of requests.
+            Check DB slow queries: SELECT * FROM pg_stat_activity WHERE duration > 1s;
+          runbook: https://github.com/ahmeed-145/acrqa/blob/main/docs/sre/runbooks/high-error-rate-5xx.md
+
+      - alert: SLO_LatencySlowBurn
+        expr: |
+          histogram_quantile(0.99,
+            sum(rate(http_request_duration_seconds_bucket{job="acr-qa-fastapi"}[6h]))
+            by (le)
+          ) > 0.35
+        for: 20m
+        labels:
+          severity: warning
+          slo: latency
+          window: slow
+        annotations:
+          summary: "ACR-QA SLO: p99 latency trending high (>350ms over 6h)"
+          description: |
+            p99 latency {{ $value | humanizeDuration }} — approaching 500ms SLO threshold.
+            Not yet breaching; investigate proactively.
+
+  # ── Scan queue SLO: Celery queue depth < 50 tasks ─────────────────────────
+  - name: acrqa.slo.queue
+    rules:
+      - alert: SLO_CeleryQueueBacklog
+        expr: celery_queue_length{queue="default"} > 50
+        for: 5m
+        labels:
+          severity: warning
+          slo: queue_depth
+        annotations:
+          summary: "ACR-QA: Celery queue backlog > 50 tasks"
+          description: |
+            {{ $value }} tasks queued. Worker may be overwhelmed or crashing.
+            Scale workers: kubectl scale deploy/acrqa-worker --replicas=4

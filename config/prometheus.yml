@@ -5,8 +5,18 @@ global:
     project: 'acr-qa'
     env: 'local'
 
+rule_files:
+  - '/etc/prometheus/alerts/slo_burn_rate.yml'
+
 scrape_configs:
-  - job_name: 'acr-qa-flask'
+  - job_name: 'acr-qa-fastapi'
+    static_configs:
+      - targets: ['app:8000']
+    metrics_path: '/metrics'
+    scrape_interval: 15s
+    scrape_timeout: 10s
+
+  - job_name: 'ac-qa-flask'
     static_configs:
       - targets: ['app:5000']
     metrics_path: '/metrics'
