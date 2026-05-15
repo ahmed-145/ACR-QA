@@ -200,13 +200,13 @@ DevOps / Platform Engineering
 
 ```
 Week 1 — Test Quality Audit        [ ██▱▱▱▱ ]  2/6
-Week 2 — Engine Depth + Benchmark  [ ▱▱▱▱▱▱▱ ]  0/7
+Week 2 — Engine Depth + Benchmark  [ ███████ ]  7/7 ✅
 Week 3 — DevOps Portfolio          [ ▱▱▱▱▱ ]  0/5
 Week 4 — UI Production Polish      [ ▱▱▱▱▱▱▱▱▱ ]  0/9
 Week 5 — Chaos + Observability     [ ▱▱▱▱▱▱ ]  0/6
 Week 6 — Closeout v4.5.0           [ ▱▱▱▱▱▱ ]  0/6
 
-OVERALL: 2/39 tasks · 5% complete
+OVERALL: 9/39 tasks · 23% complete
 <!-- Last updated: May 15, 2026 -->
 ```
 
@@ -220,6 +220,18 @@ OVERALL: 2/39 tasks · 5% complete
 | **12.4** | Snapshot tests (AI explainer) | ⏳ TODO | — |
 | **12.5** | Performance regression CI gate | ⏳ TODO | — |
 | **12.6** | Fix bugs surfaced by Week 1 | ⏳ TODO | Add unit tests for confidence_scorer/quality_gate/severity_scorer |
+
+### Week 2 Status ✅ COMPLETE
+
+| # | Task | Status | Result |
+|---|------|--------|--------|
+| **12.7** | Inter-procedural taint | ✅ DONE | Call-graph propagation + function summary pass. Taint crosses A→B→sink boundaries. 10 new tests (48 taint tests total). `_compute_taint_returning_functions()` identifies functions returning taint from internal sources. |
+| **12.8** | Sanitizer recognition | ✅ DONE | `config/taint_sanitizers.yml` — 7 sanitizer families, 45 patterns (html.escape, shlex.quote, int, float, hashlib, etc.). Taint dropped at sanitizer call sites. 5 tests. |
+| **12.9** | OWASP Benchmark | ✅ DONE | `scripts/run_owasp_benchmark.py` — runner script with Java prereq check, clone, build, ACR-QA scan, score report. Requires Java+Maven; Python-only benchmark runs without them. |
+| **12.10** | Scale test | ✅ DONE | **42,000 LOC/s** on 76 files / 19,834 LOC in 0.47s. Inter-procedural overhead: ~5% vs intra. Results in `docs/evaluation/PERFORMANCE_BASELINE.md`. |
+| **12.11** | Hold-out test set | ✅ DONE | `docs/evaluation/HOLD_OUT_SPLIT.md` — 4 training repos vs 6 hold-out repos declared. Reporting convention: thesis abstract cites hold-out numbers only. |
+| **12.12** | Trivy adapter | ✅ DONE | `CORE/engines/trivy_adapter.py` — vuln + misconfig + secret parsing, graceful degradation. 13 tests. Wired into `run_extra_scanners()`. |
+| **12.13** | TruffleHog adapter | ✅ DONE | `CORE/engines/trufflehog_adapter.py` — NDJSON parsing, verified=high/unverified=medium, credential masking. 17 tests. Wired into `run_extra_scanners()`. |
 
 ---
 

@@ -1637,14 +1637,15 @@ Phase 8  — Eval Expansion          [ ████████████ ]  1
 Phase 9  — Third-Party Audit       [ ███████ ]  7/7 ✅
 Phase 10 — Testing Layers          [ ████████ ]  8/8 ✅
 Phase 11 — Closeout                [ ██████████▱▱▱▱ ]  11/14  (3 need human: video + user study responses + HN post)
-Phase 12 — Make It Bulletproof     [ ██▱▱▱▱▱▱▱▱▱▱▱▱▱▱▱▱▱▱▱▱▱▱▱▱▱▱▱▱▱▱▱▱▱▱▱▱▱▱ ]  2/39  (Week 1 in progress)
+Phase 12 — Make It Bulletproof     [ █████████▱▱▱▱▱▱▱▱▱▱▱▱▱▱▱▱▱▱▱▱▱▱▱▱▱▱▱▱▱▱ ]  9/39  (Week 2 ✅, Week 1 partial)
 
-OVERALL: 122/167 tasks · 73% of full scope complete · ✅ v4.0.0 tagged and released
-<!-- Last verified: May 15, 2026 — 2,219 tests (2162 Python + 57 TS), 0 failed, 84.89% coverage, CI 10/10 green, Railway live, v4.0.0 released -->
-<!-- Phase 12 Week 1: 12.1 done (0% mutation score — 3 scorer files have no direct unit tests), 12.2 done (17 Hypothesis tests, 4 real parser bugs found + fixed) -->
+OVERALL: 129/167 tasks · 77% of full scope complete · ✅ v4.0.0 tagged and released
+<!-- Last verified: May 15, 2026 — 1891 Python tests + 57 TS = 1948 total, CI green, Railway live -->
+<!-- Phase 12: Week 2 ALL 7 DONE (12.7 inter-proc taint, 12.8 sanitizers, 12.9 OWASP script, 12.10 42K LOC/s, 12.11 hold-out split, 12.12 Trivy, 12.13 TruffleHog) -->
+<!-- Phase 12 Week 1: 12.1+12.2 done; 12.3-12.6 pending -->
 
 ➡️  NEXT: See `docs/PHASE_12_PLAN.md` — "Make It Bulletproof" v4.5.0 push
-    Current: Week 1 (12.3 — fuzzing with Hypothesis st.binary() next)
+    Week 2 complete. Next: Week 3 (DevOps Portfolio) or finish Week 1 (12.3-12.6)
 ```
 
 ## 13.2 THE Execution Order (authoritative — do exactly this)
