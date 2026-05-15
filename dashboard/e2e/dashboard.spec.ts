@@ -4,7 +4,7 @@ import { test, expect } from "@playwright/test";
 async function mockAuth(page: Parameters<typeof test>[1] extends (args: { page: infer P }) => unknown ? P : never) {
   await page.addInitScript(() => {
     localStorage.setItem(
-      "acrqa_auth",
+      "acrqa-auth",
       JSON.stringify({
         state: {
           token: "test-token",
