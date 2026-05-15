@@ -1640,6 +1640,9 @@ Phase 11 — Closeout                [ ██████████▱▱▱�
 
 OVERALL: 120/128 tasks · 94% complete · ✅ v4.0.0 tagged and released
 <!-- Last verified: May 15, 2026 — 2,219 tests (2162 Python + 57 TS), 0 failed, 84.89% coverage, CI 10/10 green, Railway live, v4.0.0 released -->
+
+➡️  NEXT PLAN: See `docs/PHASE_12_PLAN.md` — "Make It Bulletproof" v4.5.0 push
+    (mutation testing, OWASP Benchmark, inter-procedural taint, Helm+Terraform+OTel+cosign, UI a11y, chaos engineering)
 ```
 
 ## 13.2 THE Execution Order (authoritative — do exactly this)

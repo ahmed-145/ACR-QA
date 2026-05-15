@@ -88,7 +88,8 @@
 
 | Document | Description |
 |----------|-------------|
-| [**God Mode Plan v2**](GOD_MODE_PLAN.md) | **Live source of truth (May 5 2026).** Three competitive moats + blue-ocean wedge. 6-week schedule to v4.0.0 + thesis defense. Includes §9 testing strategy. |
+| [**Phase 12 Plan**](PHASE_12_PLAN.md) | **Live next step (May 15 2026).** "Make it bulletproof" — 6-week post-v4.0.0 hardening: mutation testing, OWASP Benchmark, inter-procedural taint, Helm+Terraform+OTel+cosign, UI a11y, chaos. Target: v4.5.0. |
+| [**God Mode Plan v2**](GOD_MODE_PLAN.md) | **v4.0.0 plan (May 5 2026 → May 15 2026).** Three competitive moats + blue-ocean wedge. Completed: 120/128 tasks. Superseded by Phase 12 Plan for next push. |
 | [Phase 0 Baseline](evaluation/PHASE_0_BASELINE.md) | Reality check on 6 real repos (May 6 2026); honest current numbers + bugs surfaced + Phase 1 fix log. |
 | [ROADMAP (legacy)](ROADMAP.md) | Pre-v2 plan. Phase 2 TS rewrite section is explicitly killed by the v2 plan; kept for historical context. |
 | [God Mode Plan v1 (archived)](archive/GOD_MODE_PLAN_V1.md) | Original plan — pre-FastAPI/Celery/Auth. Superseded by v2. |
