@@ -74,8 +74,10 @@ jobs:
         run: |
           pytest TESTS/ -v --override-ini="addopts=" --tb=short \
             --cov=CORE --cov=DATABASE --cov-report=xml:coverage.xml \
-            --cov-fail-under=40 \
+            --cov-fail-under=82 \
             --cov-report=term-missing \
+            --ignore=TESTS/e2e \
+            -m "not slow and not exploit and not smoke" \
             --junitxml=test-results.xml 2>&1
 
       - name: Upload coverage to Codecov

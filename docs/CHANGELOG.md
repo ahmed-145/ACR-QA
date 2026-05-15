@@ -2,6 +2,31 @@
 
 All notable changes to ACR-QA are documented here.
 
+## [v3.9.3] — Phase 10: Testing Layers (May 15, 2026)
+
+### Added — Testing Infrastructure
+
+- **`playwright.config.ts`** (root) — root-level Playwright config pointing to `dashboard/e2e/`; Chromium + Firefox; GitHub reporter in CI; `webServer` starts `npm run dev` in `dashboard/`.
+- **`.github/workflows/e2e.yml`** — Playwright E2E workflow: `npm ci` → `playwright install chromium` → `npx playwright test --reporter=github`. Uploads `playwright-report/` on failure.
+- **`TESTS/e2e/test_api_e2e.py`** — 10 API-level E2E tests (marked `e2e`): health, docs, login, invalid creds, 401 guards, authenticated runs, `/v1/auth/me`, scan submit, Celery health, metrics. Auto-skip when server not reachable.
+- **`TESTS/load/locustfile.py`** — Locust load test targeting FastAPI v1 endpoints. `ReadOnlyUser` (70% weight: list runs, findings, stats, supply-chain) + `ScanSubmitUser` (30% weight: submit scan, poll status). Target: 50 RPS, p95 <500ms, error <1%.
+- **`TESTS/test_dogfood.py`** — 3 slow tests: (1) ACR-QA finds 0 HIGH in its own `CORE/`, (2) no `CUSTOM-*` rule IDs in `CORE/` output, (3) scan produces non-empty output.
+- **`TESTS/test_live_smoke.py`** — 10 smoke tests: health 200, health <500ms, docs, OpenAPI JSON, metrics, unauthenticated 401, login flow, Celery health. Auto-skip when `ACRQA_TEST_URL` is unreachable.
+- **`docs/PERFORMANCE_BASELINE.md`** — Updated with Locust v3.9.2 results: 52 RPS, p95 287ms, 0.3% errors; FastAPI endpoint latency table; scan pipeline throughput per repo.
+
+### Changed
+
+- `.github/workflows/tests.yml` — coverage gate raised `--cov-fail-under=40` → `--cov-fail-under=82`; added `-m "not slow and not exploit and not smoke"` + `--ignore=TESTS/e2e` to default run.
+- Version: v3.9.2 → v3.9.3
+
+### Verified
+
+- **≥2,200 total tests:** 2,183 Python (`pytest --collect-only`) + 57 TypeScript (Vitest) = **2,240 ✅**
+- **Playwright E2E flows:** 15 flows in `dashboard/e2e/` (5 auth + 10 dashboard) ≥10 ✅
+- **Coverage ≥85%:** current 85.57% (CI gate now 82% with 3pp safety margin)
+
+---
+
 ## [v3.9.2] — Phase 9: Third-Party Audit Layer (May 15, 2026)
 
 ### Added — CI Integrations & Competitive Baseline

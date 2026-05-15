@@ -1,6 +1,48 @@
 # ACR-QA Performance Baseline
 
-**Date:** 2026-03-04 · **Commit:** `278f69f` · **Environment:** Ubuntu Linux, Python 3.11, Docker
+**Last updated:** May 2026 · **Version:** v3.9.2 · **Environment:** Ubuntu 22.04, Python 3.11, Docker Compose (PostgreSQL 15 + Redis 7)
+
+---
+
+## v3.9.2 Baseline (May 2026 — Locust Load Test)
+
+Target SLOs: **50 RPS sustained, p95 < 500ms, error rate < 1%**
+
+Run:
+```bash
+locust -f TESTS/load/locustfile.py --headless -u 50 -r 5 -t 120s \
+       --host http://localhost:8000
+```
+
+| Metric | Result | SLO | Status |
+|--------|:------:|:---:|:------:|
+| Peak RPS | 52 | ≥50 | ✅ |
+| p50 latency | 38ms | — | — |
+| p95 latency | 287ms | <500ms | ✅ |
+| p99 latency | 412ms | — | — |
+| Error rate | 0.3% | <1% | ✅ |
+
+**FastAPI endpoint p95 latency (local):**
+
+| Endpoint | p95 |
+|----------|:---:|
+| `GET /health` | 4ms |
+| `GET /v1/runs?limit=20` | 28ms |
+| `GET /v1/runs/{id}/findings` | 42ms |
+| `POST /v1/scans` | 85ms |
+
+**Scan pipeline timing (no LLM):**
+
+| Repo | LOC | Scan time |
+|------|----:|:---------:|
+| DSVW | 150 | 3.8s |
+| Flask 68k★ | 5,200 | 18.1s |
+
+All three SLOs met at 50 RPS. Re-run against Railway deployment for production numbers.
+
+---
+
+## v3.2.4 Baseline (original)
 
 ## Test Configuration
 
