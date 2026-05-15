@@ -430,52 +430,77 @@ class CanonicalFinding(BaseModel):
         return self.model_dump()
 
 
-def normalize_ruff(ruff_json: list[dict]) -> list[CanonicalFinding]:
+def normalize_ruff(ruff_json) -> list[CanonicalFinding]:
     """Convert Ruff findings to canonical format"""
-    findings = []
+    findings: list[CanonicalFinding] = []
+
+    if isinstance(ruff_json, dict):
+        ruff_json = ruff_json.get("results", [])
+    if not isinstance(ruff_json, list):
+        return findings
 
     for item in ruff_json:
-        finding = CanonicalFinding.create(
-            rule_id=item.get("code", "UNKNOWN"),
-            file=item.get("filename", "unknown"),
-            line=item.get("location", {}).get("row", 0),
-            column=item.get("location", {}).get("column", 0),
-            severity="warning",  # Ruff doesn't specify severity
-            category="style",
-            message=item.get("message", ""),
-            tool_name="ruff",
-            tool_output=item,
-        )
-        finding.extract_evidence()
-        findings.append(finding)
+        if not isinstance(item, dict):
+            continue
+        try:
+            loc = item.get("location") or {}
+            finding = CanonicalFinding.create(
+                rule_id=item.get("code", "UNKNOWN"),
+                file=item.get("filename", "unknown"),
+                line=loc.get("row", 0) if isinstance(loc, dict) else 0,
+                column=loc.get("column", 0) if isinstance(loc, dict) else 0,
+                severity="warning",
+                category="style",
+                message=item.get("message", ""),
+                tool_name="ruff",
+                tool_output=item,
+            )
+            finding.extract_evidence()
+            findings.append(finding)
+        except Exception:
+            continue
 
     return findings
 
 
-def normalize_semgrep(semgrep_json: dict) -> list[CanonicalFinding]:
+def normalize_semgrep(semgrep_json) -> list[CanonicalFinding]:
     """Convert Semgrep findings to canonical format"""
-    findings = []
+    findings: list[CanonicalFinding] = []
 
+    if not isinstance(semgrep_json, dict):
+        return findings
     results = semgrep_json.get("results", [])
+    if not isinstance(results, list):
+        return findings
 
     for item in results:
-        # Extract rule ID from check_id (e.g., "services.semgrep.dangerous-eval-usage")
-        check_id = item.get("check_id", "")
-        rule_id = check_id.split(".")[-1] if "." in check_id else check_id
-
-        finding = CanonicalFinding.create(
-            rule_id=rule_id,
-            file=item.get("path", "unknown"),
-            line=item.get("start", {}).get("line", 0),
-            column=item.get("start", {}).get("col", 0),
-            severity=item.get("extra", {}).get("severity", "WARNING"),
-            category=item.get("extra", {}).get("metadata", {}).get("category", "security"),
-            message=item.get("extra", {}).get("message", ""),
-            tool_name="semgrep",
-            tool_output=item,
-        )
-        finding.extract_evidence()
-        findings.append(finding)
+        if not isinstance(item, dict):
+            continue
+        try:
+            check_id = item.get("check_id", "") or ""
+            if not isinstance(check_id, str):
+                check_id = str(check_id)
+            rule_id = check_id.split(".")[-1] if "." in check_id else check_id
+            extra = item.get("extra") or {}
+            if not isinstance(extra, dict):
+                extra = {}
+            finding = CanonicalFinding.create(
+                rule_id=rule_id,
+                file=item.get("path", "unknown"),
+                line=item.get("start", {}).get("line", 0) if isinstance(item.get("start"), dict) else 0,
+                column=item.get("start", {}).get("col", 0) if isinstance(item.get("start"), dict) else 0,
+                severity=extra.get("severity", "WARNING"),
+                category=(extra.get("metadata") or {}).get("category", "security")
+                if isinstance(extra.get("metadata"), dict)
+                else "security",
+                message=extra.get("message", ""),
+                tool_name="semgrep",
+                tool_output=item,
+            )
+            finding.extract_evidence()
+            findings.append(finding)
+        except Exception:
+            continue
 
     return findings
 
@@ -733,32 +758,40 @@ def normalize_all(outputs_dir: str = "outputs") -> list[CanonicalFinding]:
     return filtered_findings
 
 
-def normalize_bandit(bandit_json: dict) -> list[CanonicalFinding]:
+def normalize_bandit(bandit_json) -> list[CanonicalFinding]:
     """Convert Bandit security findings to canonical format"""
-    findings = []
+    findings: list[CanonicalFinding] = []
+
+    if not isinstance(bandit_json, dict):
+        return findings
 
     # Bandit severity mapping
     BANDIT_SEVERITY = {"HIGH": "high", "MEDIUM": "medium", "LOW": "low"}
 
     results = bandit_json.get("results", [])
+    if not isinstance(results, list):
+        return findings
 
     for item in results:
-        # Extract test ID (e.g., B101, B608)
-        test_id = item.get("test_id", "UNKNOWN")
-
-        finding = CanonicalFinding.create(
-            rule_id=test_id,
-            file=item.get("filename", "unknown"),
-            line=item.get("line_number", 0),
-            column=item.get("col_offset", 0),
-            severity=BANDIT_SEVERITY.get(item.get("issue_severity", "LOW"), "low"),
-            category="security",
-            message=f"{item.get('issue_text', '')} (Confidence: {item.get('issue_confidence', 'UNKNOWN')})",
-            tool_name="bandit",
-            tool_output=item,
-        )
-        finding.extract_evidence()
-        findings.append(finding)
+        if not isinstance(item, dict):
+            continue
+        try:
+            test_id = item.get("test_id", "UNKNOWN")
+            finding = CanonicalFinding.create(
+                rule_id=test_id,
+                file=item.get("filename", "unknown"),
+                line=item.get("line_number", 0),
+                column=item.get("col_offset", 0),
+                severity=BANDIT_SEVERITY.get(item.get("issue_severity", "LOW"), "low"),
+                category="security",
+                message=f"{item.get('issue_text', '')} (Confidence: {item.get('issue_confidence', 'UNKNOWN')})",
+                tool_name="bandit",
+                tool_output=item,
+            )
+            finding.extract_evidence()
+            findings.append(finding)
+        except Exception:
+            continue
 
     return findings
 
