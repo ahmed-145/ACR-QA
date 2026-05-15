@@ -1,0 +1,50 @@
+{
+  "nav": {
+    "scans": "Scans",
+    "supplyChain": "Supply Chain",
+    "settings": "Settings"
+  },
+  "scans": {
+    "title": "Scans Dashboard",
+    "subtitle": "Recent analysis runs and security findings",
+    "newScan": "New Scan",
+    "refresh": "Refresh",
+    "totalScans": "Total Scans",
+    "completed": "Completed",
+    "totalFindings": "Total Findings",
+    "highSeverity": "HIGH Severity",
+    "noScansYet": "No scans yet",
+    "noScansDescription": "Submit your first scan to get started."
+  },
+  "findings": {
+    "title": "Findings",
+    "severity": "Severity",
+    "rule": "Rule",
+    "file": "File",
+    "message": "Message"
+  },
+  "settings": {
+    "title": "Settings",
+    "operationMode": "Operation Mode",
+    "liveStatus": "Live Status",
+    "account": "Account",
+    "email": "Email",
+    "role": "Role",
+    "copyToken": "Copy API token",
+    "signOut": "Sign out",
+    "healthy": "healthy",
+    "unreachable": "unreachable",
+    "checking": "checking"
+  },
+  "language": {
+    "label": "Language",
+    "en": "English",
+    "ar": "Arabic"
+  },
+  "common": {
+    "loading": "Loading…",
+    "error": "Something went wrong",
+    "retry": "Try again",
+    "exportPdf": "Export PDF"
+  }
+}

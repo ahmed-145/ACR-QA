@@ -1,0 +1,50 @@
+{
+  "nav": {
+    "scans": "الفحوصات",
+    "supplyChain": "سلسلة التوريد",
+    "settings": "الإعدادات"
+  },
+  "scans": {
+    "title": "لوحة الفحوصات",
+    "subtitle": "عمليات التحليل الأخيرة ونتائج الأمان",
+    "newScan": "فحص جديد",
+    "refresh": "تحديث",
+    "totalScans": "إجمالي الفحوصات",
+    "completed": "مكتملة",
+    "totalFindings": "إجمالي النتائج",
+    "highSeverity": "خطورة عالية",
+    "noScansYet": "لا توجد فحوصات بعد",
+    "noScansDescription": "أرسل فحصك الأول للبدء."
+  },
+  "findings": {
+    "title": "النتائج",
+    "severity": "الخطورة",
+    "rule": "القاعدة",
+    "file": "الملف",
+    "message": "الرسالة"
+  },
+  "settings": {
+    "title": "الإعدادات",
+    "operationMode": "وضع التشغيل",
+    "liveStatus": "الحالة المباشرة",
+    "account": "الحساب",
+    "email": "البريد الإلكتروني",
+    "role": "الدور",
+    "copyToken": "نسخ رمز API",
+    "signOut": "تسجيل الخروج",
+    "healthy": "يعمل",
+    "unreachable": "غير متاح",
+    "checking": "جارٍ التحقق"
+  },
+  "language": {
+    "label": "اللغة",
+    "en": "الإنجليزية",
+    "ar": "العربية"
+  },
+  "common": {
+    "loading": "جارٍ التحميل…",
+    "error": "حدث خطأ ما",
+    "retry": "حاول مرة أخرى",
+    "exportPdf": "تصدير PDF"
+  }
+}

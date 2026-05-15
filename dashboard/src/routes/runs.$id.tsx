@@ -9,10 +9,12 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/dialog";
-import { Loader2, ArrowLeft, Shield, Package, BarChart3 } from "lucide-react";
+import { Loader2, ArrowLeft, Shield, Package, BarChart3, FileDown } from "lucide-react";
 import { type Finding } from "@/lib/api";
 import { useState } from "react";
 import { severityColor } from "@/lib/utils";
+import { useTranslation } from "react-i18next";
+import { SkeletonCard } from "@/components/ui/skeleton";
 
 export function RunDetailPage() {
   const { id } = useParams<{ id: string }>();
@@ -20,6 +22,7 @@ export function RunDetailPage() {
   const navigate = useNavigate();
   const [selectedFinding, setSelectedFinding] = useState<Finding | null>(null);
   const [activeTab, setActiveTab] = useState("findings");
+  const { t } = useTranslation();
 
   const { data: findingsData, isLoading: findingsLoading } = useFindings(runId);
   const { data: stats, isLoading: statsLoading } = useStats(runId);
@@ -43,7 +46,7 @@ export function RunDetailPage() {
           <h1 className="text-2xl font-bold">Run #{runId}</h1>
           <p className="text-sm text-muted-foreground mt-0.5">Detailed analysis results</p>
         </div>
-        <div className="flex gap-2">
+        <div className="flex items-center gap-2 flex-wrap">
           {(["HIGH", "MEDIUM", "LOW"] as const).map((sev) =>
             severityCounts[sev] ? (
               <Badge key={sev} className={severityColor(sev)}>
@@ -51,13 +54,23 @@ export function RunDetailPage() {
               </Badge>
             ) : null
           )}
+          <Button
+            variant="outline"
+            size="sm"
+            className="no-print ml-2"
+            aria-label={t("common.exportPdf")}
+            onClick={() => window.print()}
+          >
+            <FileDown className="h-4 w-4 mr-1" aria-hidden />
+            {t("common.exportPdf")}
+          </Button>
         </div>
       </div>
 
       {/* Stats row */}
       {statsLoading ? (
-        <div className="flex justify-center py-4">
-          <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          {[0, 1, 2, 3].map((i) => <SkeletonCard key={i} />)}
         </div>
       ) : stats ? (
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">

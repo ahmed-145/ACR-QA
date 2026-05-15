@@ -49,3 +49,48 @@
   * { @apply border-border; }
   body { @apply bg-background text-foreground; }
 }
+
+/* ── Print / PDF export ───────────────────────────────────────────────── */
+@media print {
+  header,
+  nav,
+  .no-print,
+  button:not(.print-include) {
+    display: none !important;
+  }
+
+  main {
+    padding: 0 !important;
+  }
+
+  body {
+    background: white !important;
+    color: black !important;
+    font-size: 11pt;
+  }
+
+  .rounded-lg,
+  .rounded-md {
+    border-radius: 0 !important;
+  }
+
+  a[href]::after {
+    content: none !important;
+  }
+
+  @page {
+    margin: 1.5cm;
+  }
+}
+
+/* ── RTL support ──────────────────────────────────────────────────────── */
+[dir="rtl"] .ml-auto { margin-left: unset; margin-right: auto; }
+[dir="rtl"] .ml-4    { margin-left: unset; margin-right: 1rem; }
+[dir="rtl"] .mr-1    { margin-right: unset; margin-left: 0.25rem; }
+[dir="rtl"] .mr-2    { margin-right: unset; margin-left: 0.5rem; }
+
+/* ── Mobile focus rings (WCAG 2.1 AA) ───────────────────────────────── */
+:focus-visible {
+  outline: 2px solid hsl(var(--ring));
+  outline-offset: 2px;
+}

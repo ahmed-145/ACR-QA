@@ -55,11 +55,11 @@ export function ScansPage() {
           <p className="text-muted-foreground text-sm mt-1">Recent analysis runs and security findings</p>
         </div>
         <div className="flex gap-2">
-          <Button variant="outline" size="sm" onClick={() => refetch()}>
-            <RefreshCw className="h-4 w-4 mr-1" /> Refresh
+          <Button variant="outline" size="sm" aria-label="Refresh scan list" onClick={() => refetch()}>
+            <RefreshCw className="h-4 w-4 mr-1" aria-hidden /> Refresh
           </Button>
-          <Button size="sm" onClick={() => setShowScanDialog(true)}>
-            <Play className="h-4 w-4 mr-1" /> New Scan
+          <Button size="sm" aria-label="Start a new scan" onClick={() => setShowScanDialog(true)}>
+            <Play className="h-4 w-4 mr-1" aria-hidden /> New Scan
           </Button>
         </div>
       </div>
