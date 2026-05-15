@@ -1,0 +1,117 @@
+# Default values for ACR-QA Helm chart.
+# Override with: helm install acrqa ./deploy/helm/acrqa -f my-values.yaml
+
+# ── API ───────────────────────────────────────────────────────────────────────
+api:
+  image:
+    repository: ghcr.io/ahmeed-145/acrqa
+    pullPolicy: IfNotPresent
+    tag: "4.0.0"
+
+  replicaCount: 2
+
+  service:
+    type: ClusterIP
+    port: 8000
+
+  resources:
+    requests:
+      cpu: "250m"
+      memory: "512Mi"
+    limits:
+      cpu: "1000m"
+      memory: "2Gi"
+
+  env:
+    # Secrets — override with your own values or use a Kubernetes Secret
+    DATABASE_URL: ""      # postgresql://user:pass@host:5432/acrqa
+    REDIS_URL: ""         # redis://redis:6379/0
+    GROQ_API_KEY: ""      # Your Groq API key
+    SECRET_KEY: ""        # FastAPI JWT secret
+    SENTRY_DSN: ""        # Optional Sentry DSN
+
+  # Liveness: restart if the API is stuck
+  livenessProbe:
+    httpGet:
+      path: /health
+      port: 8000
+    initialDelaySeconds: 30
+    periodSeconds: 15
+    failureThreshold: 3
+
+  # Readiness: only route traffic when DB migrations are done
+  readinessProbe:
+    httpGet:
+      path: /health
+      port: 8000
+    initialDelaySeconds: 10
+    periodSeconds: 5
+    failureThreshold: 6
+
+# ── Celery Worker ─────────────────────────────────────────────────────────────
+worker:
+  replicaCount: 2
+
+  resources:
+    requests:
+      cpu: "500m"
+      memory: "1Gi"
+    limits:
+      cpu: "2000m"
+      memory: "4Gi"
+
+# ── Horizontal Pod Autoscaler ─────────────────────────────────────────────────
+autoscaling:
+  enabled: true
+  minReplicas: 2
+  maxReplicas: 20
+  # Scale on Celery queue depth via KEDA (if installed) or CPU as fallback
+  targetCPUUtilizationPercentage: 70
+  targetMemoryUtilizationPercentage: 80
+
+# ── Ingress ───────────────────────────────────────────────────────────────────
+ingress:
+  enabled: true
+  className: "nginx"
+  annotations:
+    nginx.ingress.kubernetes.io/proxy-body-size: "50m"
+    cert-manager.io/cluster-issuer: "letsencrypt-prod"
+  host: acrqa.example.com
+  tls: true
+
+# ── PostgreSQL (in-cluster, dev only — use RDS in production) ─────────────────
+postgresql:
+  enabled: true
+  auth:
+    database: acrqa
+    username: acrqa
+    password: changeme
+  primary:
+    resources:
+      requests:
+        cpu: "250m"
+        memory: "256Mi"
+
+# ── Redis ─────────────────────────────────────────────────────────────────────
+redis:
+  enabled: true
+  auth:
+    enabled: false
+  master:
+    resources:
+      requests:
+        cpu: "100m"
+        memory: "128Mi"
+
+# ── Pod Disruption Budget ─────────────────────────────────────────────────────
+podDisruptionBudget:
+  enabled: true
+  minAvailable: 1
+
+# ── Network Policy ─────────────────────────────────────────────────────────────
+networkPolicy:
+  enabled: true
+  # API pods only accept traffic from ingress + prometheus
+  allowedNamespaces:
+    - ingress-nginx
+    - monitoring

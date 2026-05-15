@@ -1,0 +1,15 @@
+apiVersion: v2
+name: acrqa
+description: ACR-QA — AI-powered code review and security analysis platform
+type: application
+version: 1.0.0
+appVersion: "4.0.0"
+keywords:
+  - sast
+  - security
+  - code-review
+  - ai
+maintainers:
+  - name: Ahmed Abbas
+    email: ahmedabbass871@gmail.com
+home: https://github.com/ahmeed-145/acrqa

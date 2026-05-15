@@ -1,0 +1,14 @@
+{{- if .Values.podDisruptionBudget.enabled }}
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: {{ include "acrqa.fullname" . }}-api
+  labels:
+    {{- include "acrqa.labels" . | nindent 4 }}
+spec:
+  minAvailable: {{ .Values.podDisruptionBudget.minAvailable }}
+  selector:
+    matchLabels:
+      {{- include "acrqa.selectorLabels" . | nindent 6 }}
+      app.kubernetes.io/component: api
+{{- end }}
