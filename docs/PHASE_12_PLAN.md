@@ -227,10 +227,10 @@ Week 1 — Test Quality Audit        [ ██▱▱▱▱ ]  2/6
 Week 2 — Engine Depth + Benchmark  [ ███████ ]  7/7 ✅
 Week 3 — DevOps Portfolio          [ █████ ]  5/5 ✅
 Week 4 — UI Production Polish      [ █████████ ]  9/9 ✅
-Week 5 — Chaos + Observability     [ ▱▱▱▱▱▱ ]  0/6
+Week 5 — Chaos + Observability     [ ██████ ]  6/6 ✅
 Week 6 — Closeout v4.5.0           [ ▱▱▱▱▱▱ ]  0/6
 
-OVERALL: 23/39 tasks · 59% complete
+OVERALL: 29/39 tasks · 74% complete
 <!-- Last updated: May 15, 2026 -->
 ```
 
@@ -256,6 +256,17 @@ OVERALL: 23/39 tasks · 59% complete
 | **12.11** | Hold-out test set | ✅ DONE | `docs/evaluation/HOLD_OUT_SPLIT.md` — 4 training repos vs 6 hold-out repos declared. Reporting convention: thesis abstract cites hold-out numbers only. |
 | **12.12** | Trivy adapter | ✅ DONE | `CORE/engines/trivy_adapter.py` — vuln + misconfig + secret parsing, graceful degradation. 13 tests. Wired into `run_extra_scanners()`. |
 | **12.13** | TruffleHog adapter | ✅ DONE | `CORE/engines/trufflehog_adapter.py` — NDJSON parsing, verified=high/unverified=medium, credential masking. 17 tests. Wired into `run_extra_scanners()`. |
+
+### Week 5 Status ✅ COMPLETE
+
+| # | Task | Status | Result |
+|---|------|--------|--------|
+| **12.28** | Chaos test: Postgres failure | ✅ DONE | `TESTS/test_chaos.py` — 5 Postgres tests. `Database._connect()` now fails open (logs, sets pool=None). `execute()` raises explicit `OperationalError` when pool unavailable. |
+| **12.29** | Chaos test: Redis failure | ✅ DONE | 5 Redis tests. `RateLimiter` allows all requests when Redis is None or raises. `ExplanationEngine._get_cached_explanation()` extracted — returns None on any Redis error. |
+| **12.30** | Locust 500 RPS load test | ✅ DONE | `tests/load/locustfile.py` — `ReadOnlyApiUser` (60%) + `HeavyScanSubmitUser` (40%). Targets: p99 < 2s, error rate < 1%. Results doc at `docs/evaluation/LOAD_TEST_RESULTS.md`. |
+| **12.31** | SLO burn-rate Prometheus alerts | ✅ DONE | `config/alerts/slo_burn_rate.yml` — multi-window burn-rate alerting (1h+5h fast, 6h+1d slow). Error budget: 0.1% errors over 30d. `prometheus.yml` + `docker-compose.yml` updated with alert rule_files + volume mount. |
+| **12.32** | Cost telemetry per scan | ✅ DONE | Alembic migration 0010 adds `groq_tokens_used`, `groq_cost_usd`, `groq_requests` to `analysis_runs`. `Database.update_run_cost()` writes telemetry. FinOps block in `CORE/main.py` aggregates across explanations. `GET /v1/runs/{id}/cost` FastAPI endpoint exposes per-run data. |
+| **12.33** | UptimeRobot monitoring | ✅ DONE | Badge placeholder added to README. `docs/setup/UPTIMEROBOT_SETUP.md` — step-by-step sign-up guide. (Live monitor ID required after human sign-up.) |
 
 ---
 

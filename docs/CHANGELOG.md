@@ -2,6 +2,58 @@
 
 All notable changes to ACR-QA are documented here.
 
+## [Phase 12 Week 5 — Complete] — Chaos + Observability Hardening (May 15, 2026)
+
+### Summary
+
+Week 5 of Phase 12: 13 chaos tests validating graceful degradation under Postgres/Redis failures,
+Locust 500 RPS load test, multi-window SLO burn-rate Prometheus alerting, per-run Groq cost
+telemetry (FinOps), and UptimeRobot external uptime monitoring. 6/6 tasks done.
+
+### Added
+
+- **`TESTS/test_chaos.py`** — 13 chaos tests (Tasks 12.28 + 12.29):
+  - `TestPostgresChaos` — 5 tests: connect failure, execute failure, complete_analysis_run error,
+    get_run_info returns None, normalizer runs independently of DB
+  - `TestRedisChaos` — 5 tests: rate limiter allows when Redis None, connect failure → None,
+    mid-request error → allow, explainer cache miss, pipeline unblocked
+  - `TestChaosMatrix` — 3 tests: module import survives infra patch, chaos recovery sequence
+    (Redis up → down → up)
+
+- **`tests/load/locustfile.py`** — Locust load test (Task 12.30):
+  - `ReadOnlyApiUser` (60%): `/health`, `/v1/quick-stats`, `/v1/repos`, `/v1/trends`
+  - `HeavyScanSubmitUser` (40%): POST `/v1/scans/submit`, `/v1/runs/{id}/cost`
+  - Target: 500 RPS, p99 < 2s, error rate < 1%
+
+- **`config/alerts/slo_burn_rate.yml`** — SLO burn-rate Prometheus alerting (Task 12.31):
+  - Recording rules for 1h/5h/6h/1d error-rate windows
+  - `SLOBudgetBurnRateFast` alert: 14.4× budget burn in 1h window (paging)
+  - `SLOBudgetBurnRateSlow` alert: 3× budget burn in 6h window (warning)
+
+- **`alembic/versions/20260515_0010_run_cost_telemetry.py`** — Alembic migration (Task 12.32):
+  - Adds `groq_tokens_used` (Integer), `groq_cost_usd` (Numeric 10,6), `groq_requests` (Integer)
+    to `analysis_runs`; partial index on `groq_cost_usd IS NOT NULL`
+
+- **`docs/evaluation/LOAD_TEST_RESULTS.md`** — Load test targets + methodology doc
+
+- **`docs/setup/UPTIMEROBOT_SETUP.md`** — UptimeRobot sign-up guide (Task 12.33)
+
+### Changed
+
+- **`DATABASE/database.py`** — `_connect()` no longer re-raises `psycopg2.OperationalError`
+  (fails open); `execute()` raises explicit `OperationalError` when pool is unavailable;
+  `update_run_cost()` method added
+- **`CORE/engines/explainer.py`** — `_get_cached_explanation(cache_key)` extracted as public
+  helper; returns `None` on any Redis error (cache-miss semantics)
+- **`CORE/main.py`** — FinOps cost aggregation block before `complete_analysis_run()` — sums
+  tokens/cost/requests across explanations, writes via `update_run_cost()`
+- **`FRONTEND/api/main.py`** — `GET /v1/runs/{run_id}/cost` endpoint added
+- **`config/prometheus.yml`** — `rule_files` block + `acr-qa-fastapi` scrape job added
+- **`docker-compose.yml`** — Prometheus alerts volume mount added
+- **`README.md`** — UptimeRobot badge placeholder added
+
+---
+
 ## [Phase 12 Week 4 — Complete] — UI Production Polish (May 15, 2026)
 
 ### Summary
