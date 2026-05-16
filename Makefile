@@ -103,7 +103,7 @@ init-config:
 # ─── Primary one-command startup ───────────────────────────────────────────
 up:
 	@echo "🚀 Starting ACR-QA full stack..."
-	docker-compose up -d
+	docker compose up -d
 	@echo ""
 	@echo "✅ All services started!"
 	@echo ""
@@ -121,12 +121,12 @@ up:
 
 down:
 	@echo "🛑 Stopping ACR-QA stack..."
-	docker-compose down
+	docker compose down
 	@echo "✓ All services stopped"
 
 docker-up:
 	@echo "🐳 Starting Docker Compose stack..."
-	docker-compose up -d
+	docker compose up -d
 	@echo ""
 	@echo "✅ Docker stack started!"
 	@echo ""
@@ -142,11 +142,11 @@ docker-up:
 
 docker-down:
 	@echo "🛑 Stopping Docker Compose stack..."
-	docker-compose down
+	docker compose down
 	@echo "✓ Docker stack stopped"
 
 docker-logs:
-	docker-compose logs -f
+	docker compose logs -f
 
 docker-restart: docker-down docker-up
 
