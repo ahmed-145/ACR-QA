@@ -52,7 +52,7 @@ and thesis appendix. 4/6 tasks done (12.35 demo video + 12.36 YouTube upload nee
 ### Changed
 
 - **`docs/evaluation/EVALUATION.md`** — Production Readiness Metrics updated:
-  - Tests: 2,162 → 2,297 (2,232 Python + 65 TS)
+  - Tests: 2,162 → 2,339 (2,274 Python + 65 TS; +57 from Phase 12 Weeks 1–6)
   - Endpoints: 32 → 33, Migrations: 9 → 10, Engines: 12 → 14
   - Added: chaos resilience, load test, SLO alerting, supply chain, OTel, WCAG, i18n, IaC rows
   - Competitive table: +5 Phase 12 rows (Helm/Terraform, WCAG/i18n, chaos, SLO, FinOps)

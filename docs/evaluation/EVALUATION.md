@@ -15,7 +15,7 @@
 | **AI Explanation Quality** | 836/836 (100%) |
 | **Continuous Integration** | GitHub Actions Pass |
 
-### Per-Repository Breakdown (v3.9.5 baseline — 4 core repos)
+### Per-Repository Breakdown (v4.0.0 baseline — 4 core repos)
 
 | Repository | Findings | TP | FP | Overall Precision | Security Precision | Recall | F1 |
 |------------|:--------:|:--:|:--:|:-----------------:|:------------------:|:------:|:--:|

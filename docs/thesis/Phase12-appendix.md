@@ -41,9 +41,9 @@ The following claims were added to the thesis by Phase 12. Each is verifiable fr
 
 | Metric | v4.0.0 (baseline) | v4.5.0 (Phase 12) |
 |--------|:-----------------:|:-----------------:|
-| Python tests passing | 2,217 | 2,232 |
+| Python tests passing | 2,217 | 2,274 |
 | TypeScript tests | 65 | 65 |
-| Total tests reported | 2,282 | 2,297 |
+| Total tests reported | 2,282 | 2,339 |
 | FastAPI endpoints | 32 | 33 |
 | Alembic migrations | 9 | 10 |
 | Analysis engines | 12 | 14 |

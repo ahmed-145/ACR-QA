@@ -2,7 +2,7 @@
 
 **Author:** Ahmed Abbas (KSIU Graduation Thesis)
 **Phase dates:** May 15, 2026
-**Scope:** 29/39 tasks done (v4.0.0 → targeting v4.5.0)
+**Scope:** 37/39 tasks done (v4.0.0 → v4.5.0 tagged and released; 12.35 + 12.36 = human tasks)
 **Previous version:** v4.0.0 (2,219 tests, 10/10 CI green, Railway live)
 
 ---
@@ -13,12 +13,12 @@
 
 | Week | Theme | Tasks | Key output |
 |------|-------|:-----:|------------|
-| 1 | Test Quality Audit | 2/6 | Mutation score baseline (0% → actionable), 4 parser bugs found via Hypothesis |
+| 1 | Test Quality Audit | 6/6 | Mutation score baseline (0% → actionable), 4 parser bugs found via Hypothesis, 42 new mutation-killing + fuzz + perf + snapshot tests |
 | 2 | Engine Depth + Benchmarks | 7/7 | Inter-procedural taint, Trivy/TruffleHog adapters, 42,000 LOC/s scale benchmark |
 | 3 | DevOps Portfolio | 5/5 | Helm chart, Terraform AWS stack, OTel/Jaeger, Cosign SLSA L2 |
 | 4 | UI Production Polish | 9/9 | WCAG 2.1 AA, 375px mobile, Arabic RTL, skeleton loading, error boundaries, PDF export |
 | 5 | Chaos + Observability | 6/6 | 13 chaos tests, Locust 500 RPS, SLO alerts, FinOps cost telemetry |
-| 6 | Closeout | 3+/6 | Eval update, retrospective, v4.5.0 tag *(12.35/12.36 need human recording)* |
+| 6 | Closeout | 4/6 | Eval update, retrospective, v4.5.0 tag, thesis appendix *(12.35/12.36 need human recording)* |
 
 ---
 
@@ -90,9 +90,9 @@ These are sentences that can be said in the thesis QA session and defended with 
 
 | Metric | v4.0.0 | v4.5.0 (Phase 12) | Delta |
 |--------|:------:|:-----------------:|:-----:|
-| Python tests passing | 2,217 | 2,232 | +15 |
+| Python tests passing | 2,217 | 2,274 | +57 |
 | TypeScript tests | 65 | 65 | — |
-| Total reported | 2,282 | 2,297 | +15 |
+| Total reported | 2,282 | 2,339 | +57 |
 | FastAPI endpoints | 32 | 33 | +1 |
 | Alembic migrations | 9 | 10 | +1 |
 | Engines | 12 | 14 | +2 |
@@ -101,4 +101,4 @@ These are sentences that can be said in the thesis QA session and defended with 
 
 ---
 
-*Written: May 15, 2026*
+*Written: May 15, 2026 — updated May 16, 2026 (Week 1 completion + test count correction)*

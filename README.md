@@ -6,7 +6,7 @@
 *10 static analysis tools. One canonical schema. RAG-enhanced AI explanations. $0 recurring cost.*
 
 [![Python 3.11+](https://img.shields.io/badge/Python-3.11+-3776ab?logo=python&logoColor=white)](https://www.python.org/)
-[![Version](https://img.shields.io/badge/Version-4.0.0-blue)](docs/CHANGELOG.md)
+[![Version](https://img.shields.io/badge/Version-4.5.0-blue)](docs/CHANGELOG.md)
 [![Live](https://img.shields.io/badge/Live-acrqa--api--production.up.railway.app-22c55e?logo=railway&logoColor=white)](https://acrqa-api-production.up.railway.app/health)
 [![Tests](https://img.shields.io/badge/Tests-2339%20passing-22c55e?logo=pytest&logoColor=white)](./TESTS/)
 [![Coverage](https://img.shields.io/badge/Coverage-85%25-22c55e?logo=codecov&logoColor=white)](./htmlcov/)
@@ -39,7 +39,7 @@ ACR-QA is a **provenance-first, AI-augmented code review platform** built as a g
 | **LLM hallucination** — AI assistants give confident but wrong security advice | RAG: the LLM can only explain rules it can cite from a curated 66-rule knowledge base; semantic entropy (3× runs) detects contradictions |
 | **Invisible test gaps** — code coverage % doesn't tell you *which* complex functions have no test | AST-based Test Gap Analyzer ranks untested symbols by cyclomatic complexity |
 
-**Key numbers:** 97.1% precision · 9/10 OWASP Top 10 · **2,282 tests** (2,217 Python + 65 TypeScript) · $0 recurring cost
+**Key numbers:** 97.1% precision · 9/10 OWASP Top 10 · **2,339 tests** (2,274 Python + 65 TypeScript) · $0 recurring cost
 
 ---
 
