@@ -6,6 +6,7 @@ application's config (DB_HOST, DB_PORT, DB_NAME, DB_USER, DB_PASSWORD or DATABAS
 
 import os
 from logging.config import fileConfig
+from urllib.parse import quote_plus
 
 from sqlalchemy import engine_from_config, pool
 
@@ -31,7 +32,7 @@ def get_database_url() -> str:
     port = os.getenv("DB_PORT", "5432")
     name = os.getenv("DB_NAME", "acrqa")
     user = os.getenv("DB_USER", "postgres")
-    password = os.getenv("DB_PASSWORD", "postgres")
+    password = quote_plus(os.getenv("DB_PASSWORD", "postgres"))
     return f"postgresql://{user}:{password}@{host}:{port}/{name}"
 
 
