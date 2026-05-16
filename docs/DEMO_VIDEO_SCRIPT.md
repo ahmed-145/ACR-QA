@@ -10,7 +10,7 @@
 > And linters give you hundreds of warnings with no explanation.
 >
 > I built ACR-QA — Automated Code Review and Quality Assurance — to solve this.
-> It's a platform that runs 7 static analysis tools, normalizes findings into a
+> It's a platform that runs 10 static analysis tools, normalizes findings into a
 > canonical format, and uses AI to generate developer-friendly explanations.
 > Let me show you how it works."
 
@@ -36,7 +36,7 @@
 
 *Show the GitHub Actions tab running*
 
-> "Watch what happens. ACR-QA runs 7 tools simultaneously:
+> "Watch what happens. ACR-QA runs 10 tools simultaneously:
 > Bandit, Semgrep, Ruff, Vulture, jscpd, Radon, and a custom Secrets Detector.
 > It takes about 45 seconds for a full scan."
 

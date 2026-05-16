@@ -361,4 +361,4 @@ docs/
 
 ---
 
-*Last updated: May 14, 2026 — ACR-QA v3.6.0*
+*Last updated: May 16, 2026 — ACR-QA v4.5.0*

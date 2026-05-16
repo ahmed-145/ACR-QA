@@ -1,12 +1,12 @@
 # ACR-QA REST API Reference
 
 **Base URL:** `http://localhost:8000`
-**Version:** v4.0.0 (Phase 12)
+**Version:** v4.5.0 (Phase 12 complete)
 **Format:** All responses are `application/json`
 **Auth:** All `/v1/` endpoints require `Authorization: Bearer <token>` or `X-API-Key: <key>`
 
 > ⚠️ Flask is fully removed (v3.6.1). The only server is FastAPI at `:8000`. Swagger UI is at `/docs`.
-> This document covers the 32 async endpoints under `/v1/` in `FRONTEND/api/routers/`.
+> This document covers the 33 async endpoints under `/v1/` in `FRONTEND/api/routers/`.
 
 **Get a token:**
 ```bash

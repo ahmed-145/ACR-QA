@@ -282,6 +282,6 @@ This section documents the 2 CI failures that occurred during the v2.9 session a
 
 ---
 
-*Generated from ACR-QA scans — March 31, 2026 (v2.9)*
+*Generated from ACR-QA scans — May 16, 2026 (v4.5.0)*
 *Repos: DVPWA, Pygoat (OWASP), VulPy (Snyk), DSVW + Flask/httpx god-mode validation*
 *Rule mappings: 127 canonical rules (123 + 4 new: SECURITY-045/046/047/048)*

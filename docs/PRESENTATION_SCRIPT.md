@@ -1,4 +1,4 @@
-# 🎤 ACR-QA Thesis Defense & Demo Script (v3.9.5)
+# 🎤 ACR-QA Thesis Defense & Demo Script (v4.5.0)
 
 *7 minutes total: 2 min slides → 5 min live demo. Show, don't tell.*
 
@@ -34,7 +34,7 @@ python3 FRONTEND/app.py     # Start the dashboard → localhost:5000
 > "There are three things no commercial competitor — not SonarQube, not CodeRabbit — offers. First, I built a **Policy-as-Code** engine where teams define quality rules in a YAML file and the system enforces them in CI. Second, I wrote a **Test Gap Analyzer** from scratch using Python's Abstract Syntax Tree to find untested business logic by complexity. Third, I implemented **semantic entropy scoring** — the AI runs 3 times and the system mathematically detects when it contradicts itself, preventing hallucination."
 
 ### Slide 8: Reliability
-> "Most importantly, I built a comprehensive stress-testing suite. We now have **2,160 rigorous tests** that execute in under 45 seconds, with 86% code coverage and 97.1% precision across 4 deliberately vulnerable benchmark repositories. But rather than talking about it, let me show you."
+> "Most importantly, I built a comprehensive stress-testing suite. We now have **2,274 rigorous tests** that execute in under 45 seconds, with 86% code coverage and 97.1% precision across 4 deliberately vulnerable benchmark repositories. But rather than talking about it, let me show you."
 
 ---
 
@@ -50,7 +50,7 @@ python3 FRONTEND/app.py     # Start the dashboard → localhost:5000
 - **Point to the 👍/👎 buttons:** "And these feedback buttons feed into our AI Tuner. When developers mark false positives, the system learns to reduce alert spam on future runs."
 
 ### Demo 2: The 2,160 Tests (Terminal — 1 min)
-> "Now let me prove the reliability. I'm going to run all 2,160 stress tests right now."
+> "Now let me prove the reliability. I'm going to run all 2,274 tests right now."
 
 ```bash
 make test-all
@@ -81,7 +81,7 @@ python3 CORE/main.py --target-dir TESTS/samples --rich --limit 5
 
 ### Demo 5: GitHub Enterprise Setup (Browser — 30 sec)
 - Switch to Browser **Tab 2** (Releases): "I created an official v3.9.5 release with full semantic versioning."
-- Switch to Browser **Tab 3** (Actions): "And here is the CI/CD pipeline. Every push triggers the 2,160 tests automatically. Green checkmark means the code is safe."
+- Switch to Browser **Tab 3** (Actions): "And here is the CI/CD pipeline. Every push triggers the 2,274 tests automatically. Green checkmark means the code is safe."
 
 ### Closing Line
 > "This is no longer a prototype, Dr. Samy. It is a fully automated, enterprise-ready product. Do you have any questions?"
@@ -97,7 +97,7 @@ python3 CORE/main.py --target-dir TESTS/samples --rich --limit 5
 > "Companies use 'Code Coverage' like 80%, but that metric can be misleading — you can cover 80% of easy code while the hardest logic remains untested. The Test Gap Analyzer reads the Abstract Syntax Tree of the code, finds the most mathematically complex functions using Cyclomatic Complexity, and checks if tests exist for those specific functions. Engineering managers want this to stop developers from skipping hard tests."
 
 ### Q: "What is CI/CD? Why now? Doesn't deployment cost money?"
-> "CI/CD is Continuous Integration / Continuous Deployment. I set it up using GitHub Actions, which is 100% free for open-source and student projects. No servers needed. Every time I push code, GitHub's free servers automatically run our 2,160 tests and block the code if anything fails. It keeps the main branch always in a deployable state — even before we pay for hosting."
+> "CI/CD is Continuous Integration / Continuous Deployment. I set it up using GitHub Actions, which is 100% free for open-source and student projects. No servers needed. Every time I push code, GitHub's free servers automatically run our 2,274 tests and block the code if anything fails. It keeps the main branch always in a deployable state — even before we pay for hosting."
 
 ### Q: "How is this different from SonarQube or CodeRabbit?"
 > "Three things no competitor offers. First, our Test Gap Analyzer uses AST to find untested complex code — SonarQube and CodeRabbit don't do this. Second, our hallucination detection runs the LLM 3 times and measures consistency using Semantic Entropy — no competitor does this. Third, our cost-benefit analysis calculates actual ROI per finding. And we do all of this at zero recurring cost using free-tier APIs."
@@ -126,7 +126,7 @@ python3 FRONTEND/app.py       # Dashboard → http://localhost:5000
 ### Demo Commands (Run in Order)
 
 ```bash
-# 1 — Run all 2,160 unit tests (~40 seconds)
+# 1 — Run all 2,274 unit tests (~40 seconds)
 make test-all
 
 # 2 — AST Test Gap Analyzer (untested complex functions)

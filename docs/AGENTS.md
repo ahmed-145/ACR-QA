@@ -11,8 +11,8 @@
 
 **ACR-QA** — Automated Code Review & Quality Assurance
 Graduation thesis project for Ahmed at KSIU. Supervisor: Dr. Samy.
-**Version:** v3.3.0 (FastAPI + Celery + Auth complete) → targeting v4.0.0 (reachability + MCP + proof-of-exploit + provenance)
-**Stack:** Python 3.11+ · FastAPI 0.115 (async, port 8000) · Flask 3.x (legacy, port 5000, being killed) · Celery 5.4 · PostgreSQL 15 · Redis 5.2 · Semgrep · Bandit · Ruff · Vulture · gosec · staticcheck · ESLint · npm audit · JWT + API keys
+**Version:** v4.5.0 (Phase 12 complete — all automated tasks done; 12.35 demo video + 12.36 YouTube = human tasks)
+**Stack:** Python 3.11+ · FastAPI 0.115 (async, port 8000) · Celery 5.4 · PostgreSQL 15 · Redis 5.2 · Semgrep · Bandit · Ruff · Vulture · gosec · staticcheck · ESLint · npm audit · Trivy · TruffleHog · JWT + API keys
 **Repo:** `ahmed-145/ACR-QA` · **Branch:** always push to `main`
 
 ---
@@ -32,12 +32,12 @@ Run these three commands in order. All must pass before committing:
 
 # 3. Tests (default — fast PR suite, slow markers excluded)
 .venv/bin/pytest TESTS/ -q --tb=short
-# Expected: 1699 passed, 13 skipped, 6 deselected, 0 failed
-# Coverage ≥ 85% (tripwire: drop > 2pp fails CI)
+# Expected: 2274 passed, 31 skipped, 15 deselected, 0 failed
+# Coverage ≥ 82% (CI gate)
 
 # 3b. Slow suite (only run before pushing thesis-relevant changes; otherwise nightly CI handles it)
 .venv/bin/pytest TESTS/ -m slow -q --no-cov
-# Expected: 6 passed, 1712 deselected
+# Expected: 6 passed, ~2289 deselected
 # Runs the recall battery against DVPWA/Pygoat/DSVW/VulPy + the no-CUSTOM-* guard.
 # Skips cleanly if test_targets/ is missing (gitignored).
 
