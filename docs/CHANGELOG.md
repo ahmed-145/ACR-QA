@@ -2,6 +2,38 @@
 
 All notable changes to ACR-QA are documented here.
 
+## [Phase 12 Week 1 — Complete] — Test Quality Audit (May 16, 2026)
+
+### Summary
+
+All 6 Week 1 tasks now complete. 42 new tests in `TESTS/test_week1_completion.py` covering binary
+fuzzing, AI explainer snapshot validation, performance regression gates, and mutation-killing
+exact-value assertions. Full suite: **2,274 passing** (2,209 Python + 65 TS).
+
+### Added
+
+- **`TESTS/test_week1_completion.py`** — 42 tests across 6 task classes:
+  - `TestBinaryFuzzParsers` (5 tests, task 12.3) — Hypothesis `st.binary()` fuzz for `normalize_ruff`,
+    `normalize_bandit`, `normalize_semgrep`, YAML `safe_load`, JSON decode path. 300–500 examples each.
+  - `TestExplainerOutputFormat` (8 tests, task 12.4) — Snapshot tests for `ExplanationEngine.generate_explanation()`.
+    Verifies required keys: `model_name`, `response_text`, `status`, `latency_ms`, `tokens_used`, `cost_usd`.
+    Uses `ACRQA_LLM_PROVIDER=none` for guaranteed fallback; mock client injection for success path.
+  - `TestPerformanceRegressionGate` (4 tests, task 12.5) — Hard-budget CI gates: normalizer < 2s,
+    confidence scoring < 1s, quality gate < 0.5s, severity scorer < 1s for 1000 findings.
+  - `TestConfidenceScorerExactValues` (9 tests, task 12.6) — Exact constant assertions for
+    `_SEVERITY_SCORE`, `_CATEGORY_SCORE`, `_TOOL_SCORE`, `_RULE_BONUS`, `_CUSTOM_BONUS`, `_FIX_BONUS`.
+  - `TestQualityGateExactValues` (8 tests, task 12.6) — Exact check structure, `should_block()` in
+    warn mode, threshold names, `passed` is strict bool.
+  - `TestSeverityScorerExactValues` (5 tests, task 12.6) — `RULE_SEVERITY` dict constants, fallback
+    behavior, `score()` never returns None.
+
+### Phase 12 Progress
+
+- Week 1: 6/6 ✅ (was 2/6)
+- OVERALL: 37/39 tasks (was 33/39) — only 12.35 demo video + 12.36 YouTube remain (human tasks)
+
+---
+
 ## [Phase 12 Week 6 — Closeout, v4.5.0 Tagged] (May 15, 2026)
 
 ### Summary

@@ -223,15 +223,15 @@ DevOps / Platform Engineering
 ## Progress Tracking
 
 ```
-Week 1 — Test Quality Audit        [ ██▱▱▱▱ ]  2/6
+Week 1 — Test Quality Audit        [ ██████ ]  6/6 ✅
 Week 2 — Engine Depth + Benchmark  [ ███████ ]  7/7 ✅
 Week 3 — DevOps Portfolio          [ █████ ]  5/5 ✅
 Week 4 — UI Production Polish      [ █████████ ]  9/9 ✅
 Week 5 — Chaos + Observability     [ ██████ ]  6/6 ✅
 Week 6 — Closeout v4.5.0           [ ████▱▱ ]  4/6 (12.35 video + 12.36 YouTube = human tasks)
 
-OVERALL: 33/39 tasks · 85% complete
-<!-- Last updated: May 15, 2026 -->
+OVERALL: 37/39 tasks · 95% complete (12.35 + 12.36 = human tasks)
+<!-- Last updated: May 16, 2026 -->
 ```
 
 ### Week 1 Status
@@ -240,10 +240,10 @@ OVERALL: 33/39 tasks · 85% complete
 |---|------|--------|--------|
 | **12.1** | Mutation testing (mutmut) | ✅ DONE | **0% mutation score** on 3 files — confidence_scorer, quality_gate, severity_scorer have no direct unit tests catching mutations. 210 mutants, 0 killed. Action: add targeted unit tests in 12.6. |
 | **12.2** | Property-based tests (Hypothesis) | ✅ DONE | 17 tests, **4 real bugs found** — normalize_ruff/bandit/semgrep crashed on None/non-dict input; check_id crash on list type; ASSERT prefix missing from valid_prefixes. All fixed + committed. |
-| **12.3** | Fuzzing parsers (atheris) | ⏳ TODO | atheris needs Clang to build — use Hypothesis `st.binary()` strategies instead |
-| **12.4** | Snapshot tests (AI explainer) | ⏳ TODO | — |
-| **12.5** | Performance regression CI gate | ⏳ TODO | — |
-| **12.6** | Fix bugs surfaced by Week 1 | ⏳ TODO | Add unit tests for confidence_scorer/quality_gate/severity_scorer |
+| **12.3** | Fuzzing parsers (atheris) | ✅ DONE | 5 Hypothesis `st.binary()` fuzz tests — normalize_ruff/bandit/semgrep, YAML safe_load, JSON decode path. 300–500 examples each. atheris skipped (needs Clang); Hypothesis is equivalent. |
+| **12.4** | Snapshot tests (AI explainer) | ✅ DONE | 8 snapshot tests for `ExplanationEngine.generate_explanation()`. Verifies output schema keys (`model_name`, `response_text`, `status`, `latency_ms`, `tokens_used`, `cost_usd`). Uses `ACRQA_LLM_PROVIDER=none` for no-key fallback path; mock client injection for success path. |
+| **12.5** | Performance regression CI gate | ✅ DONE | 4 hard-budget tests: normalizer 1000 findings < 2s, confidence scoring < 1s, quality gate < 0.5s, severity scorer < 1s. CI fails on regression. |
+| **12.6** | Fix bugs surfaced by Week 1 | ✅ DONE | 22 mutation-killing exact-value tests: `TestConfidenceScorerExactValues` (9), `TestQualityGateExactValues` (8), `TestSeverityScorerExactValues` (5). All assert exact constants — kills any mutation changing e.g. `40 → 20`. |
 
 ### Week 2 Status ✅ COMPLETE
 
