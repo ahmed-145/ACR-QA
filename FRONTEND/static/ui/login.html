@@ -1,0 +1,87 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>ACR-QA — Sign In</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="app.css">
+<style>
+  body { display:grid; place-items:center; min-height:100vh; }
+  .card {
+    width:380px; background:var(--bg-2);
+    border:1px solid var(--border); border-radius:16px; padding:36px 32px;
+  }
+  .brand { display:flex; align-items:center; gap:12px; margin-bottom:28px; }
+  h1 { font-size:24px; font-weight:700; color:var(--fg); letter-spacing:-.02em; margin:0 0 6px; }
+  p  { font-size:13px; color:var(--fg-4); margin:0 0 24px; }
+  .field { display:flex; flex-direction:column; gap:6px; margin-bottom:14px; }
+  .field label { font-size:11.5px; color:var(--fg-3); font-weight:500; }
+  .field input {
+    height:38px; padding:0 12px;
+    background:var(--bg); border:1px solid var(--border-2);
+    border-radius:8px; color:var(--fg-2); font-size:13.5px; font-family:inherit;
+    transition:border-color .15s, box-shadow .15s;
+  }
+  .field input:focus { outline:none; border-color:rgba(167,139,250,.4); box-shadow:0 0 0 3px rgba(167,139,250,.08); }
+  .btn {
+    width:100%; height:38px; margin-top:8px;
+    background:var(--fg); color:var(--bg);
+    border:none; border-radius:8px;
+    font-size:13.5px; font-weight:600; cursor:pointer; font-family:inherit;
+    transition:background .15s;
+  }
+  .btn:hover:not(:disabled) { background:var(--fg-2); }
+  .btn:disabled { opacity:.6; cursor:default; }
+  .err {
+    color:var(--high-fg); font-size:12px; margin-top:10px;
+    font-family:var(--mono); display:none;
+  }
+  .err.on { display:block; }
+</style>
+</head>
+<body>
+<div class="card">
+  <div class="brand">
+    <div class="logo">🛡️</div>
+    <div class="wm-stack"><span class="wm">ACR-QA</span><span class="ver">v4.5.0</span></div>
+  </div>
+  <h1>Sign in</h1>
+  <p>Automated Code Review &amp; Quality Analysis</p>
+  <form id="form">
+    <div class="field"><label>Email</label><input id="email" type="email" placeholder="you@example.com" autocomplete="username" required></div>
+    <div class="field"><label>Password</label><input id="pwd" type="password" placeholder="••••••••" autocomplete="current-password" required></div>
+    <button class="btn" type="submit" id="btn">Sign in</button>
+    <div class="err" id="err">Invalid credentials. Check email and password.</div>
+  </form>
+</div>
+<script>
+if (localStorage.getItem('acrqa_token')) location.href = 'index.html';
+
+document.getElementById('form').addEventListener('submit', async e => {
+  e.preventDefault();
+  const btn = document.getElementById('btn');
+  const err = document.getElementById('err');
+  btn.textContent = 'Signing in…'; btn.disabled = true;
+  err.classList.remove('on');
+  try {
+    const r = await fetch('/v1/auth/login', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({
+        email: document.getElementById('email').value,
+        password: document.getElementById('pwd').value
+      })
+    });
+    if (!r.ok) throw r.status;
+    const data = await r.json();
+    localStorage.setItem('acrqa_token', data.access_token);
+    localStorage.setItem('acrqa_refresh', data.refresh_token);
+    location.href = 'index.html';
+  } catch {
+    err.classList.add('on');
+    btn.textContent = 'Sign in'; btn.disabled = false;
+  }
+});
+</script>
+</body>
+</html>

@@ -1,0 +1,571 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>ACR-QA — Overview</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="app.css">
+<style>
+  .hero-row { display:grid; grid-template-columns:2fr 1fr; gap:16px; margin-bottom:16px; }
+  .gate {
+    border-radius:12px; border:1px solid var(--low-bdr);
+    background:linear-gradient(90deg,rgba(16,185,129,.08) 0%,rgba(16,185,129,.02) 60%,transparent 100%);
+    padding:20px 22px; display:flex; flex-direction:column; gap:16px;
+    transition:border-color .2s, background .2s;
+  }
+  .gate.fail {
+    border-color:var(--high-bdr);
+    background:linear-gradient(90deg,rgba(239,68,68,.08) 0%,transparent 100%);
+  }
+  .gate-top { display:flex; align-items:center; gap:16px; }
+  .gate-icon {
+    width:36px; height:36px; border-radius:50%;
+    background:rgba(16,185,129,.16); border:1px solid rgba(52,211,153,.40);
+    display:grid; place-items:center; color:var(--low); font-size:17px; flex-shrink:0;
+    transition:background .2s, border-color .2s, color .2s;
+  }
+  .gate-icon.fail { background:rgba(239,68,68,.16); border-color:rgba(239,68,68,.40); color:var(--high); }
+  .gate-text { flex:1; display:flex; flex-direction:column; gap:2px; }
+  .gate-text .h { font-size:16px; font-weight:600; color:var(--fg); letter-spacing:-.01em; }
+  .gate-text .h em { font-style:normal; color:var(--low); font-weight:700; }
+  .gate-text .h em.fail { color:var(--high); }
+  .gate-text .sub { font-size:12.5px; color:var(--fg-4); font-family:var(--mono); }
+  .gate-thresh { display:grid; grid-template-columns:repeat(4,1fr); gap:16px; padding-top:14px; border-top:1px solid var(--border); }
+  .gate-thresh .item { display:flex; flex-direction:column; gap:4px; }
+  .gate-thresh .lbl { font-size:10px; color:var(--fg-5); text-transform:uppercase; letter-spacing:.10em; font-weight:600; }
+  .gate-thresh .val { font-size:16px; color:var(--fg); font-weight:700; letter-spacing:-.02em; font-variant-numeric:tabular-nums; font-family:var(--mono); }
+  .gate-thresh .val em { font-style:normal; color:var(--fg-5); font-weight:500; font-size:13px; }
+  .quick-actions { display:flex; flex-direction:column; gap:12px; }
+  .qa { background:var(--bg-2); border:1px solid var(--border); border-radius:10px; padding:14px 16px; display:flex; align-items:center; gap:12px; }
+  .qa-ico { width:32px; height:32px; border-radius:8px; display:grid; place-items:center; font-size:14px; flex-shrink:0; }
+  .qa-ico.p { background:var(--ai-bg); border:1px solid var(--ai-bdr); color:var(--purple); }
+  .qa-ico.b { background:rgba(96,165,250,.10); border:1px solid rgba(96,165,250,.25); color:var(--blue); }
+  .qa-ico.g { background:rgba(16,185,129,.10); border:1px solid rgba(16,185,129,.25); color:var(--low); }
+  .qa-body { flex:1; display:flex; flex-direction:column; gap:1px; min-width:0; }
+  .qa-body .h { font-size:12.5px; color:var(--fg); font-weight:500; }
+  .qa-body .s { font-size:11.5px; color:var(--fg-4); font-family:var(--mono); }
+  .qa-arrow { color:var(--fg-5); }
+  .stats { display:grid; grid-template-columns:repeat(4,1fr); gap:12px; margin-bottom:24px; }
+  .stat { background:var(--bg-2); border:1px solid var(--border); border-radius:12px; padding:18px 20px; display:flex; flex-direction:column; gap:8px; position:relative; overflow:hidden; }
+  .stat .lbl { font-size:11px; color:var(--fg-4); font-weight:600; text-transform:uppercase; letter-spacing:.08em; }
+  .stat .num { font-size:36px; font-weight:800; line-height:1; color:var(--fg); letter-spacing:-.03em; font-variant-numeric:tabular-nums; }
+  .stat .num small { font-size:18px; color:var(--fg-4); font-weight:700; letter-spacing:-.02em; }
+  .stat .delta { font-size:11.5px; color:var(--fg-4); display:flex; align-items:center; gap:6px; font-family:var(--mono); }
+  .stat .delta .arrow { color:var(--low); }
+  .stat.precision .num { background:var(--gradient); -webkit-background-clip:text; background-clip:text; -webkit-text-fill-color:transparent; }
+  .stat .spark { position:absolute; right:12px; bottom:12px; opacity:.40; }
+  .pipeline { padding:24px 24px 18px; margin-bottom:16px; }
+  .pipeline-vis { position:relative; display:grid; grid-template-columns:repeat(10,1fr); width:100%; }
+  .pipeline-vis::before { content:''; position:absolute; left:5%; right:5%; top:11px; height:1px; background:var(--border-2); }
+  .stage { position:relative; display:flex; flex-direction:column; align-items:center; gap:10px; }
+  .stage .dot { position:relative; z-index:2; width:9px; height:9px; border-radius:50%; background:var(--bg); border:1px solid var(--fg-5); margin-top:7px; }
+  .stage.done .dot { background:var(--fg-3); border-color:var(--fg-3); }
+  .stage .nm { font-size:10.5px; color:var(--fg-3); font-weight:500; text-align:center; line-height:1.2; }
+  .stage .id { font-family:var(--mono); font-size:9.5px; color:var(--fg-5); }
+  .row-3 { display:grid; grid-template-columns:1fr 1.2fr 0.9fr; gap:16px; margin-bottom:16px; }
+  .owasp-body { display:flex; align-items:center; gap:22px; }
+  .ring { width:116px; height:116px; border-radius:50%; background:conic-gradient(var(--low) 0% 90%,rgba(255,255,255,.05) 90% 100%); position:relative; display:grid; place-items:center; flex-shrink:0; }
+  .ring::after { content:''; position:absolute; inset:9px; background:var(--bg-2); border-radius:50%; }
+  .ring-text { position:relative; z-index:2; display:flex; flex-direction:column; align-items:center; line-height:1; }
+  .ring-text .n { font-size:28px; font-weight:800; color:var(--fg); letter-spacing:-.04em; font-variant-numeric:tabular-nums; }
+  .ring-text .n small { font-size:13px; color:var(--fg-4); font-weight:700; }
+  .ring-text .lbl { font-size:9px; color:var(--fg-5); margin-top:4px; text-transform:uppercase; letter-spacing:.10em; font-weight:600; }
+  .gap-info { display:flex; flex-direction:column; gap:4px; min-width:0; }
+  .gap-info .kicker { font-size:10px; color:var(--high); font-weight:700; text-transform:uppercase; letter-spacing:.10em; }
+  .gap-info .h { font-size:13.5px; font-weight:600; color:var(--fg); letter-spacing:-.005em; }
+  .gap-info .sub { font-size:11.5px; color:var(--fg-4); line-height:1.45; }
+  .tools { display:flex; flex-direction:column; gap:0; }
+  .tool { display:grid; grid-template-columns:10px 1fr auto; align-items:center; gap:12px; padding:8px 0; border-bottom:1px solid var(--border); }
+  .tool:last-child { border-bottom:none; }
+  .tool .dot { width:6px; height:6px; border-radius:50%; }
+  .tool .nm { font-size:12.5px; color:var(--fg); font-weight:500; }
+  .tool .n { font-family:var(--mono); font-size:11.5px; color:var(--fg-3); font-variant-numeric:tabular-nums; }
+  .entropy { display:flex; flex-direction:column; gap:14px; }
+  .entropy-meter { height:6px; border-radius:999px; background:rgba(255,255,255,.05); position:relative; overflow:hidden; }
+  .entropy-meter .fill { position:absolute; left:0; top:0; bottom:0; width:94%; background:linear-gradient(90deg,var(--blue),var(--purple),var(--low)); border-radius:999px; }
+  .entropy-meter .thresh { position:absolute; left:80%; top:-3px; bottom:-3px; width:1.5px; background:var(--fg-5); }
+  .entropy-meter .thresh::after { content:'0.80 floor'; position:absolute; left:6px; top:-16px; font-family:var(--mono); font-size:9px; color:var(--fg-5); white-space:nowrap; }
+  .entropy-stats { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+  .entropy-stats .cell { display:flex; flex-direction:column; gap:1px; }
+  .entropy-stats .lbl { font-size:10.5px; color:var(--fg-5); text-transform:uppercase; letter-spacing:.08em; font-weight:600; }
+  .entropy-stats .v { font-size:18px; font-weight:700; color:var(--fg); letter-spacing:-.02em; font-family:var(--mono); }
+  .entropy-stats .v small { color:var(--fg-4); font-weight:500; font-size:11px; margin-left:3px; }
+  .entropy-note { font-size:11.5px; color:var(--fg-4); line-height:1.45; }
+  .entropy-note em { font-style:normal; color:var(--purple); font-weight:600; }
+  .trend-wrap { padding:22px 24px; margin-bottom:16px; }
+  .trend-chart { height:160px; width:100%; position:relative; }
+  .trend-chart svg { width:100%; height:100%; display:block; }
+  .legend { display:flex; gap:18px; margin-top:12px; align-items:center; }
+  .legend .item { display:inline-flex; align-items:center; gap:6px; font-size:11.5px; color:var(--fg-4); }
+  .legend .swatch { width:10px; height:2px; border-radius:1px; }
+  .legend .note { margin-left:auto; color:var(--fg-5); font-family:var(--mono); font-size:11px; }
+  .legend .note em { font-style:normal; color:var(--low); font-weight:600; }
+  .findings { display:flex; flex-direction:column; gap:8px; }
+  .finding { background:var(--bg-2); border:1px solid var(--border); border-radius:11px; display:grid; grid-template-columns:auto 1fr auto auto; align-items:center; gap:12px; padding:14px 18px; transition:border-color .15s; }
+  .finding:hover { border-color:var(--border-2); }
+  .finding.high { border-left:3px solid var(--high); }
+  .finding.med  { border-left:3px solid var(--med); }
+  .finding.low  { border-left:3px solid var(--low); }
+  .finding-body { display:flex; flex-direction:column; gap:3px; min-width:0; }
+  .finding-msg { font-size:13.5px; color:var(--fg); font-weight:500; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .finding-meta { font-family:var(--mono); font-size:11px; color:var(--fg-4); display:flex; align-items:center; gap:10px; }
+  .finding-meta .file { color:var(--fg-3); }
+  .finding-meta .line { color:var(--blue); }
+  .finding-meta .rule { color:var(--purple); }
+  .finding-meta .sep { color:var(--fg-5); }
+  .findings-head { display:flex; align-items:baseline; justify-content:space-between; padding:0 4px; margin-bottom:12px; }
+  .findings-head h3 { margin:0; font-size:15px; font-weight:600; color:var(--fg); letter-spacing:-.01em; display:flex; align-items:baseline; gap:8px; }
+  .findings-head h3 .n { font-family:var(--mono); font-size:11px; color:var(--fg-4); padding:1px 7px; border-radius:5px; background:rgba(255,255,255,.05); font-weight:500; }
+  .findings-head a { font-size:12px; color:var(--fg-3); display:inline-flex; align-items:center; gap:6px; }
+  .findings-head a:hover { color:var(--fg); }
+  .cost-row { display:grid; grid-template-columns:1.6fr 1fr 1fr 1fr; gap:12px; margin-top:24px; }
+  .cost-cell { background:var(--bg-2); border:1px solid var(--border); border-radius:10px; padding:14px 16px; display:flex; flex-direction:column; gap:4px; }
+  .cost-cell .lbl { font-size:10.5px; color:var(--fg-5); text-transform:uppercase; letter-spacing:.10em; font-weight:600; }
+  .cost-cell .val { font-size:18px; color:var(--fg); font-weight:700; letter-spacing:-.02em; font-variant-numeric:tabular-nums; font-family:var(--mono); }
+  .cost-cell .val small { font-size:11px; color:var(--fg-4); font-weight:500; margin-left:4px; font-family:var(--font); letter-spacing:0; }
+  .cost-cell .sub { font-size:11.5px; color:var(--fg-4); }
+  .cost-cell.brag { display:grid; grid-template-columns:32px 1fr; gap:14px; align-items:center; }
+  .cost-cell.brag .icon { width:32px; height:32px; border-radius:8px; background:var(--ai-bg); border:1px solid var(--ai-bdr); color:var(--purple); display:grid; place-items:center; font-size:14px; }
+  .cost-cell.brag .stack { display:flex; flex-direction:column; gap:2px; }
+  .foot { margin-top:18px; padding:12px 4px 0; display:flex; justify-content:space-between; align-items:center; font-family:var(--mono); font-size:10.5px; color:var(--fg-5); }
+  .foot a { color:var(--fg-4); }
+  .foot a:hover { color:var(--fg-2); }
+  .foot .links { display:flex; gap:14px; }
+  .skeleton { background:rgba(255,255,255,.05); border-radius:4px; animation:pulse 1.5s ease infinite; display:inline-block; }
+  @keyframes pulse { 0%,100%{opacity:.5} 50%{opacity:1} }
+  @media (max-width:1100px) { .row-3{grid-template-columns:1fr} .hero-row{grid-template-columns:1fr} .cost-row{grid-template-columns:1fr 1fr} .stats{grid-template-columns:repeat(2,1fr)} }
+</style>
+</head>
+<body>
+<div class="app">
+
+  <!-- ====== SIDEBAR ====== -->
+  <aside class="sidebar">
+    <div class="brand-row">
+      <div class="logo">🛡️</div>
+      <div class="wm-stack"><span class="wm">ACR-QA</span><span class="ver">v4.5.0</span></div>
+    </div>
+    <div class="nav-section">Workspace</div>
+    <a class="nav-item on" href="index.html"><span class="ico">⌂</span> Overview</a>
+    <a class="nav-item" href="finding.html"><span class="ico">⊜</span> Findings <span class="cnt" id="nav-findings-cnt">—</span></a>
+    <a class="nav-item" href="trends.html"><span class="ico">∿</span> Trends</a>
+    <a class="nav-item" href="runs.html"><span class="ico">≡</span> Runs <span class="cnt" id="nav-runs-cnt">—</span></a>
+    <div class="nav-section">Engine</div>
+    <a class="nav-item" href="/docs" target="_blank"><span class="ico">⚡</span> API Docs</a>
+    <a class="nav-item" href="finding.html?filter=high"><span class="ico">⚙</span> Quality gate</a>
+    <a class="nav-item" href="/v1/policy" target="_blank"><span class="ico">⛏</span> Policy config</a>
+    <div class="nav-section">Compliance</div>
+    <a class="nav-item" href="runs.html"><span class="ico">⌖</span> OWASP Top 10</a>
+    <a class="nav-item" href="runs.html"><span class="ico">◉</span> Run history</a>
+    <a class="nav-item" href="trends.html"><span class="ico">⌘</span> Trend analysis</a>
+    <div class="sb-footer">
+      <div class="sb-status">
+        <span class="led"></span>
+        <span>API online · acr-qa</span>
+        <button onclick="logout()" style="margin-left:auto;background:none;border:none;color:var(--fg-5);font-family:var(--mono);font-size:10.5px;cursor:pointer;padding:0" title="Sign out">sign out</button>
+      </div>
+      <div class="sb-acct">
+        <div class="avatar" id="sb-avatar">A</div>
+        <div class="stack">
+          <span class="nm" id="sb-user-name">Loading…</span>
+          <span class="sub" id="sb-user-role">KSIU · thesis</span>
+        </div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- ====== MAIN ====== -->
+  <div class="main">
+    <header class="topbar">
+      <div class="crumbs">
+        <span>Workspace</span>
+        <span class="sep">/</span>
+        <span class="cur">Overview</span>
+        <span class="id-pill" id="topbar-run">—</span>
+      </div>
+      <div class="grow"></div>
+      <button class="btn-icon" title="Refresh" onclick="location.reload()">↻</button>
+      <a class="btn-prim" href="/v1/runs" target="_blank">API Explorer</a>
+    </header>
+
+    <div class="page-pad">
+      <h1 class="title">Overview</h1>
+      <p class="subtitle" id="subtitle">Loading latest run data…</p>
+
+      <!-- HERO -->
+      <section class="hero-row">
+        <div class="gate" id="gate-box">
+          <div class="gate-top">
+            <div class="gate-icon" id="gate-icon-box">✓</div>
+            <div class="gate-text">
+              <div class="h">Quality gate <em id="gate-status">passed</em></div>
+              <div class="sub">High-severity zero · safe to merge into <code>main</code></div>
+            </div>
+          </div>
+          <div class="gate-thresh">
+            <div class="item"><span class="lbl">High</span><span class="val" id="gate-high-val">— <em>/ 0</em></span></div>
+            <div class="item"><span class="lbl">Medium</span><span class="val" id="gate-med-val">— <em>/ 5</em></span></div>
+            <div class="item"><span class="lbl">Total</span><span class="val" id="gate-total-val">— <em>/ 100</em></span></div>
+            <div class="item"><span class="lbl">Runs</span><span class="val" id="gate-runs-val">—</span></div>
+          </div>
+        </div>
+        <div class="quick-actions">
+          <a class="qa" href="finding.html">
+            <div class="qa-ico p">↗</div>
+            <div class="qa-body"><span class="h">View all findings</span><span class="s">filter · sort · export</span></div>
+            <span class="qa-arrow">›</span>
+          </a>
+          <a class="qa" href="trends.html">
+            <div class="qa-ico b">∿</div>
+            <div class="qa-body"><span class="h">Severity trends</span><span class="s">time-series · 30 runs</span></div>
+            <span class="qa-arrow">›</span>
+          </a>
+          <a class="qa" href="runs.html">
+            <div class="qa-ico g">≡</div>
+            <div class="qa-body"><span class="h">Run history</span><span class="s">all scans · per-repo</span></div>
+            <span class="qa-arrow">›</span>
+          </a>
+        </div>
+      </section>
+
+      <!-- STATS -->
+      <section class="stats">
+        <div class="stat">
+          <span class="lbl">Total findings</span>
+          <span class="num" id="stat-findings">—</span>
+          <span class="delta" id="stat-findings-sub"><span class="arrow">→</span> across last 10 runs</span>
+          <svg class="spark" width="60" height="22" viewBox="0 0 60 22"><polyline fill="none" stroke="#71717a" stroke-width="1.2" id="spark-total" points="0,12 60,8"/></svg>
+        </div>
+        <div class="stat">
+          <span class="lbl" style="color:var(--fg-3)">High severity</span>
+          <span class="num" id="stat-high" style="color:var(--low)">—</span>
+          <span class="delta" id="stat-high-sub"><span class="arrow">↓</span> zero criticals · gate clear</span>
+          <svg class="spark" width="60" height="22" viewBox="0 0 60 22"><polyline fill="none" stroke="#ef4444" stroke-width="1.2" id="spark-high" points="0,20 60,20"/></svg>
+        </div>
+        <div class="stat precision">
+          <span class="lbl">Precision</span>
+          <span class="num">97.1<small>%</small></span>
+          <span class="delta">across 4 benchmark repos · 836 findings</span>
+        </div>
+        <div class="stat">
+          <span class="lbl">AI explanations</span>
+          <span class="num"><span id="stat-ai-count">—</span><small id="stat-ai-sub"> total</small></span>
+          <span class="delta" id="stat-ai-latency">avg latency loading…</span>
+        </div>
+      </section>
+
+      <!-- PIPELINE -->
+      <section class="panel pipeline">
+        <div class="panel-head">
+          <span class="panel-title">Analysis pipeline</span>
+          <span class="panel-sub" id="pipeline-sub">10 stages · multi-tool SAST</span>
+        </div>
+        <div class="pipeline-vis">
+          <div class="stage done"><span class="dot"></span><span class="nm">Rate limit</span><span class="id">0</span></div>
+          <div class="stage done"><span class="dot"></span><span class="nm">DB setup</span><span class="id">1</span></div>
+          <div class="stage done"><span class="dot"></span><span class="nm">Detection</span><span class="id">2</span></div>
+          <div class="stage done"><span class="dot"></span><span class="nm">Extra scan</span><span class="id">2b</span></div>
+          <div class="stage done"><span class="dot"></span><span class="nm">Normalize</span><span class="id">3</span></div>
+          <div class="stage done"><span class="dot"></span><span class="nm">Dedup</span><span class="id">4</span></div>
+          <div class="stage done"><span class="dot"></span><span class="nm">Scoring</span><span class="id">5</span></div>
+          <div class="stage done"><span class="dot"></span><span class="nm">AI explain</span><span class="id">6</span></div>
+          <div class="stage done"><span class="dot"></span><span class="nm">Quality gate</span><span class="id">7</span></div>
+          <div class="stage done"><span class="dot"></span><span class="nm">Output</span><span class="id">8</span></div>
+        </div>
+      </section>
+
+      <!-- ROW: OWASP + TOOLS + ENTROPY -->
+      <section class="row-3">
+        <div class="panel">
+          <div class="panel-head"><span class="panel-title">OWASP Top 10</span><span class="panel-sub">2021</span></div>
+          <div class="owasp-body">
+            <div class="ring">
+              <div class="ring-text"><span class="n">9<small>/10</small></span><span class="lbl">covered</span></div>
+            </div>
+            <div class="gap-info">
+              <span class="kicker">Gap · A09</span>
+              <span class="h">Logging &amp; monitoring failures</span>
+              <span class="sub">Detectable only at runtime — out of scope for static analysis.</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="panel">
+          <div class="panel-head"><span class="panel-title">Detectors</span><span class="panel-sub">8 tools active</span></div>
+          <div class="tools">
+            <div class="tool"><span class="dot" style="background:var(--blue)"></span><span class="nm">Semgrep <span style="color:var(--fg-5);font-size:11px"> · multi-lang SAST</span></span><span class="n">—</span></div>
+            <div class="tool"><span class="dot" style="background:var(--high)"></span><span class="nm">Bandit <span style="color:var(--fg-5);font-size:11px"> · Python security</span></span><span class="n">—</span></div>
+            <div class="tool"><span class="dot" style="background:#f59e0b"></span><span class="nm">Ruff <span style="color:var(--fg-5);font-size:11px"> · Python lint</span></span><span class="n">—</span></div>
+            <div class="tool"><span class="dot" style="background:var(--purple)"></span><span class="nm">Vulture <span style="color:var(--fg-5);font-size:11px"> · dead code</span></span><span class="n">—</span></div>
+            <div class="tool"><span class="dot" style="background:#fb923c"></span><span class="nm">Radon <span style="color:var(--fg-5);font-size:11px"> · complexity</span></span><span class="n">—</span></div>
+            <div class="tool"><span class="dot" style="background:var(--emerald)"></span><span class="nm">TruffleHog <span style="color:var(--fg-5);font-size:11px"> · secrets</span></span><span class="n">—</span></div>
+            <div class="tool"><span class="dot" style="background:#22d3ee"></span><span class="nm">Trivy <span style="color:var(--fg-5);font-size:11px"> · deps + IaC</span></span><span class="n">—</span></div>
+            <div class="tool"><span class="dot" style="background:#f472b6"></span><span class="nm">CBoM <span style="color:var(--fg-5);font-size:11px"> · post-quantum</span></span><span class="n">—</span></div>
+          </div>
+        </div>
+
+        <div class="panel">
+          <div class="panel-head"><span class="panel-title">Semantic entropy</span><span class="panel-sub">3× LLM runs</span></div>
+          <div class="entropy">
+            <div style="display:flex;align-items:baseline;justify-content:space-between">
+              <span style="font-size:36px;font-weight:800;color:var(--fg);letter-spacing:-.04em;font-family:var(--mono);font-variant-numeric:tabular-nums">0.94</span>
+              <span style="font-family:var(--mono);font-size:11px;color:var(--low)">↑ high consistency</span>
+            </div>
+            <div class="entropy-meter"><div class="fill"></div><div class="thresh"></div></div>
+            <div class="entropy-stats" style="padding-top:14px;border-top:1px solid var(--border)">
+              <div class="cell"><span class="lbl">Floor</span><span class="v">0.80<small>· threshold</small></span></div>
+              <div class="cell"><span class="lbl">Flagged</span><span class="v">0<small>· of total</small></span></div>
+            </div>
+            <p class="entropy-note">AI explanations are cross-validated across <em>3 temperature-varied</em> runs — contradictions trigger re-generation.</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- TREND -->
+      <section class="panel trend-wrap">
+        <div class="panel-head">
+          <span class="panel-title">Severity trend</span>
+          <span class="panel-sub" id="trend-sub">last 12 runs</span>
+        </div>
+        <div class="trend-chart">
+          <svg id="trend-svg" viewBox="0 0 600 160" preserveAspectRatio="none">
+            <defs>
+              <linearGradient id="gH" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ef4444" stop-opacity=".28"/><stop offset="1" stop-color="#ef4444" stop-opacity="0"/></linearGradient>
+              <linearGradient id="gM" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#f59e0b" stop-opacity=".22"/><stop offset="1" stop-color="#f59e0b" stop-opacity="0"/></linearGradient>
+              <linearGradient id="gL" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#10b981" stop-opacity=".18"/><stop offset="1" stop-color="#10b981" stop-opacity="0"/></linearGradient>
+            </defs>
+            <g stroke="rgba(255,255,255,.04)" stroke-width="1">
+              <line x1="0" y1="40" x2="600" y2="40"/><line x1="0" y1="80" x2="600" y2="80"/><line x1="0" y1="120" x2="600" y2="120"/>
+            </g>
+            <path id="ta-l" fill="url(#gL)" d="M0,130 L600,130 L600,160 L0,160Z"/>
+            <polyline id="tp-l" fill="none" stroke="#10b981" stroke-width="1.5" points="0,130 600,130"/>
+            <path id="ta-m" fill="url(#gM)" d="M0,110 L600,110 L600,160 L0,160Z"/>
+            <polyline id="tp-m" fill="none" stroke="#f59e0b" stroke-width="1.5" points="0,110 600,110"/>
+            <path id="ta-h" fill="url(#gH)" d="M0,90 L600,90 L600,160 L0,160Z"/>
+            <polyline id="tp-h" fill="none" stroke="#ef4444" stroke-width="1.5" points="0,90 600,90"/>
+          </svg>
+        </div>
+        <div class="legend">
+          <span class="item"><span class="swatch" style="background:var(--high)"></span>High</span>
+          <span class="item"><span class="swatch" style="background:var(--med)"></span>Medium</span>
+          <span class="item"><span class="swatch" style="background:var(--low)"></span>Low</span>
+          <span class="note" id="trend-note">Loading trend data…</span>
+        </div>
+      </section>
+
+      <!-- FINDINGS PREVIEW -->
+      <div class="findings-head">
+        <h3>Recent findings <span class="n" id="findings-count">loading…</span></h3>
+        <a href="finding.html">View all →</a>
+      </div>
+      <section class="findings" id="findings-section">
+        <div style="padding:24px;color:var(--fg-5);font-family:var(--mono);font-size:12px">Loading findings…</div>
+      </section>
+
+      <!-- COST -->
+      <section class="cost-row">
+        <div class="cost-cell brag">
+          <div class="icon">$</div>
+          <div class="stack">
+            <span class="lbl">LLM cost · all runs</span>
+            <span class="val" id="cost-total">—</span>
+            <span class="sub" id="cost-expl">loading…</span>
+          </div>
+        </div>
+        <div class="cost-cell">
+          <span class="lbl">Avg cost / finding</span>
+          <span class="val" id="cost-per-finding">—</span>
+          <span class="sub">per AI explanation</span>
+        </div>
+        <div class="cost-cell">
+          <span class="lbl">Avg latency</span>
+          <span class="val" id="cost-latency">—</span>
+          <span class="sub">per explanation</span>
+        </div>
+        <div class="cost-cell">
+          <span class="lbl">Precision</span>
+          <span class="val">97.1<small>%</small></span>
+          <span class="sub">benchmark · 4 repos</span>
+        </div>
+      </section>
+
+      <div class="foot">
+        <span id="foot-text">ACR-QA · KSIU thesis · attested ECDSA-P256 + Dilithium3</span>
+        <div class="links">
+          <a href="/docs" target="_blank">API Docs</a>
+          <a href="/v1/cost-summary" target="_blank">Cost JSON</a>
+          <a href="trends.html">Trends</a>
+          <a href="runs.html">All Runs</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+const authToken = localStorage.getItem('acrqa_token');
+if (!authToken) location.href = 'login.html';
+
+const api = async (path) => {
+  const r = await fetch(path, { headers: { Authorization: 'Bearer ' + authToken } });
+  if (r.status === 401) { localStorage.clear(); location.href = 'login.html'; throw 401; }
+  if (!r.ok) throw new Error(r.status);
+  return r.json();
+};
+
+const set = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val; };
+const esc = s => String(s || '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+
+function logout() { localStorage.clear(); location.href = 'login.html'; }
+
+(async () => {
+  try {
+    const [me, stats, cost, trends, runsData] = await Promise.all([
+      api('/v1/auth/me'),
+      api('/v1/quick-stats'),
+      api('/v1/cost-summary'),
+      api('/v1/trends?limit=12'),
+      api('/v1/runs?limit=1'),
+    ]);
+
+    // User
+    if (me.email) {
+      const nm = me.email.split('@')[0];
+      set('sb-user-name', nm);
+      set('sb-user-role', (me.role || 'member') + ' · KSIU');
+      const av = document.getElementById('sb-avatar');
+      if (av) av.textContent = nm[0].toUpperCase();
+    }
+
+    // Stats
+    const s = stats.stats;
+    set('stat-findings', s.total_findings);
+    set('nav-findings-cnt', s.total_findings);
+    set('nav-runs-cnt', s.total_runs);
+    set('gate-runs-val', s.total_runs);
+
+    const high = s.high_severity || 0;
+    const med  = s.medium_severity || 0;
+    const tot  = s.total_findings || 0;
+    set('stat-high', high);
+    if (high === 0) {
+      const el = document.getElementById('stat-high');
+      if (el) el.style.color = 'var(--low)';
+    } else {
+      const el = document.getElementById('stat-high');
+      if (el) el.style.color = 'var(--high)';
+    }
+
+    // Gate values
+    document.getElementById('gate-high-val').innerHTML = `${high} <em>/ 0</em>`;
+    document.getElementById('gate-med-val').innerHTML  = `${med} <em>/ 5</em>`;
+    document.getElementById('gate-total-val').innerHTML = `${tot} <em>/ 100</em>`;
+
+    const pass = high === 0 && tot <= 100;
+    set('gate-status', pass ? 'passed' : 'FAILED');
+    const gateIconEl = document.getElementById('gate-icon-box');
+    if (gateIconEl) { gateIconEl.textContent = pass ? '✓' : '✗'; if (!pass) gateIconEl.classList.add('fail'); }
+    if (!pass) document.getElementById('gate-box')?.classList.add('fail');
+    const gateStatusEl = document.getElementById('gate-status');
+    if (gateStatusEl && !pass) gateStatusEl.classList.add('fail');
+
+    // Cost
+    set('cost-total', '$' + (cost.total_cost || 0).toFixed(4));
+    set('cost-expl', (cost.total_explanations || 0) + ' explanations total');
+    set('cost-per-finding', '$' + (cost.avg_cost_per_finding || 0).toFixed(6));
+    set('cost-latency', (cost.avg_latency_ms || 0).toFixed(0) + 'ms');
+
+    // Latest run info
+    const runs = runsData.runs || [];
+    if (runs.length) {
+      const r = runs[0];
+      set('topbar-run', 'Run #' + r.id);
+      document.getElementById('subtitle').innerHTML =
+        `Run #${r.id} on <code style="font-family:var(--mono);color:var(--fg-3)">${esc(r.repo_name || 'acr-qa')} / main</code> · ${r.total_findings} findings · ${esc(r.status || 'completed')}`;
+      set('foot-text', `Run #${r.id} · ${esc(r.repo_name || 'acr-qa')} · KSIU thesis`);
+    }
+
+    // Trend chart
+    if (trends.success && trends.total_series?.length) {
+      drawTrend(trends);
+      set('trend-sub', `last ${trends.run_count} runs`);
+    }
+
+    // Findings preview — fetch latest run's findings
+    if (runs.length) {
+      const findData = await api('/v1/runs/' + runs[0].id + '/findings');
+      const findings = (findData.findings || []).slice(0, 5);
+      set('findings-count', `${findings.length} of ${findData.total}`);
+      renderFindings(findings, runs[0].id);
+    }
+
+  } catch (e) { if (e !== 401) console.warn('Dashboard load error:', e); }
+})();
+
+function drawTrend(t) {
+  const W = 600, H = 160, pad = 8;
+  const h = t.severity_series.high;
+  const m = t.severity_series.medium;
+  const l = t.severity_series.low;
+  const n = h.length;
+  if (!n) return;
+  const maxV = Math.max(...h, ...m, ...l, 1);
+  const xf = i => n > 1 ? (i / (n - 1)) * W : W / 2;
+  const yf = v => H - pad - (v / maxV) * (H - 2 * pad);
+  const polyPts = arr => arr.map((v, i) => xf(i) + ',' + yf(v)).join(' ');
+  const areaD = arr => {
+    if (!arr.length) return '';
+    const line = arr.map((v, i) => (i === 0 ? 'M' : 'L') + xf(i) + ',' + yf(v)).join(' ');
+    return line + ` L${W},${H} L0,${H} Z`;
+  };
+  document.getElementById('tp-h').setAttribute('points', polyPts(h));
+  document.getElementById('tp-m').setAttribute('points', polyPts(m));
+  document.getElementById('tp-l').setAttribute('points', polyPts(l));
+  document.getElementById('ta-h').setAttribute('d', areaD(h));
+  document.getElementById('ta-m').setAttribute('d', areaD(m));
+  document.getElementById('ta-l').setAttribute('d', areaD(l));
+
+  // Trend note: compare first vs last high severity
+  const firstH = h[0] || 0, lastH = h[h.length - 1] || 0;
+  if (firstH > 0) {
+    const pct = Math.round((1 - lastH / firstH) * 100);
+    const noteEl = document.getElementById('trend-note');
+    if (noteEl) noteEl.innerHTML = pct > 0
+      ? `High severity <em>↓ ${pct}%</em> over ${n} runs`
+      : `High severity trend across ${n} runs`;
+  } else {
+    set('trend-note', `${n} runs shown · zero high severity`);
+  }
+}
+
+function renderFindings(findings, runId) {
+  const container = document.getElementById('findings-section');
+  if (!container) return;
+  if (!findings.length) {
+    container.innerHTML = '<div style="padding:24px;color:var(--fg-5);font-family:var(--mono);font-size:12px">No findings for this run.</div>';
+    return;
+  }
+  const sevMap = { high: 'high', medium: 'med', low: 'low' };
+  const confCls = c => c >= 80 ? 'hi' : c >= 60 ? 'md' : 'lo';
+  container.innerHTML = findings.map(f => {
+    const sev = (f.severity || 'low').toLowerCase();
+    const sc = sevMap[sev] || 'low';
+    const conf = Math.round((f.confidence || 0) * 100);
+    const href = `finding.html?run=${runId}&id=${f.id}`;
+    return `<a class="finding ${sc}" href="${href}">
+      <span class="sev ${sc}">${sc.toUpperCase()}</span>
+      <div class="finding-body">
+        <span class="finding-msg">${esc(f.message || 'Finding')}</span>
+        <span class="finding-meta">
+          <span class="file">${esc(f.file_path || '?')}</span><span style="color:var(--fg-5)">:</span><span class="line">${f.line_number || '?'}</span>
+          <span class="sep">·</span><span class="rule">${esc(f.rule_id || '?')}</span><span class="sep">·</span><span>${esc(f.tool || '?')}</span>
+        </span>
+      </div>
+      <span class="conf ${confCls(conf)}">${conf}%</span>
+      <span style="color:var(--fg-5)">›</span>
+    </a>`;
+  }).join('');
+}
+</script>
+</body>
+</html>

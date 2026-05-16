@@ -1,0 +1,288 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>ACR-QA — Trends</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="app.css">
+<style>
+  .trend-grid { display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-bottom:16px; }
+  .chart-panel { padding:24px; }
+  .chart-wrap { height:200px; width:100%; margin-top:12px; }
+  .chart-wrap svg { width:100%; height:100%; display:block; }
+  .legend { display:flex; gap:16px; margin-top:10px; align-items:center; flex-wrap:wrap; }
+  .legend .item { display:inline-flex; align-items:center; gap:6px; font-size:11.5px; color:var(--fg-4); }
+  .legend .swatch { width:10px; height:2px; border-radius:1px; }
+  .runs-table { width:100%; border-collapse:collapse; font-size:12.5px; }
+  .runs-table th { text-align:left; font-size:10px; font-weight:600; color:var(--fg-5); text-transform:uppercase; letter-spacing:.08em; padding:8px 12px; border-bottom:1px solid var(--border); }
+  .runs-table td { padding:10px 12px; border-bottom:1px solid var(--border); color:var(--fg-3); font-family:var(--mono); font-size:12px; vertical-align:middle; }
+  .runs-table tr:last-child td { border-bottom:none; }
+  .runs-table tr:hover td { background:rgba(255,255,255,.02); }
+  .stat-mini { display:grid; grid-template-columns:repeat(4,1fr); gap:12px; margin-bottom:24px; }
+  .sm { background:var(--bg-2); border:1px solid var(--border); border-radius:10px; padding:14px 16px; display:flex; flex-direction:column; gap:4px; }
+  .sm .lbl { font-size:10px; color:var(--fg-5); text-transform:uppercase; letter-spacing:.08em; font-weight:600; }
+  .sm .val { font-size:22px; font-weight:700; color:var(--fg); letter-spacing:-.03em; font-family:var(--mono); }
+  .sm .sub { font-size:11px; color:var(--fg-4); }
+  .repo-select { height:32px; padding:0 10px; background:var(--bg); border:1px solid var(--border-2); border-radius:7px; color:var(--fg-2); font-size:12px; font-family:inherit; }
+</style>
+</head>
+<body>
+<div class="app">
+  <aside class="sidebar">
+    <div class="brand-row">
+      <div class="logo">🛡️</div>
+      <div class="wm-stack"><span class="wm">ACR-QA</span><span class="ver">v4.5.0</span></div>
+    </div>
+    <div class="nav-section">Workspace</div>
+    <a class="nav-item" href="index.html"><span class="ico">⌂</span> Overview</a>
+    <a class="nav-item" href="finding.html"><span class="ico">⊜</span> Findings <span class="cnt" id="nav-findings-cnt">—</span></a>
+    <a class="nav-item on" href="trends.html"><span class="ico">∿</span> Trends</a>
+    <a class="nav-item" href="runs.html"><span class="ico">≡</span> Runs <span class="cnt" id="nav-runs-cnt">—</span></a>
+    <div class="nav-section">Engine</div>
+    <a class="nav-item" href="/docs" target="_blank"><span class="ico">⚡</span> API Docs</a>
+    <a class="nav-item" href="finding.html?filter=high"><span class="ico">⚙</span> High severity</a>
+    <a class="nav-item" href="/v1/policy" target="_blank"><span class="ico">⛏</span> Policy</a>
+    <div class="nav-section">Compliance</div>
+    <a class="nav-item" href="runs.html"><span class="ico">⌖</span> Run history</a>
+    <a class="nav-item" href="index.html"><span class="ico">◉</span> Overview</a>
+    <a class="nav-item" href="/v1/cost-summary" target="_blank"><span class="ico">⌘</span> Cost summary</a>
+    <div class="sb-footer">
+      <div class="sb-status"><span class="led"></span><span>API online · acr-qa</span>
+        <button onclick="logout()" style="margin-left:auto;background:none;border:none;color:var(--fg-5);font-family:var(--mono);font-size:10.5px;cursor:pointer;padding:0">sign out</button>
+      </div>
+      <div class="sb-acct">
+        <div class="avatar" id="sb-avatar">A</div>
+        <div class="stack"><span class="nm" id="sb-user-name">…</span><span class="sub" id="sb-user-role">KSIU · thesis</span></div>
+      </div>
+    </div>
+  </aside>
+
+  <div class="main">
+    <header class="topbar">
+      <div class="crumbs"><a href="index.html">Workspace</a><span class="sep">/</span><span class="cur">Trends</span></div>
+      <div class="grow"></div>
+      <select class="repo-select" id="repo-select" onchange="loadTrends()"><option value="">All repos</option></select>
+      <button class="btn-icon" onclick="location.reload()">↻</button>
+    </header>
+
+    <div class="page-pad">
+      <h1 class="title">Trend analysis</h1>
+      <p class="subtitle" id="subtitle">Severity and category trends across runs.</p>
+
+      <div class="stat-mini">
+        <div class="sm"><span class="lbl">Total runs</span><span class="val" id="t-runs">—</span><span class="sub">in dataset</span></div>
+        <div class="sm"><span class="lbl">Avg findings/run</span><span class="val" id="t-avg">—</span><span class="sub">per scan</span></div>
+        <div class="sm"><span class="lbl">Peak high</span><span class="val" id="t-peak-high" style="color:var(--high)">—</span><span class="sub">single run</span></div>
+        <div class="sm"><span class="lbl">Trend</span><span class="val" id="t-trend" style="color:var(--low)">↓</span><span class="sub">high severity</span></div>
+      </div>
+
+      <div class="trend-grid">
+        <div class="panel chart-panel">
+          <div class="panel-head"><span class="panel-title">Severity over time</span><span class="panel-sub" id="sev-sub">last 30 runs</span></div>
+          <div class="chart-wrap">
+            <svg id="sev-svg" viewBox="0 0 600 200" preserveAspectRatio="none">
+              <defs>
+                <linearGradient id="gH2" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ef4444" stop-opacity=".25"/><stop offset="1" stop-color="#ef4444" stop-opacity="0"/></linearGradient>
+                <linearGradient id="gM2" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#f59e0b" stop-opacity=".20"/><stop offset="1" stop-color="#f59e0b" stop-opacity="0"/></linearGradient>
+                <linearGradient id="gL2" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#10b981" stop-opacity=".15"/><stop offset="1" stop-color="#10b981" stop-opacity="0"/></linearGradient>
+              </defs>
+              <g stroke="rgba(255,255,255,.04)" stroke-width="1">
+                <line x1="0" y1="50" x2="600" y2="50"/><line x1="0" y1="100" x2="600" y2="100"/><line x1="0" y1="150" x2="600" y2="150"/>
+              </g>
+              <path id="sa-l" fill="url(#gL2)" d="M0,180 L600,180 L600,200 L0,200Z"/>
+              <polyline id="sp-l" fill="none" stroke="#10b981" stroke-width="2" points="0,180 600,180"/>
+              <path id="sa-m" fill="url(#gM2)" d="M0,150 L600,150 L600,200 L0,200Z"/>
+              <polyline id="sp-m" fill="none" stroke="#f59e0b" stroke-width="2" points="0,150 600,150"/>
+              <path id="sa-h" fill="url(#gH2)" d="M0,120 L600,120 L600,200 L0,200Z"/>
+              <polyline id="sp-h" fill="none" stroke="#ef4444" stroke-width="2" points="0,120 600,120"/>
+            </svg>
+          </div>
+          <div class="legend">
+            <span class="item"><span class="swatch" style="background:#ef4444"></span>High</span>
+            <span class="item"><span class="swatch" style="background:#f59e0b"></span>Medium</span>
+            <span class="item"><span class="swatch" style="background:#10b981"></span>Low</span>
+          </div>
+        </div>
+
+        <div class="panel chart-panel">
+          <div class="panel-head"><span class="panel-title">Total findings over time</span><span class="panel-sub">all severities combined</span></div>
+          <div class="chart-wrap">
+            <svg id="tot-svg" viewBox="0 0 600 200" preserveAspectRatio="none">
+              <defs>
+                <linearGradient id="gT" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#A78BFA" stop-opacity=".20"/><stop offset="1" stop-color="#A78BFA" stop-opacity="0"/></linearGradient>
+              </defs>
+              <g stroke="rgba(255,255,255,.04)" stroke-width="1">
+                <line x1="0" y1="50" x2="600" y2="50"/><line x1="0" y1="100" x2="600" y2="100"/><line x1="0" y1="150" x2="600" y2="150"/>
+              </g>
+              <path id="ta-tot" fill="url(#gT)" d="M0,160 L600,160 L600,200 L0,200Z"/>
+              <polyline id="tp-tot" fill="none" stroke="#A78BFA" stroke-width="2" points="0,160 600,160"/>
+            </svg>
+          </div>
+          <div class="legend">
+            <span class="item"><span class="swatch" style="background:#A78BFA"></span>Total findings</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Category chart -->
+      <div class="panel chart-panel" style="margin-bottom:16px">
+        <div class="panel-head"><span class="panel-title">Category breakdown over time</span><span class="panel-sub">security · style · design · best_practice</span></div>
+        <div class="chart-wrap" style="height:160px">
+          <svg id="cat-svg" viewBox="0 0 600 160" preserveAspectRatio="none">
+            <g stroke="rgba(255,255,255,.04)" stroke-width="1">
+              <line x1="0" y1="40" x2="600" y2="40"/><line x1="0" y1="80" x2="600" y2="80"/><line x1="0" y1="120" x2="600" y2="120"/>
+            </g>
+            <polyline id="cp-sec"  fill="none" stroke="#ef4444" stroke-width="1.5" points="0,130 600,130"/>
+            <polyline id="cp-sty"  fill="none" stroke="#f59e0b" stroke-width="1.5" points="0,130 600,130"/>
+            <polyline id="cp-des"  fill="none" stroke="#A78BFA" stroke-width="1.5" points="0,130 600,130"/>
+            <polyline id="cp-best" fill="none" stroke="#10b981" stroke-width="1.5" points="0,130 600,130"/>
+          </svg>
+        </div>
+        <div class="legend">
+          <span class="item"><span class="swatch" style="background:#ef4444"></span>Security</span>
+          <span class="item"><span class="swatch" style="background:#f59e0b"></span>Style</span>
+          <span class="item"><span class="swatch" style="background:#A78BFA"></span>Design</span>
+          <span class="item"><span class="swatch" style="background:#10b981"></span>Best practice</span>
+        </div>
+      </div>
+
+      <!-- Run labels table -->
+      <div class="panel" style="padding:0;overflow:hidden">
+        <div style="padding:14px 20px 12px;border-bottom:1px solid var(--border)">
+          <span class="panel-title">Run timeline</span>
+        </div>
+        <div style="overflow-x:auto">
+          <table class="runs-table" id="run-table">
+            <thead><tr>
+              <th>Run</th><th>Repo</th><th>Date</th><th>High</th><th>Medium</th><th>Low</th><th>Total</th>
+            </tr></thead>
+            <tbody id="run-table-body"><tr><td colspan="7" style="text-align:center;color:var(--fg-5)">Loading…</td></tr></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+const authToken = localStorage.getItem('acrqa_token');
+if (!authToken) location.href = 'login.html';
+const api = async (path) => {
+  const r = await fetch(path, { headers: { Authorization: 'Bearer ' + authToken } });
+  if (r.status === 401) { localStorage.clear(); location.href = 'login.html'; throw 401; }
+  return r.json();
+};
+const set = (id, v) => { const el = document.getElementById(id); if (el) el.textContent = v; };
+const esc = s => String(s || '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+function logout() { localStorage.clear(); location.href = 'login.html'; }
+
+(async () => {
+  try {
+    const [me, stats, repos] = await Promise.all([
+      api('/v1/auth/me'),
+      api('/v1/quick-stats'),
+      api('/v1/repos'),
+    ]);
+    if (me.email) {
+      const nm = me.email.split('@')[0];
+      set('sb-user-name', nm); set('sb-user-role', (me.role||'member')+' · KSIU');
+      const av = document.getElementById('sb-avatar'); if (av) av.textContent = nm[0].toUpperCase();
+    }
+    const s = stats.stats;
+    set('nav-runs-cnt', s.total_runs);
+    set('nav-findings-cnt', s.total_findings);
+
+    const sel = document.getElementById('repo-select');
+    (repos.repos || []).forEach(r => {
+      const opt = document.createElement('option'); opt.value = r; opt.textContent = r; sel.appendChild(opt);
+    });
+
+    await loadTrends();
+  } catch (e) { if (e !== 401) console.warn(e); }
+})();
+
+async function loadTrends() {
+  const repo = document.getElementById('repo-select').value;
+  const url = '/v1/trends?limit=30' + (repo ? '&repo=' + encodeURIComponent(repo) : '');
+  try {
+    const t = await api(url);
+    if (!t.success) return;
+    const n = t.total_series.length;
+    const h = t.severity_series.high, m = t.severity_series.medium, l = t.severity_series.low;
+    const tot = t.total_series;
+
+    set('t-runs', n);
+    set('sev-sub', 'last ' + n + ' runs');
+    set('t-avg', n ? (tot.reduce((a,b)=>a+b,0)/n).toFixed(1) : '—');
+    set('t-peak-high', Math.max(...h, 0));
+
+    const firstH = h[0]||0, lastH = h[h.length-1]||0;
+    if (firstH > lastH) { set('t-trend', '↓ improving'); document.getElementById('t-trend').style.color='var(--low)'; }
+    else if (firstH < lastH) { set('t-trend', '↑ worsening'); document.getElementById('t-trend').style.color='var(--high)'; }
+    else { set('t-trend', '→ stable'); document.getElementById('t-trend').style.color='var(--fg-4)'; }
+
+    drawChart('sp-h','sa-h','gH2', h, 600,200,8, '#ef4444');
+    drawChart('sp-m','sa-m','gM2', m, 600,200,8);
+    drawChart('sp-l','sa-l','gL2', l, 600,200,8);
+    drawTotChart(tot, 600, 200);
+    drawCatCharts(t.category_series, 600, 160);
+
+    // Table
+    const rows = (t.labels || []).map((lbl,i) => ({
+      label:lbl, run_id: t.run_ids?.[i]||'?',
+      h:h[i]||0, m:m[i]||0, l:l[i]||0, tot:tot[i]||0
+    })).reverse();
+    document.getElementById('run-table-body').innerHTML = rows.map(r => {
+      const parts = r.label.split(' (');
+      const date = parts[0]; const repo = (parts[1]||'').replace(')','');
+      return `<tr>
+        <td><a href="finding.html?run=${esc(r.run_id)}" style="color:var(--blue)">#${esc(r.run_id)}</a></td>
+        <td>${esc(repo)}</td><td>${esc(date)}</td>
+        <td style="color:${r.h>0?'var(--high-fg)':'var(--fg-5)'}">${r.h}</td>
+        <td style="color:${r.m>0?'var(--med-fg)':'var(--fg-5)'}">${r.m}</td>
+        <td style="color:var(--low-fg)">${r.l}</td>
+        <td style="color:var(--fg)">${r.tot}</td>
+      </tr>`;
+    }).join('') || '<tr><td colspan="7" style="text-align:center;color:var(--fg-5)">No runs found</td></tr>';
+
+    set('subtitle', `Showing ${n} runs${repo ? ' for ' + repo : ''}`);
+  } catch(e) { if(e!==401) console.warn(e); }
+}
+
+function pts(arr, W, H, pad) {
+  const n=arr.length; if(!n) return `0,${H} ${W},${H}`;
+  const max=Math.max(...arr,1);
+  return arr.map((v,i)=>{
+    const x=n>1?(i/(n-1))*W:W/2;
+    const y=H-pad-(v/max)*(H-2*pad);
+    return x+','+y;
+  }).join(' ');
+}
+function areaD(arr, W, H, pad) {
+  const n=arr.length; if(!n) return '';
+  const max=Math.max(...arr,1);
+  const line=arr.map((v,i)=>{
+    const x=n>1?(i/(n-1))*W:W/2;
+    const y=H-pad-(v/max)*(H-2*pad);
+    return (i===0?'M':'L')+x+','+y;
+  }).join(' ');
+  return line+` L${W},${H} L0,${H} Z`;
+}
+function drawChart(lineId, areaId, _gId, arr, W, H, pad) {
+  const p=pts(arr,W,H,pad), d=areaD(arr,W,H,pad);
+  document.getElementById(lineId)?.setAttribute('points',p);
+  if(areaId) document.getElementById(areaId)?.setAttribute('d',d);
+}
+function drawTotChart(arr, W, H) {
+  document.getElementById('tp-tot')?.setAttribute('points', pts(arr,W,H,8));
+  document.getElementById('ta-tot')?.setAttribute('d', areaD(arr,W,H,8));
+}
+function drawCatCharts(cat, W, H) {
+  ['cp-sec','cp-sty','cp-des','cp-best'].forEach((id,i)=>{
+    const key=['security','style','design','best_practice'][i];
+    document.getElementById(id)?.setAttribute('points', pts(cat[key]||[],W,H,6));
+  });
+}
+</script>
+</body>
+</html>

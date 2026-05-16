@@ -81,18 +81,17 @@ app.include_router(auth.router, prefix="/v1")
 app.include_router(runs.router, prefix="/v1")
 app.include_router(scans.router, prefix="/v1")
 
-# ── Dashboard PRO static files ────────────────────────────────────────────────
-_DASHBOARD_DIR = Path(__file__).parent.parent / "static" / "dashboard"
-if _DASHBOARD_DIR.is_dir():
-    from fastapi.responses import FileResponse
+# ── Main UI (static HTML + vanilla JS, API-wired) ─────────────────────────────
+_UI_DIR = Path(__file__).parent.parent / "static" / "ui"
+if _UI_DIR.is_dir():
+    from fastapi.responses import RedirectResponse
     from fastapi.staticfiles import StaticFiles
 
-    app.mount("/dashboard", StaticFiles(directory=str(_DASHBOARD_DIR), html=True), name="dashboard")
+    app.mount("/ui", StaticFiles(directory=str(_UI_DIR), html=True), name="ui")
 
-    @app.get("/dashboard/{full_path:path}", include_in_schema=False)
-    async def serve_spa(full_path: str):
-        index = _DASHBOARD_DIR / "index.html"
-        return FileResponse(str(index))
+    @app.get("/", include_in_schema=False)
+    async def root_redirect():
+        return RedirectResponse(url="/ui/index.html")
 
 
 # ── Public endpoints ──────────────────────────────────────────────────────────

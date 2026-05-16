@@ -1,0 +1,384 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>ACR-QA — Findings</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="app.css">
+<style>
+  .layout { display:grid; grid-template-columns:360px 1fr; gap:16px; }
+  .finlist { background:var(--bg-2); border:1px solid var(--border); border-radius:12px; overflow:hidden; height:fit-content; position:sticky; top:80px; max-height:calc(100vh - 120px); display:flex; flex-direction:column; }
+  .finlist-head { padding:14px 16px 12px; border-bottom:1px solid var(--border); flex-shrink:0; }
+  .finlist-head .title { font-size:13px; font-weight:600; color:var(--fg); margin-bottom:8px; }
+  .filter-input { width:100%; height:32px; padding:0 10px; background:var(--bg); border:1px solid var(--border-2); border-radius:7px; color:var(--fg-2); font-size:12px; font-family:inherit; }
+  .filter-input::placeholder { color:var(--fg-5); }
+  .filter-row { display:flex; gap:6px; margin-top:8px; flex-wrap:wrap; }
+  .pill { font-family:var(--mono); font-size:10px; padding:2px 8px; border-radius:4px; background:rgba(255,255,255,.04); color:var(--fg-4); border:1px solid var(--border); cursor:pointer; }
+  .pill.on { background:rgba(167,139,250,.10); color:var(--purple); border-color:var(--ai-bdr); }
+  .finlist-body { overflow-y:auto; flex:1; }
+  .fl-item { display:grid; grid-template-columns:auto 1fr auto; align-items:center; gap:10px; padding:12px 16px; border-bottom:1px solid var(--border); cursor:pointer; transition:background .1s; position:relative; }
+  .fl-item:hover { background:rgba(255,255,255,.02); }
+  .fl-item:last-child { border-bottom:none; }
+  .fl-item.active { background:rgba(167,139,250,.06); }
+  .fl-item.active::before { content:''; position:absolute; left:0; top:0; bottom:0; width:2px; background:var(--gradient); }
+  .fl-body { display:flex; flex-direction:column; gap:2px; min-width:0; }
+  .fl-msg { font-size:12.5px; color:var(--fg-2); font-weight:500; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .fl-item.active .fl-msg { color:var(--fg); }
+  .fl-meta { font-family:var(--mono); font-size:10.5px; color:var(--fg-4); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .fl-meta .rule { color:var(--purple); }
+  .fl-meta .sep { color:var(--fg-5); }
+  .detail { background:var(--bg-2); border:1px solid var(--border); border-radius:12px; overflow:hidden; }
+  .detail-head { padding:24px 28px; border-bottom:1px solid var(--border); }
+  .d-chips { display:flex; align-items:center; gap:8px; margin-bottom:14px; flex-wrap:wrap; }
+  .d-rule-id { font-family:var(--mono); font-size:11.5px; color:var(--purple); font-weight:600; padding:3px 9px; border-radius:5px; background:var(--ai-bg); border:1px solid var(--ai-bdr); }
+  .d-tool { font-family:var(--mono); font-size:11.5px; color:var(--fg-3); padding:3px 9px; border-radius:5px; background:rgba(255,255,255,.04); border:1px solid var(--border-2); }
+  .d-cwe { font-family:var(--mono); font-size:11px; color:var(--fg-4); padding:3px 9px; }
+  .d-title { font-size:22px; font-weight:700; color:var(--fg); letter-spacing:-.015em; line-height:1.3; margin:0 0 10px; }
+  .d-path { display:inline-flex; align-items:center; gap:8px; font-family:var(--mono); font-size:12.5px; color:var(--fg-3); padding:6px 10px; border-radius:6px; background:var(--bg); border:1px solid var(--border-2); }
+  .d-path .file { color:var(--fg-3); } .d-path .line { color:var(--blue); }
+  .signals { display:grid; grid-template-columns:repeat(4,1fr); gap:0; border-bottom:1px solid var(--border); }
+  .sig { padding:14px 18px; border-right:1px solid var(--border); display:flex; flex-direction:column; gap:4px; }
+  .sig:last-child { border-right:none; }
+  .sig .lbl { font-size:10px; color:var(--fg-5); text-transform:uppercase; letter-spacing:.10em; font-weight:600; }
+  .sig .v { font-size:18px; font-weight:700; color:var(--fg); letter-spacing:-.02em; font-family:var(--mono); display:flex; align-items:baseline; gap:6px; }
+  .sig .v small { font-size:11px; color:var(--fg-4); font-weight:500; font-family:var(--font); letter-spacing:0; }
+  .sig.severity .v { color:var(--med-fg); }
+  .sig.conf .v { color:var(--low); }
+  .sig.entropy .v { color:var(--purple); }
+  .sig.feas .v { color:var(--low); font-size:14px; }
+  .detail-body { padding:24px 28px; display:flex; flex-direction:column; gap:24px; }
+  .d-section { display:flex; flex-direction:column; gap:10px; }
+  .d-section-h { font-size:11px; color:var(--fg-5); font-weight:600; text-transform:uppercase; letter-spacing:.10em; display:flex; align-items:center; gap:8px; }
+  .d-section-h .badge { font-family:var(--mono); font-size:10px; padding:1px 7px; border-radius:4px; background:rgba(255,255,255,.04); color:var(--fg-4); border:1px solid var(--border-2); text-transform:none; letter-spacing:.02em; font-weight:500; }
+  .code { margin:0; background:var(--bg); border:1px solid var(--border-2); border-radius:8px; padding:14px 16px; font-family:var(--mono); font-size:12.5px; line-height:1.7; color:var(--fg-3); overflow-x:auto; white-space:pre-wrap; word-break:break-all; }
+  .ai-block { background:var(--ai-bg); border:1px solid var(--ai-bdr); border-radius:9px; padding:18px 20px; display:flex; flex-direction:column; gap:14px; }
+  .ai-head { display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:10px; }
+  .ai-kicker { font-family:var(--mono); font-size:11px; color:var(--purple); display:inline-flex; align-items:center; gap:8px; }
+  .ai-kicker::before { content:''; width:6px; height:6px; border-radius:50%; background:var(--purple); box-shadow:0 0 8px var(--purple); }
+  .ai-text { font-size:14px; color:var(--fg-2); line-height:1.65; letter-spacing:-.005em; white-space:pre-wrap; }
+  .actions { display:flex; gap:8px; flex-wrap:wrap; padding-top:4px; }
+  .act { height:32px; padding:0 14px; border-radius:7px; font-size:12.5px; font-weight:500; border:1px solid var(--border-2); color:var(--fg-2); background:transparent; display:inline-flex; align-items:center; gap:8px; cursor:pointer; font-family:inherit; }
+  .act:hover { background:rgba(255,255,255,.04); color:var(--fg); }
+  .act.prim { background:var(--fg); color:var(--bg); border-color:var(--fg); font-weight:600; }
+  .act.prim:hover { background:var(--fg-2); }
+  .act.fix { color:var(--purple); border-color:var(--ai-bdr); background:var(--ai-bg); }
+  .act.fix:hover { background:rgba(167,139,250,.15); }
+  .fix-block { background:var(--bg); border:1px solid var(--border-2); border-radius:9px; overflow:hidden; }
+  .fix-head { display:flex; align-items:center; justify-content:space-between; padding:10px 16px; background:rgba(255,255,255,.02); border-bottom:1px solid var(--border); font-family:var(--mono); font-size:11.5px; color:var(--fg-4); }
+  .fix-head .ok { color:var(--low); display:inline-flex; align-items:center; gap:6px; }
+  .fix-head .ok::before { content:''; width:6px; height:6px; border-radius:50%; background:var(--low); box-shadow:0 0 6px var(--low); }
+  .fix-code { margin:0; padding:14px 16px; font-family:var(--mono); font-size:12.5px; line-height:1.7; color:var(--fg-3); overflow-x:auto; white-space:pre; }
+  .fix-code .rm { color:#f87171; } .fix-code .ad { color:#6ee7b7; } .fix-code .ctx { color:var(--fg-5); }
+  .empty-detail { display:flex; flex-direction:column; align-items:center; justify-content:center; min-height:300px; color:var(--fg-5); font-family:var(--mono); font-size:12px; gap:8px; }
+  .no-findings { padding:40px; text-align:center; color:var(--fg-5); font-family:var(--mono); font-size:12px; }
+  @media (max-width:1100px) { .layout{grid-template-columns:1fr} .finlist{position:relative;top:0} .signals{grid-template-columns:repeat(2,1fr)} }
+</style>
+</head>
+<body>
+<div class="app">
+
+  <aside class="sidebar">
+    <div class="brand-row">
+      <div class="logo">🛡️</div>
+      <div class="wm-stack"><span class="wm">ACR-QA</span><span class="ver">v4.5.0</span></div>
+    </div>
+    <div class="nav-section">Workspace</div>
+    <a class="nav-item" href="index.html"><span class="ico">⌂</span> Overview</a>
+    <a class="nav-item on" href="finding.html"><span class="ico">⊜</span> Findings <span class="cnt" id="nav-findings-cnt">—</span></a>
+    <a class="nav-item" href="trends.html"><span class="ico">∿</span> Trends</a>
+    <a class="nav-item" href="runs.html"><span class="ico">≡</span> Runs <span class="cnt" id="nav-runs-cnt">—</span></a>
+    <div class="nav-section">Engine</div>
+    <a class="nav-item" href="/docs" target="_blank"><span class="ico">⚡</span> API Docs</a>
+    <a class="nav-item" href="finding.html?filter=high"><span class="ico">⚙</span> High severity</a>
+    <a class="nav-item" href="/v1/policy" target="_blank"><span class="ico">⛏</span> Policy config</a>
+    <div class="nav-section">Compliance</div>
+    <a class="nav-item" href="runs.html"><span class="ico">⌖</span> Run history</a>
+    <a class="nav-item" href="trends.html"><span class="ico">◉</span> Trend analysis</a>
+    <a class="nav-item" href="index.html"><span class="ico">⌘</span> Overview</a>
+    <div class="sb-footer">
+      <div class="sb-status">
+        <span class="led"></span>
+        <span>API online · acr-qa</span>
+        <button onclick="logout()" style="margin-left:auto;background:none;border:none;color:var(--fg-5);font-family:var(--mono);font-size:10.5px;cursor:pointer;padding:0">sign out</button>
+      </div>
+      <div class="sb-acct">
+        <div class="avatar" id="sb-avatar">A</div>
+        <div class="stack"><span class="nm" id="sb-user-name">Loading…</span><span class="sub" id="sb-user-role">KSIU · thesis</span></div>
+      </div>
+    </div>
+  </aside>
+
+  <div class="main">
+    <header class="topbar">
+      <div class="crumbs">
+        <a href="index.html">Workspace</a>
+        <span class="sep">/</span>
+        <a href="finding.html">Findings</a>
+        <span class="sep">/</span>
+        <span class="cur" id="crumb-rule">—</span>
+        <span class="id-pill" id="topbar-run">Run #—</span>
+      </div>
+      <div class="grow"></div>
+      <span class="kbd" title="Previous finding">K</span><span style="font-size:11px;color:var(--fg-5)">prev</span>
+      <span class="kbd" title="Next finding">J</span><span style="font-size:11px;color:var(--fg-5)">next</span>
+      <button class="btn-icon" onclick="location.reload()">↻</button>
+    </header>
+
+    <div class="page-pad">
+      <div class="layout">
+
+        <!-- ===== FINDING LIST ===== -->
+        <aside class="finlist">
+          <div class="finlist-head">
+            <div class="title" id="finlist-count">Loading findings…</div>
+            <input class="filter-input" id="filter-input" placeholder="Filter rule, file, message…">
+            <div class="filter-row">
+              <span class="pill on" id="pill-all" onclick="setFilter('')">All</span>
+              <span class="pill" id="pill-high" onclick="setFilter('high')">High</span>
+              <span class="pill" id="pill-med" onclick="setFilter('medium')">Medium</span>
+              <span class="pill" id="pill-low" onclick="setFilter('low')">Low</span>
+            </div>
+          </div>
+          <div class="finlist-body" id="finlist-body">
+            <div class="no-findings">Loading…</div>
+          </div>
+        </aside>
+
+        <!-- ===== DETAIL ===== -->
+        <main class="detail" id="detail-panel">
+          <div class="empty-detail">
+            <span style="font-size:24px">⊜</span>
+            <span>Select a finding to view details</span>
+          </div>
+        </main>
+
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+const authToken = localStorage.getItem('acrqa_token');
+if (!authToken) location.href = 'login.html';
+
+const params = new URLSearchParams(location.search);
+let RUN_ID = params.get('run') ? parseInt(params.get('run')) : null;
+let FINDING_ID = params.get('id') ? parseInt(params.get('id')) : null;
+const FILTER_PRESET = params.get('filter') || '';
+
+let allFindings = [];
+let activeFindingIdx = -1;
+
+const api = async (path) => {
+  const r = await fetch(path, { headers: { Authorization: 'Bearer ' + authToken } });
+  if (r.status === 401) { localStorage.clear(); location.href = 'login.html'; throw 401; }
+  if (!r.ok) throw new Error(r.status);
+  return r.json();
+};
+const esc = s => String(s || '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const set = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val; };
+
+function logout() { localStorage.clear(); location.href = 'login.html'; }
+
+(async () => {
+  try {
+    const [me, runsData] = await Promise.all([
+      api('/v1/auth/me'),
+      api('/v1/runs?limit=1'),
+    ]);
+
+    if (me.email) {
+      const nm = me.email.split('@')[0];
+      set('sb-user-name', nm);
+      set('sb-user-role', (me.role || 'member') + ' · KSIU');
+      const av = document.getElementById('sb-avatar');
+      if (av) av.textContent = nm[0].toUpperCase();
+    }
+
+    const runs = runsData.runs || [];
+    if (!RUN_ID && runs.length) RUN_ID = runs[0].id;
+    if (!RUN_ID) { document.getElementById('finlist-body').innerHTML = '<div class="no-findings">No runs found. Submit a scan first.</div>'; return; }
+
+    set('topbar-run', 'Run #' + RUN_ID);
+    set('nav-runs-cnt', runs.length || RUN_ID);
+
+    const findData = await api('/v1/runs/' + RUN_ID + '/findings');
+    allFindings = findData.findings || [];
+
+    set('nav-findings-cnt', allFindings.length);
+    renderList(allFindings, FILTER_PRESET || '');
+
+    if (FILTER_PRESET) setFilter(FILTER_PRESET, false);
+
+    const target = FINDING_ID
+      ? allFindings.find(f => f.id === FINDING_ID)
+      : allFindings[0];
+    if (target) { activeFindingIdx = allFindings.indexOf(target); FINDING_ID = target.id; selectFinding(target); }
+
+  } catch (e) { if (e !== 401) { console.warn('Findings load error:', e); document.getElementById('finlist-body').innerHTML = '<div class="no-findings">Failed to load findings. Is the API running?</div>'; } }
+})();
+
+let currentFilter = '';
+let currentSevFilter = '';
+
+function setFilter(sev, updatePills = true) {
+  currentSevFilter = sev;
+  if (updatePills) {
+    ['all','high','med','low'].forEach(k => document.getElementById('pill-' + k)?.classList.remove('on'));
+    const key = sev === 'high' ? 'high' : sev === 'medium' ? 'med' : sev === 'low' ? 'low' : 'all';
+    document.getElementById('pill-' + key)?.classList.add('on');
+  }
+  applyFilters();
+}
+
+function applyFilters() {
+  const q = currentFilter.toLowerCase();
+  const items = document.querySelectorAll('.fl-item[data-sev]');
+  items.forEach(el => {
+    const sevOk = !currentSevFilter || el.dataset.sev === currentSevFilter;
+    const txt = (el.dataset.msg + ' ' + el.dataset.rule + ' ' + el.dataset.file).toLowerCase();
+    const textOk = !q || txt.includes(q);
+    el.style.display = sevOk && textOk ? '' : 'none';
+  });
+  const visible = document.querySelectorAll('.fl-item[data-sev]:not([style*="none"])').length;
+  set('finlist-count', visible + ' of ' + allFindings.length + ' findings');
+}
+
+document.getElementById('filter-input').addEventListener('input', e => {
+  currentFilter = e.target.value;
+  applyFilters();
+});
+
+function renderList(findings) {
+  const body = document.getElementById('finlist-body');
+  if (!findings.length) { body.innerHTML = '<div class="no-findings">No findings for this run.</div>'; return; }
+  const sevMap = { high: 'high', medium: 'med', low: 'low' };
+  const confCls = c => c >= 80 ? 'hi' : c >= 60 ? 'md' : 'lo';
+  body.innerHTML = findings.map((f, i) => {
+    const sev = (f.severity || 'low').toLowerCase();
+    const sc = sevMap[sev] || 'low';
+    const conf = Math.round((f.confidence || 0) * 100);
+    return `<div class="fl-item" data-idx="${i}" data-id="${f.id}" data-sev="${sev}"
+        data-msg="${esc(f.message || '')}" data-rule="${esc(f.rule_id || '')}" data-file="${esc(f.file_path || '')}"
+        onclick="clickFinding(${i})">
+      <span class="sev ${sc}">${sc.toUpperCase()}</span>
+      <div class="fl-body">
+        <span class="fl-msg">${esc((f.message || 'Finding').slice(0, 55))}</span>
+        <span class="fl-meta"><span class="rule">${esc(f.rule_id || '?')}</span><span class="sep"> · </span>${esc((f.file_path || '?').split('/').pop())}:${f.line_number || '?'}</span>
+      </div>
+      <span class="conf ${confCls(conf)}">${conf}%</span>
+    </div>`;
+  }).join('');
+  set('finlist-count', findings.length + ' findings');
+}
+
+function clickFinding(idx) {
+  activeFindingIdx = idx;
+  const f = allFindings[idx];
+  FINDING_ID = f.id;
+  const url = new URL(location);
+  url.searchParams.set('run', RUN_ID);
+  url.searchParams.set('id', f.id);
+  history.replaceState(null, '', url);
+  selectFinding(f);
+}
+
+function selectFinding(f) {
+  document.querySelectorAll('.fl-item').forEach(el => el.classList.toggle('active', parseInt(el.dataset.id) === f.id));
+  set('crumb-rule', f.rule_id || 'Finding');
+
+  const sev = (f.severity || 'low').toLowerCase();
+  const sevMap = { high: 'high', medium: 'med', low: 'low' };
+  const sc = sevMap[sev] || 'low';
+  const conf = Math.round((f.confidence || 0) * 100);
+  const confCls = conf >= 80 ? 'hi' : conf >= 60 ? 'md' : 'lo';
+
+  const cat = (f.category || '').toLowerCase();
+  const cweMap = { security: 'CWE-798 · OWASP A02', style: 'Code style', design: 'Design issue', best_practice: 'Best practice' };
+
+  document.getElementById('detail-panel').innerHTML = `
+    <header class="detail-head">
+      <div class="d-chips">
+        <span class="sev ${sc}">${sc.toUpperCase()}</span>
+        <span class="d-rule-id">${esc(f.rule_id || 'UNKNOWN')}</span>
+        <span class="d-tool">${esc(f.tool || 'unknown')}</span>
+        ${f.category ? `<span class="d-cwe">${esc(cweMap[cat] || f.category)}</span>` : ''}
+      </div>
+      <h1 class="d-title">${esc(f.message || 'Finding')}</h1>
+      <span class="d-path">
+        <span class="file">${esc((f.file_path || '?').replace(/\//g, ' / '))}</span>
+        <span style="color:var(--fg-5)">:</span>
+        <span class="line">${f.line_number || '?'}</span>
+      </span>
+    </header>
+
+    <section class="signals">
+      <div class="sig severity"><span class="lbl">Severity</span><span class="v">${sc.toUpperCase()}</span></div>
+      <div class="sig conf"><span class="lbl">Confidence</span><span class="v">${conf} <small>/ 100</small></span></div>
+      <div class="sig entropy"><span class="lbl">Category</span><span class="v" style="font-size:13px;color:var(--fg-2)">${esc(f.category || '—')}</span></div>
+      <div class="sig feas"><span class="lbl">Taint</span><span class="v">${f.taint_source ? 'TRACKED' : 'STATIC'}</span></div>
+    </section>
+
+    <div class="detail-body">
+
+      ${f.file_path ? `
+      <section class="d-section">
+        <div class="d-section-h">Location <span class="badge">${esc(f.file_path || '?')} · line ${f.line_number || '?'}</span></div>
+        <pre class="code">${esc(f.file_path + ':' + (f.line_number || '?') + '\n\n→ ' + (f.message || 'See finding message'))}</pre>
+      </section>` : ''}
+
+      ${f.taint_source ? `
+      <section class="d-section">
+        <div class="d-section-h">Taint source <span class="badge">data-flow tracked</span></div>
+        <pre class="code">${esc(f.taint_source)}</pre>
+      </section>` : ''}
+
+      ${f.explanation_text ? `
+      <section class="d-section">
+        <div class="d-section-h">AI explanation <span class="badge">RAG-grounded · KB</span></div>
+        <div class="ai-block">
+          <div class="ai-head">
+            <span class="ai-kicker">${esc(f.model_name || 'Groq · Llama 3.3-70b')} · ${f.latency_ms ? f.latency_ms + 'ms' : 'cached'}</span>
+            <div style="font-family:var(--mono);font-size:10.5px;color:var(--fg-4)">
+              confidence <span style="color:var(--fg-2);font-weight:600">${conf}%</span>
+            </div>
+          </div>
+          <p class="ai-text">${esc(f.explanation_text)}</p>
+        </div>
+      </section>` : `
+      <section class="d-section">
+        <div class="d-section-h">AI explanation</div>
+        <div style="padding:16px;background:var(--bg);border:1px solid var(--border-2);border-radius:8px;font-family:var(--mono);font-size:12px;color:var(--fg-5)">
+          No AI explanation available for this finding. The LLM may have been at capacity or the finding did not meet the confidence threshold.
+        </div>
+      </section>`}
+
+      <div class="actions">
+        <button class="act prim" onclick="viewRawJson(${f.id})">View JSON</button>
+        <button class="act fix" onclick="copyFindingId(${f.id})">Copy ID · ${f.id}</button>
+        <a class="act" href="/v1/runs/${RUN_ID}/findings" target="_blank">Raw API</a>
+        ${f.id ? `<a class="act" href="/v1/runs/${RUN_ID}/findings/${f.id}/autofix" target="_blank">Auto-fix →</a>` : ''}
+      </div>
+
+    </div>`;
+}
+
+function viewRawJson(id) {
+  window.open('/v1/runs/' + RUN_ID + '/findings', '_blank');
+}
+function copyFindingId(id) {
+  navigator.clipboard?.writeText(String(id));
+  const btn = event.target;
+  const old = btn.textContent;
+  btn.textContent = 'Copied!';
+  setTimeout(() => btn.textContent = old, 1200);
+}
+
+document.addEventListener('keydown', e => {
+  if (!allFindings.length || e.target.tagName === 'INPUT') return;
+  if (e.key === 'j' && activeFindingIdx < allFindings.length - 1) { clickFinding(activeFindingIdx + 1); }
+  if (e.key === 'k' && activeFindingIdx > 0) { clickFinding(activeFindingIdx - 1); }
+});
+</script>
+</body>
+</html>
