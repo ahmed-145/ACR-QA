@@ -8,7 +8,7 @@ All notable changes to ACR-QA are documented here.
 
 All 6 Week 1 tasks now complete. 42 new tests in `TESTS/test_week1_completion.py` covering binary
 fuzzing, AI explainer snapshot validation, performance regression gates, and mutation-killing
-exact-value assertions. Full suite: **2,274 passing** (2,209 Python + 65 TS).
+exact-value assertions. Full suite: **2,339 passing** (2,274 Python + 65 TS).
 
 ### Added
 

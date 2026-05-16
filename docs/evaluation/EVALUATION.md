@@ -110,7 +110,7 @@ ACR-QA covers **9/10** OWASP Top 10 categories.
 
 | Metric | Value |
 |--------|:-----:|
-| Test Suite | **2,297 passing** (2,232 Python + 65 TypeScript) — Phase 12 Week 5 |
+| Test Suite | **2,339 passing** (2,274 Python + 65 TypeScript) — Phase 12 Week 6 (Week 1 +42 tests) |
 | Code Coverage | **84.89%** (CORE) · 82.66% (CORE+DATABASE, CI gate 82% ✅) |
 | CI/CD | GitHub Actions (test + lint + coverage + E2E + deploy + cosign sign) |
 | Docker | Multi-stage Dockerfile + docker-compose.yml (8 services incl. Jaeger) |
@@ -174,4 +174,4 @@ Dead-code findings receive a **−20 confidence penalty** rather than outright s
 
 ---
 
-*Updated: May 15, 2026 — ACR-QA v4.0.0 (Phase 12 Week 5 complete, targeting v4.5.0)*
+*Updated: May 16, 2026 — ACR-QA v4.5.0 (Phase 12 Weeks 1–6 complete; 12.35 demo video + 12.36 YouTube = human tasks remaining)*

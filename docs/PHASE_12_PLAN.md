@@ -261,7 +261,7 @@ OVERALL: 37/39 tasks · 95% complete (12.35 + 12.36 = human tasks)
 
 | # | Task | Status | Result |
 |---|------|--------|--------|
-| **12.34** | Re-run full eval suite | ✅ DONE | EVALUATION.md updated: tests 2162→2297, endpoints 32→33, migrations 9→10, engines 12→14; added chaos/SLO/FinOps/a11y/IaC rows; differentiators table +5 Phase 12 rows |
+| **12.34** | Re-run full eval suite | ✅ DONE | EVALUATION.md updated: tests 2162→2339 (2274 Python + 65 TS), endpoints 32→33, migrations 9→10, engines 12→14; added chaos/SLO/FinOps/a11y/IaC rows; differentiators table +5 Phase 12 rows |
 | **12.35** | Demo video (OBS, 5min) | ⏳ HUMAN | Requires physical screen recording |
 | **12.36** | YouTube upload + README link | ⏳ HUMAN | Follows 12.35 |
 | **12.37** | Phase 12 retrospective | ✅ DONE | `docs/PHASE_12_RETROSPECTIVE.md` — what went well, surprises, left-out items, 10 new thesis claims, v4.0.0→v4.5.0 delta table |
