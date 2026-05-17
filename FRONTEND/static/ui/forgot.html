@@ -1,0 +1,232 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>ACR-QA — Reset Password</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="app.css">
+<style>
+  body { display:grid; place-items:center; min-height:100vh; background:var(--bg); }
+  .card {
+    width:400px; background:var(--bg-2);
+    border:1px solid var(--border); border-radius:16px; padding:36px 32px;
+  }
+  .brand { display:flex; align-items:center; gap:12px; margin-bottom:28px; }
+  h1 { font-size:22px; font-weight:800; color:var(--fg); letter-spacing:-.02em; margin:0 0 6px; }
+  .sub { font-size:13px; color:var(--fg-4); margin:0 0 24px; line-height:1.5; }
+  .field { display:flex; flex-direction:column; gap:6px; margin-bottom:14px; }
+  .field label { font-size:11.5px; color:var(--fg-3); font-weight:500; }
+  .pw-wrap { position:relative; }
+  .field input {
+    width:100%; height:38px; padding:0 12px;
+    background:var(--bg); border:1px solid var(--border-2);
+    border-radius:8px; color:var(--fg-2); font-size:13.5px; font-family:inherit;
+    transition:border-color .15s, box-shadow .15s; box-sizing:border-box;
+  }
+  .field input:focus { outline:none; border-color:rgba(167,139,250,.4); box-shadow:0 0 0 3px rgba(167,139,250,.08); }
+  .pw-toggle {
+    position:absolute; right:10px; top:50%; transform:translateY(-50%);
+    background:none; border:none; cursor:pointer; color:var(--fg-5); font-size:14px; padding:4px;
+  }
+  .btn {
+    width:100%; height:40px; margin-top:8px;
+    background:linear-gradient(135deg, #a78bfa, #60a5fa);
+    color:#fff; border:none; border-radius:8px;
+    font-size:13.5px; font-weight:700; cursor:pointer; font-family:inherit;
+    transition:opacity .15s, transform .1s;
+  }
+  .btn:hover:not(:disabled) { opacity:.9; transform:translateY(-1px); }
+  .btn:disabled { opacity:.6; cursor:default; transform:none; }
+  .err {
+    font-size:12px; margin-top:10px;
+    font-family:var(--mono); display:none;
+    border-radius:6px; padding:8px 10px;
+  }
+  .err.on { display:block; }
+  .err.bad { color:#f87171; background:rgba(248,113,113,.08); border:1px solid rgba(248,113,113,.2); }
+  .err.good { color:#34d399; background:rgba(52,211,153,.08); border:1px solid rgba(52,211,153,.2); }
+  .footer-links { text-align:center; margin-top:20px; font-size:12.5px; color:var(--fg-4); }
+  .footer-links a { color:var(--fg-3); text-decoration:none; }
+  .footer-links a:hover { color:var(--fg); }
+
+  /* Demo code reveal box */
+  .demo-box {
+    background:rgba(167,139,250,.07); border:1px solid rgba(167,139,250,.2);
+    border-radius:10px; padding:16px; margin-bottom:20px; display:none; text-align:center;
+  }
+  .demo-box.on { display:block; }
+  .demo-box .demo-label { font-size:10.5px; color:#a78bfa; text-transform:uppercase; letter-spacing:.1em; font-weight:600; margin-bottom:8px; }
+  .demo-box .code-display { font-family:var(--mono); font-size:28px; font-weight:700; letter-spacing:.2em; color:#a78bfa; margin-bottom:4px; }
+  .demo-box .demo-note { font-size:11px; color:var(--fg-5); }
+
+  /* Step indicator */
+  .steps-bar { display:flex; gap:0; margin-bottom:24px; }
+  .step-dot {
+    flex:1; height:3px; border-radius:2px; background:var(--border-2);
+    transition:background .3s;
+  }
+  .step-dot.active { background:linear-gradient(90deg, #a78bfa, #60a5fa); }
+  .step-dot + .step-dot { margin-left:6px; }
+</style>
+</head>
+<body>
+<div class="card">
+  <div class="brand">
+    <div class="logo">🛡️</div>
+    <div class="wm-stack"><span class="wm">ACR-QA</span><span class="ver">v4.5.0</span></div>
+  </div>
+
+  <div class="steps-bar">
+    <div class="step-dot active" id="sd1"></div>
+    <div class="step-dot" id="sd2"></div>
+    <div class="step-dot" id="sd3"></div>
+  </div>
+
+  <!-- Step 1: request code -->
+  <div id="step1">
+    <h1>Forgot password?</h1>
+    <p class="sub">Enter your email and we'll give you a reset code. <strong>Demo mode:</strong> code appears here — no email sent.</p>
+    <form id="form1">
+      <div class="field">
+        <label>Email</label>
+        <input id="email" type="email" placeholder="you@example.com" autocomplete="email" required>
+      </div>
+      <button class="btn" type="submit" id="btn1">Send reset code</button>
+      <div class="err bad" id="err1"></div>
+    </form>
+  </div>
+
+  <!-- Step 2: enter code + new password -->
+  <div id="step2" style="display:none">
+    <h1>Reset password</h1>
+    <p class="sub">Enter the 6-digit code and choose a new password.</p>
+
+    <div class="demo-box" id="demo-box">
+      <div class="demo-label">Demo mode — reset code</div>
+      <div class="code-display" id="code-display">------</div>
+      <div class="demo-note">Use this code below to reset your password.</div>
+    </div>
+
+    <form id="form2">
+      <div class="field">
+        <label>Reset code</label>
+        <input id="reset-code" type="text" placeholder="000000" maxlength="6" inputmode="numeric" pattern="[0-9]{6}" required>
+      </div>
+      <div class="field">
+        <label>New password</label>
+        <div class="pw-wrap">
+          <input id="new-pwd" type="password" placeholder="min 8 characters" autocomplete="new-password" required>
+          <button type="button" class="pw-toggle" id="pw-eye" aria-label="Toggle password">👁</button>
+        </div>
+      </div>
+      <button class="btn" type="submit" id="btn2">Reset password</button>
+      <div class="err" id="err2"></div>
+    </form>
+  </div>
+
+  <!-- Step 3: success -->
+  <div id="step3" style="display:none;text-align:center">
+    <div style="font-size:48px;margin-bottom:16px">✅</div>
+    <h1>Password reset!</h1>
+    <p class="sub" style="text-align:center">You're now signed in. Redirecting to dashboard…</p>
+  </div>
+
+  <div class="footer-links">
+    <a href="login.html">← Back to sign in</a>
+  </div>
+</div>
+
+<script>
+if (localStorage.getItem('acrqa_token')) location.href = 'index.html';
+
+let savedEmail = '';
+
+document.getElementById('pw-eye').addEventListener('click', () => {
+  const p = document.getElementById('new-pwd');
+  p.type = p.type === 'password' ? 'text' : 'password';
+});
+
+function setStep(n) {
+  [1, 2, 3].forEach(i => {
+    document.getElementById('step' + i).style.display = i === n ? 'block' : 'none';
+    const sd = document.getElementById('sd' + i);
+    if (sd) sd.classList.toggle('active', i <= n);
+  });
+}
+
+// Step 1: request reset code
+document.getElementById('form1').addEventListener('submit', async e => {
+  e.preventDefault();
+  const btn = document.getElementById('btn1');
+  const err = document.getElementById('err1');
+  btn.textContent = 'Sending…'; btn.disabled = true;
+  err.classList.remove('on');
+
+  savedEmail = document.getElementById('email').value.trim();
+  try {
+    const r = await fetch('/v1/auth/forgot-password', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({ email: savedEmail })
+    });
+    const data = await r.json();
+
+    // Show step 2 regardless (don't reveal if email exists)
+    setStep(2);
+    if (data.reset_code && data.reset_code !== '------') {
+      document.getElementById('demo-box').classList.add('on');
+      document.getElementById('code-display').textContent = data.reset_code;
+      // Auto-fill the code input
+      document.getElementById('reset-code').value = data.reset_code;
+    }
+  } catch {
+    err.textContent = 'Network error — is the server running?';
+    err.classList.add('on');
+    btn.textContent = 'Send reset code'; btn.disabled = false;
+  }
+});
+
+// Step 2: submit new password
+document.getElementById('form2').addEventListener('submit', async e => {
+  e.preventDefault();
+  const btn = document.getElementById('btn2');
+  const err = document.getElementById('err2');
+  btn.textContent = 'Resetting…'; btn.disabled = true;
+  err.className = 'err';
+
+  const code = document.getElementById('reset-code').value.trim();
+  const new_password = document.getElementById('new-pwd').value;
+
+  if (new_password.length < 8) {
+    err.textContent = 'Password must be at least 8 characters.';
+    err.className = 'err bad on';
+    btn.textContent = 'Reset password'; btn.disabled = false;
+    return;
+  }
+
+  try {
+    const r = await fetch('/v1/auth/reset-password', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({ email: savedEmail, code, new_password })
+    });
+    const data = await r.json();
+    if (!r.ok) {
+      err.textContent = data.detail || 'Invalid or expired code.';
+      err.className = 'err bad on';
+      btn.textContent = 'Reset password'; btn.disabled = false;
+      return;
+    }
+    localStorage.setItem('acrqa_token', data.access_token);
+    localStorage.setItem('acrqa_refresh', data.refresh_token);
+    setStep(3);
+    setTimeout(() => location.href = 'index.html', 2000);
+  } catch {
+    err.textContent = 'Network error — is the server running?';
+    err.className = 'err bad on';
+    btn.textContent = 'Reset password'; btn.disabled = false;
+  }
+});
+</script>
+</body>
+</html>

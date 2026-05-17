@@ -1,0 +1,60 @@
+# django.nV — nVisium's Intentionally Vulnerable Django Application
+# https://github.com/nVisium/django.nV
+# Added in Tier 3 corpus expansion — Django + Python coverage.
+
+repo: django-nv
+url: https://github.com/nVisium/django.nV
+language: python
+local_path: test_targets/eval-repos/django-nv
+
+expected_findings:
+  - id: djangonv-sqli-task-list
+    cwe: CWE-89
+    canonical_id: SECURITY-027
+    file: taskManager/views.py
+    line_range: [182, 186]
+    severity: high
+    description: >
+      Raw SQL string formatting in task list view — user-supplied input concatenated
+      directly into SQL string via % operator. Classic SQLi pattern detectable by Bandit B608
+      and Semgrep python.lang.security.audit.formatted-sql-query.
+
+  - id: djangonv-idor-task-detail
+    cwe: CWE-284
+    canonical_id: SECURITY-019
+    file: taskManager/views.py
+    line_range: [200, 210]
+    severity: high
+    description: >
+      Insecure Direct Object Reference — task detail view fetches Task by pk from request
+      without verifying the requesting user owns that task. No access control check.
+      Detection: Semgrep or manual; static tools may classify LOW (logic flaw).
+
+  - id: djangonv-open-redirect
+    cwe: CWE-601
+    canonical_id: SECURITY-015
+    file: taskManager/views.py
+    line_range: [385, 390]
+    severity: medium
+    description: >
+      Open redirect — next parameter from request passed directly to HttpResponseRedirect
+      without URL validation. Detectable by Semgrep python.django.security.open-redirect rules.
+
+  - id: djangonv-csrf-exempt
+    cwe: CWE-352
+    canonical_id: SECURITY-020
+    file: taskManager/views.py
+    line_range: [1, 50]
+    severity: medium
+    description: >
+      CSRF exemption applied to sensitive views via @csrf_exempt decorator.
+      Bandit B703 may not fire; Semgrep django.security.csrf rules will flag.
+
+notes: >
+  django.nV is a well-documented intentionally vulnerable Django app used in security
+  training. Ground truth sourced from nVisium course materials and confirmed via
+  manual code review of the repository at HEAD.
+  SQLi finding (taskManager/views.py ~L182-186) has highest confidence for automated
+  detection — raw % string formatting into SQL is a canonical Bandit/Semgrep pattern.
+  IDOR and Open Redirect are logic flaws — static tools have lower recall on these.
+  Confidence: high for SQLi, medium for others.

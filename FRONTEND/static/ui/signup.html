@@ -1,0 +1,172 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>ACR-QA — Create Account</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="app.css">
+<style>
+  body { display:grid; place-items:center; min-height:100vh; background:var(--bg); }
+  .card {
+    width:400px; background:var(--bg-2);
+    border:1px solid var(--border); border-radius:16px; padding:36px 32px;
+  }
+  .brand { display:flex; align-items:center; gap:12px; margin-bottom:28px; }
+  h1 { font-size:22px; font-weight:800; color:var(--fg); letter-spacing:-.02em; margin:0 0 6px; }
+  .sub { font-size:13px; color:var(--fg-4); margin:0 0 24px; }
+  .field { display:flex; flex-direction:column; gap:6px; margin-bottom:14px; }
+  .field label { font-size:11.5px; color:var(--fg-3); font-weight:500; }
+  .pw-wrap { position:relative; }
+  .field input {
+    width:100%; height:38px; padding:0 12px;
+    background:var(--bg); border:1px solid var(--border-2);
+    border-radius:8px; color:var(--fg-2); font-size:13.5px; font-family:inherit;
+    transition:border-color .15s, box-shadow .15s; box-sizing:border-box;
+  }
+  .field input:focus { outline:none; border-color:rgba(167,139,250,.4); box-shadow:0 0 0 3px rgba(167,139,250,.08); }
+  .pw-toggle {
+    position:absolute; right:10px; top:50%; transform:translateY(-50%);
+    background:none; border:none; cursor:pointer; color:var(--fg-5); font-size:14px; padding:4px;
+  }
+  .strength { height:3px; border-radius:2px; background:var(--border-2); margin-top:6px; overflow:hidden; }
+  .strength-bar { height:100%; width:0; border-radius:2px; transition:width .2s, background .2s; }
+  .strength-label { font-size:10.5px; color:var(--fg-5); margin-top:4px; min-height:14px; }
+  .btn {
+    width:100%; height:40px; margin-top:8px;
+    background:linear-gradient(135deg, #a78bfa, #60a5fa);
+    color:#fff; border:none; border-radius:8px;
+    font-size:13.5px; font-weight:700; cursor:pointer; font-family:inherit;
+    transition:opacity .15s, transform .1s;
+  }
+  .btn:hover:not(:disabled) { opacity:.9; transform:translateY(-1px); }
+  .btn:disabled { opacity:.6; cursor:default; transform:none; }
+  .err {
+    color:#f87171; font-size:12px; margin-top:10px;
+    font-family:var(--mono); display:none; background:rgba(248,113,113,.08);
+    border:1px solid rgba(248,113,113,.2); border-radius:6px; padding:8px 10px;
+  }
+  .err.on { display:block; }
+  .footer-links { text-align:center; margin-top:20px; font-size:12.5px; color:var(--fg-4); }
+  .footer-links a { color:var(--fg-3); text-decoration:none; }
+  .footer-links a:hover { color:var(--fg); }
+  .demo-note {
+    background:rgba(167,139,250,.07); border:1px solid rgba(167,139,250,.18);
+    border-radius:8px; padding:10px 12px; margin-bottom:20px;
+    font-size:11.5px; color:var(--fg-4); line-height:1.5;
+  }
+  .demo-note strong { color:#a78bfa; }
+</style>
+</head>
+<body>
+<div class="card">
+  <div class="brand">
+    <div class="logo">🛡️</div>
+    <div class="wm-stack"><span class="wm">ACR-QA</span><span class="ver">v4.5.0</span></div>
+  </div>
+  <h1>Create account</h1>
+  <p class="sub">Join ACR-QA — KSIU Thesis Project</p>
+
+  <div class="demo-note">
+    <strong>Demo mode:</strong> No email is sent. Your verification code will appear on the next screen.
+  </div>
+
+  <form id="form">
+    <div class="field">
+      <label>Email</label>
+      <input id="email" type="email" placeholder="you@example.com" autocomplete="email" required>
+    </div>
+    <div class="field">
+      <label>Password</label>
+      <div class="pw-wrap">
+        <input id="pwd" type="password" placeholder="min 8 characters" autocomplete="new-password" required>
+        <button type="button" class="pw-toggle" id="pw-eye" aria-label="Toggle password">👁</button>
+      </div>
+      <div class="strength"><div class="strength-bar" id="sbar"></div></div>
+      <div class="strength-label" id="slabel"></div>
+    </div>
+    <button class="btn" type="submit" id="btn">Create account</button>
+    <div class="err" id="err"></div>
+  </form>
+
+  <div class="footer-links">
+    Already have an account? <a href="login.html">Sign in</a>
+  </div>
+</div>
+
+<script>
+if (localStorage.getItem('acrqa_token')) location.href = 'index.html';
+
+const pwInput = document.getElementById('pwd');
+const sbar = document.getElementById('sbar');
+const slabel = document.getElementById('slabel');
+
+document.getElementById('pw-eye').addEventListener('click', () => {
+  pwInput.type = pwInput.type === 'password' ? 'text' : 'password';
+});
+
+function scorePassword(pw) {
+  let s = 0;
+  if (pw.length >= 8) s++;
+  if (pw.length >= 12) s++;
+  if (/[A-Z]/.test(pw)) s++;
+  if (/[0-9]/.test(pw)) s++;
+  if (/[^A-Za-z0-9]/.test(pw)) s++;
+  return s;
+}
+
+pwInput.addEventListener('input', () => {
+  const pw = pwInput.value;
+  if (!pw) { sbar.style.width = '0'; slabel.textContent = ''; return; }
+  const s = scorePassword(pw);
+  const pct = Math.min(s * 20, 100);
+  const colors = ['', '#f87171', '#fb923c', '#facc15', '#34d399', '#34d399'];
+  const labels = ['', 'Weak', 'Fair', 'Good', 'Strong', 'Very strong'];
+  sbar.style.width = pct + '%';
+  sbar.style.background = colors[s] || '#f87171';
+  slabel.textContent = labels[s] || 'Weak';
+  slabel.style.color = colors[s] || '#f87171';
+});
+
+document.getElementById('form').addEventListener('submit', async e => {
+  e.preventDefault();
+  const btn = document.getElementById('btn');
+  const err = document.getElementById('err');
+  btn.textContent = 'Creating account…'; btn.disabled = true;
+  err.classList.remove('on');
+
+  const email = document.getElementById('email').value.trim();
+  const password = pwInput.value;
+
+  if (password.length < 8) {
+    err.textContent = 'Password must be at least 8 characters.';
+    err.classList.add('on');
+    btn.textContent = 'Create account'; btn.disabled = false;
+    return;
+  }
+
+  try {
+    const r = await fetch('/v1/auth/register', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({ email, password })
+    });
+    const data = await r.json();
+    if (!r.ok) {
+      err.textContent = data.detail || 'Registration failed.';
+      err.classList.add('on');
+      btn.textContent = 'Create account'; btn.disabled = false;
+      return;
+    }
+    // Store pending verification state
+    sessionStorage.setItem('verify_email', email);
+    sessionStorage.setItem('verify_code', data.verification_code);
+    location.href = 'verify.html';
+  } catch {
+    err.textContent = 'Network error — is the server running?';
+    err.classList.add('on');
+    btn.textContent = 'Create account'; btn.disabled = false;
+  }
+});
+</script>
+</body>
+</html>

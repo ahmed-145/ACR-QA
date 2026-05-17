@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import random
+import re
 import sys
 from pathlib import Path
 
@@ -16,10 +18,16 @@ from FRONTEND.api.models import (
     ApiKeyCreatedOut,
     ApiKeyCreateRequest,
     ApiKeyOut,
+    ForgotOut,
+    ForgotRequest,
     LoginRequest,
     RefreshRequest,
+    RegisterOut,
+    RegisterRequest,
+    ResetPasswordRequest,
     TokenResponse,
     UserOut,
+    VerifyRequest,
 )
 from FRONTEND.auth.api_key_utils import generate_api_key
 from FRONTEND.auth.jwt_utils import JWTError, create_access_token, create_refresh_token, decode_token
@@ -40,6 +48,81 @@ async def login(body: LoginRequest, db: Database = Depends(get_db)):
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid credentials")
 
     user = rows[0]
+    return TokenResponse(
+        access_token=create_access_token(user["id"], user["email"], user["role"]),
+        refresh_token=create_refresh_token(user["id"]),
+    )
+
+
+@router.post("/register", response_model=RegisterOut, status_code=201, summary="Public self-registration (demo mode)")
+async def register(body: RegisterRequest, db: Database = Depends(get_db)):
+    if not re.match(r"^[^@\s]+@[^@\s]+\.[^@\s]+$", body.email):
+        raise HTTPException(status_code=400, detail="Invalid email format")
+    if len(body.password) < 8:
+        raise HTTPException(status_code=400, detail="Password must be at least 8 characters")
+
+    existing = db.execute("SELECT id FROM users WHERE email = %s", (body.email,), fetch=True)
+    if existing:
+        raise HTTPException(status_code=409, detail="Email already registered")
+
+    code = f"{random.randint(0, 999999):06d}"
+    row = db.execute(
+        "INSERT INTO users (email, password_hash, role, email_verified, verification_code) "
+        "VALUES (%s, %s, 'member', FALSE, %s) RETURNING id",
+        (body.email, _pwd.hash(body.password), code),
+    )
+    return RegisterOut(user_id=dict(row)["id"], email=body.email, verification_code=code)
+
+
+@router.post("/verify", response_model=TokenResponse, summary="Verify email with 6-digit code")
+async def verify_email(body: VerifyRequest, db: Database = Depends(get_db)):
+    rows = db.execute(
+        "SELECT id, email, role, verification_code FROM users WHERE email = %s AND is_active = TRUE",
+        (body.email,),
+        fetch=True,
+    )
+    if not rows:
+        raise HTTPException(status_code=404, detail="User not found")
+    user = rows[0]
+    if user["verification_code"] != body.code:
+        raise HTTPException(status_code=400, detail="Invalid verification code")
+    db.execute(
+        "UPDATE users SET email_verified = TRUE, verification_code = NULL WHERE email = %s",
+        (body.email,),
+    )
+    return TokenResponse(
+        access_token=create_access_token(user["id"], user["email"], user["role"]),
+        refresh_token=create_refresh_token(user["id"]),
+    )
+
+
+@router.post("/forgot-password", response_model=ForgotOut, summary="Request password reset (demo mode)")
+async def forgot_password(body: ForgotRequest, db: Database = Depends(get_db)):
+    rows = db.execute("SELECT id FROM users WHERE email = %s AND is_active = TRUE", (body.email,), fetch=True)
+    if not rows:
+        # Don't reveal whether email exists
+        return ForgotOut(reset_code="------")
+    code = f"{random.randint(0, 999999):06d}"
+    db.execute("UPDATE users SET reset_code = %s WHERE email = %s", (code, body.email))
+    return ForgotOut(reset_code=code)
+
+
+@router.post("/reset-password", response_model=TokenResponse, summary="Reset password with code (demo mode)")
+async def reset_password(body: ResetPasswordRequest, db: Database = Depends(get_db)):
+    if len(body.new_password) < 8:
+        raise HTTPException(status_code=400, detail="Password must be at least 8 characters")
+    rows = db.execute(
+        "SELECT id, email, role, reset_code FROM users WHERE email = %s AND is_active = TRUE",
+        (body.email,),
+        fetch=True,
+    )
+    if not rows or rows[0]["reset_code"] != body.code:
+        raise HTTPException(status_code=400, detail="Invalid or expired reset code")
+    user = rows[0]
+    db.execute(
+        "UPDATE users SET password_hash = %s, reset_code = NULL WHERE email = %s",
+        (_pwd.hash(body.new_password), body.email),
+    )
     return TokenResponse(
         access_token=create_access_token(user["id"], user["email"], user["role"]),
         refresh_token=create_refresh_token(user["id"]),

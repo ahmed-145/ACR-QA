@@ -6,37 +6,59 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <link rel="stylesheet" href="app.css">
 <style>
-  body { display:grid; place-items:center; min-height:100vh; }
+  body { display:grid; place-items:center; min-height:100vh; background:var(--bg); }
   .card {
-    width:380px; background:var(--bg-2);
+    width:400px; background:var(--bg-2);
     border:1px solid var(--border); border-radius:16px; padding:36px 32px;
   }
   .brand { display:flex; align-items:center; gap:12px; margin-bottom:28px; }
-  h1 { font-size:24px; font-weight:700; color:var(--fg); letter-spacing:-.02em; margin:0 0 6px; }
-  p  { font-size:13px; color:var(--fg-4); margin:0 0 24px; }
+  h1 { font-size:22px; font-weight:800; color:var(--fg); letter-spacing:-.02em; margin:0 0 6px; }
+  .sub { font-size:13px; color:var(--fg-4); margin:0 0 24px; }
   .field { display:flex; flex-direction:column; gap:6px; margin-bottom:14px; }
   .field label { font-size:11.5px; color:var(--fg-3); font-weight:500; }
+  .label-row { display:flex; align-items:center; justify-content:space-between; }
+  .label-row a { font-size:11px; color:var(--fg-5); text-decoration:none; }
+  .label-row a:hover { color:var(--fg-3); }
+  .pw-wrap { position:relative; }
   .field input {
-    height:38px; padding:0 12px;
+    width:100%; height:38px; padding:0 12px;
     background:var(--bg); border:1px solid var(--border-2);
     border-radius:8px; color:var(--fg-2); font-size:13.5px; font-family:inherit;
-    transition:border-color .15s, box-shadow .15s;
+    transition:border-color .15s, box-shadow .15s; box-sizing:border-box;
   }
   .field input:focus { outline:none; border-color:rgba(167,139,250,.4); box-shadow:0 0 0 3px rgba(167,139,250,.08); }
-  .btn {
-    width:100%; height:38px; margin-top:8px;
-    background:var(--fg); color:var(--bg);
-    border:none; border-radius:8px;
-    font-size:13.5px; font-weight:600; cursor:pointer; font-family:inherit;
-    transition:background .15s;
+  .pw-toggle {
+    position:absolute; right:10px; top:50%; transform:translateY(-50%);
+    background:none; border:none; cursor:pointer; color:var(--fg-5); font-size:14px; padding:4px;
   }
-  .btn:hover:not(:disabled) { background:var(--fg-2); }
-  .btn:disabled { opacity:.6; cursor:default; }
+  .btn {
+    width:100%; height:40px; margin-top:8px;
+    background:linear-gradient(135deg, #a78bfa, #60a5fa);
+    color:#fff; border:none; border-radius:8px;
+    font-size:13.5px; font-weight:700; cursor:pointer; font-family:inherit;
+    transition:opacity .15s, transform .1s;
+  }
+  .btn:hover:not(:disabled) { opacity:.9; transform:translateY(-1px); }
+  .btn:disabled { opacity:.6; cursor:default; transform:none; }
   .err {
-    color:var(--high-fg); font-size:12px; margin-top:10px;
-    font-family:var(--mono); display:none;
+    color:#f87171; font-size:12px; margin-top:10px;
+    font-family:var(--mono); display:none; background:rgba(248,113,113,.08);
+    border:1px solid rgba(248,113,113,.2); border-radius:6px; padding:8px 10px;
   }
   .err.on { display:block; }
+  .divider { display:flex; align-items:center; gap:12px; margin:20px 0; color:var(--fg-5); font-size:11.5px; }
+  .divider::before, .divider::after { content:''; flex:1; height:1px; background:var(--border-2); }
+  .footer-links { text-align:center; margin-top:4px; font-size:12.5px; color:var(--fg-4); }
+  .footer-links a { color:var(--fg-3); text-decoration:none; }
+  .footer-links a:hover { color:var(--fg); }
+  .btn-secondary {
+    display:block; width:100%; height:38px;
+    background:rgba(255,255,255,.05); border:1px solid var(--border-2);
+    border-radius:8px; color:var(--fg-3); font-size:13.5px; font-weight:600;
+    cursor:pointer; font-family:inherit; text-align:center; line-height:38px;
+    text-decoration:none; transition:background .15s;
+  }
+  .btn-secondary:hover { background:rgba(255,255,255,.08); }
 </style>
 </head>
 <body>
@@ -46,16 +68,38 @@
     <div class="wm-stack"><span class="wm">ACR-QA</span><span class="ver">v4.5.0</span></div>
   </div>
   <h1>Sign in</h1>
-  <p>Automated Code Review &amp; Quality Analysis</p>
+  <p class="sub">Automated Code Review &amp; Quality Analysis</p>
   <form id="form">
-    <div class="field"><label>Email</label><input id="email" type="email" placeholder="you@example.com" autocomplete="username" required></div>
-    <div class="field"><label>Password</label><input id="pwd" type="password" placeholder="••••••••" autocomplete="current-password" required></div>
+    <div class="field">
+      <label>Email</label>
+      <input id="email" type="email" placeholder="you@example.com" autocomplete="username" required>
+    </div>
+    <div class="field">
+      <div class="label-row">
+        <label>Password</label>
+        <a href="forgot.html">Forgot password?</a>
+      </div>
+      <div class="pw-wrap">
+        <input id="pwd" type="password" placeholder="••••••••" autocomplete="current-password" required>
+        <button type="button" class="pw-toggle" id="pw-eye" aria-label="Toggle password">👁</button>
+      </div>
+    </div>
     <button class="btn" type="submit" id="btn">Sign in</button>
     <div class="err" id="err">Invalid credentials. Check email and password.</div>
   </form>
+  <div class="divider">or</div>
+  <a class="btn-secondary" href="signup.html">Create an account</a>
+  <div class="footer-links" style="margin-top:20px">
+    <a href="landing.html">← Back to home</a>
+  </div>
 </div>
 <script>
 if (localStorage.getItem('acrqa_token')) location.href = 'index.html';
+
+document.getElementById('pw-eye').addEventListener('click', () => {
+  const p = document.getElementById('pwd');
+  p.type = p.type === 'password' ? 'text' : 'password';
+});
 
 document.getElementById('form').addEventListener('submit', async e => {
   e.preventDefault();

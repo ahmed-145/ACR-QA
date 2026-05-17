@@ -1,0 +1,189 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>ACR-QA — Verify Email</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="app.css">
+<style>
+  body { display:grid; place-items:center; min-height:100vh; background:var(--bg); }
+  .card {
+    width:400px; background:var(--bg-2);
+    border:1px solid var(--border); border-radius:16px; padding:36px 32px;
+  }
+  .brand { display:flex; align-items:center; gap:12px; margin-bottom:28px; }
+  .icon { font-size:40px; text-align:center; margin-bottom:16px; }
+  h1 { font-size:22px; font-weight:800; color:var(--fg); letter-spacing:-.02em; margin:0 0 6px; text-align:center; }
+  .sub { font-size:13px; color:var(--fg-4); margin:0 0 28px; text-align:center; line-height:1.5; }
+  .sub strong { color:var(--fg-2); }
+
+  /* Demo code callout */
+  .demo-box {
+    background:rgba(52,211,153,.07); border:1px solid rgba(52,211,153,.25);
+    border-radius:10px; padding:16px; margin-bottom:24px; text-align:center;
+  }
+  .demo-box .demo-label { font-size:10.5px; color:#34d399; text-transform:uppercase; letter-spacing:.1em; font-weight:600; margin-bottom:8px; }
+  .demo-box .code-display {
+    font-family:var(--mono); font-size:32px; font-weight:700; letter-spacing:.2em;
+    color:#34d399; margin-bottom:4px;
+  }
+  .demo-box .demo-note { font-size:11px; color:var(--fg-5); }
+
+  /* OTP input grid */
+  .otp-grid { display:flex; gap:8px; justify-content:center; margin-bottom:20px; }
+  .otp-grid input {
+    width:44px; height:52px; text-align:center;
+    font-size:22px; font-weight:700; font-family:var(--mono);
+    background:var(--bg); border:1px solid var(--border-2); border-radius:8px;
+    color:var(--fg); caret-color:transparent;
+    transition:border-color .15s, box-shadow .15s;
+  }
+  .otp-grid input:focus { outline:none; border-color:rgba(167,139,250,.5); box-shadow:0 0 0 3px rgba(167,139,250,.1); }
+  .otp-grid input.filled { border-color:rgba(52,211,153,.4); color:#34d399; }
+
+  .btn {
+    width:100%; height:40px;
+    background:linear-gradient(135deg, #a78bfa, #60a5fa);
+    color:#fff; border:none; border-radius:8px;
+    font-size:13.5px; font-weight:700; cursor:pointer; font-family:inherit;
+    transition:opacity .15s, transform .1s;
+  }
+  .btn:hover:not(:disabled) { opacity:.9; transform:translateY(-1px); }
+  .btn:disabled { opacity:.6; cursor:default; transform:none; }
+  .err {
+    color:#f87171; font-size:12px; margin-top:10px;
+    font-family:var(--mono); display:none; background:rgba(248,113,113,.08);
+    border:1px solid rgba(248,113,113,.2); border-radius:6px; padding:8px 10px; text-align:center;
+  }
+  .err.on { display:block; }
+  .footer-links { text-align:center; margin-top:20px; font-size:12.5px; color:var(--fg-4); }
+  .footer-links a { color:var(--fg-3); text-decoration:none; }
+  .footer-links a:hover { color:var(--fg); }
+  .autofill-btn {
+    display:block; width:100%; margin-bottom:12px; padding:8px;
+    background:rgba(52,211,153,.08); border:1px solid rgba(52,211,153,.2);
+    border-radius:8px; color:#34d399; font-size:12.5px; font-weight:600;
+    cursor:pointer; font-family:inherit; transition:background .15s;
+  }
+  .autofill-btn:hover { background:rgba(52,211,153,.14); }
+</style>
+</head>
+<body>
+<div class="card">
+  <div class="brand">
+    <div class="logo">🛡️</div>
+    <div class="wm-stack"><span class="wm">ACR-QA</span><span class="ver">v4.5.0</span></div>
+  </div>
+
+  <div class="icon">✉️</div>
+  <h1>Verify your email</h1>
+  <p class="sub">Enter the 6-digit code for<br><strong id="email-display">your account</strong></p>
+
+  <div class="demo-box" id="demo-box" style="display:none">
+    <div class="demo-label">Demo mode — your code</div>
+    <div class="code-display" id="code-display">------</div>
+    <div class="demo-note">No email was sent. Use this code to verify.</div>
+  </div>
+
+  <button type="button" class="autofill-btn" id="autofill-btn" style="display:none">
+    ↓ Auto-fill code
+  </button>
+
+  <div class="otp-grid" id="otp-grid">
+    <input type="text" maxlength="1" inputmode="numeric" pattern="[0-9]">
+    <input type="text" maxlength="1" inputmode="numeric" pattern="[0-9]">
+    <input type="text" maxlength="1" inputmode="numeric" pattern="[0-9]">
+    <input type="text" maxlength="1" inputmode="numeric" pattern="[0-9]">
+    <input type="text" maxlength="1" inputmode="numeric" pattern="[0-9]">
+    <input type="text" maxlength="1" inputmode="numeric" pattern="[0-9]">
+  </div>
+
+  <button class="btn" id="btn" disabled>Verify &amp; sign in</button>
+  <div class="err" id="err"></div>
+
+  <div class="footer-links">
+    Wrong email? <a href="signup.html">Start over</a>
+  </div>
+</div>
+
+<script>
+const email = sessionStorage.getItem('verify_email');
+const demoCode = sessionStorage.getItem('verify_code');
+
+if (!email) { location.href = 'signup.html'; }
+
+document.getElementById('email-display').textContent = email || '';
+
+if (demoCode) {
+  const box = document.getElementById('demo-box');
+  box.style.display = 'block';
+  document.getElementById('code-display').textContent = demoCode;
+  const autofill = document.getElementById('autofill-btn');
+  autofill.style.display = 'block';
+  autofill.addEventListener('click', () => {
+    const inputs = document.querySelectorAll('#otp-grid input');
+    demoCode.split('').forEach((ch, i) => {
+      inputs[i].value = ch;
+      inputs[i].classList.add('filled');
+    });
+    updateBtn();
+  });
+}
+
+// OTP keyboard navigation
+const inputs = Array.from(document.querySelectorAll('#otp-grid input'));
+inputs.forEach((inp, i) => {
+  inp.addEventListener('input', () => {
+    inp.value = inp.value.replace(/\D/g, '').slice(-1);
+    if (inp.value) { inp.classList.add('filled'); if (i < 5) inputs[i+1].focus(); }
+    else inp.classList.remove('filled');
+    updateBtn();
+  });
+  inp.addEventListener('keydown', e => {
+    if (e.key === 'Backspace' && !inp.value && i > 0) { inputs[i-1].focus(); inputs[i-1].value = ''; inputs[i-1].classList.remove('filled'); updateBtn(); }
+  });
+  inp.addEventListener('paste', e => {
+    e.preventDefault();
+    const text = (e.clipboardData || window.clipboardData).getData('text').replace(/\D/g, '').slice(0, 6);
+    text.split('').forEach((ch, j) => { if (inputs[j]) { inputs[j].value = ch; inputs[j].classList.add('filled'); } });
+    updateBtn();
+  });
+});
+inputs[0].focus();
+
+function getCode() { return inputs.map(i => i.value).join(''); }
+function updateBtn() { document.getElementById('btn').disabled = getCode().length < 6; }
+
+document.getElementById('btn').addEventListener('click', async () => {
+  const btn = document.getElementById('btn');
+  const err = document.getElementById('err');
+  const code = getCode();
+  btn.textContent = 'Verifying…'; btn.disabled = true;
+  err.classList.remove('on');
+  try {
+    const r = await fetch('/v1/auth/verify', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({ email, code })
+    });
+    const data = await r.json();
+    if (!r.ok) {
+      err.textContent = data.detail || 'Invalid code. Try again.';
+      err.classList.add('on');
+      btn.textContent = 'Verify & sign in'; btn.disabled = false;
+      return;
+    }
+    localStorage.setItem('acrqa_token', data.access_token);
+    localStorage.setItem('acrqa_refresh', data.refresh_token);
+    sessionStorage.removeItem('verify_email');
+    sessionStorage.removeItem('verify_code');
+    location.href = 'index.html';
+  } catch {
+    err.textContent = 'Network error — is the server running?';
+    err.classList.add('on');
+    btn.textContent = 'Verify & sign in'; btn.disabled = false;
+  }
+});
+</script>
+</body>
+</html>

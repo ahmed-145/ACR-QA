@@ -68,6 +68,11 @@ ground_truth_repos:
     sha: ""  # populate during Tier 3 clone+scan
     ground_truth: TESTS/evaluation/ground_truth/vulnerable-node-app.yml
 
+  - name: django-nv
+    url: https://github.com/nVisium/django.nV
+    sha: ""  # populate during Tier 3 clone+scan
+    ground_truth: TESTS/evaluation/ground_truth/django-nv.yml
+
   # Layer B — real-world FP rate (production codebases)
   # These are NOT cloned for recall tests — used for manual FP triage only.
   # SHAs documented here for reproducibility of the FP rate numbers.

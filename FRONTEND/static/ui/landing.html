@@ -1,0 +1,254 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>ACR-QA — Code Review That Proves It Found a Real Bug</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="app.css">
+<style>
+  * { box-sizing: border-box; }
+  body { min-height: 100vh; margin: 0; background: var(--bg); color: var(--fg-2); font-family: var(--font, system-ui, sans-serif); }
+
+  /* ── Hero ───────────────────────────────────────────────────────────── */
+  .hero {
+    min-height: 100vh;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    text-align: center; padding: 80px 24px 60px;
+    background: radial-gradient(ellipse 80% 60% at 50% -20%, rgba(167,139,250,.18) 0%, transparent 60%),
+                radial-gradient(ellipse 60% 40% at 80% 60%, rgba(96,165,250,.10) 0%, transparent 50%),
+                radial-gradient(ellipse 50% 40% at 20% 70%, rgba(52,211,153,.08) 0%, transparent 50%),
+                var(--bg);
+    position: relative; overflow: hidden;
+  }
+  .hero::before {
+    content: '';
+    position: absolute; inset: 0;
+    background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.015'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+    pointer-events: none;
+  }
+  .hero-tag {
+    display: inline-flex; align-items: center; gap: 8px;
+    background: rgba(167,139,250,.12); border: 1px solid rgba(167,139,250,.25);
+    border-radius: 100px; padding: 6px 14px; font-size: 12px; color: #a78bfa;
+    font-weight: 600; letter-spacing: .04em; text-transform: uppercase; margin-bottom: 28px;
+  }
+  .hero-tag .dot { width: 6px; height: 6px; border-radius: 50%; background: #a78bfa; animation: pulse 2s infinite; }
+  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.4} }
+  h1 {
+    font-size: clamp(32px, 6vw, 72px);
+    font-weight: 900; line-height: 1.08; letter-spacing: -.04em;
+    color: var(--fg); margin: 0 0 20px;
+    max-width: 900px;
+  }
+  h1 .grad { background: var(--gradient); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; }
+  .hero-sub {
+    font-size: clamp(14px, 2vw, 18px); color: var(--fg-3); max-width: 620px;
+    line-height: 1.6; margin: 0 0 40px;
+  }
+  .hero-ctas { display: flex; gap: 12px; flex-wrap: wrap; justify-content: center; margin-bottom: 56px; }
+  .cta-primary {
+    display: inline-flex; align-items: center; gap: 8px;
+    padding: 13px 28px; border-radius: 10px; font-size: 15px; font-weight: 700;
+    background: var(--gradient); color: #fff; border: none; cursor: pointer;
+    text-decoration: none; letter-spacing: -.01em;
+    transition: opacity .15s, transform .1s;
+  }
+  .cta-primary:hover { opacity: .9; transform: translateY(-1px); }
+  .cta-secondary {
+    display: inline-flex; align-items: center; gap: 8px;
+    padding: 13px 24px; border-radius: 10px; font-size: 15px; font-weight: 600;
+    background: rgba(255,255,255,.06); border: 1px solid rgba(255,255,255,.12);
+    color: var(--fg-2); cursor: pointer; text-decoration: none; letter-spacing: -.01em;
+    transition: background .15s, border-color .15s, transform .1s;
+  }
+  .cta-secondary:hover { background: rgba(255,255,255,.09); border-color: rgba(255,255,255,.2); transform: translateY(-1px); }
+
+  /* ── Terminal preview ─────────────────────────────────────────────── */
+  .terminal {
+    width: 100%; max-width: 680px;
+    background: #0d0d10; border: 1px solid rgba(255,255,255,.1);
+    border-radius: 14px; overflow: hidden;
+    box-shadow: 0 40px 80px rgba(0,0,0,.6), 0 0 0 1px rgba(167,139,250,.1);
+    text-align: left;
+  }
+  .term-bar {
+    background: #16161b; padding: 12px 16px;
+    display: flex; align-items: center; gap: 8px;
+    border-bottom: 1px solid rgba(255,255,255,.06);
+  }
+  .term-dot { width: 10px; height: 10px; border-radius: 50%; }
+  .term-dot.r { background: #ff5f57; } .term-dot.y { background: #ffbd2e; } .term-dot.g { background: #28c940; }
+  .term-title { font-size: 11.5px; color: var(--fg-5); font-family: var(--mono); margin-left: auto; margin-right: auto; }
+  .term-body { padding: 20px 24px; font-family: var(--mono); font-size: 12.5px; line-height: 1.7; }
+  .t-cmd { color: #60a5fa; } .t-out { color: var(--fg-3); } .t-high { color: #f87171; font-weight: 600; }
+  .t-ok { color: #34d399; } .t-dim { color: var(--fg-5); } .t-purple { color: #a78bfa; }
+  .t-line { display: block; }
+
+  /* ── Proof strip ──────────────────────────────────────────────────── */
+  .proof { padding: 80px 24px; background: var(--bg-2); border-top: 1px solid rgba(255,255,255,.05); }
+  .proof-inner { max-width: 1000px; margin: 0 auto; }
+  .proof-label { font-size: 11px; color: var(--fg-5); text-transform: uppercase; letter-spacing: .12em; font-weight: 600; text-align: center; margin-bottom: 40px; }
+  .proof-cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px; }
+  .proof-card {
+    background: var(--bg); border: 1px solid rgba(255,255,255,.07);
+    border-radius: 16px; padding: 32px 28px;
+    position: relative; overflow: hidden;
+  }
+  .proof-card::before {
+    content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px;
+    background: var(--gradient);
+  }
+  .proof-num {
+    font-size: 48px; font-weight: 900; letter-spacing: -.04em; line-height: 1;
+    background: var(--gradient); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;
+    margin-bottom: 8px;
+  }
+  .proof-desc { font-size: 13.5px; color: var(--fg-3); line-height: 1.5; }
+  .proof-desc strong { color: var(--fg); font-weight: 600; }
+
+  /* ── How it works ─────────────────────────────────────────────────── */
+  .how { padding: 80px 24px; }
+  .how-inner { max-width: 1000px; margin: 0 auto; text-align: center; }
+  .section-title { font-size: 32px; font-weight: 800; letter-spacing: -.03em; color: var(--fg); margin-bottom: 12px; }
+  .section-sub { font-size: 15px; color: var(--fg-4); margin-bottom: 56px; }
+  .steps { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 0; }
+  .step { padding: 32px 24px; position: relative; }
+  .step:not(:last-child)::after {
+    content: '→'; position: absolute; right: -8px; top: 50%;
+    transform: translateY(-50%); color: var(--fg-5); font-size: 18px;
+    display: none;
+  }
+  @media(min-width:720px) { .step:not(:last-child)::after { display: block; } }
+  .step-num {
+    width: 44px; height: 44px; border-radius: 12px; margin: 0 auto 16px;
+    background: rgba(167,139,250,.12); border: 1px solid rgba(167,139,250,.25);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 18px; font-weight: 800; color: #a78bfa;
+  }
+  .step h3 { font-size: 17px; font-weight: 700; color: var(--fg); margin: 0 0 8px; letter-spacing: -.02em; }
+  .step p { font-size: 13.5px; color: var(--fg-4); line-height: 1.6; margin: 0; }
+
+  /* ── Footer ───────────────────────────────────────────────────────── */
+  footer {
+    padding: 40px 24px; border-top: 1px solid rgba(255,255,255,.05);
+    display: flex; flex-wrap: wrap; align-items: center; justify-content: center;
+    gap: 24px; font-size: 13px; color: var(--fg-5); text-align: center;
+  }
+  footer a { color: var(--fg-4); text-decoration: none; }
+  footer a:hover { color: var(--fg); }
+  .footer-brand { display: flex; align-items: center; gap: 10px; }
+  .footer-brand .wm { font-weight: 800; color: var(--fg); font-size: 15px; }
+  .live-badge {
+    display: inline-flex; align-items: center; gap: 6px;
+    background: rgba(52,211,153,.1); border: 1px solid rgba(52,211,153,.25);
+    border-radius: 100px; padding: 4px 10px; font-size: 11px; color: #34d399; font-weight: 600;
+  }
+  .live-badge .dot { width: 5px; height: 5px; border-radius: 50%; background: #34d399; animation: pulse 2s infinite; }
+</style>
+</head>
+<body>
+
+<!-- Hero -->
+<section class="hero">
+  <div class="hero-tag"><span class="dot"></span> KSIU Thesis Project · v4.5.0</div>
+  <h1>Code review that <span class="grad">proves</span> it found a real bug.</h1>
+  <p class="hero-sub">
+    RAG-grounded AI explanations · 10 static analysers · ECDSA-signed provenance · $0 recurring cost.
+    Self-hosted via Docker or deployed to Railway in one command.
+  </p>
+  <div class="hero-ctas">
+    <a class="cta-primary" href="index.html">▷ Try Live Demo</a>
+    <a class="cta-secondary" href="signup.html">Sign Up Free</a>
+    <a class="cta-secondary" href="https://github.com/ahmed-145/acr-qa" target="_blank">GitHub ↗</a>
+  </div>
+
+  <div class="terminal">
+    <div class="term-bar">
+      <div class="term-dot r"></div><div class="term-dot y"></div><div class="term-dot g"></div>
+      <div class="term-title">acrqa · scan · dvpwa</div>
+    </div>
+    <div class="term-body">
+      <span class="t-line"><span class="t-cmd">$</span> <span class="t-out">acrqa scan ./dvpwa --repo dvpwa</span></span>
+      <span class="t-line t-dim">→ Running 10 analysers in parallel…</span>
+      <span class="t-line t-dim">→ Ruff · Semgrep · Bandit · Staticcheck · ESLint · Gosec…</span>
+      <span class="t-line"> </span>
+      <span class="t-line"><span class="t-high">● HIGH</span>  <span class="t-purple">SECURITY-027</span>  sqli/dao/student.py:18</span>
+      <span class="t-line t-dim">  Raw SQL string concat → SQL injection (CWE-89)</span>
+      <span class="t-line t-dim">  <span class="t-ok">✓ Exploit verified</span> · AI explanation · ECDSA signed</span>
+      <span class="t-line"> </span>
+      <span class="t-line"><span class="t-ok">✓</span> <span class="t-out">836 findings across 4 repos · 97.1% precision</span></span>
+      <span class="t-line"><span class="t-ok">✓</span> <span class="t-out">Attestation bundle: sha256:a3f8… (signed)</span></span>
+    </div>
+  </div>
+</section>
+
+<!-- Proof strip -->
+<section class="proof">
+  <div class="proof-inner">
+    <div class="proof-label">Measured on 10 benchmark repositories</div>
+    <div class="proof-cards">
+      <div class="proof-card">
+        <div class="proof-num">97.1%</div>
+        <div class="proof-desc"><strong>Precision on Layer A corpus.</strong> 836 real bugs detected across DVPWA, PyGoat, VulPy, DSVW — only 24 false positives.</div>
+      </div>
+      <div class="proof-card">
+        <div class="proof-num">9/10</div>
+        <div class="proof-desc"><strong>OWASP Top 10 categories</strong> with CWE mappings, Semgrep custom rules, and AI-grounded triage explanations.</div>
+      </div>
+      <div class="proof-card">
+        <div class="proof-num">$0</div>
+        <div class="proof-desc"><strong>Recurring infrastructure cost.</strong> Runs on Groq free tier with key rotation · Self-hosted via Docker · ECDSA signing with no SaaS dependency.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- How it works -->
+<section class="how">
+  <div class="how-inner">
+    <h2 class="section-title">Three steps. One audit trail.</h2>
+    <p class="section-sub">From clone to signed attestation in under 60 seconds.</p>
+    <div class="steps">
+      <div class="step">
+        <div class="step-num">1</div>
+        <h3>Scan</h3>
+        <p>10 analysers run in parallel — Bandit, Semgrep, Ruff, Staticcheck, ESLint, Gosec, Vulture, jscpd, Trivy, TruffleHog. Results normalised to a canonical schema.</p>
+      </div>
+      <div class="step">
+        <div class="step-num">2</div>
+        <h3>Explain</h3>
+        <p>RAG-grounded AI (Groq · llama-3) retrieves exploit context, CWE references, and OWASP mapping per finding. No hallucination — every claim is cited.</p>
+      </div>
+      <div class="step">
+        <div class="step-num">3</div>
+        <h3>Sign</h3>
+        <p>ECDSA-P256 attestation bundle signed at scan completion. Verifiable offline. Timestamp + Git SHA included. Immutable audit trail for any examiner.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Footer -->
+<footer>
+  <div class="footer-brand">
+    <span>🛡️</span>
+    <span class="wm">ACR-QA</span>
+    <span>by Ahmed — KSIU Computer Science Thesis 2026</span>
+  </div>
+  <div class="live-badge"><span class="dot"></span> Live on Railway</div>
+  <div>
+    <a href="login.html">Sign in</a> ·
+    <a href="signup.html">Sign up</a> ·
+    <a href="https://github.com/ahmed-145/acr-qa" target="_blank">GitHub</a> ·
+    <a href="../../../docs/API_REFERENCE.md">API</a>
+  </div>
+</footer>
+
+<script>
+// If already logged in, swap "Try Live Demo" to go directly to dashboard
+if (localStorage.getItem('acrqa_token')) {
+  document.querySelector('.cta-primary').textContent = '▷ Open Dashboard';
+}
+</script>
+</body>
+</html>

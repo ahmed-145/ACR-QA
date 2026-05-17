@@ -25,6 +25,36 @@ class RefreshRequest(BaseModel):
     refresh_token: str
 
 
+class RegisterRequest(BaseModel):
+    email: str
+    password: str
+
+
+class RegisterOut(BaseModel):
+    user_id: int
+    email: str
+    verification_code: str  # shown in UI for demo mode
+
+
+class VerifyRequest(BaseModel):
+    email: str
+    code: str
+
+
+class ForgotRequest(BaseModel):
+    email: str
+
+
+class ForgotOut(BaseModel):
+    reset_code: str  # shown in UI for demo mode
+
+
+class ResetPasswordRequest(BaseModel):
+    email: str
+    code: str
+    new_password: str
+
+
 class UserOut(BaseModel):
     id: int
     email: str
