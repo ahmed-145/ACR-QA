@@ -18,8 +18,6 @@ Exit codes:
 from __future__ import annotations
 
 import argparse
-import math
-import re
 import sys
 from dataclasses import dataclass, field
 from pathlib import Path
@@ -60,6 +58,7 @@ def pct(numerator: int, denominator: int) -> float:
 # Ground-truth YAML parsing
 # ---------------------------------------------------------------------------
 
+
 def load_ground_truth_yamls() -> dict[str, dict]:
     """Return dict[repo_name -> yaml_data]."""
     try:
@@ -88,6 +87,7 @@ def count_expected_findings(repo_data: dict) -> tuple[int, int]:
 # Internal-consistency checks derived from EVALUATION.md tables
 # ---------------------------------------------------------------------------
 
+
 def verify_internal_consistency() -> list[Claim]:
     """
     Re-derive aggregate numbers from per-row numbers stated in EVALUATION.md.
@@ -97,99 +97,112 @@ def verify_internal_consistency() -> list[Claim]:
 
     # Layer A: per-repo rows → aggregate
     repos = {
-        "DVPWA":   {"findings": 44,  "tp": 36,  "fp": 8},
-        "Pygoat":  {"findings": 440, "tp": 424, "fp": 16},
-        "VulPy":   {"findings": 293, "tp": 293, "fp": 0},
-        "DSVW":    {"findings": 59,  "tp": 59,  "fp": 0},
+        "DVPWA": {"findings": 44, "tp": 36, "fp": 8},
+        "Pygoat": {"findings": 440, "tp": 424, "fp": 16},
+        "VulPy": {"findings": 293, "tp": 293, "fp": 0},
+        "DSVW": {"findings": 59, "tp": 59, "fp": 0},
     }
     total_findings = sum(r["findings"] for r in repos.values())
-    total_tp       = sum(r["tp"]       for r in repos.values())
-    total_fp       = sum(r["fp"]       for r in repos.values())
+    total_tp = sum(r["tp"] for r in repos.values())
+    total_fp = sum(r["fp"] for r in repos.values())
 
     # Overall precision: 812/836
-    claims.append(Claim(
-        description="Layer A: Total Findings (sum of per-repo rows)",
-        expected=836,
-        actual=float(total_findings),
-        tolerance=0,
-        source="EVALUATION.md per-repo table arithmetic",
-        unit="count",
-    ))
-    claims.append(Claim(
-        description="Layer A: True Positives (sum of per-repo TP)",
-        expected=812,
-        actual=float(total_tp),
-        tolerance=0,
-        source="EVALUATION.md per-repo table arithmetic",
-        unit="count",
-    ))
-    claims.append(Claim(
-        description="Layer A: False Positives (sum of per-repo FP)",
-        expected=24,
-        actual=float(total_fp),
-        tolerance=0,
-        source="EVALUATION.md per-repo table arithmetic",
-        unit="count",
-    ))
-    claims.append(Claim(
-        description="Layer A: Overall Precision = TP / (TP+FP)",
-        expected=97.1,
-        actual=pct(total_tp, total_findings),
-        tolerance=0.5,
-        source="EVALUATION.md per-repo table arithmetic",
-        unit="%",
-    ))
+    claims.append(
+        Claim(
+            description="Layer A: Total Findings (sum of per-repo rows)",
+            expected=836,
+            actual=float(total_findings),
+            tolerance=0,
+            source="EVALUATION.md per-repo table arithmetic",
+            unit="count",
+        )
+    )
+    claims.append(
+        Claim(
+            description="Layer A: True Positives (sum of per-repo TP)",
+            expected=812,
+            actual=float(total_tp),
+            tolerance=0,
+            source="EVALUATION.md per-repo table arithmetic",
+            unit="count",
+        )
+    )
+    claims.append(
+        Claim(
+            description="Layer A: False Positives (sum of per-repo FP)",
+            expected=24,
+            actual=float(total_fp),
+            tolerance=0,
+            source="EVALUATION.md per-repo table arithmetic",
+            unit="count",
+        )
+    )
+    claims.append(
+        Claim(
+            description="Layer A: Overall Precision = TP / (TP+FP)",
+            expected=97.1,
+            actual=pct(total_tp, total_findings),
+            tolerance=0.5,
+            source="EVALUATION.md per-repo table arithmetic",
+            unit="%",
+        )
+    )
 
     # Per-repo precision spot-checks
     for name, r in repos.items():
         computed = pct(r["tp"], r["findings"])
         stated = {
-            "DVPWA":  81.8,
+            "DVPWA": 81.8,
             "Pygoat": 96.4,
-            "VulPy":  100.0,
-            "DSVW":   100.0,
+            "VulPy": 100.0,
+            "DSVW": 100.0,
         }[name]
-        claims.append(Claim(
-            description=f"Layer A: {name} precision = {r['tp']}/{r['findings']}",
-            expected=stated,
-            actual=computed,
-            tolerance=0.5,
-            source="EVALUATION.md per-repo table arithmetic",
-            unit="%",
-        ))
+        claims.append(
+            Claim(
+                description=f"Layer A: {name} precision = {r['tp']}/{r['findings']}",
+                expected=stated,
+                actual=computed,
+                tolerance=0.5,
+                source="EVALUATION.md per-repo table arithmetic",
+                unit="%",
+            )
+        )
 
     # Layer B: real-world FP rates
     layer_b = {
         "Flask": {"findings": 100, "fp": 1, "stated_rate": 1.0},
-        "httpx": {"findings": 43,  "fp": 1, "stated_rate": 2.3},
+        "httpx": {"findings": 43, "fp": 1, "stated_rate": 2.3},
     }
     for repo, d in layer_b.items():
         computed = pct(d["fp"], d["findings"])
-        claims.append(Claim(
-            description=f"Layer B: {repo} FP rate = {d['fp']}/{d['findings']}",
-            expected=d["stated_rate"],
-            actual=computed,
-            tolerance=0.5,
-            source="EVALUATION.md Layer B table arithmetic",
-            unit="%",
-        ))
+        claims.append(
+            Claim(
+                description=f"Layer B: {repo} FP rate = {d['fp']}/{d['findings']}",
+                expected=d["stated_rate"],
+                actual=computed,
+                tolerance=0.5,
+                source="EVALUATION.md Layer B table arithmetic",
+                unit="%",
+            )
+        )
 
     # DVPWA ground-truth recall: 4/6 = 67%
-    claims.append(Claim(
-        description="DVPWA ground-truth recall stated as 67% (4/6 categories)",
-        expected=67.0,
-        actual=pct(4, 6),
-        tolerance=0.5,
-        source="EVALUATION.md DVPWA section arithmetic",
-        unit="%",
-    ))
+    claims.append(
+        Claim(
+            description="DVPWA ground-truth recall stated as 67% (4/6 categories)",
+            expected=67.0,
+            actual=pct(4, 6),
+            tolerance=0.5,
+            source="EVALUATION.md DVPWA section arithmetic",
+            unit="%",
+        )
+    )
 
     # Noise reduction claim: -11 findings eliminated (from 55 raw to 44)
     # DVPWA: Bandit=0, Semgrep=0, Ruff=33, ACR-QA=44
     # Stated: -33% noise reduction, -11 redundant findings
     # Check: 44-33=11, 11/33=33%
-    raw_ruff = 33
-    acrqa = 44
+    # raw_ruff = 33, acrqa = 44 (values used in comment math below)
     # "eliminated -11 redundant" means pipeline added 11 net new normalized findings
     # but "-33% noise reduction" means dedup removed 33% of raw findings
     # This is a marketing claim about deduplication — the numbers in the doc are
@@ -198,25 +211,29 @@ def verify_internal_consistency() -> list[Claim]:
     # We document this as a manual claim — cannot auto-derive without scan artifacts.
 
     # OWASP 9/10 coverage: count ✅ rows
-    claims.append(Claim(
-        description="OWASP Top 10 coverage: 9/10 categories covered",
-        expected=9.0,
-        actual=9.0,  # manually counted from EVALUATION.md table (A01-A10, A09 is ⚠️)
-        tolerance=0,
-        source="EVALUATION.md OWASP table (A09:Logging ⚠️, all others ✅)",
-        unit="count",
-    ))
+    claims.append(
+        Claim(
+            description="OWASP Top 10 coverage: 9/10 categories covered",
+            expected=9.0,
+            actual=9.0,  # manually counted from EVALUATION.md table (A01-A10, A09 is ⚠️)
+            tolerance=0,
+            source="EVALUATION.md OWASP table (A09:Logging ⚠️, all others ✅)",
+            unit="count",
+        )
+    )
 
     # Reachability FP rate: 0% across all fixtures
     for fixture in ["flask_app.py", "standalone.py", "celery_tasks.py"]:
-        claims.append(Claim(
-            description=f"Reachability FP rate: {fixture} = 0%",
-            expected=0.0,
-            actual=0.0,
-            tolerance=0,
-            source="EVALUATION.md §6b reachability table",
-            unit="%",
-        ))
+        claims.append(
+            Claim(
+                description=f"Reachability FP rate: {fixture} = 0%",
+                expected=0.0,
+                actual=0.0,
+                tolerance=0,
+                source="EVALUATION.md §6b reachability table",
+                unit="%",
+            )
+        )
 
     return claims
 
@@ -224,6 +241,7 @@ def verify_internal_consistency() -> list[Claim]:
 # ---------------------------------------------------------------------------
 # Ground-truth YAML cross-checks
 # ---------------------------------------------------------------------------
+
 
 def verify_ground_truth_yamls(repos: dict[str, dict]) -> list[Claim]:
     """Check that the EVALUATION.md repo count matches the YAML count."""
@@ -233,26 +251,30 @@ def verify_ground_truth_yamls(repos: dict[str, dict]) -> list[Claim]:
 
     yaml_repo_count = len(repos)
     # EVALUATION.md states 10 benchmark repositories
-    claims.append(Claim(
-        description=f"Ground truth YAML count matches EVALUATION.md (10 repos stated)",
-        expected=10.0,
-        actual=float(yaml_repo_count),
-        tolerance=0,
-        source=str(GROUND_TRUTH_DIR.relative_to(ROOT)),
-        unit="count",
-    ))
+    claims.append(
+        Claim(
+            description="Ground truth YAML count matches EVALUATION.md (10 repos stated)",
+            expected=10.0,
+            actual=float(yaml_repo_count),
+            tolerance=0,
+            source=str(GROUND_TRUTH_DIR.relative_to(ROOT)),
+            unit="count",
+        )
+    )
 
     # DVPWA: 4 detectable findings (2 out_of_scope in YAML)
     if "dvpwa" in repos:
         detectable, oos = count_expected_findings(repos["dvpwa"])
-        claims.append(Claim(
-            description="DVPWA YAML: detectable findings = 4 (2 marked out_of_scope)",
-            expected=4.0,
-            actual=float(detectable),
-            tolerance=0,
-            source="TESTS/evaluation/ground_truth/dvpwa.yml",
-            unit="count",
-        ))
+        claims.append(
+            Claim(
+                description="DVPWA YAML: detectable findings = 4 (2 marked out_of_scope)",
+                expected=4.0,
+                actual=float(detectable),
+                tolerance=0,
+                source="TESTS/evaluation/ground_truth/dvpwa.yml",
+                unit="count",
+            )
+        )
 
     return claims
 
@@ -260,6 +282,7 @@ def verify_ground_truth_yamls(repos: dict[str, dict]) -> list[Claim]:
 # ---------------------------------------------------------------------------
 # CVE recall checks (once Tier 1 is populated)
 # ---------------------------------------------------------------------------
+
 
 def verify_cve_recall() -> list[Claim]:
     """Check CVE YAML directory count and pre-registration constraint."""
@@ -293,22 +316,26 @@ def verify_cve_recall() -> list[Claim]:
             pre_reg_fail += 1
 
     if total > 0:
-        claims.append(Claim(
-            description=f"CVE recall: {detected}/{total} CVEs detected",
-            expected=float(detected),  # self-referential — just documents the count
-            actual=float(detected),
-            tolerance=0,
-            source=str(CVE_RECALL_DIR.relative_to(ROOT)),
-            unit="count",
-        ))
-        claims.append(Claim(
-            description=f"CVE pre-registration: all {total} CVEs have pre_registered_sha",
-            expected=float(total),
-            actual=float(pre_reg_ok),
-            tolerance=0,
-            source=str(CVE_RECALL_DIR.relative_to(ROOT)),
-            unit="count",
-        ))
+        claims.append(
+            Claim(
+                description=f"CVE recall: {detected}/{total} CVEs detected",
+                expected=float(detected),  # self-referential — just documents the count
+                actual=float(detected),
+                tolerance=0,
+                source=str(CVE_RECALL_DIR.relative_to(ROOT)),
+                unit="count",
+            )
+        )
+        claims.append(
+            Claim(
+                description=f"CVE pre-registration: all {total} CVEs have pre_registered_sha",
+                expected=float(total),
+                actual=float(pre_reg_ok),
+                tolerance=0,
+                source=str(CVE_RECALL_DIR.relative_to(ROOT)),
+                unit="count",
+            )
+        )
 
     return claims
 
@@ -316,6 +343,7 @@ def verify_cve_recall() -> list[Claim]:
 # ---------------------------------------------------------------------------
 # Report
 # ---------------------------------------------------------------------------
+
 
 def print_report(claims: list[Claim]) -> int:
     """Print results and return exit code (0=pass, 1=fail)."""
@@ -332,14 +360,18 @@ def print_report(claims: list[Claim]) -> int:
         if unit == "%":
             print(f"  {mark}  {c.description}")
             if not c.passed:
-                print(f"        expected {c.expected}% | actual {c.actual}% "
-                      f"| drift {abs(c.expected - c.actual):.1f}pp")
+                print(
+                    f"        expected {c.expected}% | actual {c.actual}% "
+                    f"| drift {abs(c.expected - c.actual):.1f}pp"
+                )
                 print(f"        source: {c.source}")
         else:
             print(f"  {mark}  {c.description}")
             if not c.passed:
-                print(f"        expected {int(c.expected)} | actual {int(c.actual)} "
-                      f"| drift {abs(c.expected - c.actual):.0f}")
+                print(
+                    f"        expected {int(c.expected)} | actual {int(c.actual)} "
+                    f"| drift {abs(c.expected - c.actual):.0f}"
+                )
                 print(f"        source: {c.source}")
 
     print()
@@ -364,11 +396,11 @@ def print_report(claims: list[Claim]) -> int:
 # Entry point
 # ---------------------------------------------------------------------------
 
+
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--strict", action="store_true",
-                        help="Exit 1 even for tolerance-band passes (strict mode)")
-    args = parser.parse_args()
+    parser.add_argument("--strict", action="store_true", help="Exit 1 even for tolerance-band passes (strict mode)")
+    parser.parse_args()
 
     if not EVALUATION_MD.exists():
         print(f"{RED}ERROR: {EVALUATION_MD} not found{RESET}", file=sys.stderr)

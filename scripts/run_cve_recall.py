@@ -25,7 +25,6 @@ Flags:
 from __future__ import annotations
 
 import argparse
-import json
 import subprocess
 import sys
 from pathlib import Path
@@ -54,6 +53,7 @@ TOLERANCE_LINES = 3  # ±3 lines — from INTEGRITY.md scoring rule
 # YAML loading
 # ---------------------------------------------------------------------------
 
+
 def load_cve_yamls(cve_filter: str | None = None) -> list[dict]:
     yamls = sorted(CVE_DIR.glob("*.yml"))
     if cve_filter:
@@ -74,12 +74,12 @@ def load_cve_yamls(cve_filter: str | None = None) -> list[dict]:
 # Pre-registration check
 # ---------------------------------------------------------------------------
 
+
 def check_pre_registration(cve: dict) -> bool:
     """Verify pre_registered_sha is present (committed before scanning)."""
     sha = cve.get("pre_registered_sha", "").strip()
     if not sha or sha.startswith("<"):
-        print(f"  {RED}✗ pre_registered_sha missing for {cve['cve_id']} — "
-              f"must commit YAML before scanning{RESET}")
+        print(f"  {RED}✗ pre_registered_sha missing for {cve['cve_id']} — " f"must commit YAML before scanning{RESET}")
         return False
     return True
 
@@ -87,6 +87,7 @@ def check_pre_registration(cve: dict) -> bool:
 # ---------------------------------------------------------------------------
 # Cloning
 # ---------------------------------------------------------------------------
+
 
 def clone_repo(cve: dict, no_clone: bool = False) -> Path | None:
     cve_id = cve["cve_id"]
@@ -107,18 +108,14 @@ def clone_repo(cve: dict, no_clone: bool = False) -> Path | None:
         return None
 
     if not checkout_ref:
-        print(f"  {YELLOW}⚠  neither vuln_commit_sha nor vuln_version_tag set "
-              f"for {cve_id} — skipping clone{RESET}")
+        print(f"  {YELLOW}⚠  neither vuln_commit_sha nor vuln_version_tag set " f"for {cve_id} — skipping clone{RESET}")
         return None
 
     CLONE_BASE.mkdir(parents=True, exist_ok=True)
 
     if clone_dir.exists():
         print(f"  Repo already cloned at {clone_dir} — checking out {checkout_ref}")
-        r = subprocess.run(
-            ["git", "checkout", checkout_ref],
-            cwd=clone_dir, capture_output=True, text=True
-        )
+        r = subprocess.run(["git", "checkout", checkout_ref], cwd=clone_dir, capture_output=True, text=True)
         if r.returncode != 0:
             print(f"  {RED}git checkout {checkout_ref} failed: {r.stderr.strip()}{RESET}")
             return None
@@ -138,18 +135,11 @@ def clone_repo(cve: dict, no_clone: bool = False) -> Path | None:
 
     if not vuln_tag or vuln_sha:
         # Need explicit checkout for commit SHA clones
-        r = subprocess.run(
-        ["git", "checkout", vuln_sha],
-        cwd=clone_dir, capture_output=True, text=True
-    )
+        r = subprocess.run(["git", "checkout", vuln_sha], cwd=clone_dir, capture_output=True, text=True)
         if r.returncode != 0:
             # Fallback: fetch then checkout
-            subprocess.run(["git", "fetch", "--unshallow"], cwd=clone_dir,
-                           capture_output=True)
-            r = subprocess.run(
-                ["git", "checkout", checkout_ref],
-                cwd=clone_dir, capture_output=True, text=True
-            )
+            subprocess.run(["git", "fetch", "--unshallow"], cwd=clone_dir, capture_output=True)
+            r = subprocess.run(["git", "checkout", checkout_ref], cwd=clone_dir, capture_output=True, text=True)
             if r.returncode != 0:
                 print(f"  {RED}Checkout {checkout_ref} failed: {r.stderr.strip()}{RESET}")
                 return None
@@ -162,27 +152,30 @@ def clone_repo(cve: dict, no_clone: bool = False) -> Path | None:
 # ACR-QA scan — runs tools directly, no DB required
 # ---------------------------------------------------------------------------
 
+
 def run_acrqa(clone_dir: Path) -> list[dict]:
     """
     Run static analysis tools on clone_dir via TOOLS/run_checks.sh,
     then normalise via CORE.engines.normalizer.normalize_all().
     No DB connection required.
     """
-    import tempfile
 
     # run_checks.sh hardcodes DATA/outputs — run sequentially
     out_dir = ROOT / "DATA" / "outputs"
     r = subprocess.run(
         ["bash", str(RUN_CHECKS_SH), str(clone_dir)],
-        capture_output=True, text=True, cwd=ROOT, timeout=300,
+        capture_output=True,
+        text=True,
+        cwd=ROOT,
+        timeout=300,
     )
     if r.returncode not in (0, 1):
-        print(f"  {YELLOW}run_checks.sh returned {r.returncode}: "
-              f"{r.stderr.strip()[:200]}{RESET}")
+        print(f"  {YELLOW}run_checks.sh returned {r.returncode}: " f"{r.stderr.strip()[:200]}{RESET}")
 
     # Normalise outputs from DATA/outputs/
     try:
         from CORE.engines.normalizer import normalize_all
+
         findings = normalize_all(str(out_dir))
         return [
             {
@@ -191,7 +184,9 @@ def run_acrqa(clone_dir: Path) -> list[dict]:
                 "file_path": getattr(f, "file", None),
                 "line_number": getattr(f, "line", None),
                 "message": getattr(f, "message", ""),
-                "tool": getattr(f, "tool_raw", {}).get("tool_name", "") if isinstance(getattr(f, "tool_raw", None), dict) else "",
+                "tool": getattr(f, "tool_raw", {}).get("tool_name", "")
+                if isinstance(getattr(f, "tool_raw", None), dict)
+                else "",
             }
             for f in findings
         ]
@@ -203,6 +198,7 @@ def run_acrqa(clone_dir: Path) -> list[dict]:
 # ---------------------------------------------------------------------------
 # Scoring — strict ±3-line rule from INTEGRITY.md
 # ---------------------------------------------------------------------------
+
 
 def score_cve(cve: dict, findings: list[dict]) -> tuple[bool, str | None]:
     """
@@ -234,11 +230,7 @@ def score_cve(cve: dict, findings: list[dict]) -> tuple[bool, str | None]:
         f_parts = Path(f_file).parts
         file_match = (
             affected_file_parts[-1] == f_parts[-1]  # same filename
-            and (
-                len(affected_file_parts) == 1
-                or f_file.endswith(affected_file)
-                or affected_file.endswith(f_file)
-            )
+            and (len(affected_file_parts) == 1 or f_file.endswith(affected_file) or affected_file.endswith(f_file))
         )
 
         if not file_match:
@@ -257,6 +249,7 @@ def score_cve(cve: dict, findings: list[dict]) -> tuple[bool, str | None]:
 # YAML update
 # ---------------------------------------------------------------------------
 
+
 def update_yaml(cve: dict, detected: bool, finding_id: str | None) -> None:
     path: Path = cve["_path"]
     with path.open() as f:
@@ -264,22 +257,15 @@ def update_yaml(cve: dict, detected: bool, finding_id: str | None) -> None:
 
     # Replace or append acrqa_detected
     import re
+
     if re.search(r"^acrqa_detected:", raw, re.MULTILINE):
-        raw = re.sub(
-            r"^acrqa_detected:.*$",
-            f"acrqa_detected: {str(detected).lower()}",
-            raw, flags=re.MULTILINE
-        )
+        raw = re.sub(r"^acrqa_detected:.*$", f"acrqa_detected: {str(detected).lower()}", raw, flags=re.MULTILINE)
     else:
         raw = raw.rstrip() + f"\nacrqa_detected: {str(detected).lower()}\n"
 
     if finding_id:
         if re.search(r"^acrqa_finding_id:", raw, re.MULTILINE):
-            raw = re.sub(
-                r"^acrqa_finding_id:.*$",
-                f"acrqa_finding_id: {finding_id}",
-                raw, flags=re.MULTILINE
-            )
+            raw = re.sub(r"^acrqa_finding_id:.*$", f"acrqa_finding_id: {finding_id}", raw, flags=re.MULTILINE)
         else:
             raw = raw.rstrip() + f"\nacrqa_finding_id: {finding_id}\n"
 
@@ -291,15 +277,13 @@ def update_yaml(cve: dict, detected: bool, finding_id: str | None) -> None:
 # Main
 # ---------------------------------------------------------------------------
 
+
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--cve", help="Run a single CVE by ID")
-    parser.add_argument("--dry-run", action="store_true",
-                        help="Show plan but don't scan")
-    parser.add_argument("--no-clone", action="store_true",
-                        help="Skip cloning, use existing directories")
-    parser.add_argument("--update", action="store_true",
-                        help="Write scan results back into YAML files")
+    parser.add_argument("--dry-run", action="store_true", help="Show plan but don't scan")
+    parser.add_argument("--no-clone", action="store_true", help="Skip cloning, use existing directories")
+    parser.add_argument("--update", action="store_true", help="Write scan results back into YAML files")
     args = parser.parse_args()
 
     cves = load_cve_yamls(args.cve)
@@ -333,8 +317,10 @@ def main() -> None:
             continue
 
         if args.dry_run:
-            print(f"  [dry-run] Would clone {cve.get('repo_url', '?')} "
-                  f"@ {checkout_ref} and scan {cve.get('affected_file', '?')}")
+            print(
+                f"  [dry-run] Would clone {cve.get('repo_url', '?')} "
+                f"@ {checkout_ref} and scan {cve.get('affected_file', '?')}"
+            )
             results.append({"cve_id": cve_id, "status": "dry_run"})
             continue
 
@@ -358,13 +344,15 @@ def main() -> None:
             update_yaml(cve, detected, finding_id)
             print(f"  Updated {cve['_path'].name}")
 
-        results.append({
-            "cve_id": cve_id,
-            "project": project,
-            "detected": detected,
-            "finding_id": finding_id,
-            "total_findings": len(findings),
-        })
+        results.append(
+            {
+                "cve_id": cve_id,
+                "project": project,
+                "detected": detected,
+                "finding_id": finding_id,
+                "total_findings": len(findings),
+            }
+        )
         print()
 
     # Summary
@@ -372,8 +360,10 @@ def main() -> None:
     completed = [r for r in results if "detected" in r]
     if completed:
         detected_count = sum(1 for r in completed if r["detected"])
-        print(f"\n{BOLD}Recall: {detected_count}/{len(completed)} CVEs detected "
-              f"({100*detected_count//max(len(completed),1)}%){RESET}")
+        print(
+            f"\n{BOLD}Recall: {detected_count}/{len(completed)} CVEs detected "
+            f"({100*detected_count//max(len(completed),1)}%){RESET}"
+        )
         print()
         for r in completed:
             mark = f"{GREEN}✓{RESET}" if r["detected"] else f"{RED}✗{RESET}"
@@ -382,8 +372,7 @@ def main() -> None:
 
     skipped = [r for r in results if r.get("status") in ("pending_sha", "clone_failed")]
     if skipped:
-        print(f"\n{YELLOW}{len(skipped)} CVE(s) skipped "
-              f"(commit SHA not yet set or clone failed){RESET}")
+        print(f"\n{YELLOW}{len(skipped)} CVE(s) skipped " f"(commit SHA not yet set or clone failed){RESET}")
         print("  Run again with --update after setting vuln_commit_sha in each YAML.")
 
 
