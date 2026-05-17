@@ -1,7 +1,7 @@
 # ACR-QA v2.5 - Makefile
 # One-click setup and common operations
 
-.PHONY: help up down setup install-deps install-tools init-db db-migrate db-rollback docker-up docker-down run dashboard api worker seed-admin test test-all lint coverage version clean offline-pack sync-osv
+.PHONY: help up down setup install-deps install-tools init-db db-migrate db-rollback docker-up docker-down run dashboard api worker seed-admin test test-all lint coverage version clean offline-pack sync-osv eval-audit eval-reproduce
 
 # Default target
 help:
@@ -37,6 +37,10 @@ help:
 	@echo "  make test-e2e       - End-to-end integration test"
 	@echo "  make lint           - Run Ruff linter + formatter check"
 	@echo "  make coverage       - Run tests with coverage report"
+	@echo ""
+	@echo "Evaluation Integrity (Tier 0):"
+	@echo "  make eval-audit     - Verify all numbers in EVALUATION.md against source data"
+	@echo "  make eval-reproduce - Full one-command eval re-run (clone repos + audit + tests)"
 	@echo ""
 	@echo "Utilities:"
 	@echo "  make clean          - Remove outputs and cache"
@@ -286,6 +290,41 @@ sync-osv:
 	@echo "📥 Syncing OSV vulnerability snapshots..."
 	.venv/bin/python3 scripts/sync_osv_db.py
 	@echo "✅ OSV snapshot ready at ~/.acrqa/osv-snapshot/"
+
+# ============================================
+# Evaluation Integrity (Tier 0)
+# ============================================
+
+eval-audit:
+	@echo "🔍 Auditing eval numbers in EVALUATION.md..."
+	python3 scripts/audit_eval_numbers.py
+	@echo ""
+
+eval-reproduce:
+	@echo "🔁 Reproducing full evaluation from pinned SHAs..."
+	@echo ""
+	@echo "Step 1: Clone / update eval repos at pinned SHAs"
+	@if [ -f TESTS/evaluation/repo_pins.yml ]; then \
+		python3 scripts/clone_eval_repos.sh; \
+	else \
+		echo "  ⚠  TESTS/evaluation/repo_pins.yml not found — skipping repo clone"; \
+		echo "     Run Tier 3 corpus expansion to generate repo_pins.yml"; \
+	fi
+	@echo ""
+	@echo "Step 2: Verify eval numbers against source data"
+	python3 scripts/audit_eval_numbers.py
+	@echo ""
+	@echo "Step 3: Run CVE recall tests (slow, requires cloned repos)"
+	@if [ -d TESTS/evaluation/cve_recall ] && ls TESTS/evaluation/cve_recall/*.yml 1>/dev/null 2>&1; then \
+		python3 -m pytest TESTS/evaluation/test_cve_recall.py -m slow -v --tb=short; \
+	else \
+		echo "  ⚠  No CVE recall tests found — run Tier 1 to populate"; \
+	fi
+	@echo ""
+	@echo "Step 4: Run ground-truth recall tests (slow)"
+	python3 -m pytest TESTS/evaluation/test_recall.py -m slow -v --tb=short || echo "  ⚠  Some recall tests skipped (repos not cloned)"
+	@echo ""
+	@echo "✅ eval-reproduce complete. Check output above for any ✗ failures."
 
 offline-pack:
 	@echo "📦 Building offline bundle..."

@@ -1,7 +1,8 @@
 # Evaluation Integrity Charter
 
-**Status:** Stub (Tier 0 deliverable — to be populated during W1 of master schedule)
+**Status:** Active — Tier 0 infrastructure deployed (2026-05-17)
 **Companion to:** `EVAL_EXPANSION_PLAN.md` Tier 0, `MASTER_SCHEDULE.md`
+**Enforcement scripts:** `scripts/audit_eval_numbers.py` · `make eval-audit` · `make eval-reproduce`
 
 ---
 
@@ -48,7 +49,7 @@ Every CVE we *considered but excluded* MUST be logged here with a reason. No sil
 
 | CVE ID | Project | Why skipped | Decided when |
 |--------|---------|-------------|--------------|
-| *(none yet — populated during W1)* | | | |
+| *(none yet — populated during Tier 1 CVE selection)* | | | |
 
 **Acceptable skip reasons:**
 - "Requires runtime context (CSRF, IDOR, business logic)"
@@ -148,7 +149,7 @@ Every quarterly review (or before any tag release), run this checklist:
 
 | Audit date | Auditor | Result | Notes |
 |------------|---------|--------|-------|
-| *(W1 first audit — to be populated)* | | | |
+| 2026-05-17 | Author (ahmeed-145) | ✅ Pass — 17/17 internal-consistency claims verified | Initial Tier 0 deploy; Layer A + Layer B arithmetic verified; YAML count = 10 ✓ |
 
 ---
 

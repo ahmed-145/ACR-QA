@@ -1,0 +1,73 @@
+# Pinned commit SHAs for eval-reproduce reproducibility.
+# Each entry is cloned to TESTS/evaluation/cloned/<repo> at the stated SHA.
+# Update SHA when intentionally re-baselining a repo.
+#
+# Tier 1 CVE recall repos are listed in TESTS/evaluation/cve_recall/*.yml
+# and cloned separately by scripts/run_cve_recall.py.
+
+ground_truth_repos:
+  # Layer A — synthetic ground-truth (intentionally vulnerable)
+  - name: dvpwa
+    url: https://github.com/anxolerd/dvpwa
+    sha: ""  # populate during Tier 3 run: git -C <repo> rev-parse HEAD
+    ground_truth: TESTS/evaluation/ground_truth/dvpwa.yml
+
+  - name: pygoat
+    url: https://github.com/adeyosemanputra/pygoat
+    sha: ""
+    ground_truth: TESTS/evaluation/ground_truth/pygoat.yml
+
+  - name: vulpy
+    url: https://github.com/fportantier/vulpy
+    sha: ""
+    ground_truth: TESTS/evaluation/ground_truth/vulpy.yml
+
+  - name: dsvw
+    url: https://github.com/stamparm/DSVW
+    sha: ""
+    ground_truth: TESTS/evaluation/ground_truth/dsvw.yml
+
+  - name: vulnerable-flask-app
+    url: https://github.com/we45/Vulnerable-Flask-App
+    sha: ""
+    ground_truth: TESTS/evaluation/ground_truth/vulnerable-flask-app.yml
+
+  - name: bandit-test-cases
+    url: https://github.com/PyCQA/bandit
+    sha: ""
+    ground_truth: TESTS/evaluation/ground_truth/bandit-test-cases.yml
+
+  - name: nodegoat
+    url: https://github.com/OWASP/NodeGoat
+    sha: ""
+    ground_truth: TESTS/evaluation/ground_truth/nodegoat.yml
+
+  - name: dvna
+    url: https://github.com/appsecco/dvna
+    sha: ""
+    ground_truth: TESTS/evaluation/ground_truth/dvna.yml
+
+  - name: dvws-node
+    url: https://github.com/snoopysecurity/dvws-node
+    sha: ""
+    ground_truth: TESTS/evaluation/ground_truth/dvws-node.yml
+
+  - name: juiceshop
+    url: https://github.com/juice-shop/juice-shop
+    sha: ""
+    ground_truth: TESTS/evaluation/ground_truth/juiceshop.yml
+
+  # Layer B — real-world FP rate (production codebases)
+  # These are NOT cloned for recall tests — used for manual FP triage only.
+  # SHAs documented here for reproducibility of the FP rate numbers.
+  - name: flask
+    url: https://github.com/pallets/flask
+    sha: ""  # populate: git -C <flask> rev-parse HEAD at time of FP triage
+    role: layer_b_fp_rate
+    notes: "FP triage: 100 HIGH findings, 1 FP → 1.0% FP rate"
+
+  - name: httpx
+    url: https://github.com/encode/httpx
+    sha: ""  # populate: git -C <httpx> rev-parse HEAD at time of FP triage
+    role: layer_b_fp_rate
+    notes: "FP triage: 43 HIGH findings, 1 FP → 2.3% FP rate"
