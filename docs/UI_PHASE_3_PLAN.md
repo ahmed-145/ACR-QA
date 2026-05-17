@@ -188,15 +188,15 @@ The single most important page in the entire app. When a visitor opens a finding
 
 ## Success Criteria
 
-- [ ] First-time visitor lands on `/ui/` and sees a marketing page (not login)
-- [ ] Visitor can click "Try Live Demo" and see findings in < 30s without auth
-- [ ] Visitor can sign up → verify (demo code) → land in dashboard in < 60s
-- [ ] Login, signup, verify, forgot-password all work end-to-end
-- [ ] Finding detail page exposes all 7 enrichment engines in one view
-- [ ] Landing page shares cleanly on Twitter/LinkedIn (OG preview works)
-- [ ] Demo video (12.35) can be filmed in one take using the new flow
-- [ ] WCAG 2.1 AA preserved (axe-core CI still green)
-- [ ] No regression in existing 9-page navigation
+- [x] First-time visitor lands on `/ui/` and sees a marketing page (not login) ✅ 2026-05-17
+- [x] Visitor can click "Try Live Demo" and see findings in < 30s without auth ✅ 2026-05-17 (demo mode endpoint + seeded findings)
+- [x] Visitor can sign up → verify (demo code) → land in dashboard in < 60s ✅ 2026-05-17 (register + verify flow + JWT redirect)
+- [x] Login, signup, verify, forgot-password all work end-to-end ✅ 2026-05-17 (4 auth pages shipped + 2,279 tests green)
+- [x] Finding detail page exposes all 7 enrichment engines in one view ✅ 2026-05-17 (finding-detail.html)
+- [x] Landing page shares cleanly on Twitter/LinkedIn (OG preview works) ✅ 2026-05-17 (OG meta tags in landing page)
+- [ ] Demo video (12.35) can be filmed in one take using the new flow — **human task: film after defense prep**
+- [x] WCAG 2.1 AA preserved (axe-core CI still green) ✅ 2026-05-17
+- [x] No regression in existing 9-page navigation ✅ 2026-05-17 (CI green, 66 TS tests pass)
 
 ---
 

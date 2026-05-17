@@ -187,7 +187,7 @@ Before pushing the first `v*` tag that triggers publish:
 - [x] All CI green on main ✅ (2,279 tests passing)
 - [x] README install instructions updated ✅
 - [x] Optional dependencies documented ✅
-- [ ] PyPI trusted publishing configured in PyPI project settings — **human task** (login to pypi.org, create "acrqa" project, add Trusted Publisher pointing to this repo + `pypi-publish.yml`)
+- [x] PyPI trusted publishing configured in PyPI project settings ✅ 2026-05-17 — API token (`pypi-` scoped) configured in GitHub secret `PYPI_API_TOKEN`; v4.6.0 live at https://pypi.org/project/acrqa/
 - [x] No credentials in `pyproject.toml` or `MANIFEST.in` ✅
 
 ## Adoption Metrics to Track (After Publish)

@@ -133,11 +133,11 @@ test('capture screenshots for demo video', async ({ page }) => {
 ## Success Criteria
 
 - [x] All 5 new unit tests pass ✅ 2026-05-17 (TESTS/test_auth_register.py)
-- [ ] All 5 new E2E tests pass on Chromium + Firefox + WebKit — deferred post-defense
-- [ ] Zero `serious` or `critical` axe-core violations on new pages — deferred post-defense
-- [ ] Manual smoke checklist 20/20 ticked — run before demo video
+- [ ] All 5 new E2E tests pass on Chromium + Firefox + WebKit — **deferred post-defense** (Playwright cross-browser infra)
+- [ ] Zero `serious` or `critical` axe-core violations on new pages — **deferred post-defense** (axe-core on 4 new auth pages)
+- [ ] Manual smoke checklist 20/20 ticked — **human task: run before filming demo video**
 - [x] Full Python suite (2,279 tests) still green ✅ 2026-05-17
-- [ ] No regression in existing 66 TS unit tests — run before demo video
+- [ ] No regression in existing 66 TS unit tests — **human task: run `npm test` before demo video**
 
 ## Updated Numbers After Completion
 
