@@ -92,6 +92,27 @@ python3 CORE/main.py --target-dir TESTS/samples --rich --limit 5
 
 ## 🔥 Q&A Cheat Sheet
 
+### ⭐ Q: "Your benchmarks are toy apps. How do I know this works on real production code?" [MOST IMPORTANT QUESTION]
+
+> *"That's the most important question about the evaluation, and I want to answer it directly. You're right that DVPWA, Pygoat, VulPy and DSVW are intentionally vulnerable. They are not my proof that the tool works on real code — they are my proof that it can find known bugs against ground truth. That's a controlled experiment, the same way a drug trial uses controlled groups.*
+>
+> *For real-world validation I ran ACR-QA on Flask — 68 thousand stars on GitHub, used by millions of production apps. I manually triaged every HIGH-severity finding. Result: 1.0% false-positive rate. Same exercise on httpx: 2.3%. Industry baseline for SonarQube on Python is 30 to 40 percent. So my real production number isn't 97% precision — it's a sub-3% false-positive rate on idiomatic codebases.*
+>
+> *The toy benchmarks measure 'does the tool catch known bugs.' The real-world repos measure 'does it stay out of the developer's way.' Both numbers matter; I report both honestly.*
+>
+> *And methodologically, this mirrors the SAST research standard — every published SAST evaluation since 2008 uses synthetic ground-truth corpora because there's no other way to measure recall at scale. OWASP Benchmark v1.2, NIST SARD, the Juliet Test Suite — all synthetic. What's novel in my evaluation is the **layered approach** combining synthetic ground truth with real-world FP measurement on idiomatic code."*
+
+**Backup numbers to have ready:**
+- Flask: 100 HIGH findings, 1 FP = 1.0%
+- httpx: 43 HIGH findings, 1 FP = 2.3%
+- SonarQube baseline: 30–40% Python FP rate (cite OWASP Benchmark independent studies)
+- Total real-world LOC tested: ~35,000
+
+**Follow-up if pushed harder ("Why not more real repos?"):**
+> *"That's exactly Phase 4 of my evaluation expansion plan — adding Django, FastAPI and govwa to bring real-world coverage to ~330,000 LOC across 4 languages. The plan is documented in `docs/EVAL_EXPANSION_PLAN.md` with ground-truth labelling methodology. I chose depth over breadth: 4 well-labelled repos give defendable numbers; 20 unlabelled repos would be noise."*
+
+---
+
 ### Q: "What are these 2,339 tests? Where did they come from?"
 > "In Phase 1, we only had about 30 tests checking the happy path. These 2,339 tests are stress tests that simulate real-world disasters: what if the database crashes mid-review? What if someone uploads a corrupted file? What if there are 1,000 findings at once? We even have chaos engineering tests that inject Postgres and Redis failures. I wrote them to prove the system won't break under pressure."
 

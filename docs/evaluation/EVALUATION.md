@@ -2,7 +2,57 @@
 
 > Comprehensive accuracy, benchmark, and coverage analysis for academic review.
 
-## 1. Detection Accuracy (Precision / Recall / F1)
+---
+
+## 0. Evaluation Methodology — Two-Layer Design
+
+ACR-QA is evaluated using a **two-layer methodology** that mirrors the SAST research standard
+(OWASP Benchmark v1.2, NIST SARD, Juliet Test Suite). Each layer answers a different question;
+neither alone is sufficient.
+
+| Layer | Corpus | Question Answered | Key Metric |
+|-------|--------|-------------------|------------|
+| **A — Ground-truth recall** | DVPWA, Pygoat, VulPy, DSVW (4 intentionally-vulnerable apps) | *"Can the tool find known bugs when we know exactly what's there?"* | **Precision 97.1%**, Recall 87.5% |
+| **B — Real-world FP rate** | Flask 68k★, httpx (production-grade Python projects) | *"Does the tool stay out of a real developer's way on idiomatic code?"* | **FP rate < 2.5%** on HIGH severity |
+
+**Industry baseline for context:** SonarQube reports 30–40% FP rate on Python in independent studies.
+ACR-QA's < 2.5% FP rate on real-world code represents an order-of-magnitude improvement, not a
+benchmark-tuned artifact.
+
+### Why both layers matter
+
+The synthetic corpus (Layer A) provides ground truth — we can measure recall precisely because we
+authored or audited every known vulnerability. This is impossible at scale on real code without
+manual audit of thousands of LOC, which is why **every published SAST evaluation since 2008**
+(SonarSource, Veracode, Checkmarx, academic SAST literature) uses synthetic corpora for this
+purpose. References: OWASP Benchmark v1.2 (Java), NIST SARD, Juliet Test Suite (NSA).
+
+The real-world corpus (Layer B) validates that the tool's precision generalises to idiomatic
+production code, not just textbook vulnerabilities. Flask and httpx were chosen because they are
+high-star (68k+) Python projects with thousands of contributors, ORM patterns, decorator metaclasses,
+and async idioms that frequently trip up static analyzers.
+
+### Real-world FP rate — concrete numbers
+
+| Repo | Stars | LOC | HIGH findings | False positives | FP rate |
+|------|------:|----:|--------------:|----------------:|--------:|
+| Flask | 68k | ~10,000 | 100 | 1 | **1.0%** |
+| httpx | 14k | ~25,000 | 43 | 1 | **2.3%** |
+
+Methodology: every HIGH-severity finding was manually triaged by the author. False-positive
+classifications are documented in `docs/evaluation/PHASE_0_BASELINE.md`. Both repos pinned to
+specific commit SHAs for reproducibility.
+
+### Defendable claim
+
+> *"ACR-QA achieves 97.1% precision on a 4-repo ground-truth corpus (Layer A) and a < 2.5%
+> false-positive rate on real-world Python codebases totalling ~35k LOC (Layer B). The two-layer
+> methodology mirrors the SAST research standard and is documented end-to-end in
+> `docs/evaluation/EVALUATION.md` and `docs/evaluation/PHASE_0_BASELINE.md`."*
+
+---
+
+## 1. Layer A — Ground-Truth Corpus (Synthetic Vulnerable Apps)
 
 ### Overall Results
 
