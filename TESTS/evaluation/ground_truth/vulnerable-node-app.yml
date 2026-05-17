@@ -1,0 +1,36 @@
+# Vulnerable Node.js Application (OWASP WebGoat-like for Node)
+# https://github.com/cr0hn/vulnerable-node
+# Added in Tier 3 corpus expansion for Node.js/JavaScript coverage breadth.
+
+repo: vulnerable-node
+url: https://github.com/cr0hn/vulnerable-node
+language: javascript
+local_path: test_targets/eval-repos/vulnerable-node
+
+expected_findings:
+  - id: vulnode-sqli-products
+    cwe: CWE-89
+    canonical_id: SECURITY-027
+    file: src/routes/products.js
+    severity: high
+    description: SQL query string concatenation with unsanitised user input
+
+  - id: vulnode-xss-output
+    cwe: CWE-79
+    canonical_id: SECURITY-045
+    file: src/routes/users.js
+    severity: high
+    description: Unescaped user input rendered in response (reflected XSS)
+
+  - id: vulnode-hardcoded-secret
+    cwe: CWE-798
+    canonical_id: HARDCODE-001
+    file: config/config.js
+    severity: medium
+    description: Hardcoded JWT secret key in configuration file
+
+notes: >
+  Node.js scanning via Semgrep (javascript language support) and jscpd.
+  Ruff, Bandit, Vulture are Python-only — produce 0 findings on .js files.
+  Ground truth is based on known vulnerability descriptions in the repo README.
+  Confidence: medium — exact line numbers to be confirmed during Tier 3 clone+scan.

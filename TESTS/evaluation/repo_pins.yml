@@ -57,6 +57,17 @@ ground_truth_repos:
     sha: ""
     ground_truth: TESTS/evaluation/ground_truth/juiceshop.yml
 
+  # Tier 3 expansion — added W2 for language breadth
+  - name: govwa
+    url: https://github.com/0c34/govwa
+    sha: ""  # populate during Tier 3 clone+scan
+    ground_truth: TESTS/evaluation/ground_truth/govwa.yml
+
+  - name: vulnerable-node
+    url: https://github.com/cr0hn/vulnerable-node
+    sha: ""  # populate during Tier 3 clone+scan
+    ground_truth: TESTS/evaluation/ground_truth/vulnerable-node-app.yml
+
   # Layer B — real-world FP rate (production codebases)
   # These are NOT cloned for recall tests — used for manual FP triage only.
   # SHAs documented here for reproducibility of the FP rate numbers.

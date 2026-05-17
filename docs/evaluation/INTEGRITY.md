@@ -150,7 +150,8 @@ Every quarterly review (or before any tag release), run this checklist:
 | Audit date | Auditor | Result | Notes |
 |------------|---------|--------|-------|
 | 2026-05-17 | Author (ahmeed-145) | ✅ Pass — 17/17 internal-consistency claims verified | Initial Tier 0 deploy; Layer A + Layer B arithmetic verified; YAML count = 10 ✓ |
-| 2026-05-17 | Author (ahmeed-145) | ⚠ Pilot — CVE recall 1/5 (20%) | Tier 1 W1 pilot; 3 genuine tool gaps + 1 severity gap (near-hit); all metadata corrected; see CVE_RECALL.md |
+| 2026-05-17 | Author (ahmeed-145) | ⚠ Pilot — CVE recall 1/5 (20%) | W1 pilot; 3 genuine tool gaps + 1 severity gap; all metadata corrected |
+| 2026-05-17 | Author (ahmeed-145) | ⚠ Tier 1 full — CVE recall 2/10 (20%) | W2 full run; 4 syntax gaps, 2 severity gaps, 2 rule gaps, 2 detected; see CVE_RECALL.md |
 
 ---
 

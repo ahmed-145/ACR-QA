@@ -1,0 +1,30 @@
+# GoVWA — Go Vulnerable Web Application
+# https://github.com/0c34/govwa
+# Added in Tier 3 corpus expansion to demonstrate multi-language coverage.
+
+repo: govwa
+url: https://github.com/0c34/govwa
+language: go
+local_path: test_targets/eval-repos/govwa
+
+expected_findings:
+  - id: govwa-sqli-user
+    cwe: CWE-89
+    canonical_id: SECURITY-027
+    file: app/util/dbutil.go
+    severity: high
+    description: Raw SQL string formatting for user login query (Go string concat into DB query)
+
+  - id: govwa-cmdi-ping
+    cwe: CWE-78
+    canonical_id: SECURITY-021
+    file: app/vulnerability/cmd/cmd.go
+    severity: high
+    description: Command injection via exec.Command with unsanitised user input
+
+notes: >
+  Go scanning is primarily via Semgrep cross-language rules and jscpd.
+  Bandit, Ruff, Vulture are Python-only and will produce 0 findings on .go files.
+  This repo tests Semgrep's Go language coverage. Ground truth is based on
+  known vulnerability descriptions from the GoVWA README.
+  Confidence: medium — exact line numbers to be confirmed during Tier 3 clone+scan.
