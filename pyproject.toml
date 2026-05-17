@@ -1,6 +1,10 @@
 [tool.ruff]
 target-version = "py311"
 line-length = 120
+exclude = [
+    "TESTS/evaluation/cloned/",
+    "mutants/",
+]
 
 [tool.ruff.lint]
 select = [
@@ -62,6 +66,7 @@ ignore_errors = true
 # Test coverage tracking
 [tool.pytest.ini_options]
 testpaths = ["TESTS"]
+norecursedirs = ["TESTS/evaluation/cloned", "mutants", ".venv", "node_modules"]
 addopts = [
     "--cov=CORE",
     "--cov-report=html",

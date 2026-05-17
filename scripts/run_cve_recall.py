@@ -35,7 +35,11 @@ import yaml
 ROOT = Path(__file__).parent.parent
 CVE_DIR = ROOT / "TESTS" / "evaluation" / "cve_recall"
 CLONE_BASE = ROOT / "TESTS" / "evaluation" / "cloned" / "cve_recall"
-MAIN_PY = ROOT / "CORE" / "main.py"
+RUN_CHECKS_SH = ROOT / "TOOLS" / "run_checks.sh"
+
+# Add project root to sys.path so CORE imports work
+if str(ROOT) not in sys.path:
+    sys.path.insert(0, str(ROOT))
 
 GREEN = "\033[92m"
 RED = "\033[91m"
@@ -87,8 +91,12 @@ def check_pre_registration(cve: dict) -> bool:
 def clone_repo(cve: dict, no_clone: bool = False) -> Path | None:
     cve_id = cve["cve_id"]
     vuln_sha = cve.get("vuln_commit_sha", "").strip()
+    vuln_tag = cve.get("vuln_version_tag", "").strip()
     url = cve.get("repo_url", "").strip()
     clone_dir = CLONE_BASE / cve_id
+
+    # Determine checkout ref: prefer explicit SHA, fall back to version tag
+    checkout_ref = vuln_sha if (vuln_sha and not vuln_sha.startswith("<")) else vuln_tag
 
     if no_clone and clone_dir.exists():
         print(f"  Using existing clone: {clone_dir}")
@@ -98,93 +106,98 @@ def clone_repo(cve: dict, no_clone: bool = False) -> Path | None:
         print(f"  {YELLOW}⚠  repo_url not set for {cve_id} — skipping clone{RESET}")
         return None
 
-    if not vuln_sha or vuln_sha.startswith("<"):
-        print(f"  {YELLOW}⚠  vuln_commit_sha not set for {cve_id} — skipping clone{RESET}")
+    if not checkout_ref:
+        print(f"  {YELLOW}⚠  neither vuln_commit_sha nor vuln_version_tag set "
+              f"for {cve_id} — skipping clone{RESET}")
         return None
 
     CLONE_BASE.mkdir(parents=True, exist_ok=True)
 
     if clone_dir.exists():
-        print(f"  Repo already cloned at {clone_dir} — checking out vuln SHA")
+        print(f"  Repo already cloned at {clone_dir} — checking out {checkout_ref}")
         r = subprocess.run(
-            ["git", "checkout", vuln_sha],
+            ["git", "checkout", checkout_ref],
             cwd=clone_dir, capture_output=True, text=True
         )
         if r.returncode != 0:
-            print(f"  {RED}git checkout {vuln_sha} failed: {r.stderr.strip()}{RESET}")
+            print(f"  {RED}git checkout {checkout_ref} failed: {r.stderr.strip()}{RESET}")
             return None
         return clone_dir
 
-    print(f"  Cloning {url} ...")
-    r = subprocess.run(
-        ["git", "clone", "--no-checkout", "--depth=50", url, str(clone_dir)],
-        capture_output=True, text=True
+    # Clone at specific tag (depth=1 is enough for a tagged release)
+    clone_cmd = (
+        ["git", "clone", "--branch", checkout_ref, "--depth=1", url, str(clone_dir)]
+        if vuln_tag and not vuln_sha
+        else ["git", "clone", "--no-checkout", "--depth=50", url, str(clone_dir)]
     )
+    print(f"  Cloning {url} @ {checkout_ref} ...")
+    r = subprocess.run(clone_cmd, capture_output=True, text=True)
     if r.returncode != 0:
         print(f"  {RED}Clone failed: {r.stderr.strip()}{RESET}")
         return None
 
-    r = subprocess.run(
+    if not vuln_tag or vuln_sha:
+        # Need explicit checkout for commit SHA clones
+        r = subprocess.run(
         ["git", "checkout", vuln_sha],
         cwd=clone_dir, capture_output=True, text=True
     )
-    if r.returncode != 0:
-        # Fallback: try fetch then checkout
-        subprocess.run(["git", "fetch", "--unshallow"], cwd=clone_dir,
-                       capture_output=True)
-        r = subprocess.run(
-            ["git", "checkout", vuln_sha],
-            cwd=clone_dir, capture_output=True, text=True
-        )
         if r.returncode != 0:
-            print(f"  {RED}Checkout {vuln_sha[:12]} failed: {r.stderr.strip()}{RESET}")
-            return None
+            # Fallback: fetch then checkout
+            subprocess.run(["git", "fetch", "--unshallow"], cwd=clone_dir,
+                           capture_output=True)
+            r = subprocess.run(
+                ["git", "checkout", checkout_ref],
+                cwd=clone_dir, capture_output=True, text=True
+            )
+            if r.returncode != 0:
+                print(f"  {RED}Checkout {checkout_ref} failed: {r.stderr.strip()}{RESET}")
+                return None
 
-    print(f"  {GREEN}Cloned at {vuln_sha[:12]}{RESET}")
+    print(f"  {GREEN}Cloned at {checkout_ref}{RESET}")
     return clone_dir
 
 
 # ---------------------------------------------------------------------------
-# ACR-QA scan
+# ACR-QA scan — runs tools directly, no DB required
 # ---------------------------------------------------------------------------
 
 def run_acrqa(clone_dir: Path) -> list[dict]:
-    """Run ACR-QA in --no-ai --json mode; return findings list."""
-    result = subprocess.run(
-        [sys.executable, str(MAIN_PY),
-         "--target-dir", str(clone_dir),
-         "--no-ai", "--json", "--quiet"],
-        capture_output=True, text=True, cwd=ROOT, timeout=300
+    """
+    Run static analysis tools on clone_dir via TOOLS/run_checks.sh,
+    then normalise via CORE.engines.normalizer.normalize_all().
+    No DB connection required.
+    """
+    import tempfile
+
+    # run_checks.sh hardcodes DATA/outputs — run sequentially
+    out_dir = ROOT / "DATA" / "outputs"
+    r = subprocess.run(
+        ["bash", str(RUN_CHECKS_SH), str(clone_dir)],
+        capture_output=True, text=True, cwd=ROOT, timeout=300,
     )
-    if result.returncode not in (0, 1):
-        print(f"  {YELLOW}ACR-QA returned {result.returncode}: "
-              f"{result.stderr.strip()[:200]}{RESET}")
+    if r.returncode not in (0, 1):
+        print(f"  {YELLOW}run_checks.sh returned {r.returncode}: "
+              f"{r.stderr.strip()[:200]}{RESET}")
 
-    # Parse JSON output — it may be embedded in stdout
-    for line in result.stdout.splitlines():
-        line = line.strip()
-        if line.startswith("["):
-            try:
-                return json.loads(line)
-            except json.JSONDecodeError:
-                pass
-        if line.startswith("{") and "findings" in line:
-            try:
-                data = json.loads(line)
-                return data.get("findings", [])
-            except json.JSONDecodeError:
-                pass
-
-    # Try stderr too
-    for line in result.stderr.splitlines():
-        line = line.strip()
-        if line.startswith("["):
-            try:
-                return json.loads(line)
-            except json.JSONDecodeError:
-                pass
-
-    return []
+    # Normalise outputs from DATA/outputs/
+    try:
+        from CORE.engines.normalizer import normalize_all
+        findings = normalize_all(str(out_dir))
+        return [
+            {
+                "canonical_id": getattr(f, "canonical_rule_id", None),
+                "severity": getattr(f, "severity", "unknown"),
+                "file_path": getattr(f, "file", None),
+                "line_number": getattr(f, "line", None),
+                "message": getattr(f, "message", ""),
+                "tool": getattr(f, "tool_raw", {}).get("tool_name", "") if isinstance(getattr(f, "tool_raw", None), dict) else "",
+            }
+            for f in findings
+        ]
+    except Exception as exc:
+        print(f"  {YELLOW}normalize_all failed: {exc}{RESET}")
+        return []
 
 
 # ---------------------------------------------------------------------------
@@ -310,16 +323,18 @@ def main() -> None:
             results.append({"cve_id": cve_id, "status": "skip_no_prereg"})
             continue
 
-        # Check if SHA/URL available
+        # Check if a clone ref is available (SHA or version tag)
         vuln_sha = cve.get("vuln_commit_sha", "").strip()
-        if not vuln_sha or vuln_sha.startswith("<"):
-            print(f"  {YELLOW}⚠  vuln_commit_sha not set — marking as pending{RESET}")
+        vuln_tag = cve.get("vuln_version_tag", "").strip()
+        checkout_ref = vuln_sha if (vuln_sha and not vuln_sha.startswith("<")) else vuln_tag
+        if not checkout_ref:
+            print(f"  {YELLOW}⚠  no vuln_commit_sha or vuln_version_tag — marking as pending{RESET}")
             results.append({"cve_id": cve_id, "status": "pending_sha"})
             continue
 
         if args.dry_run:
             print(f"  [dry-run] Would clone {cve.get('repo_url', '?')} "
-                  f"@ {vuln_sha[:12]} and scan {cve.get('affected_file', '?')}")
+                  f"@ {checkout_ref} and scan {cve.get('affected_file', '?')}")
             results.append({"cve_id": cve_id, "status": "dry_run"})
             continue
 

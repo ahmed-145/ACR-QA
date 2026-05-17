@@ -49,7 +49,7 @@ Every CVE we *considered but excluded* MUST be logged here with a reason. No sil
 
 | CVE ID | Project | Why skipped | Decided when |
 |--------|---------|-------------|--------------|
-| *(none yet — populated during Tier 1 CVE selection)* | | | |
+| CVE-2022-24302 | Paramiko | `mktemp()` absent from 2.10.0 clone — vuln_version_tag wrong; needs fix before Tier 1 inclusion | 2026-05-17 |
 
 **Acceptable skip reasons:**
 - "Requires runtime context (CSRF, IDOR, business logic)"
@@ -150,6 +150,7 @@ Every quarterly review (or before any tag release), run this checklist:
 | Audit date | Auditor | Result | Notes |
 |------------|---------|--------|-------|
 | 2026-05-17 | Author (ahmeed-145) | ✅ Pass — 17/17 internal-consistency claims verified | Initial Tier 0 deploy; Layer A + Layer B arithmetic verified; YAML count = 10 ✓ |
+| 2026-05-17 | Author (ahmeed-145) | ⚠ Pilot — CVE recall 1/5 (20%) | Tier 1 W1 pilot; 2 methodology errors (wrong version/file), 2 genuine tool gaps; see CVE_RECALL.md |
 
 ---
 
