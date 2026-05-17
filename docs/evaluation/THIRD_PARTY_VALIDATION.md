@@ -1,6 +1,6 @@
 # Third-Party Validation — ACR-QA Finding Agreement Tracker
 
-**Version:** ACR-QA v3.9.1
+**Version:** ACR-QA v4.6.0
 **Last updated:** May 2026
 **Purpose:** Per-finding record of which third-party tools (CodeQL, SonarCloud, Snyk) confirmed ACR-QA findings on the same benchmark repos.
 

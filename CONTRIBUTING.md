@@ -45,7 +45,7 @@ CORE/tasks.py        → Celery task definitions (background scan worker)
 DATABASE/            → PostgreSQL ORM and connection layer
 FRONTEND/api/        → FastAPI v1 REST API (port 8000, async, OpenAPI docs at /docs)
 FRONTEND/auth/       → JWT + API key utilities (jwt_utils.py, api_key_utils.py)
-TESTS/               → pytest suite (2,274 tests)
+TESTS/               → pytest suite (2,279 tests)
 TOOLS/               → Shell scripts for running analysis tools
 scripts/             → CI/CD and utility scripts (seed_admin.py, etc.)
 config/              → Prometheus, Grafana dashboards, and rule definitions
@@ -60,7 +60,7 @@ docs/sre/            → SLOs and operational runbooks
 1. **Create a branch** from `main`
 2. **Make your changes** following the existing patterns
 3. **Add tests** for new functionality in `TESTS/`
-4. **Run the test suite** — all 2,274 tests must pass:
+4. **Run the test suite** — all 2,279 tests must pass:
    ```bash
    .venv/bin/pytest TESTS/ -q
    ```

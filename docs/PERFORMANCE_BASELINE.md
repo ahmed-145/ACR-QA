@@ -88,10 +88,10 @@ All three SLOs met at 50 RPS. Re-run against Railway deployment for production n
 
 | Metric | Value |
 |--------|-------|
-| Total tests | **2,339** (2,274 Python + 65 TS · as of v4.5.1) |
-| Passed | **2,274** Python |
-| Skipped | 13 (infrastructure-dependent) |
-| Runtime | ~40s |
+| Total tests | **2,345** (2,279 Python + 66 TS · as of v4.6.0) |
+| Passed | **2,279** Python |
+| Skipped | 18 (infrastructure-dependent) |
+| Runtime | ~5 min |
 | `quality_gate.py` coverage | **95%** |
 | `severity_scorer.py` coverage | **83%** |
 
