@@ -37,11 +37,12 @@ Five plan MDs (UI Phase 3, UI Testing, Eval Bulletproofing, Distribution, plus t
 - Pilot recall 30–60% → continue Tier 1 but lead defense with FP rate
 - Pilot recall < 30% → pivot: skip full CVE table, lean entirely on FP rate + corpus diversity
 
-### Week 2 (~12h) — Lock In Eval Numbers
+### Week 2 (~13h) — Lock In Eval Numbers
 | Task | Hours | Source plan |
 |------|------:|-------------|
 | Finish Tier 1 CVE recall (full 15–20 CVEs) | 10 | EVAL_BULLETPROOFING (Tier 1) |
 | Start Tier 3 corpus expansion (govwa + 1 repo) | 2 | EVAL_BULLETPROOFING (Tier 3) |
+| **One-command run validation** — `make up && make db-migrate && make seed-admin` on a clean venv; fix any README gaps found | 1 | Gap 5 — GOD_MODE_PLAN §7 item 1 |
 
 ### Week 3 (~12h) — Finish Eval, Start UI
 | Task | Hours | Source plan |
@@ -49,23 +50,28 @@ Five plan MDs (UI Phase 3, UI Testing, Eval Bulletproofing, Distribution, plus t
 | Finish Tier 3 corpus expansion (Django + FastAPI + TS) | 6 | EVAL_BULLETPROOFING (Tier 3) |
 | UI Phase 1: landing + auth UX (signup/verify/forgot/login) | 6 | UI_PHASE_3 |
 
-### Week 4 (~14h) — Polish + Independent Validation
+### Week 4 (~19h) — Polish + Validation + Docs
 | Task | Hours | Source plan |
 |------|------:|-------------|
 | UI Phase 2: killer finding detail page | 4 | UI_PHASE_3 |
 | UI Phase 3: demo mode (`?demo=1`) | 1 | UI_PHASE_3 |
 | UI Phase 4: smart polish | 1 | UI_PHASE_3 |
 | UI testing: 5 unit + 5 E2E + 5 a11y + manual checklist | 3 | UI_TESTING |
+| **Snapshot tests** — `TESTS/snapshot/test_snapshot_dsvw.py` + `test_snapshot_dvpwa.py`; commit expected JSON; wire into CI (slow marker) | 2 | Gap 6 — GOD_MODE_PLAN §9.3.4 |
 | Tier 2 peer validation (κ on 20-finding sample) | 3 | EVAL_BULLETPROOFING (Tier 2) |
 | Update EVALUATION.md with final numbers | 2 | EVAL_BULLETPROOFING |
+| **Documentation sweep** — audit every MD in `docs/` for stale numbers, versions, endpoints, test counts; update all before W5 | 3 | Gap 4 pre-req + thesis hygiene |
 
-### Week 5 (~11h) — Distribution + Demo Video
+### Week 5 (~14h) — Distribution + Demo Video
 | Task | Hours | Source plan |
 |------|------:|-------------|
+| **Bump version** — `CORE/__init__.py`, `CORE/main.py`, `pyproject.toml` → v4.6.0; write `CHANGELOG.md` v4.6.0 entry | 1 | Gap 4 — DISTRIBUTION_PLAN pre-publish checklist |
 | PyPI release (`pip install acrqa`) | 4 | DISTRIBUTION |
 | GitHub Actions Marketplace listing | 3 | DISTRIBUTION |
+| **Tag v4.6.0** — `git tag v4.6.0 && git push origin v4.6.0` (triggers PyPI OIDC publish) | 0.5 | Gap 4 — explicit release step |
 | Demo video filming (5 min, OBS) | 3 | task 12.35 |
 | YouTube upload + final commits | 1 | task 12.36 |
+| **Final MD audit pass** — re-run `scripts/audit_eval_numbers.py`; confirm all docs reflect v4.6.0 numbers and the tagged release | 1.5 | Gap 4 + documentation sweep sign-off |
 
 ---
 
@@ -76,11 +82,14 @@ Five plan MDs (UI Phase 3, UI Testing, Eval Bulletproofing, Distribution, plus t
 | Eval Bulletproofing (Tiers 0–3) | 29 |
 | UI Phase 3 (all 4 sub-phases) | 12 |
 | UI Testing | 3 |
-| Distribution (PyPI + Marketplace) | 7 |
+| Snapshot tests (Layer 4) | 2 |
+| One-command run validation | 1 |
+| Documentation sweep (W4 + W5 final audit) | 4.5 |
+| Distribution (PyPI + Marketplace + tag) | 8.5 |
 | Demo video + YouTube | 4 |
-| **Grand total** | **~55** |
+| **Grand total** | **~64** |
 
-Spread over 5 weeks = ~11h/week. Realistic.
+Spread over 5 weeks = ~13h/week. Still realistic — W4 is the heavy week at ~19h.
 
 ---
 
@@ -136,13 +145,17 @@ This is the lived-in version of the plan, not the aspirational one.
 ## Success Criteria (End of W5)
 
 - [ ] Tier 0 integrity infrastructure in place; `make eval-reproduce` works
+- [x] `make eval-audit` runs and passes 17/17 claims ✅ 2026-05-17
 - [ ] Tier 1 CVE recall table published in `docs/evaluation/CVE_RECALL.md`
 - [ ] Tier 2 peer validation κ documented in `docs/evaluation/PEER_VALIDATION.md`
 - [ ] Tier 3 corpus expanded to 16 repos across 4 languages
 - [ ] UI Phase 3 shipped (landing + auth UX + killer finding detail + demo mode)
 - [ ] UI Testing all green (5 unit + 5 E2E + 5 a11y pass; manual checklist 20/20)
+- [ ] Snapshot tests committed + wired into CI (DSVW + DVPWA baselines)
+- [ ] `make up && make db-migrate && make seed-admin` works on a clean venv (documented in README)
 - [ ] PyPI package live, downloadable via `pip install acrqa`
 - [ ] GitHub Actions Marketplace listing live
+- [ ] v4.6.0 tagged; CHANGELOG.md entry written; version bumped in `CORE/__init__.py`
 - [ ] Demo video uploaded to YouTube
-- [ ] v4.6.0 tagged and pushed
 - [ ] PRESENTATION_SCRIPT.md verbal pivots updated with new numbers
+- [ ] All MDs in `docs/` audited and up to date with v4.6.0 numbers; `make eval-audit` still green after final sweep
