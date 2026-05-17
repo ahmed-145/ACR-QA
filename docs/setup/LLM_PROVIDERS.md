@@ -1,6 +1,6 @@
 # LLM Provider Configuration
 
-**Last Updated:** May 15, 2026 (v3.8.0)
+**Last Updated:** May 17, 2026 (v4.6.0)
 
 ACR-QA uses LLMs for four tasks:
 1. **Explanation Engine** — generates natural-language explanations for findings (`CORE/engines/explainer.py`)

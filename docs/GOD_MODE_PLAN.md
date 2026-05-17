@@ -204,7 +204,7 @@ These appeared in v1. They're still wrong.
 | **3** | MCP server + Learned suppression | `acrqa-mcp`. Embedding-based suppression active. | Demo-able in Claude Code | ✅ DONE v3.4.0 |
 | **4** | Proof-of-Exploit engine | `exploit_verifier.py`. SQLi + CMDI + SSTI + path-traversal verified. | Unforgettable thesis demo | ✅ DONE v3.5.0 |
 | **5** | Provenance attestations + Railway deploy | ECDSA-P256 + Dilithium3 signatures. FastAPI on Railway. | Thesis chapter on attestations | ✅ DONE v3.6.0 |
-| **6** | Polish: v4.0.0 release + demo video + defense prep | Tagged release. 5-min OBS recording. Defense slides done. | Submission-ready | ⬜ |
+| **6** | Polish: v4.0.0 release + demo video + defense prep | Tagged release. PyPI + Marketplace shipped. Defense slides done. Demo video = human task. | Submission-ready | ✅ DONE v4.6.0 |
 
 ---
 

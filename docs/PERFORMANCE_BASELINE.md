@@ -1,6 +1,6 @@
 # ACR-QA Performance Baseline
 
-**Last updated:** May 2026 · **Version:** v3.9.2 · **Environment:** Ubuntu 22.04, Python 3.11, Docker Compose (PostgreSQL 15 + Redis 7)
+**Last updated:** May 17, 2026 · **Version:** v4.6.0 (v3.9.2 load-test baseline retained below) · **Environment:** Ubuntu 22.04, Python 3.11, Docker Compose (PostgreSQL 15 + Redis 7)
 
 ---
 

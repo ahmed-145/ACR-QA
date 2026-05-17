@@ -145,7 +145,7 @@ test('capture screenshots for demo video', async ({ page }) => {
 |---|------:|------:|
 | Python tests | 2,274 | 2,279 (+5) |
 | Playwright e2e flows | 29 | 39 (+10: 5 auth + 5 a11y) |
-| Total reported | 2,339 | 2,344 |
+| Total reported | 2,339 | 2,345 |
 | FastAPI endpoints | 36 | 37 (+1: register) |
 
 ---

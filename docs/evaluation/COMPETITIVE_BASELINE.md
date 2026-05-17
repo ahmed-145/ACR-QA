@@ -8,7 +8,7 @@
 
 ## 1. Feature Comparison Matrix
 
-| Feature | ACR-QA v3.9.1 | Snyk Code | CodeQL | SonarCloud | Bandit (raw) | Semgrep OSS |
+| Feature | ACR-QA v4.6.0 | Snyk Code | CodeQL | SonarCloud | Bandit (raw) | Semgrep OSS |
 |---------|:---:|:---:|:---:|:---:|:---:|:---:|
 | **Static analysis (SAST)** | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
 | **Python support** | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
@@ -89,7 +89,7 @@ See `THIRD_PARTY_VALIDATION.md` for the per-finding agreement tracker.
 
 ## 5. Performance
 
-| Metric | ACR-QA v3.9.1 | Snyk Code | SonarCloud |
+| Metric | ACR-QA v4.6.0 | Snyk Code | SonarCloud |
 |--------|:---:|:---:|:---:|
 | Scan time — small repo (< 500 LOC) | ~4s | ~15s | ~30s |
 | Scan time — medium repo (5k LOC) | ~18s | ~45s | ~90s |
