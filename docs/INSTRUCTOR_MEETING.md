@@ -10,11 +10,11 @@
    ```bash
    docker compose up -d
    ```
-2. Start the dashboard in a background terminal:
+2. The FastAPI server + Celery worker are auto-started by docker compose. Verify:
    ```bash
-   .venv/bin/python FRONTEND/app.py
+   curl -s http://localhost:8000/health
    ```
-3. Open your browser to `http://localhost:5000` but **do not show it to him yet**.
+3. Open your browser to `http://localhost:8000/ui/` (the marketing landing) but **do not show it to him yet**.
 4. Have a clean terminal ready.
 
 ---
@@ -72,7 +72,7 @@ Then, it runs the LLM query 3 separate times at a high temperature. It mathemati
 
 ## 5. Demo 3: The Web Dashboard (Enterprise Maturity)
 
-*Switch to your browser at `http://localhost:5000` and refresh the page.*
+*Switch to your browser at `http://localhost:8000/ui/` and refresh the page.*
 
 ### What to say & show:
 1. **The Data Provenance:** *"Everything we just did in the terminal is instantly streamed and serialized into a PostgreSQL Database. There is no manual importing. The dashboard provides full historical provenance."*

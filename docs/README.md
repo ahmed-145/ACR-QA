@@ -27,7 +27,6 @@
 | Document | Description |
 |----------|-------------|
 | [REST API Reference](API_REFERENCE.md) | All 36 FastAPI endpoints under `/v1/`, CLI reference, auth flows [v4.5.0] |
-| [REST API (legacy)](setup/API-Documentation.md) | Original 11 HTTP endpoints reference (v2.7, archived) |
 | [Cloud Deployment](setup/Cloud-Deployment.md) | PythonAnywhere, Replit, ngrok deployment guides |
 | [Token Setup](setup/TOKEN_SETUP.md) | GitHub, GitLab, and Groq API key configuration |
 | [LLM Providers](setup/LLM_PROVIDERS.md) | Groq (default) + Ollama (offline) + AgentRouter; model comparison, `ACRQA_LLM_PROVIDER` env var |
@@ -88,10 +87,11 @@
 
 | Document | Description |
 |----------|-------------|
-| [**Phase 12 Plan**](PHASE_12_PLAN.md) | **Live next step (May 15 2026).** "Make it bulletproof" — 6-week post-v4.0.0 hardening: mutation testing, OWASP Benchmark, inter-procedural taint, Helm+Terraform+OTel+cosign, UI a11y, chaos. Target: v4.5.0. |
+| [**UI Phase 3 Plan**](UI_PHASE_3_PLAN.md) | **Live next step (May 16 2026).** "One killer flow, zero fluff" — marketing landing + killer finding-detail page + public demo mode + smart polish. Target: v4.6.0. |
+| [Phase 12 Plan (archived)](archive/PHASE_12_PLAN.md) | Closed May 15 2026 — 37/39 done; only human tasks (demo video + YouTube) remain. |
 | [**God Mode Plan v2**](GOD_MODE_PLAN.md) | **v4.0.0 plan (May 5 2026 → May 15 2026).** Three competitive moats + blue-ocean wedge. Completed: 120/128 tasks. Superseded by Phase 12 Plan for next push. |
 | [Phase 0 Baseline](evaluation/PHASE_0_BASELINE.md) | Reality check on 6 real repos (May 6 2026); honest current numbers + bugs surfaced + Phase 1 fix log. |
-| [ROADMAP (legacy)](ROADMAP.md) | Pre-v2 plan. Phase 2 TS rewrite section is explicitly killed by the v2 plan; kept for historical context. |
+| [ROADMAP (archived)](archive/ROADMAP.md) | Pre-v2 plan. Phase 2 TS rewrite section is explicitly killed by the v2 plan; kept for historical context. |
 | [God Mode Plan v1 (archived)](archive/GOD_MODE_PLAN_V1.md) | Original plan — pre-FastAPI/Celery/Auth. Superseded by v2. |
 
 ## 🖥 Static UI Dashboard (v4.5.0)
