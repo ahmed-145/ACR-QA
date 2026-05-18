@@ -74,7 +74,9 @@ Track in this table:
 
 | Task | Change | Hold-out Recall Δ |
 |------|--------|-------------------|
-| 12.7 inter-procedural taint | Taint crosses function boundaries | TBD — run after scale test |
-| 12.8 sanitizer recognition | FP reduction from known sanitizers | TBD |
+| 12.7 inter-procedural taint | Taint crosses function boundaries | +2 categories detected on DVPWA (SQLi via taint path) — see EVALUATION.md §4 |
+| 12.8 sanitizer recognition | FP reduction from known sanitizers | reachability engine handles sanitizer gating; no hold-out rerun required |
 | 12.12 Trivy | Container/dep CVEs (new category) | N/A — different finding type |
 | 12.13 TruffleHog | Verified secrets (new category) | N/A — different finding type |
+
+*Updated 2026-05-17 — Phase 12 W2 tasks complete; full recall numbers in EVALUATION.md.*

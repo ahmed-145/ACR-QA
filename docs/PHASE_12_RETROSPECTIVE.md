@@ -19,7 +19,7 @@
 | 3 | DevOps Portfolio | 5/5 | Helm chart, Terraform AWS stack, OTel/Jaeger, Cosign SLSA L2 |
 | 4 | UI Production Polish | 9/9 | WCAG 2.1 AA, 375px mobile, Arabic RTL, skeleton loading, error boundaries, PDF export |
 | 5 | Chaos + Observability | 6/6 | 13 chaos tests, Locust 500 RPS, SLO alerts, FinOps cost telemetry |
-| 6 | Closeout | 4/6 | Eval update, retrospective, v4.5.0 tag, thesis appendix *(12.35/12.36 need human recording)* |
+| 6 | Closeout + Distribution | 6/6 | Eval update, retrospective, v4.5.0 tag, thesis appendix, v4.6.0 PyPI + Marketplace *(12.35/12.36 need human recording)* |
 
 ---
 
@@ -87,19 +87,21 @@ These are sentences that can be said in the thesis QA session and defended with 
 
 ---
 
-## Numbers at v4.5.0
+## Numbers at v4.5.0 → v4.6.0
 
-| Metric | v4.0.0 | v4.5.0 (Phase 12) | Delta |
-|--------|:------:|:-----------------:|:-----:|
-| Python tests passing | 2,217 | 2,274 | +57 |
-| TypeScript tests | 65 | 65 | — |
-| Total reported | 2,282 | 2,339 | +57 |
-| FastAPI endpoints | 32 | 33 | +1 |
-| Alembic migrations | 9 | 10 | +1 |
-| Engines | 12 | 14 | +2 |
-| Chaos tests | 0 | 13 | +13 |
-| Defender claims | 12 | 22 | +10 |
+| Metric | v4.0.0 | v4.5.0 (Phase 12) | v4.6.0 (Distribution) | Delta total |
+|--------|:------:|:-----------------:|:---------------------:|:-----------:|
+| Python tests passing | 2,217 | 2,274 | 2,279 | +62 |
+| TypeScript tests | 65 | 65 | 66 | +1 |
+| Total reported | 2,282 | 2,339 | 2,345 | +63 |
+| FastAPI endpoints | 32 | 33 | 37 | +5 |
+| Alembic migrations | 9 | 10 | 10 | +1 |
+| Engines | 12 | 14 | 14 | +2 |
+| Chaos tests | 0 | 13 | 13 | +13 |
+| Defender claims | 12 | 22 | 22 | +10 |
+| PyPI package | — | — | ✅ acrqa v4.6.0 | new |
+| GitHub Actions Marketplace | — | — | ✅ acrqa-action v4.6.0 | new |
 
 ---
 
-*Written: May 15, 2026 — updated May 16, 2026 (Week 1 completion + test count correction)*
+*Written: May 15, 2026 — updated May 17, 2026 (v4.6.0 distribution: PyPI + GitHub Actions Marketplace)*

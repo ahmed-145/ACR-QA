@@ -276,16 +276,16 @@ Adds 4 well-chosen real-world repos to plug specific gaps in language coverage. 
 
 ## Updated Numbers After Completion (All Tiers)
 
-| Metric | Before | After |
+| Metric | Before | After (actual) |
 |---|------:|------:|
-| Total repos | 12 | 16 (+4 from Tier 3) |
-| CVE recall tests | 0 | 15–20 (Tier 1) |
-| Real-world repos with labels | 2 (FP-only) | 6 (full ground truth) |
+| Total repos | 12 | **13** (+3 from Tier 3: GoVWA, vulnerable-node, django.nV) |
+| CVE recall tests | 0 | **10** pre-registered; 2/10 detected (20%) |
+| Real-world repos with labels | 2 (FP-only) | 5 (Flask, httpx + 3 Tier 3 repos) |
 | External ground truth sources | 0 | MITRE + NIST CVE database |
 | Independent reviewers | 0 | 2 (Tier 2) |
 | Auto-verified claims in EVALUATION.md | 0 | 100% (Tier 0) |
 | One-command full eval reproducibility | ❌ no | ✅ `make eval-reproduce` (Tier 0) |
-| Defendable corpus claim | "97.1% on 4 toy apps" | "X/N CVE recall + κ=0.XX peer validation + 16-repo 4-language corpus, all numbers auto-verified" |
+| Defendable corpus claim | "97.1% on 4 toy apps" | "2/10 CVE recall + κ=0.74 peer validation + 13-repo 4-language corpus, all numbers auto-verified" |
 
 ---
 
