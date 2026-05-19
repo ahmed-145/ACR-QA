@@ -1,6 +1,6 @@
 # ACR-QA Benchmark Summary
 
-_Generated: 2026-05-19 16:20:16_
+_Generated: 2026-05-20 02:24:25_
 
 **23 repos** · **46 expected findings** · **10 pending verification**
 

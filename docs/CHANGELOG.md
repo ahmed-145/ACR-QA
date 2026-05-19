@@ -2,17 +2,16 @@
 
 All notable changes to ACR-QA are documented here.
 
-## [Unreleased] — v5.0.0 God Mode v3 Phase A.5 (May 19, 2026)
+## [v5.0.0b1] — 2026-05-20
 
 ### Summary
 
-Week A5 — **PR Risk Score + Review-Bottleneck Solver (Points 1–3) + Launch MVP plumbing**.
-Solves the 4-point code-review-bottleneck era problem using free tooling:
+Week A5 + A5.5 — **All 4 LinkedIn review-bottleneck points shipped. PyPI v5.0.0b1 published.**
 (1) PR size penalty baked into PR Risk Score, (2) second-opinion cross-model verdict
 agreement via Groq + Ollama, (3) PR Preview Sandbox script for static+docker CI
-pre-flight, (4) org-level review analytics — design committed, implementation deferred
-to Phase B1. Also: per-user Groq quota, GDPR account deletion, demo/dsvw public
-endpoint, PRIVACY + TERMS docs for hosted SaaS.
+pre-flight, (4) Review Bottleneck Analytics engine + endpoint — all 4 shipped.
+Also: per-user Groq quota, GDPR account deletion, demo/dsvw public endpoint,
+PRIVACY + TERMS docs for hosted SaaS. `pip install acrqa==5.0.0b1` now live on PyPI.
 
 ### Added — PR Risk Score (Point 1 + original A5)
 
@@ -64,12 +63,26 @@ endpoint, PRIVACY + TERMS docs for hosted SaaS.
 - **`docs/PRIVACY.md`** — updated with hosted SaaS section: data retention table,
   user rights (access/deletion/portability), data residency disclosure.
 
-### Design committed (Phase B1 implementation)
+### Added — Review Bottleneck Analyzer (Point 4)
 
-- **Review-Bottleneck endpoint (Point 4)** — design in `docs/GOD_MODE_V3_PLAN.md`
-  §"Week A5.5". Metrics: `median_time_to_first_review_hours`, `reviewer_load_gini`,
-  `pct_merged_without_comment`, `top3_reviewer_share`, `stale_pr_count`.
-  Engine: `CORE/engines/review_bottleneck.py`. Endpoint: `GET /v1/runs/{run_id}/review-bottleneck`.
+- **`CORE/engines/review_bottleneck.py`** — pure git-log analytics engine.
+  Metrics: `median_time_to_first_review_hours` (author→committer delta proxy),
+  `reviewer_load_gini` (0=balanced, 1=one person does everything),
+  `pct_merged_without_comment` (no Reviewed-by/Approved-by trailer),
+  `top3_reviewer_share`, `stale_pr_count` (review > 7 days). GitHub REST
+  enrichment activates automatically when `GITHUB_TOKEN` present; offline
+  fallback uses commit metadata only.
+- **`GET /v1/runs/{run_id}/review-bottleneck?days=30`** — JWT-gated endpoint;
+  optional `repo_path` param; defaults to ACR-QA itself for dogfooding.
+- **`TESTS/test_review_bottleneck.py`** — 21 tests (Gini math, ISO timestamp
+  parser, mocked git output, stale threshold, endpoint 200/404, days forwarding).
+
+### Added — PyPI publish
+
+- **`pip install acrqa==5.0.0b1`** — first public release on PyPI via OIDC
+  trusted publishing (no API token stored). TestPyPI → PyPI pipeline in
+  `.github/workflows/pypi-publish.yml`. Version bumped in `pyproject.toml` +
+  `CORE/__init__.py`.
 
 ### Fixed — A5 acceptance gaps (post-commit patch)
 
@@ -87,11 +100,12 @@ endpoint, PRIVACY + TERMS docs for hosted SaaS.
 
 ### Stats
 
-- Backend tests: 2,561 → **2,632** (+71: 25 pr_risk + 24 second_opinion + 22 pr_sandbox)
+- Backend tests: 2,561 → **2,653** (+92: 25 pr_risk + 24 second_opinion + 22 pr_sandbox + 21 review_bottleneck)
 - Migrations: 15 → **18** (0016 pr_risk_scores, 0017 second_opinion, 0018 user_quota)
-- API endpoints: 47 → **51** (+4: pr-risk, second-opinion, demo/dsvw, users/me/quota)
-- New engines: `pr_risk.py`, `second_opinion.py`
+- API endpoints: 47 → **52** (+5: pr-risk, second-opinion, demo/dsvw, users/me/quota, review-bottleneck)
+- New engines: `pr_risk.py`, `second_opinion.py`, `review_bottleneck.py`
 - New scripts: `scripts/pr_sandbox.py`, `scripts/post_pr_risk_comment.py`
+- PyPI: `acrqa==5.0.0b1` published 2026-05-20
 
 ---
 

@@ -8,7 +8,7 @@
 [![Python 3.11+](https://img.shields.io/badge/Python-3.11+-3776ab?logo=python&logoColor=white)](https://www.python.org/)
 [![Version](https://img.shields.io/badge/Version-5.0.0--beta-blue)](docs/CHANGELOG.md)
 [![Live](https://img.shields.io/badge/Live-acrqa--api--production.up.railway.app-22c55e?logo=railway&logoColor=white)](https://acrqa-api-production.up.railway.app/health)
-[![Tests](https://img.shields.io/badge/Tests-2629%20passing-22c55e?logo=pytest&logoColor=white)](./TESTS/)
+[![Tests](https://img.shields.io/badge/Tests-2653%20passing-22c55e?logo=pytest&logoColor=white)](./TESTS/)
 [![Coverage](https://img.shields.io/badge/Coverage-85%25-22c55e?logo=codecov&logoColor=white)](./htmlcov/)
 [![Precision](https://img.shields.io/badge/Precision-97.1%25-22c55e)](./docs/evaluation/PER_TOOL_EVALUATION.md)
 [![OWASP](https://img.shields.io/badge/OWASP-9%2F10-8b5cf6)](./docs/evaluation/EVALUATION.md)
@@ -144,6 +144,7 @@ Week A1 (UI Killshot) and Week A2 (new engines) are shipped on `main`:
 | **Per-user Groq quota** (100K tokens/day default; `GET /v1/users/me/quota`) | `DATABASE/database.py` · migration 0018 | ✅ A5 |
 | **GDPR account deletion** (`DELETE /v1/auth/users/me` cascade) | `FRONTEND/api/routers/auth.py` | ✅ A5 |
 | **Public demo endpoint** (`GET /v1/demo/dsvw`) | `FRONTEND/api/main.py` | ✅ A5 |
+| **Review Bottleneck Analyzer** (Gini load, review latency, stale PRs, % no-comment — pure git log) | `CORE/engines/review_bottleneck.py` · `GET /v1/runs/{id}/review-bottleneck` | ✅ A5.5 |
 
 Engine docs: [`docs/engines/iac_scanner.md`](docs/engines/iac_scanner.md) · [`docs/engines/time_travel.md`](docs/engines/time_travel.md) · [`docs/engines/risk_predictor.md`](docs/engines/risk_predictor.md)
 
@@ -474,7 +475,7 @@ marimo edit notebooks/walkthrough.py
 | **Supervisor** | Dr. Samy AbdelNabi |
 | **Institution** | King Salman International University (KSIU) |
 | **Timeline** | October 2025 – June 2026 |
-| **Status** | v5.0.0-beta · Phase A complete (Weeks A1–A5 on `main`) · Weeks A6 = defense polish |
+| **Status** | v5.0.0b1 published on PyPI · Phase A complete (Weeks A1–A5 + A5.5 on `main`) · Week A6 = defense polish |
 
 ### Remaining Thesis Work
 

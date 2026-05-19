@@ -535,19 +535,19 @@ Opening signups means becoming a data controller under GDPR/equivalents. Require
     migration 0014 (`finding_history` cache table), `GET /v1/findings/{fid}/history`,
     `FindingHistory.tsx` React component wired into FindingModal as History tab,
     23 + 4 backend tests + 7 Vitest tests.
-- Backend tests: 2,279 → **2,629** (+350 across A1–A5; +68 in A5: pr_risk×25, second_opinion×21, pr_sandbox×22)
+- Backend tests: 2,279 → **2,653** (+374 across A1–A5+b1; +92 in A5/b1: pr_risk×25, second_opinion×24, pr_sandbox×22, review_bottleneck×21)
 - Frontend tests: 66 → **104** (+38 across A1 + A2)
-- Grand total: **2,733**
+- Grand total: **2,757**
 - Migrations: 11 → **18** (0012 chat, 0013 iac, 0014 history, 0015 risk, 0016 pr_risk_scores, 0017 second_opinion, 0018 user_quota)
-- API endpoints: 37 → **51** (+4 in A5: pr-risk, second-opinion, demo/dsvw, users/me/quota)
+- API endpoints: 37 → **52** (+5 in A5/b1: pr-risk, second-opinion, demo/dsvw, users/me/quota, review-bottleneck)
 - Ground-truth YAMLs: 13 → **23**; CVE recall battery 10 → **20** pre-registered
-- New engines (A5): `CORE/engines/pr_risk.py`, `CORE/engines/second_opinion.py`
-- New scripts (A5): `scripts/pr_sandbox.py`
+- New engines (A5/b1): `pr_risk.py`, `second_opinion.py`, `review_bottleneck.py`
+- New scripts (A5): `scripts/pr_sandbox.py`, `scripts/post_pr_risk_comment.py`
 - GDPR deletion: `DELETE /v1/auth/users/me` + `Database.delete_user_data()`
 - Docs: `docs/TERMS.md` (new), `docs/PRIVACY.md` (updated SaaS section)
 - Defense date: **placeholder Jun 25, awaiting Dr. Samy confirmation**
-- v5.0.0 target tag: **Jun 28, 2026** (post-defense)
-- **Week A5 COMPLETE (all acceptance criteria met).** Patched post-commit: quota 429 enforcement in chat+second-opinion endpoints; `scripts/post_pr_risk_comment.py` + GHA step; +3 quota tests → 2,632 total. Next: Week A6 — defense polish only (HARD CAP, no new code)
+- **PyPI: `pip install acrqa==5.0.0b1` live as of 2026-05-20** (OIDC trusted publishing)
+- **v5.0.0b1 tagged and published 2026-05-20.** All 4 LinkedIn review-bottleneck points shipped. Next: Week A6 — defense polish only (HARD CAP, no new code)
 
 Update this section after every commit affecting Phase A scope. Don't duplicate the per-week tables — just track top-of-mind state.
 
