@@ -3,7 +3,7 @@
 **Status:** v4.6.0 ✅ COMPLETE 2026-05-17. **Now superseded by [`GOD_MODE_V3_PLAN.md`](GOD_MODE_V3_PLAN.md) — the active 6-week Phase A + 12-week Phase B + 24-week Phase C plan toward v5.0.0 and post-defense launch.**
 **Defense runway:** ~May 19 — June 25, 2026
 **Target tag:** v5.0.0 (Phase A complete; tag post-defense)
-**Active progress (v5.0.0-beta):** Phase A Week 1 ✅ (UI Killshot 5/5) + Phase A Week 2 ✅ (IaC + Time-Travel). Tests 2,510. Endpoints 46. Migrations 14.
+**Active progress (v5.0.0-beta):** Phase A Weeks 1 ✅ + 2 ✅ + 3 ✅ + 4 ✅ shipped on `main`. Tests **2,561**. Endpoints **47**. Migrations **15**. Ground-truth YAMLs **23** (CVE recall battery **20** pre-registered).
 
 ---
 

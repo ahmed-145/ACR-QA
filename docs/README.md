@@ -1,16 +1,21 @@
 # ACR-QA Documentation Index
 
-> **As of v5.0.0-beta (May 19, 2026):** Phase A Weeks 1 + 2 of the [God Mode v3 Plan](GOD_MODE_V3_PLAN.md)
-> are shipped on `main`. Tests: **2,510** (2,406 Python + 104 TS). Migrations: **14**. Endpoints: **46**.
+> **As of v5.0.0-beta (May 19, 2026):** Phase A Weeks 1–4 of the [God Mode v3 Plan](GOD_MODE_V3_PLAN.md)
+> are shipped on `main`. Tests: **2,561** (2,457 Python + 104 TS). Migrations: **15**. Endpoints: **47**.
+> Ground-truth YAMLs: **23** (CVE recall battery: 20 pre-registered).
 > Engines documented under [engines/](engines/).
 
-## 🆕 v5.0.0 Engines (in progress)
+## 🆕 v5.0.0 Engines + Eval Infrastructure
 
 | Document | Description |
 |----------|-------------|
 | [Active Plan — God Mode v3](GOD_MODE_V3_PLAN.md) | **Active plan.** 3 phases · 6 calendar weeks Phase A + 12 wk B + 24 wk C. Supersedes v2. |
-| [IaC Scanner](engines/iac_scanner.md) | 28 canonical rules across Terraform / Kubernetes / Dockerfile · `POST /v1/scans/iac` · Phase A.2 |
-| [Time-Travel Analyzer](engines/time_travel.md) | Bounded `git log -L` history for any finding · `GET /v1/findings/{fid}/history` · Phase A.2 |
+| [IaC Scanner](engines/iac_scanner.md) | 28 canonical rules across Terraform / Kubernetes / Dockerfile · `POST /v1/scans/iac` · A.2 |
+| [Time-Travel Analyzer](engines/time_travel.md) | Bounded `git log -L` history for any finding · `GET /v1/findings/{fid}/history` · A.2 |
+| [Heuristic Risk Predictor](engines/risk_predictor.md) | 0–100 per-file score from 6 transparent features (NOT ML) · `GET /v1/runs/{rid}/risk-map` · A.3 |
+| [Head-to-Head Semgrep CE](evaluation/HEAD_TO_HEAD_SEMGREP.md) | **Pre-registered** methodology committed before results · A.4 |
+| [Benchmark v5](evaluation/BENCHMARK_v5.md) | Auto-generated: 23 ground-truth YAMLs · 46 expected findings · 10 pending verification · A.3/A.4 |
+| [Thesis paper LaTeX](../paper/acrqa_thesis.tex) | IEEE template; sections 1–3 drafted; bib has 11 citations · A.4 |
 
 ## 📐 Architecture
 
@@ -38,7 +43,7 @@
 
 | Document | Description |
 |----------|-------------|
-| [REST API Reference](API_REFERENCE.md) | All 46 FastAPI endpoints under `/v1/`, CLI reference, auth flows [v5.0.0-beta — adds 9 routes: chat, call-graph, history, heatmap, timeline, iac scan] |
+| [REST API Reference](API_REFERENCE.md) | All 47 FastAPI endpoints under `/v1/`, CLI reference, auth flows [v5.0.0-beta — adds 10 routes: chat (×4), call-graph, history, heatmap, timeline, iac scan, risk-map] |
 | [Cloud Deployment](setup/Cloud-Deployment.md) | PythonAnywhere, Replit, ngrok deployment guides |
 | [Token Setup](setup/TOKEN_SETUP.md) | GitHub, GitLab, and Groq API key configuration |
 | [LLM Providers](setup/LLM_PROVIDERS.md) | Groq (default) + Ollama (offline) + AgentRouter; model comparison, `ACRQA_LLM_PROVIDER` env var |

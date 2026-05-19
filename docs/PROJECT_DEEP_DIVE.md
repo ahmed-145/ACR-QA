@@ -1,6 +1,6 @@
 # ACR-QA — Definitive Project Deep Dive & State Assessment
 
-**Date:** May 19, 2026 · **Version:** v5.0.0-beta (Phase A Weeks 1+2 shipped) · **Tests:** 2,510 passing (2,406 Python + 104 TS) · 0 warnings · **Coverage:** 84.89%+
+**Date:** May 19, 2026 · **Version:** v5.0.0-beta (Phase A Weeks 1–4 shipped) · **Tests:** 2,561 passing (2,457 Python + 104 TS) · 0 warnings · **Coverage:** 84.89%+
 
 > This document is a brutally honest, code-verified audit of every module in ACR-QA.
 > Every claim is backed by line counts and actual code inspection.
@@ -161,7 +161,7 @@ These are fully implemented but have limitations an examiner might probe.
 | **JS/TS Adapter** | `CORE/adapters/js_adapter.py` | 723 | ✅ Comprehensive | ESLint + Semgrep + npm audit + jscpd, 80+ rule mappings |
 | **Go Adapter** | `CORE/adapters/go_adapter.py` | 369 | 🟡 Needs E2E test | gosec + staticcheck, 56 rule mappings, untested on real Go project |
 | **Database** | `DATABASE/database.py` | 569 | ✅ Solid | Full provenance: runs, findings, explanations, feedback, suppression, trends |
-| **Dashboard** | `FRONTEND/api/main.py` + `dashboard/` + `FRONTEND/static/ui/` | FastAPI + React 18 SPA + 13-page HTML UI | ✅ JWT auth + RBAC | 46 endpoints + Vite/shadcn UI, Playwright E2E, 5 new v5.0.0 finding components (Chat / CallGraph / Heatmap / Timeline / History) |
+| **Dashboard** | `FRONTEND/api/main.py` + `dashboard/` + `FRONTEND/static/ui/` | FastAPI + React 18 SPA + 13-page HTML UI | ✅ JWT auth + RBAC | 47 endpoints + Vite/shadcn UI, Playwright E2E, 5 new v5.0.0 finding components (Chat / CallGraph / Heatmap / Timeline / History) |
 
 ---
 

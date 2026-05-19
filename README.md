@@ -8,7 +8,7 @@
 [![Python 3.11+](https://img.shields.io/badge/Python-3.11+-3776ab?logo=python&logoColor=white)](https://www.python.org/)
 [![Version](https://img.shields.io/badge/Version-5.0.0--beta-blue)](docs/CHANGELOG.md)
 [![Live](https://img.shields.io/badge/Live-acrqa--api--production.up.railway.app-22c55e?logo=railway&logoColor=white)](https://acrqa-api-production.up.railway.app/health)
-[![Tests](https://img.shields.io/badge/Tests-2510%20passing-22c55e?logo=pytest&logoColor=white)](./TESTS/)
+[![Tests](https://img.shields.io/badge/Tests-2561%20passing-22c55e?logo=pytest&logoColor=white)](./TESTS/)
 [![Coverage](https://img.shields.io/badge/Coverage-85%25-22c55e?logo=codecov&logoColor=white)](./htmlcov/)
 [![Precision](https://img.shields.io/badge/Precision-97.1%25-22c55e)](./docs/evaluation/PER_TOOL_EVALUATION.md)
 [![OWASP](https://img.shields.io/badge/OWASP-9%2F10-8b5cf6)](./docs/evaluation/EVALUATION.md)
@@ -39,7 +39,7 @@ ACR-QA is a **provenance-first, AI-augmented code review platform** built as a g
 | **LLM hallucination** — AI assistants give confident but wrong security advice | RAG: the LLM can only explain rules it can cite from a curated 66-rule knowledge base; semantic entropy (3× runs) detects contradictions |
 | **Invisible test gaps** — code coverage % doesn't tell you *which* complex functions have no test | AST-based Test Gap Analyzer ranks untested symbols by cyclomatic complexity |
 
-**Key numbers:** 97.1% precision · 9/10 OWASP Top 10 · **2,510 tests** (2,406 Python + 104 TypeScript) · 46 async API endpoints · 14 Alembic migrations · 327+ rule mappings (incl. 28 IaC) · $0 recurring cost
+**Key numbers:** 97.1% precision · 9/10 OWASP Top 10 · **2,561 tests** (2,457 Python + 104 TypeScript) · 47 async API endpoints · 15 Alembic migrations · 327+ rule mappings (incl. 28 IaC) · 20-CVE pre-registered recall battery · $0 recurring cost
 
 ---
 
@@ -131,10 +131,17 @@ Week A1 (UI Killshot) and Week A2 (new engines) are shipped on `main`:
 | **Vulnerability Timeline** (Gantt-style per-rule presence across 30 runs) | `dashboard/.../VulnerabilityTimeline.tsx` | ✅ A1.5 |
 | **IaC Scanner** (28 canonical rules: Terraform / K8s / Dockerfile) | `CORE/engines/iac_scanner.py` | ✅ A2.1 |
 | **Time-Travel Vulnerability Analyzer** (`git log -L`, bounded 50 commits) | `CORE/engines/time_travel.py` + `FindingHistory.tsx` | ✅ A2.2 |
+| **Heuristic Risk Predictor** (transparent 6-feature linear model — explicitly *not* ML) | `CORE/engines/risk_predictor.py` | ✅ A3.1 |
+| **Eval Wave 1+2** (20-CVE pre-registered recall battery; benchmark harness; `run_benchmarks.py`) | `TESTS/evaluation/ground_truth/` | ✅ A3.4 + A4.3 |
+| **Subprocess sandbox audit** (AST-based; caught + fixed 3 real `shell=True` in our own scripts) | `TESTS/test_subprocess_safety.py` | ✅ A4.1 |
+| **Dogfood gate** (IaC + bandit on ourselves; HIGH=0 enforced) | `scripts/dogfood.py` | ✅ A4.1 |
+| **Peer-rating κ harness** (hand-implemented Cohen's + Fleiss' κ; no scipy) | `scripts/peer_rating.py` | ✅ A4.2 |
+| **Head-to-head Semgrep CE methodology** (pre-registered scoring rules) | `docs/evaluation/HEAD_TO_HEAD_SEMGREP.md` | ✅ A4.4 |
+| **Thesis paper sections 1–3** (IEEE template + 11-cite bib) | `paper/acrqa_thesis.tex` | ✅ A4.5 |
 
-Engine docs: [`docs/engines/iac_scanner.md`](docs/engines/iac_scanner.md) · [`docs/engines/time_travel.md`](docs/engines/time_travel.md)
+Engine docs: [`docs/engines/iac_scanner.md`](docs/engines/iac_scanner.md) · [`docs/engines/time_travel.md`](docs/engines/time_travel.md) · [`docs/engines/risk_predictor.md`](docs/engines/risk_predictor.md)
 
-Up next (Phase A Week 3): **Heuristic Risk Predictor** (transparent linear model — *not* ML) + Eval Wave 1 (+8 repos with ground-truth YAMLs).
+Up next (Phase A Week 5): **PR Risk Score** (single 0–100 mergeable signal) + Launch MVP plumbing (hosted SaaS at `acrqa.dev` + per-user Groq quota + GDPR delete endpoint + Terms/Privacy).
 
 ---
 
@@ -327,7 +334,7 @@ Prometheus scrapes `/metrics` every 15 s. Grafana dashboard at **http://localhos
 ## Testing
 
 ```bash
-make test-all          # 2,510 tests (full suite)
+make test-all          # 2,561 tests (full suite)
 make test              # acceptance tests only
 make run               # pipeline on sample files
 ```
