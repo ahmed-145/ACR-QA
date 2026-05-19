@@ -1,7 +1,16 @@
 # ACR-QA Testing & Calibration Report
 
-**Latest Run:** May 17, 2026 · **Version:** v4.6.0
-**Unit Tests:** 2,279 passed, 18 skipped · **Coverage:** 84.89%+ · **0 warnings**
+**Latest Run:** May 19, 2026 · **Version:** v5.0.0-beta (Phase A Weeks 1+2 shipped)
+**Unit Tests:** 2,406 Python + 104 TypeScript = **2,510 total** · Coverage 84.89%+ · 0 warnings
+
+### v5.0.0 Phase A test deltas (May 18–19, 2026)
+
+| Week | New backend tests | New frontend tests | Surfaces under test |
+|------|------------------:|-------------------:|---|
+| A1 (UI Killshot) | +41 | +31 | chat (20), call-graph (5), heatmap (7), timeline (9) backend · ChatSidebar (9), CallGraph (7), RiskHeatmap (8), Timeline (8) frontend |
+| A2 (New Engines) | +86 | +7 | IaC scanner (52) + IaC endpoint (6) + Time-Travel engine (23) + Time-Travel endpoint (4) backend · FindingHistory (7) frontend |
+| **Total A1 + A2** | **+127** | **+38** | 9 new endpoints; 5 new dashboard components; 2 new engines |
+
 
 > 📋 **For the strategic testing plan** (6-layer pyramid, ground-truth-as-evidence approach, why coverage is a tripwire not a target), see [`GOD_MODE_PLAN.md` §9](GOD_MODE_PLAN.md#9-testing-strategy--read-this-before-writing-any-code).
 > 📊 **For honest current numbers** on 6 real repos, see [`evaluation/PHASE_0_BASELINE.md`](evaluation/PHASE_0_BASELINE.md).
@@ -13,7 +22,7 @@
 | ruff format | ✅ 0 errors | All production code |
 | ruff lint | ✅ 0 errors | All production code |
 | mypy | ✅ 0 errors* | `CORE/main.py`, `scripts.*`, `FRONTEND.api.*`, `FRONTEND.auth.*` suppressed — see below |
-| pytest | ✅ 2,279 passed | Coverage ≥ 40% enforced |
+| pytest | ✅ 2,406 passed | Coverage ≥ 40% enforced |
 
 **mypy suppression note:** `CORE/main.py` (the 1,167-line pipeline orchestrator) has pre-existing `Mapping[str, Any]` vs `dict[str, Any]` type conflicts introduced when engine functions were added incrementally. These are suppressed via `[[tool.mypy.overrides]]` in `pyproject.toml` and do not affect runtime behaviour — all engine calls are tested end-to-end. Fixing them requires auditing the return type annotations of `enrich_findings()`, `suppress_findings()`, and `evaluate()` across multiple engine modules.
 

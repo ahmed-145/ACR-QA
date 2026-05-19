@@ -1,5 +1,17 @@
 # ACR-QA Documentation Index
 
+> **As of v5.0.0-beta (May 19, 2026):** Phase A Weeks 1 + 2 of the [God Mode v3 Plan](GOD_MODE_V3_PLAN.md)
+> are shipped on `main`. Tests: **2,510** (2,406 Python + 104 TS). Migrations: **14**. Endpoints: **46**.
+> Engines documented under [engines/](engines/).
+
+## 🆕 v5.0.0 Engines (in progress)
+
+| Document | Description |
+|----------|-------------|
+| [Active Plan — God Mode v3](GOD_MODE_V3_PLAN.md) | **Active plan.** 3 phases · 6 calendar weeks Phase A + 12 wk B + 24 wk C. Supersedes v2. |
+| [IaC Scanner](engines/iac_scanner.md) | 28 canonical rules across Terraform / Kubernetes / Dockerfile · `POST /v1/scans/iac` · Phase A.2 |
+| [Time-Travel Analyzer](engines/time_travel.md) | Bounded `git log -L` history for any finding · `GET /v1/findings/{fid}/history` · Phase A.2 |
+
 ## 📐 Architecture
 
 | Document | Description |
@@ -26,7 +38,7 @@
 
 | Document | Description |
 |----------|-------------|
-| [REST API Reference](API_REFERENCE.md) | All 37 FastAPI endpoints under `/v1/`, CLI reference, auth flows [v4.6.0] |
+| [REST API Reference](API_REFERENCE.md) | All 46 FastAPI endpoints under `/v1/`, CLI reference, auth flows [v5.0.0-beta — adds 9 routes: chat, call-graph, history, heatmap, timeline, iac scan] |
 | [Cloud Deployment](setup/Cloud-Deployment.md) | PythonAnywhere, Replit, ngrok deployment guides |
 | [Token Setup](setup/TOKEN_SETUP.md) | GitHub, GitLab, and Groq API key configuration |
 | [LLM Providers](setup/LLM_PROVIDERS.md) | Groq (default) + Ollama (offline) + AgentRouter; model comparison, `ACRQA_LLM_PROVIDER` env var |
@@ -99,7 +111,7 @@
 | [ROADMAP (archived)](archive/ROADMAP.md) | Pre-v2 plan. Phase 2 TS rewrite section is explicitly killed by the v2 plan; kept for historical context. |
 | [God Mode Plan v1 (archived)](archive/GOD_MODE_PLAN_V1.md) | Original plan — pre-FastAPI/Celery/Auth. Superseded by v2. |
 
-## Static UI Dashboard (v4.6.0)
+## Static UI Dashboard (v5.0.0-beta)
 
 13-page HTML dashboard served at `/ui/` by FastAPI StaticFiles. All pages share dark/light theme,
 ⌘K command palette, toast notifications, JWT auth, and demo mode (`?demo=1`).

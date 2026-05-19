@@ -1,8 +1,9 @@
 # Master Schedule — Thesis Defense Runway
 
-**Status:** COMPLETE ✅ 2026-05-17 — v4.6.0 shipped; demo video + push to remote = human tasks remaining · **Defense runway:** ~May 17 — June 14, 2026
-**Target tag:** v4.6.0 (UI Phase 3 + Eval Bulletproofing + Distribution)
-**Single source of truth for sequencing across all 5 plans.**
+**Status:** v4.6.0 ✅ COMPLETE 2026-05-17. **Now superseded by [`GOD_MODE_V3_PLAN.md`](GOD_MODE_V3_PLAN.md) — the active 6-week Phase A + 12-week Phase B + 24-week Phase C plan toward v5.0.0 and post-defense launch.**
+**Defense runway:** ~May 19 — June 25, 2026
+**Target tag:** v5.0.0 (Phase A complete; tag post-defense)
+**Active progress (v5.0.0-beta):** Phase A Week 1 ✅ (UI Killshot 5/5) + Phase A Week 2 ✅ (IaC + Time-Travel). Tests 2,510. Endpoints 46. Migrations 14.
 
 ---
 
