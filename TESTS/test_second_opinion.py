@@ -284,6 +284,42 @@ class TestEndpoint:
         assert body["skipped_reason"]
 
 
+class TestQuotaEnforcement:
+    def test_429_when_quota_exceeded(self, client, finding):
+        c, db = client
+        db.get_finding_by_id.return_value = finding
+        db.check_quota.return_value = (
+            False,
+            {"tokens_used_today": 100_001, "daily_limit": 100_000},
+        )
+        r = c.post(f"/v1/findings/{finding['id']}/second-opinion")
+        assert r.status_code == 429
+        body = r.json()
+        assert body["detail"]["error"] == "daily_quota_exceeded"
+
+    def test_200_when_within_quota(self, client, finding):
+        c, db = client
+        db.get_finding_by_id.return_value = finding
+        db.check_quota.return_value = (
+            True,
+            {"tokens_used_today": 5_000, "daily_limit": 100_000},
+        )
+        with patch.object(SecondOpinionEngine, "_call_provider") as mock:
+            mock.side_effect = [("TP", "real"), ("TP", "matches")]
+            r = c.post(f"/v1/findings/{finding['id']}/second-opinion")
+        assert r.status_code == 200
+
+    def test_proceeds_when_quota_table_missing(self, client, finding):
+        """Quota check must degrade gracefully on older deployments."""
+        c, db = client
+        db.get_finding_by_id.return_value = finding
+        db.check_quota.side_effect = Exception("relation user_quota does not exist")
+        with patch.object(SecondOpinionEngine, "_call_provider") as mock:
+            mock.side_effect = [("FP", "literal"), ("FP", "no taint")]
+            r = c.post(f"/v1/findings/{finding['id']}/second-opinion")
+        assert r.status_code == 200
+
+
 class TestVerdictVocabularyConstant:
     def test_constant_locked_to_three(self):
         assert VALID_VERDICTS == ("TP", "FP", "NEEDS_REVIEW")

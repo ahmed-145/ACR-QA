@@ -547,7 +547,7 @@ Opening signups means becoming a data controller under GDPR/equivalents. Require
 - Docs: `docs/TERMS.md` (new), `docs/PRIVACY.md` (updated SaaS section)
 - Defense date: **placeholder Jun 25, awaiting Dr. Samy confirmation**
 - v5.0.0 target tag: **Jun 28, 2026** (post-defense)
-- **Week A5 COMPLETE.** Next: Week A6 — defense polish only (HARD CAP, no new code)
+- **Week A5 COMPLETE (all acceptance criteria met).** Patched post-commit: quota 429 enforcement in chat+second-opinion endpoints; `scripts/post_pr_risk_comment.py` + GHA step; +3 quota tests → 2,632 total. Next: Week A6 — defense polish only (HARD CAP, no new code)
 
 Update this section after every commit affecting Phase A scope. Don't duplicate the per-week tables — just track top-of-mind state.
 

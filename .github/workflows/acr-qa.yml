@@ -167,6 +167,23 @@ jobs:
             --pr-number ${{ github.event.pull_request.number }} \
             --run-id-file /tmp/acr_run_id.txt
 
+      - name: Post PR Risk Score
+        if: steps.changed-files.outputs.any_changed == 'true'
+        continue-on-error: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          DB_HOST: localhost
+          DB_PORT: 5432
+          DB_NAME: acrqa_test
+          DB_USER: postgres
+          DB_PASSWORD: postgres
+        run: |
+          python3 scripts/post_pr_risk_comment.py \
+            --repo "${{ github.repository }}" \
+            --pr-number ${{ github.event.pull_request.number }} \
+            --run-id-file /tmp/acr_run_id.txt \
+            --base-ref "origin/${{ github.event.pull_request.base.ref }}"
+
       - name: Enforce Quality Gate
         if: steps.analysis.outcome == 'failure'
         run: |
@@ -312,6 +329,21 @@ jobs:
           DB_PASSWORD: postgres
         run: |
           python3 scripts/post_gate_comment.py \
+            --repo "${{ github.repository }}" \
+            --pr-number ${{ github.event.issue.number }} \
+            --run-id-file /tmp/acr_run_id.txt
+
+      - name: Post PR Risk Score
+        continue-on-error: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          DB_HOST: localhost
+          DB_PORT: 5432
+          DB_NAME: acrqa_test
+          DB_USER: postgres
+          DB_PASSWORD: postgres
+        run: |
+          python3 scripts/post_pr_risk_comment.py \
             --repo "${{ github.repository }}" \
             --pr-number ${{ github.event.issue.number }} \
             --run-id-file /tmp/acr_run_id.txt

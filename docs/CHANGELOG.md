@@ -71,12 +71,27 @@ endpoint, PRIVACY + TERMS docs for hosted SaaS.
   `pct_merged_without_comment`, `top3_reviewer_share`, `stale_pr_count`.
   Engine: `CORE/engines/review_bottleneck.py`. Endpoint: `GET /v1/runs/{run_id}/review-bottleneck`.
 
+### Fixed — A5 acceptance gaps (post-commit patch)
+
+- **Quota hard-stop (HTTP 429)** — `POST /v1/findings/{fid}/second-opinion` and
+  `POST /v1/findings/{fid}/chat` now call `db.check_quota()` before spending
+  Groq tokens. Returns `{"error":"daily_quota_exceeded", ...}` with remaining
+  budget. Degrades gracefully when `user_quota` table absent (older deploys).
+- **GitHub Action PR Risk Score comment** — new `scripts/post_pr_risk_comment.py`
+  posts a formatted `score/100 (BAND)` comment with per-signal contribution table
+  and plain-English explainer on every PR. Added as a step in both `analyze-pr`
+  and `manual-trigger` jobs in `.github/workflows/acr-qa.yml`. `continue-on-error`
+  so a DB hiccup never blocks the CI run.
+- **+3 quota-enforcement tests** in `test_second_opinion.py` (429 on exceeded,
+  200 within limit, graceful degrade when table missing).
+
 ### Stats
 
-- Backend tests: 2,561 → **2,629** (+68: 25 pr_risk + 21 second_opinion + 22 pr_sandbox)
+- Backend tests: 2,561 → **2,632** (+71: 25 pr_risk + 24 second_opinion + 22 pr_sandbox)
 - Migrations: 15 → **18** (0016 pr_risk_scores, 0017 second_opinion, 0018 user_quota)
 - API endpoints: 47 → **51** (+4: pr-risk, second-opinion, demo/dsvw, users/me/quota)
 - New engines: `pr_risk.py`, `second_opinion.py`
+- New scripts: `scripts/pr_sandbox.py`, `scripts/post_pr_risk_comment.py`
 
 ---
 

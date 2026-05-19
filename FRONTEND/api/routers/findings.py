@@ -304,6 +304,24 @@ async def post_second_opinion(
     if finding is None:
         raise HTTPException(status_code=404, detail="finding not found")
 
+    # Quota guard — second-opinion calls Groq (primary provider)
+    try:
+        within_limit, quota = db.check_quota(user["id"])
+        if not within_limit:
+            raise HTTPException(
+                status_code=429,
+                detail={
+                    "error": "daily_quota_exceeded",
+                    "tokens_used_today": quota["tokens_used_today"],
+                    "daily_limit": quota["daily_limit"],
+                    "message": "Daily Groq token quota exceeded. Resets at midnight UTC.",
+                },
+            )
+    except HTTPException:
+        raise
+    except Exception:
+        pass  # quota table may not exist on older deploys — degrade gracefully
+
     try:
         from CORE.engines.second_opinion import SecondOpinionEngine
     except Exception as exc:
@@ -498,6 +516,24 @@ async def post_chat(
     finding = db.get_finding_by_id(fid)
     if finding is None:
         raise HTTPException(status_code=404, detail="finding not found")
+
+    # Quota guard — chat calls Groq
+    try:
+        within_limit, quota = db.check_quota(user["id"])
+        if not within_limit:
+            raise HTTPException(
+                status_code=429,
+                detail={
+                    "error": "daily_quota_exceeded",
+                    "tokens_used_today": quota["tokens_used_today"],
+                    "daily_limit": quota["daily_limit"],
+                    "message": "Daily Groq token quota exceeded. Resets at midnight UTC.",
+                },
+            )
+    except HTTPException:
+        raise
+    except Exception:
+        pass
 
     user_content, preset = _resolve_user_content(body)
     user_id = user.get("id") if isinstance(user, dict) else None
