@@ -2,13 +2,13 @@
 
 All notable changes to ACR-QA are documented here.
 
-## [Unreleased] — v5.0.0 God Mode v3 Phase A.1 (May 18, 2026)
+## [Unreleased] — v5.0.0 God Mode v3 Phase A.1 (May 18–19, 2026)
 
 ### Summary
 
 UI Killshot week — first wave of v5.0.0 dashboard differentiators landing one feature at a time.
-Phase A.1 ships **AI Chat Sidebar**, **Visual Call Graph**, and **Risk Heatmap of File Tree**.
-Vulnerability Timeline deferred to Phase B Week 1 per plan v3 Drop-First list.
+Phase A.1 ships **AI Chat Sidebar**, **Visual Call Graph**, **Risk Heatmap of File Tree**, and
+**Vulnerability Timeline**. Week A1 is **complete (5/5 features)**.
 
 ### Added — Backend
 
@@ -46,20 +46,33 @@ Vulnerability Timeline deferred to Phase B Week 1 per plan v3 Drop-First list.
 - **`dashboard/src/test/components/CallGraph.test.tsx`** — 7 Vitest tests.
 - **`dashboard/src/test/components/RiskHeatmap.test.tsx`** — 8 Vitest tests.
 
-### Test counts
+### Added — Vulnerability Timeline (May 19)
 
-- Python: 2,279 → **2,311** (+32 backend tests)
-- TypeScript (dashboard): 66 → **89** (+23 Vitest tests)
-- **Total: 2,400** (was 2,345)
+- **`GET /v1/runs/timeline`** — per-rule-id presence across last N completed runs (default 30,
+  optional `repo` filter). Returns runs ordered oldest→newest plus per-rule summary:
+  `first_seen_run_id`, `last_seen_run_id`, `present_run_ids`, `total_occurrences`, and
+  `current_status` (`open` if rule is in newest run, `resolved` otherwise). New DB method
+  `Database.get_rule_timeline()`.
+- **`dashboard/src/components/findings/VulnerabilityTimeline.tsx`** — pure-SVG Gantt: rows = rules,
+  columns = runs, color by severity, dot per present-run, open/resolved markers, click row →
+  callback. Wired into Run Detail page as a new "Timeline" tab; same page also gains a "Heatmap"
+  tab exposing the A1.4 risk heatmap.
+- **`TESTS/test_rule_timeline.py`** — 9 tests covering empty result, run ordering, rule summary
+  shape, open/resolved status, sort priority, query-param forwarding, bounds validation, severity
+  monotonicity.
+- **`dashboard/src/test/components/VulnerabilityTimeline.test.tsx`** — 8 Vitest tests.
+
+### Test counts (Week A1 complete)
+
+- Python: 2,279 → **2,320** (+41 backend tests)
+- TypeScript (dashboard): 66 → **97** (+31 Vitest tests)
+- **Total: 2,417** (was 2,345)
 
 ### Plan progress
 
-- God Mode v3 Phase A Week 1 — **4 of 5 features shipped** (Chat, Call Graph, Heatmap; Timeline
-  deferred to B1). See `docs/GOD_MODE_V3_PLAN.md` §13.
-
-### Deferred
-
-- Vulnerability Timeline → Phase B Week 1 (per Drop-First list).
+- God Mode v3 Phase A Week 1 — **5 of 5 features shipped** ✅ (Chat, Call Graph, Heatmap, Timeline).
+  See `docs/GOD_MODE_V3_PLAN.md` §13.
+- Next: Phase A Week 2 — IaC Scanner + Time-Travel Vuln Analyzer.
 
 ---
 

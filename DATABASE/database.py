@@ -776,6 +776,45 @@ class Database:
             return json.loads(raw)
         return raw
 
+    def get_rule_timeline(self, limit: int = 30, repo_name: str | None = None) -> list[dict]:
+        """
+        Return per-(rule_id, run) presence across the last N completed runs.
+
+        Result rows (run-ordered oldest→newest within rule):
+            {rule_id, canonical_severity, run_id, started_at, repo_name, count}
+
+        Used by GET /v1/runs/timeline (Vulnerability Timeline, v5.0.0 Phase A.1).
+        """
+        where_clause = "WHERE ar.status = 'completed'"
+        params: list = []
+        if repo_name:
+            where_clause += " AND ar.repo_name = %s"
+            params.append(repo_name)
+        params.append(limit)
+
+        query = f"""
+            WITH recent_runs AS (
+                SELECT ar.id, ar.repo_name, ar.started_at
+                FROM analysis_runs ar
+                {where_clause}
+                ORDER BY ar.started_at DESC
+                LIMIT %s
+            )
+            SELECT
+                f.canonical_rule_id AS rule_id,
+                MAX(f.canonical_severity) AS canonical_severity,
+                rr.id AS run_id,
+                rr.repo_name,
+                rr.started_at,
+                COUNT(*) AS count
+            FROM findings f
+            JOIN recent_runs rr ON rr.id = f.run_id
+            WHERE f.canonical_rule_id IS NOT NULL
+            GROUP BY f.canonical_rule_id, rr.id, rr.repo_name, rr.started_at
+            ORDER BY rr.started_at ASC, f.canonical_rule_id ASC
+        """
+        return self.execute(query, tuple(params), fetch=True) or []
+
     # ===== FINDING CHAT (v5.0.0 Phase A.1) =====
 
     def insert_chat_message(

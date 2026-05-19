@@ -114,6 +114,83 @@ async def get_findings(
     return FindingsListOut(findings=filtered, total=len(filtered))
 
 
+@router.get(
+    "/timeline",
+    summary="Per-rule presence across the last N runs (Vulnerability Timeline)",
+)
+async def get_rule_timeline(
+    limit: int = Query(30, ge=1, le=200),
+    repo: str | None = None,
+    user: dict = Depends(get_current_user),
+    db: Database = Depends(get_db),
+):
+    """
+    Return data needed to render a Gantt-style Vulnerability Timeline:
+
+        runs: ordered oldest → newest, each with id/started_at/repo_name
+        rules: per-rule_id summary:
+            - first_seen_run_id / last_seen_run_id
+            - present_run_ids (list, ordered)
+            - total_occurrences (sum of counts)
+            - current_status: "open" if rule appears in newest run, else "resolved"
+            - severity: latest observed severity
+    """
+    rows = db.get_rule_timeline(limit=limit, repo_name=repo)
+
+    # Order runs oldest → newest
+    runs_seen: dict[int, dict] = {}
+    for r in rows:
+        rid = r["run_id"]
+        if rid not in runs_seen:
+            runs_seen[rid] = {
+                "id": rid,
+                "started_at": str(r["started_at"]),
+                "repo_name": r.get("repo_name"),
+            }
+    runs_sorted = sorted(runs_seen.values(), key=lambda x: x["started_at"])
+    newest_run_id = runs_sorted[-1]["id"] if runs_sorted else None
+
+    rules: dict[str, dict] = {}
+    for r in rows:
+        rule_id = r["rule_id"]
+        entry = rules.setdefault(
+            rule_id,
+            {
+                "rule_id": rule_id,
+                "severity": (r.get("canonical_severity") or "low"),
+                "first_seen_run_id": r["run_id"],
+                "last_seen_run_id": r["run_id"],
+                "present_run_ids": [],
+                "total_occurrences": 0,
+            },
+        )
+        entry["present_run_ids"].append(r["run_id"])
+        entry["total_occurrences"] += int(r["count"])
+        # severity is "high" → "medium" → "low" priority for display
+        sev_order = {"critical": 0, "high": 1, "medium": 2, "low": 3}
+        if sev_order.get(r.get("canonical_severity") or "low", 9) < sev_order.get(entry["severity"], 9):
+            entry["severity"] = r["canonical_severity"]
+        entry["last_seen_run_id"] = r["run_id"]
+
+    rules_list = []
+    for entry in rules.values():
+        entry["current_status"] = "open" if newest_run_id in entry["present_run_ids"] else "resolved"
+        rules_list.append(entry)
+
+    # Sort: open rules first, then HIGH severity first, then most-recently-seen
+    sev_rank = {"critical": 0, "high": 1, "medium": 2, "low": 3}
+    rules_list.sort(
+        key=lambda r: (
+            0 if r["current_status"] == "open" else 1,
+            sev_rank.get(r["severity"], 9),
+            -r["total_occurrences"],
+            r["rule_id"],
+        )
+    )
+
+    return {"runs": runs_sorted, "rules": rules_list}
+
+
 @router.get("/{run_id}/heatmap", summary="Aggregate finding density per file (Risk Heatmap)")
 async def get_run_heatmap(
     run_id: int,

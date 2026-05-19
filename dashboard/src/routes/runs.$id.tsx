@@ -3,6 +3,8 @@ import { useFindings, useStats, useSupplyChain } from "@/lib/queries";
 import { FindingsTable } from "@/components/findings/FindingsTable";
 import { FindingModal } from "@/components/findings/FindingModal";
 import { OwaspHeatmap } from "@/components/compliance/OwaspHeatmap";
+import { RiskHeatmap } from "@/components/findings/RiskHeatmap";
+import { VulnerabilityTimeline } from "@/components/findings/VulnerabilityTimeline";
 import { DependencyTree } from "@/components/supply/DependencyTree";
 import { SbomDownload } from "@/components/supply/SbomDownload";
 import { Card, CardContent } from "@/components/ui/card";
@@ -96,6 +98,8 @@ export function RunDetailPage() {
           <TabsTrigger value="findings" icon={<Shield className="h-3.5 w-3.5" />} label="Findings" active={activeTab === "findings"} onClick={() => setActiveTab("findings")} />
           <TabsTrigger value="compliance" icon={<BarChart3 className="h-3.5 w-3.5" />} label="OWASP" active={activeTab === "compliance"} onClick={() => setActiveTab("compliance")} />
           <TabsTrigger value="supply" icon={<Package className="h-3.5 w-3.5" />} label="Supply Chain" active={activeTab === "supply"} onClick={() => setActiveTab("supply")} />
+          <TabsTrigger value="heatmap" icon={<BarChart3 className="h-3.5 w-3.5" />} label="Heatmap" active={activeTab === "heatmap"} onClick={() => setActiveTab("heatmap")} />
+          <TabsTrigger value="timeline" icon={<BarChart3 className="h-3.5 w-3.5" />} label="Timeline" active={activeTab === "timeline"} onClick={() => setActiveTab("timeline")} />
         </TabsList>
 
         <TabsContent active={activeTab === "findings"}>
@@ -134,6 +138,22 @@ export function RunDetailPage() {
           ) : (
             <div className="text-center py-12 text-muted-foreground">No supply-chain data</div>
           )}
+        </TabsContent>
+
+        <TabsContent active={activeTab === "heatmap"}>
+          <Card>
+            <CardContent className="pt-4">
+              <RiskHeatmap runId={runId} />
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent active={activeTab === "timeline"}>
+          <Card>
+            <CardContent className="pt-4">
+              <VulnerabilityTimeline limit={30} />
+            </CardContent>
+          </Card>
         </TabsContent>
       </Tabs>
 

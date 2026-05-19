@@ -457,18 +457,20 @@ Opening signups means becoming a data controller under GDPR/equivalents. Require
 
 ## 13. Progress Snapshot
 
-**As of May 18, 2026 (end-of-day):**
+**As of May 19, 2026:**
 
-- Phase A Week 1 (UI Killshot): **4 of 5 features shipped**
+- Phase A Week 1 (UI Killshot): **5 of 5 features shipped ✅ COMPLETE**
   - ✅ A1.1 AI Chat Sidebar — backend SSE + DB (migration 0012, 20 tests)
   - ✅ A1.2 AI Chat Sidebar — frontend (`ChatSidebar.tsx`, 9 Vitest tests)
   - ✅ A1.3 Visual Call Graph — backend + frontend (pure SVG, 5 Py + 7 TS tests)
   - ✅ A1.4 Risk Heatmap of File Tree — backend + frontend (7 Py + 8 TS tests)
-  - 🟡 A1.5 Vulnerability Timeline — **deferred to Phase B Wk 1** (per Drop-First list)
-- Backend tests: 2,279 → 2,311 (+32)
-- Frontend tests: 66 → 89 (+23)
+  - ✅ A1.5 Vulnerability Timeline — backend + frontend (9 Py + 8 TS tests). Wired into
+    Run Detail page as new Heatmap + Timeline tabs.
+- Backend tests: 2,279 → 2,320 (+41)
+- Frontend tests: 66 → 97 (+31)
 - Defense date: **placeholder Jun 25, awaiting Dr. Samy confirmation**
 - v5.0.0 target tag: **Jun 28, 2026** (post-defense)
+- Next: Phase A Week 2 — IaC Scanner (Wk A2.1) + Time-Travel Vuln Analyzer (Wk A2.2)
 
 Update this section after every commit affecting Phase A scope. Don't duplicate the per-week tables — just track top-of-mind state.
 
