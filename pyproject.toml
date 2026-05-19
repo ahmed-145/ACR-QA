@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "acrqa"
-version = "4.6.0"
+version = "5.0.0b1"
 description = "AI-powered code review with RAG-grounded explanations, 10 static analysers, and ECDSA-signed provenance"
 readme = "README.md"
 license = { text = "MIT" }

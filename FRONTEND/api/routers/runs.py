@@ -596,6 +596,42 @@ async def get_sbom(
     return {"success": True, "run_id": run_id, "sbom": sbom}
 
 
+@router.get("/{run_id}/review-bottleneck", summary="Review bottleneck analytics for a run")
+async def get_review_bottleneck(
+    run_id: int,
+    days: int = Query(30, ge=1, le=365, description="Days of git history to analyze"),
+    repo_path: str | None = Query(None, description="Filesystem path to the git repo; defaults to ACR-QA itself"),
+    user: dict = Depends(get_current_user),
+    db: Database = Depends(get_db),
+):
+    """Return git-log-based review bottleneck metrics.
+
+    Metrics: median review latency, reviewer load Gini, % merged without a
+    review trailer, top-3 reviewer concentration, stale commit count.
+    GitHub REST enrichment activates automatically when GITHUB_TOKEN is set.
+    """
+    run = db.get_analysis_run(run_id)
+    if not run:
+        raise HTTPException(status_code=404, detail="Run not found")
+
+    from pathlib import Path as _Path
+
+    from CORE.engines.review_bottleneck import analyze as _analyze
+
+    target = repo_path or str(_Path(__file__).resolve().parent.parent.parent.parent)
+    try:
+        result = _analyze(repo_path=target, days=days)
+    except Exception as exc:
+        raise HTTPException(status_code=500, detail=f"Analysis failed: {exc}") from exc
+
+    return {
+        "success": True,
+        "run_id": run_id,
+        "repo_name": run.get("repo_name"),
+        **result.to_dict(),
+    }
+
+
 @router.get("/{run_id}/supply-chain", summary="Supply-chain risk report for a run")
 async def get_supply_chain(
     run_id: int,
