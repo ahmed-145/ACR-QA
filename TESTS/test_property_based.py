@@ -385,6 +385,10 @@ class TestRuleMappingInvariants:
             "BEST-PRACTICE",
             "SOLID",
             "ASSERT",
+            # v5.0.0 A2: IaC Scanner canonical prefixes
+            "IAC-TF",
+            "IAC-K8S",
+            "IAC-DKR",
         }
         for rule_id, canonical_id in RULE_MAPPING.items():
             parts = canonical_id.rsplit("-", 1)

@@ -22,6 +22,37 @@ class SeverityScorer:
     # Canonical Rule ID → Base Severity Mapping
     RULE_SEVERITY = {
         # ══════════════════════════════════════════════
+        # IaC (v5.0.0 Phase A.2) — Terraform / Kubernetes / Dockerfile
+        # ══════════════════════════════════════════════
+        "IAC-TF-001": "high",
+        "IAC-TF-002": "high",
+        "IAC-TF-003": "high",
+        "IAC-TF-004": "high",
+        "IAC-TF-005": "high",
+        "IAC-TF-006": "medium",
+        "IAC-TF-007": "medium",
+        "IAC-TF-008": "medium",
+        "IAC-TF-009": "low",
+        "IAC-TF-010": "medium",
+        "IAC-K8S-001": "high",
+        "IAC-K8S-002": "high",
+        "IAC-K8S-003": "high",
+        "IAC-K8S-004": "high",
+        "IAC-K8S-005": "medium",
+        "IAC-K8S-006": "low",
+        "IAC-K8S-007": "medium",
+        "IAC-K8S-008": "high",
+        "IAC-K8S-009": "medium",
+        "IAC-K8S-010": "low",
+        "IAC-DKR-001": "medium",
+        "IAC-DKR-002": "low",
+        "IAC-DKR-003": "low",
+        "IAC-DKR-004": "high",
+        "IAC-DKR-005": "low",
+        "IAC-DKR-006": "low",
+        "IAC-DKR-007": "high",
+        "IAC-DKR-008": "medium",
+        # ══════════════════════════════════════════════
         # HIGH: Security vulnerabilities, crashes, data loss
         # ══════════════════════════════════════════════
         "SECURITY-001": "high",  # eval() / exec() usage

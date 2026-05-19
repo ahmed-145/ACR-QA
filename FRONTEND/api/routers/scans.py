@@ -77,6 +77,57 @@ async def get_scan_status(job_id: str, user: dict = Depends(get_current_user)):
     return ScanJobOut(job_id=job_id, status=our_status, result=result)
 
 
+@router.post(
+    "/iac",
+    summary="Run the IaC scanner on a target directory (sync, no DB write)",
+)
+async def scan_iac(body: dict, user: dict = Depends(get_current_user)):
+    """Run the IaC scanner over a target_dir and return findings inline.
+
+    Body: {"target_dir": "<path>"}.
+    Returns a list of CanonicalFinding-shaped dicts grouped by provider.
+    Read-only; no DB writes — for the demo + a "scan-on-the-fly" UX (v5.0.0 A2).
+    """
+    target_dir = (body or {}).get("target_dir") or "."
+    if not isinstance(target_dir, str):
+        return {"error": "target_dir must be a string"}
+
+    # Restrict access to inside the project (defence-in-depth): no absolute
+    # paths above CWD, no traversal up via `..`.
+    from pathlib import Path as _Path
+
+    requested = _Path(target_dir).expanduser()
+    try:
+        resolved = requested.resolve(strict=False)
+    except (OSError, RuntimeError):
+        return {"error": "invalid target_dir"}
+
+    cwd = _Path.cwd().resolve()
+    if not str(resolved).startswith(str(cwd)):
+        return {"error": "target_dir must live inside the workspace"}
+
+    from CORE.engines.iac_scanner import IaCScanner
+
+    scanner = IaCScanner(target_dir=str(resolved))
+    findings = scanner.scan()
+
+    by_provider: dict[str, int] = {}
+    by_severity: dict[str, int] = {}
+    for f in findings:
+        p = f.get("iac_provider") or "unknown"
+        s = f.get("severity") or "low"
+        by_provider[p] = by_provider.get(p, 0) + 1
+        by_severity[s] = by_severity.get(s, 0) + 1
+
+    return {
+        "target_dir": str(resolved),
+        "total": len(findings),
+        "by_provider": by_provider,
+        "by_severity": by_severity,
+        "findings": findings,
+    }
+
+
 @router.post("/analyze", summary="Analyze a single file snippet (sync, no DB write)")
 async def analyze_file(body: AnalyzeFileRequest, user: dict = Depends(get_current_user)):
     """Run Ruff + Vulture + Bandit on a code snippet and return findings inline."""

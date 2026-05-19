@@ -17,8 +17,19 @@ from typing import Any
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 
+# IaC canonical IDs (v5.0.0 Phase A.2) — IAC-TF-*, IAC-K8S-*, IAC-DKR-*
+# Pre-declared so the dedupe / unmapped checks treat them as canonical, not CUSTOM-*.
+_IAC_CANONICAL_IDS = (
+    {f"IAC-TF-{i:03d}" for i in range(1, 11)}
+    | {f"IAC-K8S-{i:03d}" for i in range(1, 11)}
+    | {f"IAC-DKR-{i:03d}" for i in range(1, 9)}
+)
+
+
 # Universal Rule Mapping: Tool-specific → Canonical
 RULE_MAPPING = {
+    # IaC scanner (acrqa-iac native) — identity mapping
+    **{rid: rid for rid in _IAC_CANONICAL_IDS},
     # Ruff rules → Universal IDs
     "F401": "IMPORT-001",  # Unused import
     "F841": "VAR-001",  # Unused variable
@@ -793,6 +804,37 @@ def normalize_bandit(bandit_json) -> list[CanonicalFinding]:
         except Exception:
             continue
 
+    return findings
+
+
+def normalize_iac(iac_dicts: list[dict]) -> list[CanonicalFinding]:
+    """Convert IaCScanner output dicts to CanonicalFinding (v5.0.0 Phase A.2)."""
+    findings: list[CanonicalFinding] = []
+    if not isinstance(iac_dicts, list):
+        return findings
+    for item in iac_dicts:
+        if not isinstance(item, dict):
+            continue
+        rid = item.get("canonical_rule_id") or item.get("original_rule_id", "")
+        if not isinstance(rid, str) or not rid.startswith("IAC-"):
+            continue
+        try:
+            finding = CanonicalFinding.create(
+                rule_id=rid,
+                canonical_rule_id=rid,
+                file=item.get("file", "unknown"),
+                line=int(item.get("line", 0) or 0),
+                severity=item.get("severity", "low"),
+                category=item.get("category", "security"),
+                message=item.get("message", ""),
+                tool_name="acrqa-iac",
+                tool_output=item.get("tool_raw") or item,
+            )
+            finding.extract_evidence()
+            findings.append(finding)
+        except Exception as exc:
+            logger.debug("normalize_iac skipped item: %s (%s)", item.get("canonical_rule_id"), exc)
+            continue
     return findings
 
 

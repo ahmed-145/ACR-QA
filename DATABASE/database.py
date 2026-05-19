@@ -204,6 +204,15 @@ class Database:
         result = self.execute(query, values, fetch=True)
         return result[0]["id"] if result else None
 
+    def update_finding_iac(self, finding_id: int, provider: str, resource: str = "") -> None:
+        """Persist IaC provider/resource metadata for an IaC finding (v5.0.0 A2)."""
+        query = """
+            UPDATE findings
+            SET iac_provider = %s, iac_resource = %s
+            WHERE id = %s
+        """
+        self.execute(query, (provider, resource, finding_id))
+
     def update_finding_reachability(self, finding_id: int, status: str, penalty: int) -> None:
         """Persist call-graph reachability result for a finding (Feature 9)."""
         query = """

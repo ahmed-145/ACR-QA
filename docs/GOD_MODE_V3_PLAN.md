@@ -459,18 +459,23 @@ Opening signups means becoming a data controller under GDPR/equivalents. Require
 
 **As of May 19, 2026:**
 
-- Phase A Week 1 (UI Killshot): **5 of 5 features shipped ✅ COMPLETE**
-  - ✅ A1.1 AI Chat Sidebar — backend SSE + DB (migration 0012, 20 tests)
-  - ✅ A1.2 AI Chat Sidebar — frontend (`ChatSidebar.tsx`, 9 Vitest tests)
-  - ✅ A1.3 Visual Call Graph — backend + frontend (pure SVG, 5 Py + 7 TS tests)
-  - ✅ A1.4 Risk Heatmap of File Tree — backend + frontend (7 Py + 8 TS tests)
-  - ✅ A1.5 Vulnerability Timeline — backend + frontend (9 Py + 8 TS tests). Wired into
-    Run Detail page as new Heatmap + Timeline tabs.
-- Backend tests: 2,279 → 2,320 (+41)
-- Frontend tests: 66 → 97 (+31)
+- Phase A Week 1 (UI Killshot): **5/5 shipped ✅ COMPLETE**
+- Phase A Week 2 (New Engines): **2/2 shipped ✅ COMPLETE**
+  - ✅ A2.1–3 IaC Scanner — `CORE/engines/iac_scanner.py`, 28 canonical rules,
+    migration 0013 (`iac_provider` + `iac_resource`), `POST /v1/scans/iac`,
+    sample fixtures in `TESTS/samples/iac-issues/`, 52 + 6 = 58 backend tests.
+  - ✅ A2.4–5 Time-Travel Analyzer — `CORE/engines/time_travel.py`,
+    migration 0014 (`finding_history` cache table), `GET /v1/findings/{fid}/history`,
+    `FindingHistory.tsx` React component wired into FindingModal as History tab,
+    23 + 4 backend tests + 7 Vitest tests.
+- Backend tests: 2,279 → **2,405** (+126 across A1 + A2)
+- Frontend tests: 66 → **104** (+38 across A1 + A2)
+- Grand total: **2,509**
+- Engine docs: `docs/engines/iac_scanner.md`, `docs/engines/time_travel.md`
 - Defense date: **placeholder Jun 25, awaiting Dr. Samy confirmation**
 - v5.0.0 target tag: **Jun 28, 2026** (post-defense)
-- Next: Phase A Week 2 — IaC Scanner (Wk A2.1) + Time-Travel Vuln Analyzer (Wk A2.2)
+- Next: Phase A Week 3 — Heuristic Risk Predictor + Eval Wave 1 (+8 repos with
+  ground-truth YAMLs)
 
 Update this section after every commit affecting Phase A scope. Don't duplicate the per-week tables — just track top-of-mind state.
 

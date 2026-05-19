@@ -282,6 +282,46 @@ async def list_presets():
     return [{"key": k, "label": v["label"], "prompt": v["prompt"]} for k, v in PRESET_PROMPTS.items()]
 
 
+# ── Time-Travel history (v5.0.0 Phase A.2) ────────────────────────────────────
+
+
+@router.get(
+    "/{fid}/history",
+    summary="Return bounded git-history context for the finding's file/line",
+)
+async def get_finding_history(
+    fid: int,
+    max_commits: int = 50,
+    user: dict = Depends(get_current_user),
+    db: Database = Depends(get_db),
+):
+    """
+    Walks the workspace git history (bounded by `max_commits`, capped at 200)
+    and returns first_seen / commits_touching / regression_count / near_fix_commits.
+
+    Read-only. If the workspace is not a git repo (e.g. hosted SaaS sandbox),
+    returns empty history with `bounded_by_max_commits=true`.
+    """
+    finding = db.get_finding_by_id(fid)
+    if finding is None:
+        raise HTTPException(status_code=404, detail="finding not found")
+
+    try:
+        from CORE.engines.time_travel import analyze_finding_history
+    except Exception as exc:
+        raise HTTPException(status_code=500, detail="time-travel engine unavailable") from exc
+
+    history = analyze_finding_history(
+        repo_dir=os.getcwd(),
+        file_path=finding.get("file_path") or "",
+        line_number=int(finding.get("line_number") or 0) or None,
+        rule_id=finding.get("canonical_rule_id"),
+        max_commits=max_commits,
+    )
+    history["finding_id"] = fid
+    return history
+
+
 # ── Call Graph (v5.0.0 Phase A.1) ─────────────────────────────────────────────
 
 

@@ -2,6 +2,74 @@
 
 All notable changes to ACR-QA are documented here.
 
+## [Unreleased] — v5.0.0 God Mode v3 Phase A.2 (May 19, 2026)
+
+### Summary
+
+Week A2 — **two new engines**: a pure-Python **IaC Scanner** (28 rules across
+Terraform / Kubernetes / Dockerfile) and a bounded-history **Time-Travel
+Vulnerability Analyzer** (last 50 commits by default). Both ship with sample
+fixtures, endpoint surfaces, dashboard tabs, and full test coverage. Per plan
+Drop-First: `--full-history` mode and Time-Travel author-trust scoring slip to
+Phase B.
+
+### Added — IaC Scanner
+
+- **`CORE/engines/iac_scanner.py`** — `IaCScanner` walks a target dir, buckets files
+  by provider (`.tf` / k8s `.yaml` / `Dockerfile*`), and applies 28 pattern rules.
+  Pure-Python, no external binary deps. The optional `checkov` / `kube-score`
+  subprocess wrap is a Phase B target.
+- **28 canonical IaC rules** added to `RULE_MAPPING` (identity) and
+  `RULE_SEVERITY`: `IAC-TF-001…010`, `IAC-K8S-001…010`, `IAC-DKR-001…008`.
+- **`normalize_iac()`** — wraps scanner dicts into `CanonicalFinding`; silently
+  drops non-IAC rule ids.
+- **`POST /v1/scans/iac`** — sync endpoint; runs the scanner against a
+  workspace-relative path with path-escape guard, returns provider/severity
+  breakdowns + findings.
+- **Alembic migration `0013`** — `findings.iac_provider` + `findings.iac_resource`
+  (nullable additive columns) + index on `iac_provider`.
+- **`Database.update_finding_iac()`** — persists provider/resource per finding.
+- **Sample fixtures** at `TESTS/samples/iac-issues/{terraform,k8s,docker}/`.
+- **`docs/engines/iac_scanner.md`** — full rule catalog + scope/non-scope.
+
+### Added — Time-Travel Vulnerability Analyzer
+
+- **`CORE/engines/time_travel.py`** — `TimeTravelAnalyzer.analyze_finding()`
+  uses `git log -L<line>,<line>:<file>` with a `--follow` fallback. Returns
+  `first_seen_commit`, `commits_touching`, `regression_count`, `near_fix_commits`.
+  Bounded by `max_commits` (default 50, hard cap 200). 20s subprocess timeout.
+  Never raises — non-git workspaces return empty histories.
+- **`GET /v1/findings/{fid}/history?max_commits=50`** — calls the analyzer with
+  the workspace CWD as the repo root.
+- **`dashboard/src/components/findings/FindingHistory.tsx`** — pure-SVG +
+  list view: first-seen row highlighted red, near-fix rows highlighted amber.
+  Wired into FindingModal as new "History" tab.
+- **Alembic migration `0014`** — `finding_history` cache table (one row per
+  finding); A2 re-computes on demand, background populator is Phase B.
+- **`docs/engines/time_travel.md`** — algorithm, complexity bound, scope/non-scope.
+
+### Tests
+
+- Backend +85: IaC scanner 52, IaC endpoint 6, Time-Travel engine 23,
+  Time-Travel endpoint 4.
+- Frontend +7: FindingHistory Vitest.
+- **Totals: Python 2,320 → 2,405 · TS 97 → 104 · Grand total 2,509.**
+
+### Plan progress
+
+- God Mode v3 Phase A Week 2 — **complete** (per §13).
+  See `docs/GOD_MODE_V3_PLAN.md`.
+- Next: Phase A Week 3 — Heuristic Risk Predictor + Eval Wave 1 (+8 repos).
+
+### Deferred (per plan Drop-First)
+
+- `--full-history` opt-in mode for Time-Travel → Phase B.
+- Author-trust scoring on Time-Travel → Phase B.
+- `checkov` / `kube-score` subprocess wrap → Phase B.
+- GitHub Actions YAML scanning → Phase B.
+
+---
+
 ## [Unreleased] — v5.0.0 God Mode v3 Phase A.1 (May 18–19, 2026)
 
 ### Summary

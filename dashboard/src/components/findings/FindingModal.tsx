@@ -8,6 +8,7 @@ import { AutofixDiff } from "./AutofixDiff";
 import { ExploitProofPanel } from "./ExploitProofPanel";
 import { ChatSidebar } from "./ChatSidebar";
 import { CallGraph } from "./CallGraph";
+import { FindingHistory } from "./FindingHistory";
 
 interface Props {
   finding: Finding | null;
@@ -15,7 +16,7 @@ interface Props {
   onClose: () => void;
 }
 
-const TABS = ["Overview", "Chat", "Call Graph", "Taint", "Reasoning", "Autofix", "Exploit"];
+const TABS = ["Overview", "Chat", "Call Graph", "History", "Taint", "Reasoning", "Autofix", "Exploit"];
 
 export function FindingModal({ finding, runId, onClose }: Props) {
   const [tab, setTab] = useState("Overview");
@@ -74,6 +75,7 @@ export function FindingModal({ finding, runId, onClose }: Props) {
 
         {tab === "Chat" && <ChatSidebar findingId={finding.id} />}
         {tab === "Call Graph" && <CallGraph findingId={finding.id} />}
+        {tab === "History" && <FindingHistory findingId={finding.id} />}
         {tab === "Taint" && <TaintFlowGraph finding={finding} />}
         {tab === "Reasoning" && <ReasoningChain finding={finding} />}
         {tab === "Autofix" && <AutofixDiff runId={runId} findingId={finding.id} />}
