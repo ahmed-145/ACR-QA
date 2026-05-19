@@ -51,9 +51,12 @@ def load_ground_truth() -> list[dict]:
 def scan_acrqa(target_dir: str, yaml_name: str, dry_run: bool = False) -> list[dict]:
     out_file = OUT_DIR / f"acrqa-{yaml_name}.json"
     cmd = [
-        sys.executable, str(ROOT / "CORE" / "main.py"),
-        "--target-dir", target_dir,
-        "--repo-name", yaml_name,
+        sys.executable,
+        str(ROOT / "CORE" / "main.py"),
+        "--target-dir",
+        target_dir,
+        "--repo-name",
+        yaml_name,
         "--no-ai",
         "--json",
     ]
@@ -105,7 +108,8 @@ def scan_acrqa(target_dir: str, yaml_name: str, dry_run: bool = False) -> list[d
 def scan_semgrep(target_dir: str, yaml_name: str, dry_run: bool = False) -> list[dict]:
     out_file = OUT_DIR / f"semgrep-{yaml_name}.json"
     cmd = [
-        "semgrep", "scan",
+        "semgrep",
+        "scan",
         "--config=auto",
         "--json",
         "--no-git-ignore",
@@ -145,13 +149,12 @@ def compute_recall(expected: list[dict], findings: list[dict], tool: str = "acrq
         return {"expected": len(expected), "found": 0, "matched": 0, "recall": 0.0, "match_detail": []}
 
     if tool == "acrqa":
-        found_rules = {
-            (f.get("canonical_rule_id") or f.get("rule_id") or "").upper()
-            for f in findings
-        }
+        found_rules = {(f.get("canonical_rule_id") or f.get("rule_id") or "").upper() for f in findings}
         found_sev_files = {
-            ((f.get("canonical_severity") or f.get("severity") or "").lower(),
-             Path(f.get("file_path") or f.get("file") or "").name)
+            (
+                (f.get("canonical_severity") or f.get("severity") or "").lower(),
+                Path(f.get("file_path") or f.get("file") or "").name,
+            )
             for f in findings
         }
         matched = []
@@ -220,12 +223,14 @@ def main(argv: list[str] | None = None) -> int:
         name = entry["_yaml_file"]
         if _is_cve(name) and not args.cve:
             print(f"[skip CVE] {name}")
-            results.append({
-                "yaml": name,
-                "repo": entry.get("repo"),
-                "skipped": "cve",
-                "note": "Protocol-level CVE — static analysis limitation (honest)",
-            })
+            results.append(
+                {
+                    "yaml": name,
+                    "repo": entry.get("repo"),
+                    "skipped": "cve",
+                    "note": "Protocol-level CVE — static analysis limitation (honest)",
+                }
+            )
             continue
 
         local_path = resolve_local_path(entry)
