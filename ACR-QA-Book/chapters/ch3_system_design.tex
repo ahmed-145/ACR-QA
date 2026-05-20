@@ -24,7 +24,7 @@ Figure~\ref{fig:architecture_overview} illustrates the high-level component arch
 \begin{figure}[htbp]
   \centering
   \includegraphics[width=0.94\textwidth,height=0.78\textheight,keepaspectratio]{arch_overview}
-  \caption{High-Level Architecture of the \ACRQA{} System (v4.0.0)}
+  \caption{High-Level Architecture of the \ACRQA{} System (v5.0.0b1)}
   \label{fig:architecture_overview}
 \end{figure}
 
@@ -56,7 +56,7 @@ The Celery worker receives the job and validates the target path. Language detec
 Stage 2 invokes all applicable tool adapters concurrently using Python's thread pool. Table~\ref{tab:tool_execution} shows the tool-to-language mapping and typical execution times.
 
 \begin{table}[H]
-\caption{Tool Execution Mapping and Typical Runtime (v4.0.0)}
+\caption{Tool Execution Mapping and Typical Runtime (v5.0.0b1)}
 \label{tab:tool_execution}
 \centering
 \renewcommand{\arraystretch}{1.3}
@@ -232,7 +232,7 @@ The \texttt{analysis\_runs} table records job status through states: \texttt{QUE
 The FastAPI application exposes 32 endpoints grouped into four resource namespaces. Table~\ref{tab:api_endpoints} summarises the principal endpoints.
 
 \begin{table}[H]
-\caption{Principal FastAPI REST Endpoints (v4.0.0)}
+\caption{Principal FastAPI REST Endpoints (v5.0.0b1)}
 \label{tab:api_endpoints}
 \centering
 \renewcommand{\arraystretch}{1.3}
@@ -281,7 +281,7 @@ A Kubernetes \cite{kubernetes_security} Helm chart \cite{helm_chart} is also pro
 \section{v5.0.0 Extended Architecture: Four New Engines}
 \label{sec:v5_engines}
 
-Version 5.0.0 extends the core pipeline with four new analytical engines, each addressing a gap identified after v4.0.0 evaluation.
+Version 5.0.0 extends the core pipeline with four new analytical engines, each addressing a gap identified after v4.6.0 evaluation.
 
 \subsection{Heuristic Risk Predictor}
 \label{sec:risk_predictor_design}

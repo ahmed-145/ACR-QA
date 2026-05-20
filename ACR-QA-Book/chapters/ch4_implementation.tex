@@ -17,7 +17,7 @@ This chapter documents the implementation of the \ACRQA{} system, translating th
 \ACRQA{} is implemented primarily in Python 3.11 for the backend and TypeScript \cite{typescript_docs}/React \cite{react_docs} for the frontend. Table~\ref{tab:tech_stack} lists the principal dependencies.
 
 \begin{table}[H]
-\caption{Core Technology Stack (v4.0.0)}
+\caption{Core Technology Stack (v5.0.0b1)}
 \label{tab:tech_stack}
 \centering
 \renewcommand{\arraystretch}{1.3}
@@ -25,7 +25,7 @@ This chapter documents the implementation of the \ACRQA{} system, translating th
 \toprule
 \textbf{Component} & \textbf{Technology} & \textbf{Purpose} \\
 \midrule
-API Server          & FastAPI 0.115 + Uvicorn   & 32 async REST endpoints; Pydantic v2 validation \\
+API Server          & FastAPI 0.115 + Uvicorn   & 52 async REST endpoints; Pydantic v2 validation \\
 Task Queue          & Celery 5 + Redis 7.2      & Async pipeline execution; 4 concurrent workers \\
 Web Dashboard       & React 18 + TypeScript + Vite 5 & shadcn/ui SPA; WCAG 2.1 AA; EN/AR RTL \\
 Database            & PostgreSQL 15 (psycopg2)  & 10-table provenance schema \\
@@ -48,7 +48,7 @@ Testing (TS)        & Vitest + Playwright       & 65 unit + 14 a11y + 15 e2e tes
 
 The repository follows a clear separation between the backend engine, API layer, and frontend:
 
-\begin{lstlisting}[language={}, basicstyle=\footnotesize\ttfamily, caption={Repository Directory Structure (v4.0.0)}]
+\begin{lstlisting}[language={}, basicstyle=\footnotesize\ttfamily, caption={Repository Directory Structure (v5.0.0b1)}]
 acr-qa/
 ├── CORE/
 │   ├── main.py              # Pipeline orchestrator
@@ -66,7 +66,7 @@ acr-qa/
 │       ├── quality_gate.py       # Policy-as-Code gate
 │       ├── attestation.py        # ECDSA + Dilithium3
 │       └── cross_lang.py         # Cross-language correlator
-├── FRONTEND/api/            # FastAPI (32 endpoints)
+├── FRONTEND/api/            # FastAPI (52 endpoints)
 │   ├── main.py              # App factory + middleware
 │   ├── routers/             # Runs, findings, auth, metrics
 │   └── models/              # Pydantic v2 schemas

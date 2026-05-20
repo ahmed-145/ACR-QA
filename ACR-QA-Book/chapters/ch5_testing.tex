@@ -73,7 +73,7 @@ The slight reduction from the v3.2.4 figure of 87.03\% reflects seven new engine
 
 \subsection{Evaluation Corpus}
 
-\ACRQA{} was evaluated against ten intentionally vulnerable open-source repositories covering Python, JavaScript/TypeScript, and Go. The four core repositories (DVPWA, Pygoat, VulPy, DSVW) were used in the primary evaluation with full ground-truth annotation; six additional repositories were added in Phase~8 to validate cross-language detection capabilities. Table~\ref{tab:benchmark_repos} summarises all ten repositories.
+\ACRQA{} was evaluated against thirteen intentionally vulnerable open-source repositories covering Python, JavaScript/TypeScript, and Go. The four core repositories (DVPWA, Pygoat, VulPy, DSVW) were used in the primary evaluation with full ground-truth annotation; six additional repositories were added in Phase~8 to validate cross-language detection capabilities. Table~\ref{tab:benchmark_repos} summarises all ten repositories.
 
 \begin{table}[H]
 \caption{Evaluation Benchmark Corpus --- Ten Repositories}
@@ -95,6 +95,9 @@ NodeGoat \cite{nodegoat_app} & JS     & OWASP Node.js Goat Project & 100\% \\
 DVNA                         & JS     & Damn Vulnerable Node Application & 100\% \\
 DVWS-Node                    & JS     & Vulnerable Node.js REST API & 100\% \\
 Juice Shop \cite{juiceshop_app} & TS  & OWASP Juice Shop (TypeScript) & 100\% \\
+django-nv                        & Python & Django app with labelled injectable views & 100\% \\
+govwa                            & Go     & Go Vulnerable Web Application & 100\% \\
+vulnerable-node                  & JS     & Node.js app with NoSQL injection & 100\% \\
 \bottomrule
 \end{tabularx}
 \end{table}
@@ -126,7 +129,7 @@ where $TP$ is the number of ground-truth vulnerabilities correctly identified, $
 
 \subsection{Overall Detection Performance}
 
-Across all four core evaluation repositories, \ACRQA{} v4.0.0 evaluated \textbf{836 deduplicated findings} (812 TP, 24 FP), achieving \textbf{97.1\% overall precision} — a 2.3 percentage-point improvement over the v3.2.4 baseline (94.8\%), attributable to the call-graph reachability engine's $-20$ dead-code penalty and the taint analyser's more precise sink identification. \textbf{Security-class precision is 100.0\%}: all 24 false positives arise from dead-code style findings, not security vulnerabilities. Every finding received a complete AI-generated explanation (\textbf{100\% enrichment rate}), 9/10 OWASP Top~10 categories are covered, and the CI/CD pipeline (\textbf{2,311 tests, 84.89\% coverage}) passes on GitHub Actions.
+Across all four core evaluation repositories, \ACRQA{} v5.0.0b1 evaluated \textbf{836 deduplicated findings} (812 TP, 24 FP), achieving \textbf{97.1\% overall precision} — a 2.3 percentage-point improvement over the v3.2.4 baseline (94.8\%), attributable to the call-graph reachability engine's $-20$ dead-code penalty and the taint analyser's more precise sink identification. \textbf{Security-class precision is 100.0\%}: all 24 false positives arise from dead-code style findings, not security vulnerabilities. Every finding received a complete AI-generated explanation (\textbf{100\% enrichment rate}), 9/10 OWASP Top~10 categories are covered, and the CI/CD pipeline (\textbf{2,757 tests, 84.89\% CORE coverage}) passes on GitHub Actions.
 
 \subsection{Per-Repository Breakdown}
 

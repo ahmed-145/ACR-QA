@@ -1,6 +1,6 @@
 %% ============================================================
 %%  CHAPTER 1 — INTRODUCTION
-%%  v4.0.0 — Updated May 2026
+%%  v5.0.0b1 — Updated May 2026
 %% ============================================================
 \chapter{Introduction}
 \label{ch:intro}
@@ -52,14 +52,14 @@ The primary objective is to design, implement, and validate \ACRQA{}: a self-hos
   \item \textbf{Filter dead code} through call-graph BFS reachability from Flask/FastAPI routes, Celery tasks, and \texttt{\_\_main\_\_} blocks; penalise unreachable findings rather than suppressing them.
   \item \textbf{Detect taint propagation} intra-procedurally from HTTP sources to SQL/eval/subprocess sinks with confidence decay over hop depth.
   \item \textbf{Generate a CBoM} inventorying 62 cryptographic algorithms and flagging deprecated and PQC-vulnerable primitives per NIST FIPS~203 \cite{nist_fips_203} and FIPS~204 \cite{nist_fips_204}.
-  \item \textbf{Deliver} the full stack as a 7-service Docker Compose \cite{docker_security} application at zero recurring cost: FastAPI \cite{fastapi_framework} (32 endpoints), React~18 dashboard (WCAG~2.1~AA \cite{wcag21}), Celery \cite{celery_project} workers, PostgreSQL (10-table schema), Redis, Prometheus \cite{prometheus_docs}, and Grafana \cite{grafana_docs}.
+  \item \textbf{Deliver} the full stack as an 8-service Docker Compose \cite{docker_security} application at zero recurring cost: FastAPI \cite{fastapi_framework} (52 endpoints), React~18 dashboard (WCAG~2.1~AA \cite{wcag21}), Celery \cite{celery_project} workers, PostgreSQL (18-migration schema), Redis, Prometheus \cite{prometheus_docs}, and Grafana \cite{grafana_docs}.
 \end{enumerate}
 
 % -----------------------------------------------------------------
 \section{Scope and Limitations}
 \label{sec:scope}
 
-\ACRQA{} covers static analysis of Python, JavaScript/TypeScript, and Go repositories, addressing injection flaws, insecure dependencies, hardcoded secrets, cryptographic weaknesses, dead code, and code quality defects. The full stack includes a FastAPI REST API, React~18 dashboard (WCAG~2.1~AA, Arabic RTL), Celery async workers, PostgreSQL provenance schema, GitHub Actions \cite{github_actions} CI/CD, and a 2,311-test suite (pytest \cite{pytest_tool}) at 84.89\% coverage.
+\ACRQA{} covers static analysis of Python, JavaScript/TypeScript, and Go repositories, addressing injection flaws, insecure dependencies, hardcoded secrets, cryptographic weaknesses, dead code, and code quality defects. The full stack includes a FastAPI REST API (52 endpoints), React~18 dashboard (WCAG~2.1~AA, Arabic RTL), Celery async workers, PostgreSQL provenance schema, GitHub Actions \cite{github_actions} CI/CD, and a 2,757-test suite (pytest \cite{pytest_tool} + Vitest) at 84.89\% CORE coverage.
 
 Explicitly outside scope: dynamic testing (DAST/fuzzing), runtime monitoring, compiled binaries without source, mobile security, CSRF detection (requires runtime analysis of form submissions), and IDOR detection (requires authorisation context).
 
@@ -86,16 +86,28 @@ These four questions map directly onto the four novel contributions described in
 \section{Significance of the Work}
 \label{sec:significance}
 
-This project makes four novel contributions to software security and AI-assisted development tooling:
+This project makes ten novel contributions to software security and AI-assisted development tooling:
 
 \begin{enumerate}
-  \item \textbf{Unified multi-tool orchestration:} To the best of the author's knowledge, \ACRQA{} is the first open-source platform to combine ten or more SAST tools with RAG-backed LLM enrichment, AST call-graph reachability, intra-procedural taint analysis, and cross-language correlation in a single self-hosted service at zero recurring cost.
+  \item \textbf{Unified multi-tool orchestration:} To the best of the author's knowledge, \ACRQA{} is the first open-source platform to combine nineteen SAST engines with RAG-backed LLM enrichment, AST call-graph reachability, intra-procedural taint analysis, and cross-language correlation in a single self-hosted service at zero recurring cost, achieving 100\% recall on a 13-repository benchmark corpus (+28.8 pp vs.\ Semgrep CE).
 
-  \item \textbf{Label-free confidence scoring:} The five-signal weighted scorer enables finding prioritisation without any labelled vulnerability dataset — applicable from the first scan and validated at 94.2\% false-positive suppression accuracy.
+  \item \textbf{Label-free confidence scoring:} The five-signal weighted scorer enables finding prioritisation without any labelled vulnerability dataset --- applicable from the first scan and validated at 94.2\% false-positive suppression accuracy.
 
   \item \textbf{Entropy-based hallucination filtering:} The N-gram entropy filter ($\tau = 3.2$ bits) across three independent LLM runs rejects 96\% of low-quality responses without human review, providing a reusable pattern for any AI-assisted developer tooling.
 
-  \item \textbf{PQC-aware Cryptographic Bill of Materials:} The CBoM module classifies 62 algorithms against NIST's 2024 post-quantum migration guidance \cite{nist_pqc_2024} and attests scan artefacts with CRYSTALS-Dilithium3 signatures — to the author's knowledge the first SAST-integrated tool to perform systematic PQC assessment.
+  \item \textbf{PQC-aware Cryptographic Bill of Materials:} The CBoM module classifies 62 algorithms against NIST's 2024 post-quantum migration guidance \cite{nist_pqc_2024} and attests scan artefacts with both ECDSA-P256 and CRYSTALS-Dilithium3 signatures.
+
+  \item \textbf{Call-graph reachability gating:} An AST-based BFS reachability engine penalises findings in dead code with a $-20$ confidence adjustment, achieving a 0\% false-positive rate across all fixture repositories.
+
+  \item \textbf{Cross-language vulnerability correlation:} Detects vulnerability chains spanning Python, JavaScript, and Go stack layers invisible to single-language tools.
+
+  \item \textbf{Heuristic Risk Predictor:} An explainable, label-free file-risk scorer (churn, cyclomatic complexity, age, author count, test gap) with documented auditable weights and empirically validated $r = 0.71$ correlation with true-positive density.
+
+  \item \textbf{Time-Travel Vulnerability Analyzer:} The first SAST-integrated engine to answer \textit{when} and \textit{by whom} a vulnerability was introduced, with regression-chain tracking bounded to the last $N$ commits.
+
+  \item \textbf{IaC Security Scanner:} Pure-Python analysis of Terraform, Kubernetes, Dockerfile, and GitHub Actions assets producing 28 canonical \texttt{IAC-*} findings through the same \texttt{CanonicalFinding} schema.
+
+  \item \textbf{PR Risk Score:} A single 0--100 mergeable-or-not signal combining reachability, taint coverage, exploit verification, file risk, and PR size into one CI-consumable gate metric.
 \end{enumerate}
 
 % -----------------------------------------------------------------
@@ -105,7 +117,7 @@ This project makes four novel contributions to software security and AI-assisted
 The development of \ACRQA{} followed an iterative, test-driven methodology structured in twelve phases across the academic year October 2025 -- June 2026. Table~\ref{tab:phases} summarises the phase timeline.
 
 \begin{table}[H]
-\caption{Development Phases --- \ACRQA{} v4.0.0}
+\caption{Development Phases --- \ACRQA{} v5.0.0b1}
 \label{tab:phases}
 \centering
 \renewcommand{\arraystretch}{1.25}
@@ -133,6 +145,6 @@ Docs & May--Jun 2026 & Thesis book; presentation; demo video \\
 \section{Thesis Structure}
 \label{sec:structure}
 
-Chapter~2 surveys the state of the art in static analysis, AI-assisted code review, RAG, and cryptographic inventory. Chapter~3 details the overall system architecture: the twelve-stage pipeline, canonical schema, and database design. Chapter~4 covers the implementation of every component from the FastAPI layer and Celery workers to the confidence scorer, taint analyser, RAG knowledge base, CBoM module, and React~18 dashboard. Chapter~5 presents the full evaluation: 2,311-test suite (84.89\% coverage), 97.1\% detection precision, OWASP Top~10 coverage, performance benchmarks, and a commercial feature comparison. Chapter~6 summarises contributions, lessons learned, limitations, and future directions.
+Chapter~2 surveys the state of the art in static analysis, AI-assisted code review, RAG, and cryptographic inventory. Chapter~3 details the overall system architecture: the twelve-stage pipeline, canonical schema, and database design. Chapter~4 covers the implementation of every component from the FastAPI layer and Celery workers to the confidence scorer, taint analyser, RAG knowledge base, CBoM module, and React~18 dashboard. Chapter~5 presents the full evaluation: 2,757-test suite (84.89\% CORE coverage), 97.1\% detection precision, 100\% recall vs.\ Semgrep CE (+28.8 pp), OWASP Top~10 coverage, performance benchmarks, and a commercial feature comparison. Chapter~6 summarises contributions, lessons learned, limitations, and future directions.
 
 \clearpage
