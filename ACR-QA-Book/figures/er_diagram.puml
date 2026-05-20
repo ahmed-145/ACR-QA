@@ -1,0 +1,142 @@
+@startuml er_diagram
+'──────────────────────────────────────────────────────────────
+'  ACR-QA  v4.0.0  —  Database Entity-Relationship Diagram
+'  10-table PostgreSQL schema — top-to-bottom portrait layout
+'  King Salman International University  ·  CSE494  ·  2025-26
+'──────────────────────────────────────────────────────────────
+!theme plain
+top to bottom direction
+
+skinparam backgroundColor   #FFFFFF
+skinparam defaultFontName   "Arial"
+skinparam defaultFontSize   10
+skinparam shadowing         false
+skinparam wrapWidth         220
+
+skinparam entity {
+  BackgroundColor #E8EDF4
+  BorderColor     #002654
+  BorderThickness 2
+  FontSize        10
+  FontStyle       bold
+  AttributeFontSize 9
+}
+
+skinparam arrow {
+  Color     #002654
+  FontColor #374151
+  FontSize  9
+  Thickness 1.5
+}
+
+'── CORE TABLES ──────────────────────────────────────────────
+entity "analysis_runs" as runs {
+  * id : UUID <<PK>>
+  --
+  target_path : TEXT
+  branch      : TEXT
+  status      : ENUM (QUEUED/RUNNING/COMPLETED/FAILED)
+  created_at  : TIMESTAMPTZ
+  completed_at : TIMESTAMPTZ
+}
+
+entity "findings" as findings {
+  * id : UUID <<PK>>
+  --
+  * run_id : UUID <<FK>>
+  tool        : TEXT
+  rule_id     : TEXT
+  file        : TEXT
+  line        : INTEGER
+  severity    : TEXT
+  confidence  : FLOAT
+  taint_path  : JSONB
+  is_suppressed : BOOLEAN
+}
+
+entity "llm_explanations" as expls {
+  * id : UUID <<PK>>
+  --
+  * finding_id : UUID <<FK>>
+  rule_id     : TEXT
+  prompt      : TEXT
+  response    : TEXT
+  entropy_score : FLOAT
+  created_at  : TIMESTAMPTZ
+}
+
+entity "feedback" as feedback {
+  * id : UUID <<PK>>
+  --
+  * finding_id : UUID <<FK>>
+  * user_id    : UUID <<FK>>
+  verdict      : ENUM (TP/FP)
+  created_at   : TIMESTAMPTZ
+}
+
+entity "suppression_rules" as supp {
+  * id : UUID <<PK>>
+  --
+  pattern    : TEXT
+  rule_id    : TEXT
+  scope      : TEXT
+  created_at : TIMESTAMPTZ
+}
+
+'── INFRASTRUCTURE TABLES ────────────────────────────────────
+entity "pr_comments" as pr {
+  * id : UUID <<PK>>
+  --
+  * run_id    : UUID <<FK>>
+  pr_url      : TEXT
+  comment_id  : TEXT
+  posted_at   : TIMESTAMPTZ
+}
+
+entity "users" as users {
+  * id : UUID <<PK>>
+  --
+  email           : TEXT
+  role            : TEXT
+  hashed_password : TEXT
+  created_at      : TIMESTAMPTZ
+}
+
+entity "api_keys" as apikeys {
+  * id : UUID <<PK>>
+  --
+  * user_id   : UUID <<FK>>
+  key_hash    : TEXT
+  label       : TEXT
+  expires_at  : TIMESTAMPTZ
+}
+
+entity "dependency_findings" as deps {
+  * id : UUID <<PK>>
+  --
+  * run_id   : UUID <<FK>>
+  package    : TEXT
+  version    : TEXT
+  cve_id     : TEXT
+  severity   : TEXT
+}
+
+entity "run_sboms" as sboms {
+  * id : UUID <<PK>>
+  --
+  * run_id        : UUID <<FK>>
+  cyclonedx_json  : JSONB
+  created_at      : TIMESTAMPTZ
+}
+
+'── RELATIONSHIPS ────────────────────────────────────────────
+runs      ||--o{ findings  : "1 : N"
+findings  ||--o| expls     : "1 : 0..1"
+findings  ||--o{ feedback  : "1 : N"
+runs      ||--o{ pr        : "1 : N"
+runs      ||--o{ deps      : "1 : N"
+runs      ||--o| sboms     : "1 : 0..1"
+users     ||--o{ apikeys   : "1 : N"
+users     ||--o{ feedback  : "1 : N"
+
+@enduml

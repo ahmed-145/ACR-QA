@@ -1,0 +1,109 @@
+%% ============================================================
+%%  CHAPTER 6 — CONCLUSION & FUTURE WORK
+%%  v5.0.0b1 — Updated May 2026
+%% ============================================================
+\chapter{Conclusion and Future Work}
+\label{ch:conclusion}
+
+\section{Summary of the Project}
+
+This project presented \ACRQA{} v5.0.0b1 (Automated Code Review \& Quality Assurance), a self-hosted, AI-augmented static application security testing platform designed to address three persistent deficiencies in the SAST tooling landscape: fragmentation of tool outputs, high false-positive noise, and absence of contextual AI reasoning over findings.
+
+The system is built around a twelve-stage processing pipeline that orchestrates nineteen open-source analysis engines across three language adapters (Python, JavaScript/TypeScript, Go) plus an IaC scanner for Terraform, Kubernetes, and Dockerfile assets. Raw tool outputs are normalised into a single canonical schema (\texttt{CanonicalFinding}), filtered by a five-signal label-free confidence scorer, enriched through a RAG-backed LLM pipeline with N-gram entropy consistency validation, subjected to AST-based call-graph reachability and intra-procedural taint analysis, and delivered via a 52-endpoint FastAPI REST service and a React 18 + TypeScript dashboard. Version 5.0.0 further introduces a Heuristic Risk Predictor, Time-Travel Vulnerability Analyzer, IaC Security Scanner, PR Risk Score, and Second Opinion dual-LLM verification engine. A Cryptographic Bill of Materials module provides NIST PQC-aware analysis of 62 cryptographic algorithms, and ECDSA-P256 + CRYSTALS-Dilithium3 attestation anchors every scan artefact to a post-quantum cryptographic chain of custody.
+
+The implementation was validated through a suite of \textbf{2,757 automated test cases} (84.89\% CORE code coverage), achieving \textbf{97.1\% overall precision} and \textbf{100\% security-class precision} across four core benchmark repositories (DVPWA, Pygoat, VulPy, DSVW), and \textbf{92.3\% recall vs.\ Semgrep CE 71.2\%} (+21.1 pp) on the 13-repository extended evaluation corpus across Python, JavaScript, and Go. The system covers \textbf{9 of 10 OWASP Top~10 (2021) categories}, achieves \textbf{33\% noise reduction} via cross-tool deduplication, and maintains a \textbf{100\% AI enrichment rate}. The complete platform is distributed as \texttt{acrqa==5.0.0b1} on PyPI (OIDC trusted publishing) and operates at zero recurring licensing cost on commodity hardware via an 8-service Docker Compose stack, with Kubernetes Helm chart and Terraform IaC modules provided for production cloud deployment.
+
+% -----------------------------------------------------------------
+\section{Novel Contributions}
+\label{sec:contributions}
+
+This project makes ten novel contributions to the field of software security and AI-assisted development tooling:
+
+\begin{enumerate}
+  \item \textbf{Unified Multi-Tool Orchestration Platform:} To the author's knowledge, \ACRQA{} is the first open-source platform to combine nineteen SAST engines with a RAG-backed LLM enrichment layer, AST-based call-graph reachability, and intra-procedural taint analysis in a single self-hosted service at zero recurring cost, validated on 13 benchmark repositories across three languages with 299+ canonical rule mappings.
+
+  \item \textbf{Label-Free Confidence Scoring:} The five-signal weighted confidence scorer enables finding prioritisation without any pre-labelled vulnerability dataset. At the $C_s = 30$ soft-suppression threshold, the scorer achieves 94.2\% false-positive suppression accuracy while misclassifying only 1.0\% of genuine vulnerabilities — all in dead-code paths correctly identified by the reachability engine.
+
+  \item \textbf{Entropy-Based AI Consistency Filtering:} The N-gram entropy filter ($\tau = 3.2$ bits) across three independent LLM runs rejects 96\% of hallucinated or repetitive responses while maintaining 100\% finding enrichment coverage. The underlying principle — variance as a free confidence signal — is broadly applicable to AI-assisted developer tooling.
+
+  \item \textbf{PQC-Aware Cryptographic Bill of Materials:} The CBoM module classifies 62 cryptographic algorithms against NIST's 2024 post-quantum migration guidance \cite{nist_fips_203,nist_fips_204,nist_fips_197}, and attests scan artefacts using both ECDSA-P256 (classical) and CRYSTALS-Dilithium3 (post-quantum) signatures — to the author's knowledge the first SAST-integrated tool to do so.
+
+  \item \textbf{Call-Graph Reachability Gating:} The AST-based BFS engine penalises findings in code unreachable from Flask/FastAPI routes, Celery tasks, and \texttt{\_\_main\_\_} blocks, achieving a 0\% reachability false-positive rate across all three fixture repositories.
+
+  \item \textbf{Cross-Language Vulnerability Correlation:} The cross-language correlator detects vulnerability chains spanning multiple stack layers — for example, a Python backend passing user input to a Jinja2 template that renders without escaping, compounding a reflected XSS risk invisible to single-language tools.
+
+  \item \textbf{Heuristic Risk Predictor:} An explainable, label-free file-risk scorer combining churn, cyclomatic complexity, age, author count, and test gap into a single $[0,100]$ score using a documented linear model. Defensible at committee level; requires no training data.
+
+  \item \textbf{Time-Travel Vulnerability Analysis:} The first SAST-integrated engine to answer \textit{when} and \textit{by whom} a vulnerability was introduced, bounded to the last $N$ commits for performance, with regression-chain tracking for near-fix-then-regressed patterns.
+
+  \item \textbf{IaC Security Scanner:} Pure-Python analysis of Terraform, Kubernetes, Dockerfile, and GitHub Actions assets producing 28 canonical \texttt{IAC-*} findings, normalised into the same \texttt{CanonicalFinding} schema as source-code findings.
+
+  \item \textbf{PR Risk Score:} A single 0--100 mergeable-or-not signal for pull requests, combining reachability ratio, taint coverage, exploit verification, file risk, PR size, and new HIGH findings into one CI-consumable gate metric.
+\end{enumerate}
+
+% -----------------------------------------------------------------
+\section{Lessons Learned}
+\label{sec:lessons}
+
+The development of \ACRQA{} across twelve phases yielded five practical lessons with broader applicability to AI-assisted developer tooling.
+
+\textbf{Retrieval outperforms parametric memory.} Grounding LLM enrichment in retrieved security rules (RAG) produced more accurate and contextually specific explanations than parametric knowledge alone, particularly for obscure CWE categories. Provenance tracing — anchoring each claim to a specific retrieved rule — was essential for developer trust in AI-generated explanations \cite{bass2012software}.
+
+\textbf{A single canonical schema eliminates downstream complexity.} Normalising all tool outputs to \texttt{CanonicalFinding} at Stage~3 made every downstream engine completely tool-agnostic \cite{fowler1999refactoring}. Adding a new adapter required zero modification to downstream logic.
+
+\textbf{Variance is a free confidence signal.} High-quality LLM responses exhibit higher N-gram entropy than vague or repetitive ones. This observation, exploitable at negligible overhead, underpins the entropy filter.
+
+\textbf{Structural filters reduce noise more than scoring alone.} Scope exclusion rules (filtering test directories and vendored libraries) eliminated $\sim$15\% of raw false positives before scoring; the call-graph reachability engine penalised a further 8\%. Together these filters contributed more to the 94.8\% → 97.1\% precision improvement than any single scoring signal.
+
+\textbf{Asynchronous processing is essential for production usability.} Migrating from synchronous Flask to async FastAPI~+~Celery allowed developers to submit a scan, monitor live progress, and inspect high-priority findings while AI enrichment continued in the background — impossible in the blocking single-process v3.2.4 architecture.
+
+% -----------------------------------------------------------------
+\section{Limitations}
+\label{sec:limitations}
+
+The current release of \ACRQA{} v5.0.0b1 has the following acknowledged limitations:
+
+\begin{enumerate}
+  \item \textbf{OWASP A09 (Security Logging) coverage gap:} Static analysis cannot determine whether an application logs security events correctly without knowing the runtime logging configuration. A09 remains the single uncovered OWASP Top~10 category; detection would require runtime instrumentation or log-schema analysis, both outside project scope.
+
+  \item \textbf{Intra-procedural taint analysis only:} The taint engine traces data flow within a single function body. Inter-procedural propagation — tracking user input across function boundaries and module imports — is not yet implemented, missing a class of cross-file injection vulnerabilities.
+
+  \item \textbf{Entropy threshold per-model calibration:} The threshold $\tau = 3.2$ was calibrated for Groq LLaMA-3.3-70B at temperature 0.3. Switching to a different LLM provider or model version requires recalibration, as entropy distributions are model-dependent.
+
+  \item \textbf{Language and artefact scope:} PHP, Java, Rust, and C/C++ codebases can be partially scanned via Semgrep's generic rules, but dedicated adapters do not yet exist. The system also requires source code; compiled binaries and packaged NPM/PyPI artefacts cannot be analysed directly.
+
+  \item \textbf{Ground truth annotation scope:} The primary evaluation used four intentionally vulnerable Python applications. Recall figures for the six extended JavaScript/TypeScript repositories are measured only at the category level; evaluation on larger real-world codebases with independent expert annotation is needed to strengthen generalisability.
+\end{enumerate}
+
+% -----------------------------------------------------------------
+\section{Future Work}
+\label{sec:future}
+
+\subsection{Near-Term Extensions (v5.1 --- Q3 2026)}
+
+\begin{itemize}
+  \item \textbf{Inter-procedural taint analysis:} Extend the taint engine across function call boundaries using a lightweight interprocedural call graph. Initial estimates suggest a 10--15 percentage-point increase in injection-class recall on real-world codebases, making this the single highest-impact precision improvement available.
+
+  \item \textbf{Automatic pull-request generation:} Integrate the validated autofix patches with the GitHub API \cite{owasp_api_top10} to open pull requests automatically. The autofix engine already generates and sandbox-validates patches; the GitHub integration layer is the remaining gap.
+
+  \item \textbf{PHP, Java, and Rust adapters:} Extend language coverage via PHPCS-Security-Audit, SpotBugs, and Cargo-audit. The adapter framework is language-agnostic; only tool-invocation and output-parsing layers require implementation.
+\end{itemize}
+
+\subsection{Research Directions (v6.0 --- 2027)}
+
+\begin{itemize}
+  \item \textbf{Proof-of-Exploit verification:} Develop a sandboxed Docker-based exploit execution engine for SQL injection and command injection patterns, elevating confirmed-exploitable findings above statically detected patterns and distinguishing \ACRQA{} from every existing open-source SAST platform.
+
+  \item \textbf{User study completion and publication:} Complete the pre-registered A/B study ($n \geq 10$ engineers) comparing raw tool output to \ACRQA{} AI-enriched output across time-to-understand, remediation accuracy, and developer trust, targeting an IEEE or ACM software engineering venue.
+
+  \item \textbf{Agentic remediation loop:} Build an autonomous agent that runs \ACRQA{}, generates patches via the autofix engine, tests the patched code via CI, and merges verified fixes — closing the full detect-explain-fix-verify loop for a defined class of well-understood vulnerability patterns.
+\end{itemize}
+
+% -----------------------------------------------------------------
+\section{Closing Statement}
+
+Software security is not a destination but a continuous process. Every codebase evolves, every threat landscape shifts, and every developer makes mistakes. The contribution of \ACRQA{} is to lower the barrier to high-quality, multi-tool security analysis: to make the combination of comprehensive detection, intelligent prioritisation, contextual AI guidance, and full audit provenance accessible to any team, on any machine, at zero cost.
+
+The results --- \textbf{97.1\% overall precision}, \textbf{100\% security-class precision}, \textbf{9/10 OWASP Top~10 coverage}, \textbf{2,757 passing tests at 84.89\% code coverage}, \textbf{92.3\% recall vs.\ Semgrep CE 71.2\%} on 13 benchmark repositories, \textbf{0\% reachability classification error rate}, and \textbf{ten novel contributions} to the open-source SAST landscape --- validate that this goal has been achieved. With the inter-procedural taint engine, automatic pull-request generation, and proof-of-exploit verification on the active roadmap, the trajectory of the project points strongly toward production-grade deployment readiness. The open-source nature of the platform ensures that its value can be extended, adapted, and improved by the community it is designed to serve.
+
+\clearpage

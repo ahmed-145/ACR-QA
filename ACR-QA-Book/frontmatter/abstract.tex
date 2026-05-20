@@ -1,0 +1,23 @@
+%% ============================================================
+%%  ABSTRACT
+%%  v4.0.0 — Updated May 2026
+%% ============================================================
+\chapter*{Abstract}
+\addcontentsline{toc}{chapter}{Abstract}
+\thispagestyle{plain}
+
+Software vulnerabilities remain one of the most critical challenges in modern software development. Traditional static application security testing (SAST) tools suffer from fragmented output formats, high false-positive rates, and an inability to reason about context-specific security risks. Integrating multiple complementary tools into a unified pipeline adds significant engineering overhead, and the absence of AI-assisted interpretation leaves developers overwhelmed by uncontextualised findings.
+
+This project presents \textbf{\ACRQA{}} (Automated Code Review \& Quality Assurance), a self-hosted, AI-augmented static analysis platform designed to address these limitations. \ACRQA{} orchestrates fourteen open-source analysis engines across three programming languages (Python, JavaScript/TypeScript, and Go), normalises their heterogeneous outputs into a single canonical finding schema (\texttt{CanonicalFinding}), and enriches each finding through a Retrieval-Augmented Generation (RAG) pipeline backed by a curated knowledge base of 66 security rules and a hosted Groq LLaMA-3.3-70B model.
+
+The system is defined by a twelve-stage processing pipeline incorporating: multi-tool parallel execution, output normalisation and cross-tool deduplication, intra-procedural taint analysis, AST-based call-graph reachability gating, five-signal label-free confidence scoring, RAG-assisted AI enrichment with N-gram entropy consistency filtering, Cryptographic Bill of Materials (CBoM) generation with NIST post-quantum cryptography awareness, quality gate enforcement, and post-quantum cryptographic attestation (ECDSA-P256 + CRYSTALS-Dilithium3). The complete platform is delivered as an 8-service Docker Compose stack comprising a 33-endpoint FastAPI REST API, a React~18 + TypeScript dashboard with WCAG~2.1~AA accessibility compliance, Celery asynchronous workers, PostgreSQL~15 provenance persistence (10-table schema), Redis, Prometheus, and Grafana --- fully deployable on commodity hardware at zero recurring licensing cost.
+
+Evaluation against a \textbf{2,311-test} continuous integration suite (84.89\% CORE code coverage) and ten deliberately vulnerable benchmark repositories (DVPWA, Pygoat, VulPy, DSVW, and six cross-language repositories) demonstrates \textbf{97.1\% overall detection precision} and \textbf{100\% security-class precision} across 836 evaluated findings, covering \textbf{9 of 10 OWASP Top~10 (2021)} vulnerability categories. The call-graph reachability engine achieves a 0\% false-positive rate on fixture validation; the taint analyser achieves 100\% recall across 22 synthetic source-sink fixtures. The system sustains 500 requests per second with p99 latency under 2\,s.
+
+Six novel contributions are presented: (i)~a unified open-source multi-tool SAST orchestration platform with RAG-backed AI enrichment; (ii)~a label-free five-signal confidence scoring mechanism requiring no historical annotation data; (iii)~an N-gram entropy consistency filter that reduces LLM hallucination noise without human review; (iv)~a NIST PQC-aware Cryptographic Bill of Materials module classifying 62 algorithms against current migration guidance; (v)~an AST-based call-graph reachability engine that penalises unreachable findings with zero suppression of genuine vulnerabilities; and (vi)~cross-language vulnerability correlation detecting multi-layer exploit chains spanning Python, Jinja2, and JavaScript.
+
+\vspace{0.8cm}
+
+\noindent\textbf{Keywords:} Static Analysis, Automated Code Review, Security Vulnerability Detection, Retrieval-Augmented Generation, Large Language Models, Confidence Scoring, Call-Graph Reachability, Taint Analysis, Cryptographic Bill of Materials, Post-Quantum Cryptography, DevSecOps, CI/CD Integration, OWASP.
+
+\clearpage

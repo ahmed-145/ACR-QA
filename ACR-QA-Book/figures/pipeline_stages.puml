@@ -1,0 +1,186 @@
+@startuml ACR-QA-Pipeline-Stages
+'──────────────────────────────────────────────────────────────
+'  ACR-QA  v4.0.0  —  12-Stage Processing Pipeline
+'  Ahmed Mahmoud Abbas  (222101213)  ·  KSIU  ·  CSE494  ·  2026
+'──────────────────────────────────────────────────────────────
+!theme plain
+skinparam backgroundColor #FFFFFF
+skinparam defaultFontName  "Arial"
+skinparam defaultFontSize  10
+skinparam shadowing        false
+
+skinparam activity {
+  BackgroundColor        #E8EDF4
+  BorderColor            #002654
+  BorderThickness        2
+  FontSize               10
+  DiamondBackgroundColor #FFF3BF
+  DiamondBorderColor     #C9A84C
+}
+
+skinparam arrow {
+  Color     #002654
+  FontColor #444444
+  FontSize  9
+  Thickness 1.5
+}
+
+skinparam note {
+  BackgroundColor #FFFDE7
+  BorderColor     #C9A84C
+  FontSize        9
+}
+
+skinparam legend {
+  BackgroundColor #F8F9FA
+  BorderColor     #CED4DA
+  FontSize        9
+}
+
+start
+
+'────────────────────────── STAGE 0 ──────────────────────────
+:⓪  **Rate Limit & Job Init**
+─────────────────────────────────
+Redis token-bucket check
+POST /v1/scan → 202 Accepted
+Celery task enqueued · run ID returned;
+
+note right
+  API returns immediately
+  Worker picks up async
+end note
+
+'────────────────────────── STAGE 1 ──────────────────────────
+:①  **Repository Ingestion**
+──────────────────────────────
+Validate path · detect languages
+(.py / .ts / .go extension scan)
+PostgreSQL: UPDATE run SET status=RUNNING;
+
+'────────────────────────── STAGE 2 ──────────────────────────
+fork
+  :Python Adapter
+  Ruff · Bandit · Semgrep
+  Vulture · Radon · jscpd;
+fork again
+  :JavaScript / TS Adapter
+  ESLint-security · Semgrep
+  npm audit · jscpd;
+fork again
+  :Go Adapter
+  gosec · staticcheck
+  Semgrep;
+fork again
+  :Cross-language
+  Secrets Detector
+  TruffleHog · Trivy;
+end fork
+
+note right
+  Stage 2 — 12+ tools
+  all run in parallel
+  subprocess + thread pool
+end note
+
+'────────────────────────── STAGE 3 ──────────────────────────
+:③a  **Normalise → CanonicalFinding**
+──────────────────────────────────────
+map to canonical schema (file / line / severity)
+apply config filter · scope exclusions (≈15% eliminated);
+
+:③b  **Triage Memory Lookup**
+──────────────────────────────
+check learned-suppression table
+apply per-repo suppression rules;
+
+:③c  **Cross-Tool Deduplication**
+───────────────────────────────────
+2-pass: location hash + rule hash
+merge overlapping findings from different tools;
+
+:③d  **Intra-Procedural Taint Analysis**
+─────────────────────────────────────────
+AST BFS from TAINT_SOURCES → TAINT_SINKS
+confidence = max(0.4, 0.95 − 0.1·(h−1));
+
+:③e  **Call-Graph Reachability**
+──────────────────────────────────
+BFS from Flask/FastAPI routes · Celery tasks · __main__
+max_depth = 5;
+
+if (finding reachable?) then (yes)
+else (no — dead code)
+  :Apply −20 confidence penalty
+  (retained for audit, deprioritised);
+endif
+
+:③f  **Per-Rule Cap + Sort**
+─────────────────────────────
+cap max findings per rule
+sort by confidence descending;
+
+'────────────────────────── STAGE 4 ──────────────────────────
+:④  **Five-Signal Confidence Scoring**
+──────────────────────────────────────
+severity · category · tool_reliability
+rule_specificity · fix_validation
+multi-tool bonus (+5) → C ∈ [0, 100];
+
+if (C ≥ 30 ?) then (yes — keep)
+else (no — soft-suppress)
+  :Mark deprioritised
+  (visible in dashboard, ranked last);
+endif
+
+:⑤  **RAG Enrichment**
+────────────────────────
+dict_lookup(canonical_rule_id) → O(1)
+prompt Groq LLaMA-3.3-70B × 3 independent runs
+N-gram entropy filter  τ = 3.2 bits
+store in llm_explanations (full provenance);
+
+note right
+  97.1 % overall precision
+  100 % security-class precision
+  100 % enrichment rate
+end note
+
+:⑤b  **Post-Quantum Attestation**
+───────────────────────────────────
+ECDSA-P256 signature
+CRYSTALS-Dilithium3 signature
+Sigstore / Fulcio OIDC keyless signing;
+
+'────────────────────────── STAGE 5 ──────────────────────────
+:⑥  **Supply Chain · SCA · CBoM**
+───────────────────────────────────
+pip-audit · npm audit (CVE mapping)
+CBoM: inventory 62 cryptographic primitives
+flag NIST PQC deprecated algorithms;
+
+'────────────────────────── STAGE 6 ──────────────────────────
+:⑦  **Quality Gate**
+──────────────────────
+evaluate .acrqa.yml thresholds
+PASS / FAIL per severity bucket
+emit gate_result to CI runner;
+
+'────────────────────────── STAGE 7 ──────────────────────────
+:⑧  **Output Delivery**
+────────────────────────
+JSON · SARIF · Markdown
+persist all findings to PostgreSQL
+POST GitHub check-run + PR inline comments;
+
+stop
+
+legend top right
+  |= Stage Group   |= Layer                          |
+  |<back:#E8EDF4>  ⓪–①  </back>| Rate Limit + Ingestion       |
+  |<back:#C8D8F0>  ②–③  </back>| Tool Execution + Normalise   |
+  |<back:#FFF3BF>  ④–⑤  </back>| Scoring + AI Enrichment      |
+  |<back:#D3F9D8>  ⑥–⑧  </back>| Supply Chain + Gate + Output |
+end legend
+
+@enduml

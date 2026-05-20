@@ -1,0 +1,48 @@
+@startuml eval_methodology
+skinparam backgroundColor white
+skinparam defaultFontName "Arial"
+skinparam ArrowColor #002654
+skinparam ActivityBorderColor #002654
+skinparam ActivityBackgroundColor #E8EDF4
+skinparam ActivityFontColor #002654
+skinparam ActivityFontSize 12
+skinparam ActivityDiamondBackgroundColor #C9A84C
+skinparam ActivityDiamondBorderColor #002654
+skinparam ActivityDiamondFontColor #002654
+skinparam NoteBorderColor #00336E
+skinparam NoteBackgroundColor #F0F4FA
+
+title <color:#002654><b>ACR-QA Evaluation Methodology</b></color>
+
+start
+:Select Benchmark Repository\n//DVPWA, Pygoat, VulPy, DSVW,//\n//NodeGoat, DVNA, Juice Shop, ...//;
+
+:Establish Ground Truth\n//Manual expert review + CWE mapping//;
+
+note right
+  Ground truth annotated by
+  author + Dr. Samy AbdelNabi
+  with consensus resolution
+end note
+
+:Execute ACR-QA Full Pipeline\n//(12-stage, all 14 engines)//;
+
+:Collect Normalised Findings\n//(CanonicalFinding schema)//;
+
+fork
+  :Compute TP / FP / FN;
+fork again
+  :Evaluate AI Enrichment\n//Entropy filter + manual review//;
+fork again
+  :Call-Graph Reachability\n//Fixture validation//;
+end fork
+
+:Calculate Precision / Recall / F1;
+
+:Compare vs Baseline Tools\n//(Bandit, Semgrep, Ruff)//;
+
+:Compare vs Commercial Platforms\n//(SonarQube, Snyk, Codacy)//;
+
+:Report Results;
+stop
+@enduml

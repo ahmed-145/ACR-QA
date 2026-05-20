@@ -1,0 +1,169 @@
+%% ============================================================
+%%  CHAPTER 2 — LITERATURE REVIEW & BACKGROUND
+%% ============================================================
+\chapter{Literature Review and Background}
+\label{ch:literature}
+
+\section{Overview}
+
+This chapter surveys the state of the art across the four principal knowledge domains that underpin \ACRQA{}: static application security testing, AI-assisted code analysis, retrieval-augmented generation, and cryptographic inventory systems. For each domain, foundational concepts are introduced, key prior work is summarised, and the gaps that motivate this project are identified.
+
+% -----------------------------------------------------------------
+\section{Static Application Security Testing (SAST)}
+\label{sec:sast_background}
+
+\subsection{Definition and Scope}
+
+Static Application Security Testing is the practice of analysing source code, bytecode, or binary representations of software to identify security vulnerabilities without executing the program. Unlike Dynamic Application Security Testing (DAST), which probes a running system, SAST operates on artefacts available during development --- making it naturally suited for integration into CI/CD pipelines \cite{chess2004static}.
+
+SAST tools typically operate using one or more of the following underlying techniques \cite{chess2004static,livshits2005finding}:
+
+\begin{itemize}
+  \item \textbf{Pattern matching / taint analysis:} Rules expressed as regular expressions or abstract syntax tree (AST) patterns detect known vulnerability signatures. Tools like Semgrep and PMD operate primarily in this mode.
+
+  \item \textbf{Data flow analysis:} Tracks how untrusted input propagates through program execution paths to sensitive sinks (e.g., database queries, shell commands) \cite{newsome2005dynamic,enck2014taintdroid}. Finds taint-propagation vulnerabilities such as SQL injection and command injection \cite{halfond2006classification}.
+
+  \item \textbf{Control flow analysis:} Models all possible execution paths through a program to identify paths that reach insecure states.
+
+  \item \textbf{Abstract interpretation:} Over-approximates program behaviour to prove absence of certain error classes, at the cost of potential false positives.
+\end{itemize}
+
+\subsection{The Tool Landscape}
+
+Table~\ref{tab:sast_tools} summarises the major open-source SAST tools and their primary domains.
+
+\begin{table}[htbp]
+\caption{Open-Source SAST Tools Surveyed and Selected for \ACRQA{} (Tools actually integrated in v3.2.4 shown in bold)}
+\label{tab:sast_tools}
+\centering
+\small
+\renewcommand{\arraystretch}{1.15}
+\begin{tabularx}{\textwidth}{@{} l l X @{}}
+\toprule
+\textbf{Tool} & \textbf{Primary Language(s)} & \textbf{Focus Area} \\
+\midrule
+\multicolumn{3}{@{}l}{\textit{Python Language Tools}} \\
+Ruff           & Python               & Fast linter; style, best-practice, and security rules \\
+Bandit         & Python               & Security anti-patterns; CWE mapping; 40+ security rules \\
+Semgrep        & Multi-language       & Pattern-based AST matching; custom rule sets \\
+Vulture        & Python               & Unused code and dead-code detection \\
+jscpd          & Multi-language       & Copy-paste and code duplication analysis \\
+Radon          & Python               & Cyclomatic complexity and maintainability metrics \\
+\midrule
+\multicolumn{3}{@{}l}{\textit{JavaScript / TypeScript Tools}} \\
+ESLint + security plugins & JavaScript / TypeScript & XSS, prototype pollution, eval misuse, injection \\
+Semgrep        & Multi-language       & Shared rule sets for cross-language analysis \\
+npm audit      & Node.js (deps)       & Known CVEs in Node.js dependency tree \\
+\midrule
+\multicolumn{3}{@{}l}{\textit{Go Language Tools}} \\
+gosec          & Go                   & 35 security rules mapped to canonical IDs \\
+staticcheck    & Go                   & 21 static analysis rules; style and correctness \\
+\midrule
+\multicolumn{3}{@{}l}{\textit{Cross-Language Scanners}} \\
+Secrets Detector & All (regex-based)  & 15+ patterns: AWS keys, GitHub tokens, JWTs, DB URLs \\
+SCA Scanner    & Python / Node.js     & pip-audit wrapper; CVSS→severity mapping; known CVEs \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+Each tool excels within its niche but exhibits blind spots outside it \cite{bandit_tool,semgrep_tool,gosec_tool,eslint_security}. No single tool achieves comprehensive coverage, which motivates the multi-tool orchestration approach of \ACRQA{} \cite{ayewah2008using}.
+
+\subsection{The False Positive Problem}
+
+A fundamental tension in SAST design is the precision-recall trade-off. Tools configured for high recall generate large volumes of false positives --- findings that are technically triggered by a rule but do not represent real vulnerabilities in the context of the codebase. Johnson et al.\ \cite{johnson2013dont} conducted a systematic study of developer responses to static analysis warnings and found that developers frequently disable or ignore tools after encountering a sustained pattern of false positives, negating the tool's security value entirely.
+
+Empirical studies across industrial codebases report false positive rates ranging from 35\% to over 80\% depending on tool configuration and codebase characteristics \cite{muske2016survey}. Complementary code quality metrics such as cyclomatic complexity \cite{mccabe1976complexity} and code clone density \cite{roy2009comparison} correlate with vulnerability likelihood and inform finding prioritisation. Vulnerability severity frameworks including CVSS \cite{cvss_v3} and statistical ranking approaches such as Z-ranking \cite{kremenek2003z} provide the theoretical foundation for label-free confidence scoring. The confidence scoring mechanism in \ACRQA{} builds on these foundations to surface the most likely true positives at the top of developer work queues.
+
+% -----------------------------------------------------------------
+\section{AI-Assisted Code Review}
+\label{sec:ai_code_review}
+
+\subsection{Machine Learning and Large Language Models for Code}
+
+Early ML approaches applied classifiers to features from code property graphs (ASTs + CFGs + PDGs) \cite{yamaguchi2014modeling} and neural models such as Code2Vec \cite{alon2019code2vec} and VulDeePecker \cite{li2018vuldeepecker}. These approaches require large, labelled vulnerability datasets and generalise poorly across codebases.
+
+Transformer-based LLMs (GitHub Copilot \cite{chen2021evaluating}, CodeBERT \cite{feng2020codebert}, CodeLlama \cite{roziere2023code}) demonstrated strong zero-shot generalisation for vulnerability detection \cite{thapa2022transformer} but introduced hallucination risks. Pearce et al.\ \cite{pearce2022asleep} found Copilot generated vulnerable code in 40\% of scenarios; Ni et al.\ \cite{ni2023chatgpt} showed LLM vulnerability-detection performance is highly sensitive to prompt formulation.
+
+The key insight exploited by \ACRQA{} is that LLMs are most effective for contextual reasoning and explanation --- not as primary detectors. Detection is delegated to deterministic SAST tools; the LLM enriches and contextualises confirmed findings.
+
+\subsection{Hallucination and Consistency Challenges}
+
+A critical limitation of LLM use in high-stakes contexts is hallucination --- the generation of plausible-sounding but factually incorrect content \cite{ji2023survey}. In a security context, a hallucinated explanation that incorrectly characterises a vulnerability's exploitability or recommends an incorrect remediation can cause more harm than no explanation at all.
+
+Prior work on hallucination mitigation has focused on retrieval augmentation (discussed in Section~\ref{sec:rag_background}), uncertainty quantification, and consistency-based filtering. The entropy-based consistency filter in \ACRQA{} draws on the observation that consistent, well-grounded LLM responses tend to exhibit lower token-level perplexity variance across multiple independent generations \cite{kuhn2023semantic}.
+
+% -----------------------------------------------------------------
+\section{Retrieval-Augmented Generation (RAG)}
+\label{sec:rag_background}
+
+\subsection{Motivation and Architecture}
+
+Retrieval-Augmented Generation was introduced by Lewis et al.\ \cite{lewis2020retrieval} as a method to ground LLM outputs in external factual knowledge, reducing hallucination and improving factual accuracy on knowledge-intensive tasks. The RAG architecture consists of two primary components:
+
+\begin{enumerate}
+  \item \textbf{Retriever:} Given a query, retrieves relevant documents from a pre-built knowledge base using dense or sparse vector similarity search.
+  \item \textbf{Generator:} An LLM that conditions its output on both the original query and the retrieved documents, which are concatenated into the prompt context.
+\end{enumerate}
+
+The key advantage of RAG over pure parametric LLMs \cite{brown2020language} is that the knowledge base can be updated independently of the model, enabling the system to stay current with evolving security guidance without model fine-tuning. Chain-of-thought prompting \cite{wei2022chain} and instruction tuning \cite{dettmers2023qlora} are complementary techniques for improving LLM reasoning quality.
+
+\subsection{RAG in Security Contexts}
+
+RAG has been applied to several security domains. ChatSec \cite{chatsec2024} demonstrated a RAG system for answering questions about CVE advisories by retrieving relevant vulnerability descriptions from the National Vulnerability Database \cite{nvd_database}. SecurityLLM \cite{securityllm2024} applied RAG to malware analysis, grounding LLM classification decisions in retrieved behavioural signatures.
+
+The application of RAG to SAST finding enrichment --- as employed by \ACRQA{} --- is less explored in the literature. The closest related work is the AutoCodeRover system \cite{zhang2024autocoderover}, which uses RAG to retrieve relevant code context for automated patch generation, though it operates at the patch-generation level rather than finding-enrichment level.
+
+\subsection{Knowledge Base Construction}
+
+The quality of RAG outputs is strongly dependent on the quality and structure of the knowledge base \cite{guu2020retrieval}. In \ACRQA{}, the knowledge base of 69 security rules (with 127 canonical mappings across the three supported languages) was curated from three primary sources: the OWASP Secure Coding Practices Quick Reference \cite{owasp_scp}, the NIST SP 800-53 security control catalogue \cite{nist_800_53}, and CWE descriptions from MITRE's Common Weakness Enumeration taxonomy \cite{mitre_cwe}. The OWASP Application Security Verification Standard \cite{owasp_asvs} and OWASP API Security Top~10 \cite{owasp_api_top10} additionally informed the security rule set for API-level and authentication-related findings. Each knowledge base entry is structured to include: vulnerability class, description, impact, detection patterns, and remediation guidance.
+
+% -----------------------------------------------------------------
+\section{Cryptographic Bill of Materials (CBoM)}
+\label{sec:cbom_background}
+
+\subsection{Software Bill of Materials}
+
+The concept of a Software Bill of Materials (SBOM) --- a machine-readable inventory of all components in a software artefact --- gained regulatory prominence following the 2021 US Executive Order on Improving the Nation's Cybersecurity \cite{white_house_eo_2021}. Software supply chain attacks have grown significantly in frequency and impact \cite{ladisa2023sok}, making component-level transparency an essential security control. SBOM formats including SPDX \cite{spdx_standard} and CycloneDX \cite{cyclonedx} are now widely adopted. SBOM formats including SPDX and CycloneDX are now widely adopted for software supply chain transparency. Alongside SBOM, the SARIF (Static Analysis Results Interchange Format) standard \cite{sarif_standard} has emerged as the canonical exchange format for static analysis tool output, enabling integration with platforms such as GitHub Advanced Security.
+
+\subsection{Cryptographic Bill of Materials}
+
+A Cryptographic Bill of Materials (CBoM) extends the SBOM concept to cryptographic assets specifically: public keys, digital certificates, signing algorithms, hash functions, symmetric cipher modes, and key agreement protocols used within a software system. The CBoM concept is particularly relevant in the context of post-quantum cryptography migration, where organisations must identify all uses of classical public-key algorithms (RSA, ECC, ECDSA, ECDH) that will be vulnerable to sufficiently powerful quantum computers running Shor's algorithm \cite{shor1994algorithms} and Grover's algorithm \cite{grover1996fast}.
+
+\subsection{NIST Post-Quantum Cryptography Standardisation}
+
+NIST's Post-Quantum Cryptography Standardisation project, launched in 2016 and completing its first round of standardisation in 2024 \cite{nist_pqc_2024}, selected four algorithms for standardisation: CRYSTALS-Kyber (key encapsulation), CRYSTALS-Dilithium, FALCON, and SPHINCS+ (digital signatures). Organisations are recommended to begin cryptographic inventory and migration planning immediately. The CBoM module in \ACRQA{} directly supports this planning by inventorying cryptographic primitives and flagging those scheduled for deprecation.
+
+% -----------------------------------------------------------------
+\section{Related Systems and Identified Gaps}
+\label{sec:related_tools}
+
+Table~\ref{tab:related_tools} summarises the principal commercial and open-source tools surveyed and their key limitations relative to \ACRQA{}.
+
+\begin{table}[htbp]
+\caption{Related Tools and Key Limitations}
+\label{tab:related_tools}
+\centering
+\small
+\renewcommand{\arraystretch}{1.25}
+\begin{tabularx}{\textwidth}{@{} l X @{}}
+\toprule
+\textbf{Tool} & \textbf{Key Limitation vs.\ \ACRQA{}} \\
+\midrule
+SonarQube \cite{sonarqube}  & Enterprise licensing required for AI features; no RAG grounding \\
+Snyk Code \cite{snyk}       & Cloud-dependent; proprietary AI; no CBoM or PQC awareness \\
+Veracode \cite{veracode}    & Premium pricing prohibitive for academic use \\
+Checkmarx \cite{checkmarx} & Enterprise cloud only; no self-hosted AI enrichment \\
+DefectDojo \cite{defectdojo} & Aggregation layer only; no analysis or AI enrichment \\
+Trivy \cite{trivy}          & Container/IaC focus; no cross-language SAST or LLM enrichment \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+From this survey, five gaps motivate \ACRQA{}: (1) no open-source platform combines 10+ SAST tools with LLM enrichment in a self-hosted service; (2) commercial AI-SAST platforms are cost-prohibitive; (3) no existing tool implements label-free confidence scoring; (4) no tool applies entropy-based LLM consistency validation; and (5) no open-source SAST tool performs CBoM generation with NIST PQC migration flagging.
+
+% -----------------------------------------------------------------
+\section{Summary}
+
+This chapter has reviewed the state of the art in static analysis, AI-assisted code review, retrieval-augmented generation, and cryptographic inventory, establishing the knowledge base upon which \ACRQA{} is built. The identified gaps confirm that a self-hosted, multi-tool, AI-augmented platform with label-free confidence scoring, entropy-based consistency validation, and PQC-aware CBoM generation represents a meaningful and novel contribution to the field.
+
+\clearpage

@@ -1,0 +1,80 @@
+@startuml project_structure
+skinparam backgroundColor white
+skinparam defaultFontName "Arial"
+skinparam defaultFontSize 12
+skinparam PackageBorderColor #002654
+skinparam PackageBackgroundColor #F0F4FA
+skinparam PackageFontColor #002654
+skinparam PackageFontStyle bold
+skinparam ArrowColor #002654
+skinparam NoteBackgroundColor #FFF8E8
+skinparam NoteBorderColor #C9A84C
+
+title <color:#002654><b>ACR-QA v4.0.0 — Repository Structure</b></color>
+
+package "ACR-QA/" as root {
+
+  package "CORE/" as core #E8EDF4 {
+    package "engines/" as engines {
+      [normalizer.py] as N
+      [confidence_scorer.py] as CS
+      [explainer.py] as EX
+      [taint_analyser.py] as TA
+      [reachability.py] as RE
+      [quality_gate.py] as QG
+      [cbom_scanner.py] as CB
+      [autofix.py] as AF
+      [triage_agent.py] as TR
+      [attestation.py] as AT
+      [supply_chain.py] as SC
+    }
+    package "adapters/" as adapters {
+      [python_adapter.py]
+      [js_adapter.py]
+      [go_adapter.py]
+    }
+    [knowledge_base.yml] as KB
+    [main.py] as MAIN
+  }
+
+  package "FRONTEND/" as fe #EDF4E8 {
+    package "api/" as api {
+      [routes/ (33 endpoints)]
+      [auth.py]
+      [celery_app.py]
+    }
+    package "dashboard/" as dash {
+      [src/pages/]
+      [src/components/]
+      [vite.config.ts]
+    }
+  }
+
+  package "DATABASE/" as db #F4EDE8 {
+    [database.py]
+    [alembic/ (10 migrations)]
+  }
+
+  package "TESTS/" as tests #F4F0E8 {
+    [unit/ (2217 Python tests)]
+    [integration/]
+    [evaluation/]
+    [e2e/ (15 Playwright)]
+    [accessibility/ (14 axe-core)]
+  }
+
+  package "deploy/" as deploy #EEE8F4 {
+    [docker-compose.yml]
+    [helm/ (Kubernetes)]
+    [terraform/ (IaC)]
+  }
+
+  [.acrqa.yml] as cfg
+  [.github/workflows/] as ci
+}
+
+note right of engines : 14 engines total\n(3 more hidden for clarity)
+note right of KB : 66 curated\nsecurity rules
+note right of tests : 65 TypeScript (Vitest)\n14 Playwright (a11y)
+
+@enduml

@@ -1,0 +1,290 @@
+%% ============================================================
+%%  CHAPTER 4 — IMPLEMENTATION
+%%  v5.0.0b1 — Updated May 2026
+%% ============================================================
+\chapter{Implementation}
+\label{ch:implementation}
+
+\section{Overview}
+
+This chapter documents the implementation of the \ACRQA{} system, translating the architecture described in Chapter~\ref{ch:design} into working code. The chapter is organised to follow the data flow through the system: starting with the project structure and technology stack, then proceeding through each major subsystem. Selected code excerpts illustrate key implementation decisions.
+
+% -----------------------------------------------------------------
+\needspace{14\baselineskip}
+\section{Technology Stack and Dependencies}
+\label{sec:tech_stack}
+
+\ACRQA{} is implemented primarily in Python 3.11 for the backend and TypeScript \cite{typescript_docs}/React \cite{react_docs} for the frontend. Table~\ref{tab:tech_stack} lists the principal dependencies.
+
+\begin{table}[H]
+\caption{Core Technology Stack (v4.0.0)}
+\label{tab:tech_stack}
+\centering
+\renewcommand{\arraystretch}{1.3}
+\begin{tabularx}{\textwidth}{@{} l l X @{}}
+\toprule
+\textbf{Component} & \textbf{Technology} & \textbf{Purpose} \\
+\midrule
+API Server          & FastAPI 0.115 + Uvicorn   & 32 async REST endpoints; Pydantic v2 validation \\
+Task Queue          & Celery 5 + Redis 7.2      & Async pipeline execution; 4 concurrent workers \\
+Web Dashboard       & React 18 + TypeScript + Vite 5 & shadcn/ui SPA; WCAG 2.1 AA; EN/AR RTL \\
+Database            & PostgreSQL 15 (psycopg2)  & 10-table provenance schema \\
+Knowledge Base      & YAML (\texttt{config/rules.yml}) & 66 security rules; O(1) dict lookup \\
+LLM Inference       & Groq (LLaMA-3.3-70B + 3.1-8B) & Explanation (70B) + feasibility (8B) \\
+Local LLM (offline) & Ollama (Qwen2.5-Coder 1.5b) & Air-gap / offline mode \\
+Monitoring          & Prometheus + Grafana      & Real-time pipeline metrics + dashboards \\
+Containerisation    & Docker + Compose          & 7 services; Helm chart for Kubernetes \\
+IaC                 & Terraform (AWS + Railway) & Production cloud deployment \\
+CI/CD               & GitHub Actions            & Lint + test on PR; scan on merge \\
+Testing (Python)    & pytest + pytest-cov       & 2,217 tests; 84.89\% coverage \\
+Testing (TS)        & Vitest + Playwright       & 65 unit + 14 a11y + 15 e2e tests \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+% -----------------------------------------------------------------
+\section{Project Structure}
+\label{sec:project_structure}
+
+The repository follows a clear separation between the backend engine, API layer, and frontend:
+
+\begin{lstlisting}[language={}, basicstyle=\footnotesize\ttfamily, caption={Repository Directory Structure (v4.0.0)}]
+acr-qa/
+├── CORE/
+│   ├── main.py              # Pipeline orchestrator
+│   ├── adapters/            # PythonAdapter, JSAdapter, GoAdapter
+│   └── engines/
+│       ├── normalizer.py    # Canonical schema mapper
+│       ├── confidence_scorer.py  # 5-signal scoring
+│       ├── taint_analyzer.py     # Intra-procedural taint
+│       ├── call_graph.py         # BFS reachability
+│       ├── explainer.py          # RAG + entropy + Groq
+│       ├── auto_fix.py           # AI patch generator
+│       ├── cbom_scanner.py       # CBoM (62 algorithms)
+│       ├── sca_scanner.py        # Dependency CVEs
+│       ├── secrets_detector.py   # 15+ regex patterns
+│       ├── quality_gate.py       # Policy-as-Code gate
+│       ├── attestation.py        # ECDSA + Dilithium3
+│       └── cross_lang.py         # Cross-language correlator
+├── FRONTEND/api/            # FastAPI (32 endpoints)
+│   ├── main.py              # App factory + middleware
+│   ├── routers/             # Runs, findings, auth, metrics
+│   └── models/              # Pydantic v2 schemas
+├── dashboard/               # React 18 + TypeScript SPA
+│   ├── src/
+│   │   ├── pages/           # ScansPage, RunDetail, Settings
+│   │   ├── components/      # shadcn/ui wrappers
+│   │   └── i18n/            # EN + AR bundles
+│   └── tests/               # Vitest + Playwright
+├── DATABASE/database.py     # psycopg2 DAO layer
+├── config/rules.yml         # 66 rules, 422 mappings
+├── TESTS/                   # 2,217 pytest cases
+├── deploy/helm/ & terraform/ # K8s Helm chart + IaC
+├── docker-compose.yml       # 7 services
+└── .acrqa.yml               # Quality gate config
+\end{lstlisting}
+
+
+% -----------------------------------------------------------------
+\needspace{8\baselineskip}
+\section{FastAPI and Celery Layer}
+\label{sec:fastapi_impl}
+
+The FastAPI application \cite{fastapi_framework} (\texttt{FRONTEND/api/main.py}) uses an app-factory pattern: CORS middleware, Prometheus instrumentation via \texttt{prometheus-fastapi-instrumentator}, and Pydantic v2 request validation are all registered at startup. Scan jobs are dispatched via \texttt{run\_analysis\_pipeline.delay(run\_id, target\_path)} — the endpoint returns HTTP~202 immediately while Celery \cite{celery_project} handles execution asynchronously. Workers are configured with \texttt{concurrency=4} (four scans in parallel per container) and a \texttt{max\_retries=2} policy with 30-second countdown, providing resilience against transient Groq API rate-limit errors or database connectivity issues.
+
+% -----------------------------------------------------------------
+\section{Tool Adapter Framework}
+\label{sec:adapters}
+
+Each tool adapter extends an abstract base class that defines the common interface:
+
+\begin{lstlisting}[language=Python, basicstyle=\footnotesize\ttfamily, caption={Abstract Tool Adapter Base Class}]
+from abc import ABC, abstractmethod
+from CORE.models import CanonicalFinding
+
+class BaseAdapter(ABC):
+    name: str;  languages: List[str]
+
+    @abstractmethod
+    def run(self, repo_path: str) -> str:
+        """Execute tool; return raw stdout."""
+
+    @abstractmethod
+    def parse(self, raw_output: str, run_id: int
+             ) -> List[CanonicalFinding]:
+        """Map tool output to CanonicalFinding objects."""
+
+    def is_applicable(self, langs: List[str]) -> bool:
+        return any(l in langs for l in self.languages)
+\end{lstlisting}
+
+Twelve language-specific adapters follow this interface. Each adapter's \texttt{run()} method invokes the corresponding tool CLI and captures stdout; its \texttt{parse()} method translates the tool's unique JSON (or text) output into \texttt{CanonicalFinding} objects, mapping tool-specific severity vocabularies to the five-level canonical enum and normalising field names to the canonical \texttt{file} and \texttt{line} keys.
+
+% -----------------------------------------------------------------
+\needspace{10\baselineskip}
+\section{Taint Analyser Implementation}
+\label{sec:taint_impl}
+
+The taint analyser is invoked in Stage 3 after initial normalisation. For each Python file in scope, it walks the AST and applies a \texttt{\_FunctionTaintVisitor} to each \texttt{FunctionDef} and \texttt{AsyncFunctionDef} node:
+
+\begin{lstlisting}[language=Python, basicstyle=\footnotesize\ttfamily, caption={Taint Analysis --- Source/Sink Detection}]
+TAINT_SOURCES = {"request.args","request.form",
+                 "request.json","request.cookies","os.environ"}
+TAINT_SINKS   = {"execute","eval","exec","Popen","run","call"}
+
+class _FunctionTaintVisitor(ast.NodeVisitor):
+    def __init__(self):
+        self.tainted: set[str] = set();  self.paths = []
+
+    def visit_Assign(self, node):
+        rhs = ast.unparse(node.value)
+        if any(s in rhs for s in TAINT_SOURCES):
+            for t in node.targets:
+                self.tainted.add(ast.unparse(t))
+        self.generic_visit(node)
+
+    def visit_Call(self, node):
+        fn = ast.unparse(node.func)
+        if any(s in fn for s in TAINT_SINKS):
+            args = [ast.unparse(a) for a in node.args]
+            if any(a in self.tainted for a in args):
+                self.paths.append({"sink":fn,"line":node.lineno})
+        self.generic_visit(node)
+\end{lstlisting}
+
+
+% -----------------------------------------------------------------
+\needspace{22\baselineskip}
+\section{Confidence Scorer Implementation}
+\label{sec:confidence_impl}
+
+\begin{lstlisting}[language=Python, basicstyle=\footnotesize\ttfamily, caption={Confidence Scoring Core Logic (abbreviated)}]
+WEIGHTS = {"severity":0.40,"category":0.20,
+           "tool_reliability":0.15,"rule_specificity":0.10,
+           "fix_validation":0.10}
+MULTI_TOOL_BONUS, UNREACHABLE_PENALTY = 5, -20
+
+def score_confidence(findings, reachable_funcs):
+    loc_counts = Counter((f.file, f.line) for f in findings)
+    for f in findings:
+        base = sum(WEIGHTS[k]*v*100 for k,v in {
+            "severity":         _sev(f.severity),
+            "category":         _cat(f.category),
+            "tool_reliability": _tool(f.tool),
+            "rule_specificity": _rule(f.rule_id, f.cwe_id),
+            "fix_validation":   _fix(f.rule_id),
+        }.items())
+        bonus   = MULTI_TOOL_BONUS if loc_counts[
+                      (f.file,f.line)] > 1 else 0
+        penalty = UNREACHABLE_PENALTY if (
+                      f.taint_path and
+                      not _is_reachable(f,reachable_funcs)
+                  ) else 0
+        f.confidence = min(100, max(0, base+bonus+penalty))
+    return findings
+\end{lstlisting}
+
+% -----------------------------------------------------------------
+\section{RAG Knowledge Base and Enrichment}
+\label{sec:rag_impl}
+
+\subsection{Knowledge Base Structure}
+
+Each of the 66 security rules in \texttt{config/rules.yml} contains a canonical rule ID, CWE and OWASP mapping, severity, description, detection patterns, remediation guidance, and reference URLs. At startup, all rules are loaded into an in-memory Python dict keyed on \texttt{canonical\_rule\_id}, providing O(1) retrieval. This approach was selected over pgvector semantic search: dict lookup achieves 800\,ms mean enrichment latency versus 1,400\,ms for the embedding path — a 43\% improvement with no quality loss.
+
+\needspace{16\baselineskip}
+\subsection{Entropy Validation Implementation}
+
+\begin{lstlisting}[language=Python, basicstyle=\footnotesize\ttfamily, caption={N-gram Entropy Calculation and Response Selection}]
+ENTROPY_THRESHOLD = 3.2   # empirically calibrated on 200 samples
+
+def ngram_entropy(text: str, n: int = 3) -> float:
+    ngrams = [text[i:i+n] for i in range(len(text)-n+1)]
+    counts = Counter(ngrams);  total = sum(counts.values())
+    return -sum((c/total)*math.log2(c/total)
+                for c in counts.values()) if total else 0.0
+
+def select_best_response(responses: List[str]) -> Optional[str]:
+    valid = [(r, ngram_entropy(r)) for r in responses
+             if ngram_entropy(r) >= ENTROPY_THRESHOLD]
+    return max(valid, key=lambda x: x[1])[0] if valid else None
+\end{lstlisting}
+
+% -----------------------------------------------------------------
+\section{React Dashboard}
+\label{sec:dashboard_impl}
+
+The React~18 + TypeScript \cite{typescript_docs} dashboard is built with Vite~5, shadcn/ui components, and TanStack Query for server-state management. Five pages are implemented: \textbf{ScansPage} (paginated run list with severity badges), \textbf{RunDetailPage} (findings with AI explanation panels), \textbf{RunComparePage} (side-by-side delta view), \textbf{SupplyChainPage} (CVE findings by package), and \textbf{SettingsPage} (API keys, quality gate overrides). WCAG~2.1~AA compliance \cite{wcag21} is validated by 14 axe-core Playwright tests across all pages in English and Arabic RTL. Internationalisation uses react-i18next with full EN/AR bundles. The dashboard test suite totals 65 Vitest unit tests and 15 Playwright end-to-end tests — all 80 pass.
+
+% -----------------------------------------------------------------
+\clearpage
+\section{CBoM Module Implementation}
+\label{sec:cbom_impl}
+
+The CBoM scanner performs AST-based detection of cryptographic API usage across Python, JavaScript, and Go. For Python, the \texttt{CryptoVisitor} class walks the AST and classifies each call against a pattern dictionary keyed on module and method name:
+
+\begin{lstlisting}[language=Python, basicstyle=\footnotesize\ttfamily, caption={CBoM AST Visitor (Python, core pattern)}]
+CRYPTO_PATTERNS = {
+    "hashlib": {"md5": ("MD5","DEPRECATED"),
+                "sha256": ("SHA-256","NIST_APPROVED")},
+    "Crypto.PublicKey.RSA": {"generate": ("RSA","PQC_VULNERABLE")},
+    "cryptography.hazmat.primitives.asymmetric.ec": {
+        "generate_private_key": ("ECDSA","PQC_VULNERABLE")},
+}
+
+class CryptoVisitor(ast.NodeVisitor):
+    def __init__(self): self.findings: list[dict] = []
+
+    def visit_Call(self, node):
+        if isinstance(node.func, ast.Attribute):
+            module = ast.unparse(node.func.value)
+            algo = CRYPTO_PATTERNS.get(module,{}).get(
+                       node.func.attr.lower())
+            if algo:
+                self.findings.append({"algorithm":algo[0],
+                    "status":algo[1],"line":node.lineno})
+        self.generic_visit(node)
+\end{lstlisting}
+
+The 62 classified algorithms span NIST Approved (AES-256 \cite{nist_fips_197}, ChaCha20-Poly1305, SHA-256, SHA-3, CRYSTALS-Kyber), Deprecated (MD5, SHA-1, DES, 3DES, RC4), and PQC-Vulnerable (RSA, ECC, ECDSA, ECDH, DSA). The output conforms to the CycloneDX CBoM schema \cite{cyclonedx}.
+
+% -----------------------------------------------------------------
+\section{Deployment and Integration}
+\label{sec:docker_impl}
+
+The full stack is orchestrated via Docker Compose (7 services) as illustrated in Figure~\ref{fig:docker_stack} in Chapter~\ref{ch:design}. Named volumes persist database and monitoring data; health-check dependencies ensure the API container starts only after PostgreSQL is ready \cite{docker_security}. Both JWT bearer token (via \texttt{python-jose} + \texttt{passlib}/bcrypt) and X-API-Key authentication are supported \cite{owasp_api_top10}; the \texttt{require\_auth} FastAPI dependency validates whichever credential is present. After a scan completes, the results service posts an inline PR comment to the triggering GitHub pull request, including the finding title, CWE reference, AI-generated remediation, and confidence score.
+
+% -----------------------------------------------------------------
+\section{Key Implementation Challenges}
+\label{sec:challenges}
+
+Four principal challenges arose during development. (1)~\textbf{Incompatible tool schemas:} twelve tools produce divergent output formats and severity vocabularies; solved by per-adapter \texttt{parse()} methods that map all fields to the canonical \texttt{file}/\texttt{line} schema. (2)~\textbf{Groq API rate limiting:} addressed via exponential backoff with jitter, a 4-key rotation pool, and a \texttt{rules.yml} fallback when the API is unavailable. (3)~\textbf{Concurrent temp-path races:} parallel tool processes now each write to an isolated \texttt{/tmp/acrqa-\{pid\}-\{run\_id\}/} directory. (4)~\textbf{\texttt{CUSTOM-*} rule ID leakage:} a guard clause rejects any rule ID with the \texttt{CUSTOM-} prefix; compliance is enforced by 2,217 regression tests.
+
+% -----------------------------------------------------------------
+\needspace{8\baselineskip}
+\section{v5.0.0 Engine Implementations}
+\label{sec:v5_impl}
+
+\subsection{Heuristic Risk Predictor Implementation}
+
+The Risk Predictor computes its five signals as follows. \textbf{Churn:} \texttt{git diff --numstat HEAD\textasciitilde{}90..HEAD} restricted to the target file; lines-added + lines-deleted, normalised by file size. \textbf{Complexity:} \texttt{radon cc -n B} extracts per-function cyclomatic complexity; the file score is the mean of all function scores exceeding threshold~C (cyclomatic complexity $> 5$). \textbf{Age:} \texttt{git log -1 --format=\%ai} for the last-touched commit; days-since converted to $[0,1]$ via \texttt{tanh(days / 365)}. \textbf{Authors:} unique author count from \texttt{git log --format=\%ae} on the file path; normalised by \texttt{tanh(count / 5)}. \textbf{Test gap:} counts public functions in the source file (via AST) versus corresponding test files (by convention: \texttt{tests/test\_\{filename\}.py}); the gap is normalised by total function count. Git operations use a 30-second subprocess timeout and degrade gracefully when the target directory is not a git repository. Results are persisted to the \texttt{file\_risk\_scores} table (migration 0015) and exposed via \texttt{GET /v1/runs/\{rid\}/risk-map}.
+
+\subsection{Time-Travel Analyzer Implementation}
+
+The engine uses a three-pass approach. First, \texttt{git log --reverse --max-count=50 --diff-filter=AM} identifies the 50 most-recent commits that touched any file. Second, for each commit, \texttt{git diff --unified=0 <parent>...<commit>} extracts changed hunks; only lines within changed hunks are re-analysed by the normaliser (not the full file). Third, results are merged into the \texttt{finding\_history} cache table (migration 0014): a new row is inserted on first occurrence; subsequent rows update \texttt{last\_seen\_commit} and increment \texttt{regression\_count} if the finding disappeared and reappeared. The endpoint \texttt{GET /v1/runs/\{rid\}/findings/\{fid\}/history} returns the full timeline including \texttt{first\_seen\_commit}, \texttt{first\_seen\_author}, \texttt{near\_fix\_commits}, and \texttt{regression\_count}.
+
+\subsection{IaC Scanner Implementation}
+
+The IaC engine detects four resource types via extension matching: \texttt{.tf} (Terraform HCL), \texttt{.yaml}/\texttt{.yml} with Kubernetes markers (\texttt{apiVersion}/\texttt{kind}), \texttt{Dockerfile*}, and \texttt{.github/workflows/*.yml}. Rules are implemented as pure-Python matchers: Terraform rules use \texttt{hcl2} parsing; Kubernetes rules match \texttt{spec} subtrees via deep-get utilities; Dockerfile rules scan instruction lists. Each rule emits a \texttt{CanonicalFinding} with \texttt{canonical\_rule\_id} in the \texttt{IAC-001}--\texttt{IAC-028} range, two additional fields (\texttt{iac\_provider}, \texttt{iac\_resource}) stored in migration 0013, and severity mapped from the rule's CIS Benchmark tier.
+
+\subsection{PR Risk Score Implementation}
+
+\texttt{PRRiskEngine.score(run\_id)} fetches all findings for a run from PostgreSQL, computes the six sub-scores (see Section~\ref{sec:pr_risk_design}), and persists the result to the \texttt{pr\_risk\_scores} table (migration 0016). The \texttt{post\_pr\_risk\_comment.py} script formats the score into a GitHub pull-request comment using the GitHub REST API (\texttt{GITHUB\_TOKEN} env var), including a colour-coded emoji badge ($\leq$30: \textcolor{green}{✅ SAFE}, 31--69: \textcolor{yellow}{⚠ REVIEW}, 70--84: \textcolor{orange}{🟠 CAUTION}, $\geq$85: \textcolor{red}{🔴 BLOCK}), a breakdown table of sub-scores, and a direct link to the ACR-QA dashboard run. A companion \texttt{SecondOpinionEngine} queries a secondary LLM (Ollama \texttt{qwen2.5-coder:1.5b} as local fallback) for an independent opinion on each HIGH finding, adding $+15$ to confidence when both models agree and $-10$ when they disagree.
+
+% -----------------------------------------------------------------
+\needspace{8\baselineskip}
+\section{Summary}
+
+This chapter has documented the implementation of \ACRQA{} v5.0.0b1, covering the FastAPI REST layer (52 endpoints), Celery asynchronous workers, language adapters, taint analyser, call-graph reachability engine, confidence scorer, RAG knowledge base, entropy filter, CBoM scanner, React dashboard, Docker Compose deployment, GitHub PR integration, authentication layer, and the four new v5.0.0 engines (Heuristic Risk Predictor, Time-Travel Analyzer, IaC Scanner, PR Risk Score). Chapter~\ref{ch:testing} presents the testing strategy and quantitative evaluation results.
+
+\clearpage

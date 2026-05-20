@@ -1,0 +1,87 @@
+%% ============================================================
+%%  COVER PAGE — Classic KSIU Centered Format
+%%  Logo top-center, university name, all centered, ONE page
+%% ============================================================
+
+\newgeometry{top=1.2cm, bottom=1.8cm, left=3.00cm, right=2.54cm}
+
+\begin{titlepage}
+\thispagestyle{empty}
+\pagecolor{white}
+\begin{center}
+
+%% ── LOGO ────────────────────────────────────────────────────
+\IfFileExists{ksiu-logo-rectangle.png}{%
+  \includegraphics[height=3.2cm,keepaspectratio]{ksiu-logo-rectangle}%
+}{%
+  \includegraphics[height=3.2cm,keepaspectratio]{ksiu-logo}%
+}
+
+\vspace{0.4cm}
+
+%% ── UNIVERSITY NAME ─────────────────────────────────────────
+{\LARGE\bfseries\color{KSIUNavy} KING SALMAN}\\[2pt]
+{\large\bfseries\color{KSIUNavy} INTERNATIONAL UNIVERSITY}\\[4pt]
+{\normalsize\bfseries\color{KSIUNavy}
+  FACULTY OF COMPUTER SCIENCE AND ENGINEERING
+}
+
+\vspace{0.25cm}
+{\color{KSIUNavy}\rule{0.80\textwidth}{1.2pt}}
+\vspace{0.25cm}
+
+%% ── COURSE ──────────────────────────────────────────────────
+{\normalsize\bfseries\color{KSIUNavy2}
+  CSE494 --- GRADUATION PROJECT 2
+}
+
+\vspace{0.5cm}
+
+%% ── TITLE ───────────────────────────────────────────────────
+{\LARGE\bfseries\color{KSIUNavy}
+  ACR-QA: Automated Code Review\\[4pt]
+  \& Quality Assurance System
+}
+
+\vspace{0.45cm}
+{\color{KSIUGold}\rule{0.42\textwidth}{0.8pt}}
+\vspace{0.45cm}
+
+%% ── SUBMISSION LINE ─────────────────────────────────────────
+{\small
+  A Project Report Submitted to the Computer Science Department\\
+  Faculty of Computer Science and Engineering, KSIU
+}\\[6pt]
+{\small\itshape
+  In Partial Fulfillment of the Requirements for the\\
+  \textbf{B.Sc.}\ Degree in Computer Science Programme
+}
+
+\vspace{0.55cm}
+
+%% ── AUTHOR ──────────────────────────────────────────────────
+{\normalsize By}\\[6pt]
+{\large\bfseries\color{KSIUNavy} Ahmed Mahmoud Abbas}\\[2pt]
+{\normalsize Student ID: 222101213}
+
+\vspace{0.55cm}
+
+%% ── SUPERVISOR ──────────────────────────────────────────────
+{\normalsize\bfseries Supervisor}\\[4pt]
+{\large\bfseries\color{KSIUNavy} Dr.\ Samy Abd-ElNabi}\\[2pt]
+{\small
+  Associate Professor, Faculty of Computer Science\\
+  King Salman International University
+}
+
+\vfill
+
+%% ── BOTTOM ──────────────────────────────────────────────────
+{\color{KSIUGold}\rule{0.80\textwidth}{0.8pt}}\\[6pt]
+{\normalsize\bfseries\color{KSIUNavy} EGYPT, 2026}
+
+\end{center}
+\end{titlepage}
+\nopagecolor
+\restoregeometry   %% restore normal margins for rest of book
+%% titlepage handles its own page break — no \clearpage needed

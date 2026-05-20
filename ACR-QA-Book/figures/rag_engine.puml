@@ -1,0 +1,94 @@
+@startuml ACR-QA-RAG-Engine
+'──────────────────────────────────────────────────────────────
+'  ACR-QA  v4.0.0  —  RAG Enrichment Engine
+'  5 participants — fits portrait A4 · updated v4.0.0 numbers
+'  King Salman International University  ·  CSE494  ·  2025-26
+'──────────────────────────────────────────────────────────────
+!theme plain
+skinparam backgroundColor #FFFFFF
+skinparam defaultFontName  "Arial"
+skinparam defaultFontSize  10
+skinparam shadowing        false
+skinparam maxMessageSize   160
+
+skinparam participant {
+  BackgroundColor #FFFFFF
+  BorderColor     #002654
+  BorderThickness 2
+  FontSize        10
+}
+
+skinparam sequence {
+  ArrowColor            #002654
+  ArrowFontColor        #374151
+  ArrowFontSize         9
+  ArrowThickness        1.5
+  LifeLineBorderColor   #9CA3AF
+  NoteBackgroundColor   #FFFDE7
+  NoteBorderColor       #C9A84C
+  NoteFontSize          9
+  GroupBackgroundColor  #F0FFF4
+  GroupBorderColor      #002654
+  DividerFontSize       10
+  DividerFontStyle      bold
+}
+
+participant "CORE Pipeline\n(Stage ④–⑤)"  as PIPE #FEF9C3
+participant "AI Engine\nexplainer.py"      as AI   #F3D9FA
+database   "Knowledge Base\n66 rules · 299+ mappings" as KB #E9D5FF
+participant "Groq API\nLLaMA-3.3-70B"     as GROQ #E9D5FF
+participant "Entropy Filter\nτ = 3.2 bits" as ENT  #FAF5FF
+
+== For each scored finding  (C ≥ 30) ==
+
+PIPE -> AI  : finding {rule_id · file · line · snippet · severity}
+activate AI
+
+AI   -> KB  : dict_lookup(canonical_rule_id)
+activate KB
+note right of KB
+  O(1) hash-map lookup
+  No vector DB required
+  Loaded at startup
+end note
+KB   --> AI : rule_context {title · description · CWE · OWASP\nbad_example · remediation · references}
+deactivate KB
+
+loop 3 independent runs
+  AI   -> GROQ : prompt {finding + rule_context + code_snippet}
+  activate GROQ
+  note right of GROQ
+    temperature = 0.3
+    max_tokens  = 512
+    system: "senior appsec engineer,
+    cite ONLY provided context"
+  end note
+  GROQ --> AI  : response_j {title · description\nseverity_rationale · remediation}
+  deactivate GROQ
+
+  AI   -> ENT  : compute_ngram_entropy(response_j, n=3)
+  activate ENT
+  ENT  --> AI  : entropy_j  (bits)
+  deactivate ENT
+end
+
+AI   -> AI   : select best: argmax entropy_j  where  entropy_j ≥ τ
+
+alt At least 1 response passes τ = 3.2 bits
+  AI   --> PIPE : enrichment {ai_title · ai_description · ai_remediation\nconsistency_score · entropy_score}  ·  ai_enriched = True
+else All 3 responses rejected (low entropy / repetitive)
+  AI   --> PIPE : ai_enriched = False  (finding returned without enrichment)
+end
+
+deactivate AI
+
+note over PIPE, ENT
+  <b>v4.0.0 benchmark results (836 findings × 3 runs = 2,508 API calls):</b>
+  2,407 responses passed entropy filter  (96.0 %)
+    101 responses rejected               ( 4.0 %)
+    836 findings with ≥ 1 valid response (100.0 % enrichment rate)
+  Mean accepted entropy: 4.23 bits  ·  Mean rejected entropy: 2.84 bits
+  96 % of 50 sampled enrichments rated "accurate" by project supervisor
+end note
+
+@enduml

@@ -1,0 +1,286 @@
+%% ============================================================
+%%  ACR-QA Graduation Project Book
+%%  King Salman International University — Faculty of Computer Science and Engineering
+%%  Computer Science / Software Engineering Programme  |  CSE494 Graduation Project 2
+%%  Author : Ahmed Mahmoud Abbas (222101213)
+%%  Supervisor: Dr. Samy AbdelNabi
+%%  Compile: pdflatex → bibtex → pdflatex × 2  (Overleaf-ready)
+%% ============================================================
+
+\documentclass[12pt,a4paper,oneside]{report}
+
+%% ── Encoding & Language ─────────────────────────────────────
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage[english]{babel}
+
+%% ── Typography ──────────────────────────────────────────────
+\usepackage{lmodern}
+%\usepackage{microtype}  % disabled to reduce compile time on Overleaf free plan
+\usepackage{setspace}
+\onehalfspacing
+
+%% ── Geometry ────────────────────────────────────────────────
+\usepackage[
+  a4paper,
+  top=2.54cm, bottom=2.54cm,
+  left=3.00cm, right=2.54cm,
+  headheight=15pt
+]{geometry}
+
+%% ── Colours ─────────────────────────────────────────────────
+\usepackage[table]{xcolor}
+\definecolor{KSIUNavy}{HTML}{002654}
+\definecolor{KSIUGold}{HTML}{C9A84C}
+\definecolor{KSIUNavy2}{HTML}{00336E}
+\definecolor{LightGray}{HTML}{F5F5F5}
+
+%% ── Graphics & Figures ──────────────────────────────────────
+\usepackage{graphicx}
+\graphicspath{{figures/}{../docs/media/}{../docs/evaluation/}}
+\usepackage{float}
+\usepackage{needspace}
+\usepackage{caption}
+\usepackage[export]{adjustbox}
+
+%% ── Tables ──────────────────────────────────────────────────
+\usepackage{booktabs}
+\usepackage{tabularx}
+\usepackage{array}
+
+%% ── Code Listings ───────────────────────────────────────────
+\usepackage{listings}
+\lstset{
+  basicstyle=\small\ttfamily,
+  backgroundcolor=\color{LightGray},
+  frame=single,
+  framerule=0.5pt,
+  rulecolor=\color{KSIUNavy},
+  breaklines=true,
+  breakatwhitespace=true,
+  numbers=left,
+  numberstyle=\tiny\color{gray},
+  stepnumber=1,
+  tabsize=4,
+  showspaces=false,
+  showstringspaces=false,
+  captionpos=b,
+  % syntax coloring disabled to keep compile time within Overleaf free plan limits
+  keywordstyle={},
+  stringstyle={},
+  commentstyle=\color{gray}\itshape,
+}
+\renewcommand{\lstlistingname}{Listing}
+
+%% ── Maths ───────────────────────────────────────────────────
+\usepackage{amsmath,amssymb,amsthm}
+
+%% ── Lists ───────────────────────────────────────────────────
+\usepackage{enumitem}
+\setlist[itemize]{noitemsep,topsep=4pt}
+\setlist[enumerate]{noitemsep,topsep=4pt}
+
+%% ── Headers & Footers ───────────────────────────────────────
+\usepackage{fancyhdr}
+\pagestyle{fancy}
+\fancyhf{}
+\renewcommand{\headrulewidth}{0pt}
+\renewcommand{\footrulewidth}{0pt}
+
+%  Right header: coloured box with chapter/section name + page number
+\fancyhead[R]{%
+  \colorbox{KSIUNavy}{%
+    \parbox[c][14pt][c]{0.5\textwidth}{%
+      \raggedleft\small\color{white}\leftmark\quad|\quad\thepage
+    }%
+  }%
+}
+%  Left header: project title (small, navy)
+\fancyhead[L]{%
+  \small\color{KSIUNavy}\textbf{ACR-QA: Automated Code Review \& Quality Assurance}
+}
+
+%  Footer: gold rule + KSIU text watermark
+\fancyfoot[C]{%
+  \vspace*{-6pt}%
+  {\color{KSIUGold}\rule{\textwidth}{0.6pt}}\\[2pt]
+  {\tiny\color{KSIUNavy!40}King Salman International University — Faculty of Computer Science and Engineering}
+}
+
+\fancypagestyle{plain}{%   for chapter opening pages
+  \fancyhf{}
+  \fancyfoot[C]{%
+    {\color{KSIUGold}\rule{\textwidth}{0.6pt}}\\[2pt]
+    {\tiny\color{KSIUNavy!40}King Salman International University — Faculty of Computer Science and Engineering}
+  }
+  \renewcommand{\headrulewidth}{0pt}
+}
+
+%% ── Chapter Title Formatting ────────────────────────────────
+\usepackage{titlesec}
+\titleformat{\chapter}[display]
+  {\centering\normalfont\Large\bfseries\color{KSIUNavy}}
+  {\centering\color{KSIUNavy}\MakeUppercase{Chapter (\thechapter)}}
+  {8pt}
+  {\centering\huge\bfseries\color{black}}
+\titlespacing*{\chapter}{0pt}{-20pt}{10pt}
+
+\titleformat{\section}
+  {\normalfont\large\bfseries\color{KSIUNavy}}
+  {\thesection.}
+  {0.8em}{}
+\titlespacing*{\section}{0pt}{16pt}{8pt}
+
+\titleformat{\subsection}
+  {\normalfont\normalsize\bfseries\color{KSIUNavy2}}
+  {\thesubsection.}
+  {0.6em}{}
+\titlespacing*{\subsection}{0pt}{12pt}{4pt}
+
+\titleformat{\subsubsection}
+  {\normalfont\normalsize\itshape\color{KSIUNavy2}}
+  {\thesubsubsection.}
+  {0.5em}{}
+
+%% ── Caption Style ───────────────────────────────────────────
+\captionsetup[figure]{
+  labelfont={bf,small,color=KSIUNavy},
+  textfont={small},
+  labelsep=period,
+  position=below,
+  justification=centering
+}
+\captionsetup[table]{
+  labelfont={bf,small,color=KSIUNavy},
+  textfont={small},
+  labelsep=period,
+  position=above,
+  justification=centering
+}
+
+%  Chapter.Number figure/table numbering
+\usepackage{chngcntr}
+\counterwithin{figure}{chapter}
+\counterwithin{table}{chapter}
+\counterwithin{equation}{chapter}
+
+%% ── Hyperlinks ──────────────────────────────────────────────
+\usepackage[
+  colorlinks=true,
+  linkcolor=KSIUNavy,
+  citecolor=KSIUNavy,
+  urlcolor=KSIUNavy2,
+  bookmarks=true,
+  bookmarksopen=true,
+  pdftitle={ACR-QA: Automated Code Review and Quality Assurance System},
+  pdfauthor={Ahmed Mahmoud Abbas},
+  pdfsubject={Computer Science Senior Capstone, KSIU 2025-2026}
+]{hyperref}
+
+%% ── Bibliography ────────────────────────────────────────────
+\usepackage[numbers,sort&compress]{natbib}
+\bibliographystyle{IEEEtranN}
+
+%% ── TOC dot leaders for chapter-level entries ────────────────
+\usepackage{tocloft}
+\renewcommand{\cftchapdotsep}{\cftdotsep}   % add dot leaders to chapter TOC entries
+\renewcommand{\cftchapfont}{\bfseries}
+\renewcommand{\cftchappagefont}{\bfseries}
+
+%% ── Utility Packages ────────────────────────────────────────
+\usepackage{pifont}
+
+%% ── Page layout ─────────────────────────────────────────────
+\raggedbottom   % prevent vertical stretching on short pages
+
+%% ── Custom Commands ─────────────────────────────────────────
+%% Chapter divider page: \chapterdivider{1}{Introduction}
+\newcommand{\chapterdivider}[2]{%
+  \clearpage
+  \thispagestyle{empty}
+  \vspace*{\fill}
+  \begin{center}
+    {\Large\bfseries\color{KSIUNavy} CHAPTER (#1)}\\[20pt]
+    {\color{KSIUGold}\rule{0.50\textwidth}{1.0pt}}\\[20pt]
+    {\huge\bfseries\color{KSIUNavy} #2}
+  \end{center}
+  \vspace*{\fill}
+  \clearpage
+}
+
+\newcommand{\ACRQA}{\textsc{ACR-QA}}
+\newcommand{\todo}[1]{\textcolor{red}{\textbf{[TODO: #1]}}}
+\newcommand{\figplaceholder}[2]{%
+  \begin{center}
+    \fbox{\parbox[c][#1][c]{0.80\textwidth}{%
+      \centering\color{gray}\small\textit{[Figure placeholder: #2]}
+    }}
+  \end{center}
+}
+
+%% ============================================================
+\begin{document}
+
+%% ── COVER PAGE ──────────────────────────────────────────────
+\input{frontmatter/cover}
+
+%% ── FRONT MATTER (Roman numerals) ───────────────────────────
+\pagenumbering{Roman}
+\setcounter{page}{1}
+\pagestyle{plain}
+
+\input{frontmatter/acknowledgements}
+\input{frontmatter/abstract}
+
+\cleardoublepage
+\phantomsection
+\addcontentsline{toc}{chapter}{List of Figures}
+\listoffigures
+
+\cleardoublepage
+\phantomsection
+\addcontentsline{toc}{chapter}{List of Tables}
+\listoftables
+
+\cleardoublepage
+\phantomsection
+\addcontentsline{toc}{chapter}{List of Symbols}
+\input{frontmatter/symbols}
+
+\cleardoublepage
+\phantomsection
+\addcontentsline{toc}{chapter}{Table of Contents}
+{\hypersetup{hidelinks}\tableofcontents}
+
+%% ── MAIN MATTER ─────────────────────────────────────────────
+\cleardoublepage
+\pagenumbering{arabic}
+\setcounter{page}{1}
+\pagestyle{fancy}
+\renewcommand{\chaptermark}[1]{\markboth{\MakeUppercase{#1}}{}}
+
+\chapterdivider{1}{Introduction}
+\input{chapters/ch1_introduction}
+
+\chapterdivider{2}{Literature Review and Background}
+\input{chapters/ch2_literature}
+
+\chapterdivider{3}{System Design and Architecture}
+\input{chapters/ch3_system_design}
+
+\chapterdivider{4}{Implementation}
+\input{chapters/ch4_implementation}
+
+\chapterdivider{5}{Testing and Evaluation}
+\input{chapters/ch5_testing}
+
+\chapterdivider{6}{Conclusion and Future Work}
+\input{chapters/ch6_conclusion}
+
+%% ── REFERENCES ──────────────────────────────────────────────
+\cleardoublepage
+\phantomsection
+\addcontentsline{toc}{chapter}{References}
+\bibliography{references}
+
+\end{document}

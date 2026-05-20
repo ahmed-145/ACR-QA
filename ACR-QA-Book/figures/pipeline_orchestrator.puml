@@ -1,0 +1,99 @@
+@startuml pipeline_orchestrator
+'──────────────────────────────────────────────────────────────
+'  ACR-QA  v4.0.0  —  Pipeline Orchestrator Detail
+'  No swimlanes — single-column portrait-friendly activity diagram
+'  King Salman International University  ·  CSE494  ·  2025-26
+'──────────────────────────────────────────────────────────────
+!theme plain
+skinparam backgroundColor #FFFFFF
+skinparam defaultFontName  "Arial"
+skinparam defaultFontSize  10
+skinparam shadowing        false
+
+skinparam activity {
+  BackgroundColor        #E8EDF4
+  BorderColor            #002654
+  BorderThickness        2
+  FontSize               10
+  DiamondBackgroundColor #FFF3BF
+  DiamondBorderColor     #C9A84C
+}
+
+skinparam arrow {
+  Color     #002654
+  FontColor #444444
+  FontSize  9
+  Thickness 1.5
+}
+
+skinparam note {
+  BackgroundColor #FFFDE7
+  BorderColor     #C9A84C
+  FontSize        9
+}
+
+title <color:#002654><b>ACR-QA v4.0.0 — Pipeline Orchestrator (CORE/main.py)</b></color>
+
+start
+
+:⓪  Rate Limit Check  (Redis token bucket)\nPOST /v1/scan → 202 Accepted · run_id returned;
+
+:①  Repository Ingestion\nValidate path · detect languages · apply .acrqa.yml exclusions;
+
+fork
+  :Python tools\nRuff · Bandit · Semgrep\nVulture · Radon · jscpd;
+fork again
+  :JS / TS tools\nESLint-security · Semgrep\nnpm audit · jscpd;
+fork again
+  :Go tools\ngosec · staticcheck\nSemgrep;
+fork again
+  :Cross-language\nSecrets Detector\nTruffleHog · Trivy;
+end fork
+
+note right : ②  Parallel tool dispatch\nthread pool · stdout captured per tool
+
+:③a  Normalise → CanonicalFinding schema\nconfig filter · scope exclusions (≈15% eliminated before scoring);
+
+:③b  Triage Memory Lookup\nlearned-suppression table · per-repo rules;
+
+:③c  Cross-Tool Deduplication (2-pass)\nlocation hash + rule hash · merge overlapping findings;
+
+:③d  Intra-Procedural Taint Analysis (AST BFS)\nconfidence = max(0.4, 0.95 − 0.1·(h−1))  where h = hop depth;
+
+:③e  Call-Graph Reachability (BFS, max_depth=5)\nentry points: Flask/FastAPI routes · Celery tasks · __main__;
+
+if (finding reachable?) then (yes)
+else (no — unreachable / dead code)
+  :Apply −20 confidence penalty\nretained for audit · deprioritised in ranking;
+endif
+
+:③f  Per-Rule Cap + Sort by confidence descending;
+
+:④  Five-Signal Confidence Scoring\nseverity (40%) · category (20%) · tool_reliability (15%)\nrule_specificity (10%) · fix_validation (10%)\nmulti-tool bonus +5  →  C ∈ [0, 100];
+
+if (C ≥ 30 ?) then (yes)
+else (no — soft-suppress)
+  :Mark deprioritised = True\nvisible in dashboard, ranked last;
+endif
+
+:⑤  RAG Enrichment\ndict_lookup(rule_id) O(1) → Groq LLaMA-3.3-70B × 3 runs\nN-gram entropy filter τ = 3.2 bits\nstore enrichment in llm_explanations (PostgreSQL provenance);
+
+:⑤b  Post-Quantum Attestation\nECDSA-P256 + CRYSTALS-Dilithium3 · Sigstore keyless;
+
+:⑥  Supply Chain Scan + CBoM\npip-audit · npm audit · CVE mapping · 62 cryptographic algorithms\nNIST FIPS 203/204 PQC migration flags;
+
+:⑦  Quality Gate Enforcement\nevaluate .acrqa.yml severity thresholds → PASS / FAIL\nemit gate_result for CI/CD runner;
+
+:⑧  Output Delivery\nJSON · SARIF · Markdown\nGitHub PR inline comments · check-run status\nPostgreSQL: UPDATE run SET status=COMPLETED;
+
+stop
+
+legend top right
+  |= Stage Group  |= Role                             |
+  |<back:#E8EDF4>  ⓪–①  </back>| Rate limit + Ingestion         |
+  |<back:#C8D8F0>  ②–③  </back>| Tool execution + Normalisation |
+  |<back:#FFF3BF>  ④–⑤  </back>| Scoring + AI enrichment        |
+  |<back:#D3F9D8>  ⑥–⑧  </back>| Supply chain + Gate + Output   |
+end legend
+
+@enduml

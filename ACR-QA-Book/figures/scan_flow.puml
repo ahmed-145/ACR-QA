@@ -1,0 +1,148 @@
+@startuml scan_flow
+'──────────────────────────────────────────────────────────────
+'  ACR-QA  v4.0.0  —  End-to-End Scan Flow  (A4-portrait edition)
+'  5 participants — fits portrait A4 text width
+'  King Salman International University  ·  CSE494  ·  2025-26
+'──────────────────────────────────────────────────────────────
+!theme plain
+skinparam backgroundColor   #FFFFFF
+skinparam defaultFontName   "Arial"
+skinparam defaultFontSize   10
+skinparam shadowing         false
+skinparam sequenceMessageAlign center
+skinparam maxMessageSize    160
+skinparam wrapWidth         160
+
+skinparam participant {
+  BackgroundColor #FFFFFF
+  BorderColor     #002654
+  BorderThickness 2
+  FontSize        10
+}
+skinparam actor {
+  BackgroundColor #DBEAFE
+  BorderColor     #002654
+  BorderThickness 2
+  FontSize        10
+}
+skinparam sequence {
+  ArrowColor              #002654
+  ArrowFontColor          #374151
+  ArrowFontSize           9
+  ArrowThickness          1.5
+  DividerBackgroundColor  #F3F4F6
+  DividerBorderColor      #9CA3AF
+  DividerFontColor        #111827
+  DividerFontSize         10
+  DividerFontStyle        bold
+  GroupBackgroundColor    #F9FAFB
+  GroupBorderColor        #D1D5DB
+  GroupBorderThickness    1.5
+  NoteBackgroundColor     #FFFDE7
+  NoteBorderColor         #C9A84C
+  NoteFontSize            9
+  LifeLineBorderColor     #9CA3AF
+  LifeLineBackgroundColor #F9FAFB
+}
+
+
+'════════════════════════════════════════════════════════════
+'  5 PARTICIPANTS  (slim enough for A4 portrait)
+'════════════════════════════════════════════════════════════
+actor       "Developer\n/ CI/CD"              as DEV
+participant "FastAPI\n:8000"                  as API   #BBF7D0
+participant "Celery Worker\n+ Redis broker"   as WRK   #E0F2FE
+participant "CORE Pipeline\n(14 engines)"     as CORE  #FDE68A
+database    "PostgreSQL 15"                   as DB    #FED7AA
+
+
+'════════════════════════════════════════════════════════════
+'  PHASE 1 — TRIGGER
+'════════════════════════════════════════════════════════════
+== Phase 1  ·  Trigger & Job Creation ==
+
+DEV  ->  API  : POST /v1/scan {repo_url, branch}\nor GitHub webhook / CI badge
+activate API
+
+API  ->  API  : JWT / API-Key auth\nRedis rate-limit check
+API  ->  DB   : INSERT analysis_runs {status=QUEUED}
+activate DB
+DB   --> API  : run_id
+deactivate DB
+
+API  ->  WRK  : enqueue scan_repository.delay(run_id)
+activate WRK
+API  --> DEV  : HTTP 202 Accepted {run_id}
+deactivate API
+
+
+'════════════════════════════════════════════════════════════
+'  PHASE 2 — ASYNC PIPELINE EXECUTION
+'════════════════════════════════════════════════════════════
+== Phase 2  ·  Async Pipeline (Celery) ==
+
+WRK  ->  DB   : UPDATE run SET status=RUNNING
+WRK  ->  CORE : run_pipeline(run_id, repo_path)
+activate CORE
+
+note over CORE
+  Stage 2: 12+ tools in parallel thread pool
+  Ruff · Bandit · Semgrep · ESLint · gosec
+  Vulture · Radon · jscpd · npm audit ...
+end note
+
+CORE ->  CORE : Stage 3: normalise → CanonicalFinding\ntaint_analyse · reachability_bfs\ndedup (−33% noise) · confidence_score
+
+CORE ->  CORE : Stage 4 RAG: dict_lookup O(1)\nGroq LLaMA-3.3-70B × 3 runs\nentropy_filter τ=3.2 bits
+
+note right of CORE
+  97.1% overall precision
+  100% security-class precision
+  100% AI enrichment rate
+end note
+
+CORE ->  CORE : Stage 5: SCA + CBoM (62 algos)\nStage 6: quality_gate(.acrqa.yml)\nStage 7: Dilithium3 attestation
+
+
+'════════════════════════════════════════════════════════════
+'  PHASE 3 — PERSIST & DELIVER
+'════════════════════════════════════════════════════════════
+== Phase 3  ·  Persist & Deliver ==
+
+CORE --> WRK  : pipeline complete
+deactivate CORE
+
+WRK  ->  DB   : INSERT findings · llm_explanations\nINSERT attestations · sbom_records\nUPDATE run SET status=COMPLETED
+activate DB
+DB   --> WRK  : committed
+deactivate DB
+deactivate WRK
+
+DEV  ->  API  : GET /v1/runs/{run_id}/findings
+activate API
+API  ->  DB   : SELECT findings + enrichment
+activate DB
+DB   --> API  : findings[]
+deactivate DB
+API  --> DEV  : JSON / SARIF / Markdown
+deactivate API
+
+
+'════════════════════════════════════════════════════════════
+'  PHASE 4 — FEEDBACK LOOP
+'════════════════════════════════════════════════════════════
+== Phase 4  ·  Developer Feedback ==
+
+DEV  ->  API  : POST /v1/feedback {finding_id, verdict: TP|FP}
+activate API
+API  ->  DB   : UPDATE suppression_rules · adjust threshold
+deactivate API
+
+note over DEV, DB
+  Typical end-to-end: 14–90 s
+  Tool execution: ~10 s · Taint+Reachability: <1 s
+  AI enrichment: 400–1400 ms per finding
+  Load tested: 500 RPS · p99 < 2 s (non-AI endpoints)
+end note
+
+@enduml

@@ -1,0 +1,730 @@
+%% ============================================================
+%%  BIBLIOGRAPHY — ACR-QA Project
+%%  Format: IEEEtranN (numbered, sorted)
+%% ============================================================
+
+%% ── OWASP ───────────────────────────────────────────────────
+@misc{owasp_top10_2021,
+  author       = {{OWASP Foundation}},
+  title        = {{OWASP} Top 10 2021},
+  year         = {2021},
+  howpublished = {\url{https://owasp.org/Top10/}},
+  note         = {Accessed: May 2026}
+}
+
+@misc{owasp_scp,
+  author       = {{OWASP Foundation}},
+  title        = {Secure Coding Practices Quick Reference Guide},
+  year         = {2010},
+  howpublished = {\url{https://owasp.org/www-project-secure-coding-practices-quick-reference-guide/}},
+  note         = {Accessed: May 2026}
+}
+
+@misc{dvwa,
+  author       = {{DVWA Project}},
+  title        = {Damn Vulnerable Web Application ({DVWA})},
+  year         = {2023},
+  howpublished = {\url{https://github.com/digininja/DVWA}},
+  note         = {Accessed: May 2026}
+}
+
+%% ── NIST / Standards ────────────────────────────────────────
+@misc{nist_pqc_2024,
+  author       = {{National Institute of Standards and Technology}},
+  title        = {Post-Quantum Cryptography Standardization},
+  year         = {2024},
+  howpublished = {\url{https://csrc.nist.gov/projects/post-quantum-cryptography}},
+  note         = {Accessed: May 2026}
+}
+
+@misc{nist_800_53,
+  author       = {{National Institute of Standards and Technology}},
+  title        = {{NIST Special Publication 800-53} Rev.\ 5: Security and Privacy Controls for Information Systems and Organizations},
+  year         = {2020},
+  howpublished = {\url{https://csrc.nist.gov/publications/detail/sp/800-53/rev-5/final}},
+  note         = {Accessed: May 2026}
+}
+
+@misc{cvss_v3,
+  author       = {{FIRST.Org, Inc.}},
+  title        = {Common Vulnerability Scoring System ({CVSS}) v3.1 Specification},
+  year         = {2019},
+  howpublished = {\url{https://www.first.org/cvss/specification-document}},
+  note         = {Accessed: May 2026}
+}
+
+@misc{mitre_cwe,
+  author       = {{MITRE Corporation}},
+  title        = {Common Weakness Enumeration ({CWE})},
+  year         = {2023},
+  howpublished = {\url{https://cwe.mitre.org/}},
+  note         = {Accessed: May 2026}
+}
+
+%% ── SAST Literature ─────────────────────────────────────────
+@book{chess2004static,
+  author    = {Chess, Brian and McGraw, Gary},
+  title     = {Static Analysis for Security},
+  journal   = {{IEEE} Security \& Privacy},
+  volume    = {2},
+  number    = {6},
+  pages     = {76--79},
+  year      = {2004},
+  publisher = {IEEE}
+}
+
+@inproceedings{johnson2013dont,
+  author    = {Johnson, Brittany and Song, Yoonki and Murphy-Hill, Emerson and Bowdidge, Robert},
+  title     = {Why Don't Software Developers Use Static Analysis Tools to Find Bugs?},
+  booktitle = {Proceedings of the 35th International Conference on Software Engineering ({ICSE})},
+  pages     = {672--681},
+  year      = {2013},
+  publisher = {IEEE}
+}
+
+@article{muske2016survey,
+  author  = {Muske, Tukaram and Serebrenik, Alexander},
+  title   = {Survey of Approaches for Handling Static Analysis Alarms},
+  journal = {Proceedings of the 16th International Working Conference on Source Code Analysis and Manipulation},
+  pages   = {157--166},
+  year    = {2016}
+}
+
+@inproceedings{ayewah2008using,
+  author    = {Ayewah, Nathaniel and Pugh, William and Morgenthaler, J. David and Penix, John and Zhou, YuQian},
+  title     = {Using Static Analysis to Find Bugs},
+  booktitle = {{IEEE} Software},
+  volume    = {25},
+  number    = {5},
+  pages     = {22--29},
+  year      = {2008}
+}
+
+%% ── Machine Learning for Code ───────────────────────────────
+@inproceedings{yamaguchi2014modeling,
+  author    = {Yamaguchi, Fabian and Golde, Nico and Arp, Daniel and Rieck, Konrad},
+  title     = {Modeling and Discovering Vulnerabilities with Code Property Graphs},
+  booktitle = {Proceedings of the 2014 {IEEE} Symposium on Security and Privacy},
+  pages     = {590--604},
+  year      = {2014},
+  publisher = {IEEE}
+}
+
+@inproceedings{alon2019code2vec,
+  author    = {Alon, Uri and Zilberstein, Meital and Levy, Omer and Yahav, Eran},
+  title     = {code2vec: Learning Distributed Representations of Code},
+  booktitle = {Proceedings of the {ACM} on Programming Languages},
+  volume    = {3},
+  number    = {{POPL}},
+  pages     = {1--29},
+  year      = {2019}
+}
+
+@inproceedings{li2018vuldeepecker,
+  author    = {Li, Zhen and Zou, Deqing and Xu, Shouhuai and Ou, Xinyu and Jin, Hai and Wang, Sujuan and Deng, Zhijun and Zhong, Yuyi},
+  title     = {{VulDeePecker}: A Deep Learning-Based System for Vulnerability Detection},
+  booktitle = {Proceedings of the 25th Annual Network and Distributed System Security Symposium ({NDSS})},
+  year      = {2018}
+}
+
+%% ── Large Language Models ───────────────────────────────────
+@article{chen2021evaluating,
+  author  = {Chen, Mark and Tworek, Jerry and Jun, Heewoo and Yuan, Qiming and de Oliveira Pinto, Henrique Ponde and Kaplan, Jared and others},
+  title   = {Evaluating Large Language Models Trained on Code},
+  journal = {arXiv preprint arXiv:2107.03374},
+  year    = {2021}
+}
+
+@inproceedings{feng2020codebert,
+  author    = {Feng, Zhangyin and Guo, Daya and Tang, Duyu and Duan, Nan and Feng, Xiaocheng and Gong, Ming and Shou, Linjun and Qin, Bing and Liu, Ting and Jiang, Daxin and Zhou, Ming},
+  title     = {{CodeBERT}: A Pre-Trained Model for Programming and Natural Languages},
+  booktitle = {Findings of {EMNLP} 2020},
+  pages     = {1536--1547},
+  year      = {2020}
+}
+
+@article{roziere2023code,
+  author  = {Rozi{\`e}re, Baptiste and Gehring, Jonas and Gloeckle, Fabian and Sootla, Sten and Gat, Itai and Tan, Xiaoqing Ellen and others},
+  title   = {Code {LLaMA}: Open Foundation Models for Code},
+  journal = {arXiv preprint arXiv:2308.12950},
+  year    = {2023}
+}
+
+@inproceedings{pearce2022asleep,
+  author    = {Pearce, Hammond and Ahmad, Baleegh and Tan, Benjamin and Dolan-Gavitt, Brendan and Karri, Ramesh},
+  title     = {Asleep at the Keyboard? Assessing the Security of {GitHub Copilot}'s Code Contributions},
+  booktitle = {Proceedings of the 43rd {IEEE} Symposium on Security and Privacy},
+  pages     = {754--768},
+  year      = {2022}
+}
+
+@article{thapa2022transformer,
+  author  = {Thapa, Chandra and Çamtepe, Seyit and Mahboubi, Arash and Grobler, Marthie and Chhetri, Mohan Baruwal and Nepal, Surya},
+  title   = {Transformer-Based Language Models for Software Vulnerability Detection},
+  journal = {Proceedings of the 38th Annual Computer Security Applications Conference ({ACSAC})},
+  pages   = {481--496},
+  year    = {2022}
+}
+
+@article{ni2023chatgpt,
+  author  = {Ni, Chijin and Ouhao, Chen and Shi, Zhiyuan and Liu, Yang and Zhou, Yuan},
+  title   = {An Empirical Study of {ChatGPT} in Software Security},
+  journal = {arXiv preprint arXiv:2312.04819},
+  year    = {2023}
+}
+
+%% ── RAG ─────────────────────────────────────────────────────
+@misc{chatsec2024,
+  author       = {Zhang, Wei and Liu, Hao and Chen, Mingxuan},
+  title        = {{ChatSec}: A Retrieval-Augmented System for Vulnerability Question Answering},
+  howpublished = {arXiv preprint arXiv:2402.11563},
+  year         = {2024},
+  note         = {Accessed: May 2026}
+}
+
+@misc{securityllm2024,
+  author       = {Ferrag, Mohamed Amine and Ndhlovu, Mthandazo and Tihanyi, Norbert and Cordeiro, Lucas C. and Debbah, Merouane and Lestable, Thierry},
+  title        = {Revolutionizing Cyber Threat Detection with Large Language Models},
+  howpublished = {arXiv preprint arXiv:2306.14263},
+  year         = {2024},
+  note         = {Accessed: May 2026}
+}
+
+@inproceedings{lewis2020retrieval,
+  author    = {Lewis, Patrick and Perez, Ethan and Piktus, Aleksandra and Petroni, Fabio and Karpukhin, Vladimir and Goyal, Naman and K{\"u}ttler, Heinrich and Lewis, Mike and Yih, Wen-tau and Rockt{\"a}schel, Tim and Riedel, Sebastian and Kiela, Douwe},
+  title     = {Retrieval-Augmented Generation for Knowledge-Intensive {NLP} Tasks},
+  booktitle = {Advances in Neural Information Processing Systems ({NeurIPS})},
+  volume    = {33},
+  pages     = {9459--9474},
+  year      = {2020}
+}
+
+@article{guu2020retrieval,
+  author  = {Guu, Kelvin and Lee, Kenton and Tung, Zora and Pasupat, Panupong and Chang, Mingwei},
+  title   = {{REALM}: Retrieval-Augmented Language Model Pre-Training},
+  journal = {arXiv preprint arXiv:2002.08909},
+  year    = {2020}
+}
+
+@article{ji2023survey,
+  author  = {Ji, Ziwei and Lee, Nayeon and Frieske, Rita and Yu, Tiezheng and Su, Dan and Xu, Yan and Ishii, Etsuko and Bang, Yejin and Madotto, Andrea and Fung, Pascale},
+  title   = {Survey of Hallucination in Natural Language Generation},
+  journal = {{ACM} Computing Surveys},
+  volume  = {55},
+  number  = {12},
+  pages   = {1--38},
+  year    = {2023}
+}
+
+@article{kuhn2023semantic,
+  author  = {Kuhn, Lorenz and Gal, Yarin and Farquhar, Sebastian},
+  title   = {Semantic Uncertainty: Linguistic Invariances for Uncertainty Estimation in Natural Language Generation},
+  journal = {arXiv preprint arXiv:2302.09664},
+  year    = {2023}
+}
+
+@inproceedings{zhang2024autocoderover,
+  author    = {Zhang, Yuntong and Ruan, Haifeng and Fan, Zhiyu and Roychoudhury, Abhik},
+  title     = {{AutoCodeRover}: Autonomous Program Improvement},
+  booktitle = {Proceedings of the 33rd {ACM} {SIGSOFT} International Symposium on Software Testing and Analysis},
+  year      = {2024}
+}
+
+%% ── Confidence / Prioritisation ─────────────────────────────
+@inproceedings{kremenek2003z,
+  author    = {Kremenek, Ted and Engler, Dawson},
+  title     = {Z-Ranking: Using Statistical Analysis to Counter the Impact of Static Analysis Approximations},
+  booktitle = {Proceedings of the 10th International Static Analysis Symposium ({SAS})},
+  pages     = {295--315},
+  year      = {2003}
+}
+
+%% ── Tools / Platforms ───────────────────────────────────────
+@misc{sonarqube,
+  author       = {{SonarSource}},
+  title        = {{SonarQube}: Continuous Code Quality},
+  howpublished = {\url{https://www.sonarqube.org}},
+  year         = {2024},
+  note         = {Accessed: May 2026}
+}
+
+@misc{snyk,
+  author       = {{Snyk Ltd.}},
+  title        = {Snyk Code: Developer Security},
+  howpublished = {\url{https://snyk.io}},
+  year         = {2024},
+  note         = {Accessed: May 2026}
+}
+
+@misc{veracode,
+  author       = {{Veracode}},
+  title        = {Veracode Static Analysis},
+  howpublished = {\url{https://www.veracode.com}},
+  year         = {2024},
+  note         = {Accessed: May 2026}
+}
+
+@misc{checkmarx,
+  author       = {{Checkmarx}},
+  title        = {Checkmarx One Application Security Platform},
+  howpublished = {\url{https://checkmarx.com}},
+  year         = {2024},
+  note         = {Accessed: May 2026}
+}
+
+@misc{defectdojo,
+  author       = {{DefectDojo Project}},
+  title        = {{DefectDojo}: Open Source Vulnerability Management},
+  howpublished = {\url{https://github.com/DefectDojo/django-DefectDojo}},
+  year         = {2024},
+  note         = {Accessed: May 2026}
+}
+
+@misc{trivy,
+  author       = {{Aqua Security}},
+  title        = {Trivy: Comprehensive Security Scanner},
+  howpublished = {\url{https://github.com/aquasecurity/trivy}},
+  year         = {2024},
+  note         = {Accessed: May 2026}
+}
+
+@misc{cyclonedx,
+  author       = {{CycloneDX Project}},
+  title        = {{CycloneDX} — SBOM and {CBoM} Standard},
+  howpublished = {\url{https://cyclonedx.org}},
+  year         = {2024},
+  note         = {Accessed: May 2026}
+}
+
+%% ── Cryptography ────────────────────────────────────────────
+@article{shor1994algorithms,
+  author  = {Shor, Peter W.},
+  title   = {Algorithms for Quantum Computation: Discrete Logarithms and Factoring},
+  journal = {Proceedings of the 35th Annual Symposium on Foundations of Computer Science},
+  pages   = {124--134},
+  year    = {1994},
+  publisher = {IEEE}
+}
+
+%% ── Policy / Executive Orders ───────────────────────────────
+@misc{white_house_eo_2021,
+  author       = {{The White House}},
+  title        = {Executive Order on Improving the Nation's Cybersecurity},
+  year         = {2021},
+  howpublished = {\url{https://www.whitehouse.gov/briefing-room/presidential-actions/2021/05/12/executive-order-on-improving-the-nations-cybersecurity/}},
+  note         = {Accessed: May 2026}
+}
+
+%% ── Analysis Tools ──────────────────────────────────────────
+@misc{bandit_tool,
+  author       = {{PyCQA}},
+  title        = {Bandit: A Security Linter for Python},
+  howpublished = {\url{https://github.com/PyCQA/bandit}},
+  year         = {2023},
+  note         = {Accessed: May 2026}
+}
+
+@misc{semgrep_tool,
+  author       = {{Semgrep, Inc.}},
+  title        = {Semgrep: Fast, Lightweight Static Analysis},
+  howpublished = {\url{https://semgrep.dev}},
+  year         = {2024},
+  note         = {Accessed: May 2026}
+}
+
+@misc{gosec_tool,
+  author       = {{Securego Project}},
+  title        = {Gosec: Golang Security Checker},
+  howpublished = {\url{https://github.com/securego/gosec}},
+  year         = {2024},
+  note         = {Accessed: May 2026}
+}
+
+@misc{eslint_security,
+  author       = {{ESLint Community}},
+  title        = {{eslint-plugin-security}: {ESLint} Rules for Node.js Security},
+  howpublished = {\url{https://github.com/eslint-community/eslint-plugin-security}},
+  year         = {2024},
+  note         = {Accessed: May 2026}
+}
+
+%% ── Frameworks and Standards ────────────────────────────────
+@misc{fastapi_framework,
+  author       = {Ram\'irez, Sebasti\'an},
+  title        = {{FastAPI}: Modern, Fast Web Framework for Building {APIs} with {Python}},
+  howpublished = {\url{https://fastapi.tiangolo.com}},
+  year         = {2024},
+  note         = {Accessed: May 2026}
+}
+
+@misc{celery_project,
+  author       = {{Celery Project}},
+  title        = {Celery: Distributed Task Queue},
+  howpublished = {\url{https://docs.celeryq.dev}},
+  year         = {2024},
+  note         = {Accessed: May 2026}
+}
+
+@misc{wcag21,
+  author       = {{World Wide Web Consortium ({W3C})}},
+  title        = {Web Content Accessibility Guidelines ({WCAG}) 2.1},
+  howpublished = {\url{https://www.w3.org/TR/WCAG21/}},
+  year         = {2018},
+  note         = {Accessed: May 2026}
+}
+
+@misc{sarif_standard,
+  author       = {{OASIS Open}},
+  title        = {Static Analysis Results Interchange Format ({SARIF}) Version 2.1.0},
+  howpublished = {\url{https://docs.oasis-open.org/sarif/sarif/v2.1.0/}},
+  year         = {2020},
+  note         = {Accessed: May 2026}
+}
+
+@misc{slsa_framework,
+  author       = {{OpenSSF}},
+  title        = {{SLSA}: Supply-chain Levels for Software Artifacts},
+  howpublished = {\url{https://slsa.dev}},
+  year         = {2023},
+  note         = {Accessed: May 2026}
+}
+
+@misc{osv_database,
+  author       = {{Google Open Source Security Team}},
+  title        = {{OSV}: Open Source Vulnerabilities Database},
+  howpublished = {\url{https://osv.dev}},
+  year         = {2024},
+  note         = {Accessed: May 2026}
+}
+
+%% ── Quantum Computing ───────────────────────────────────────
+@article{grover1996fast,
+  author  = {Grover, Lov K.},
+  title   = {A Fast Quantum Mechanical Algorithm for Database Search},
+  journal = {Proceedings of the 28th Annual {ACM} Symposium on Theory of Computing},
+  pages   = {212--219},
+  year    = {1996}
+}
+
+%% ── Benchmark Applications ──────────────────────────────────
+@misc{pygoat_app,
+  author       = {{OWASP}},
+  title        = {Pygoat: Intentionally Vulnerable {Django} Web Application},
+  howpublished = {\url{https://github.com/adeyosemanputra/pygoat}},
+  year         = {2023},
+  note         = {Accessed: May 2026}
+}
+
+@misc{nodegoat_app,
+  author       = {{OWASP}},
+  title        = {{NodeGoat}: {OWASP} Node.js Reference Implementation},
+  howpublished = {\url{https://github.com/OWASP/NodeGoat}},
+  year         = {2023},
+  note         = {Accessed: May 2026}
+}
+
+@misc{juiceshop_app,
+  author       = {{OWASP}},
+  title        = {{OWASP} Juice Shop: Probably the Most Modern and Sophisticated Insecure Web Application},
+  howpublished = {\url{https://owasp.org/www-project-juice-shop/}},
+  year         = {2024},
+  note         = {Accessed: May 2026}
+}
+
+%% ── Testing Tools ───────────────────────────────────────────
+@misc{locust_tool,
+  author       = {{Locust Project}},
+  title        = {Locust: An Open Source Load Testing Tool},
+  howpublished = {\url{https://locust.io}},
+  year         = {2024},
+  note         = {Accessed: May 2026}
+}
+
+@misc{pytest_tool,
+  author       = {{pytest-dev}},
+  title        = {pytest: Helps You Write Better Programs},
+  howpublished = {\url{https://pytest.org}},
+  year         = {2024},
+  note         = {Accessed: May 2026}
+}
+
+%% ── Software Engineering ─────────────────────────────────────
+@book{mcconnell2004code,
+  author    = {McConnell, Steve},
+  title     = {Code Complete: A Practical Handbook of Software Construction},
+  edition   = {2nd},
+  year      = {2004},
+  publisher = {Microsoft Press}
+}
+
+@book{fowler1999refactoring,
+  author    = {Fowler, Martin and Beck, Kent and Brant, John and Opdyke, William and Roberts, Don},
+  title     = {Refactoring: Improving the Design of Existing Code},
+  year      = {1999},
+  publisher = {Addison-Wesley}
+}
+
+@article{mccabe1976complexity,
+  author  = {McCabe, Thomas J.},
+  title   = {A Complexity Measure},
+  journal = {{IEEE} Transactions on Software Engineering},
+  volume  = {SE-2},
+  number  = {4},
+  pages   = {308--320},
+  year    = {1976}
+}
+
+@book{bass2012software,
+  author    = {Bass, Len and Clements, Paul and Kazman, Rick},
+  title     = {Software Architecture in Practice},
+  edition   = {3rd},
+  year      = {2012},
+  publisher = {Addison-Wesley}
+}
+
+%% ── DevSecOps and CI/CD ──────────────────────────────────────
+@book{kim2016devops,
+  author    = {Kim, Gene and Humble, Jez and Debois, Patrick and Willis, John},
+  title     = {The DevOps Handbook},
+  year      = {2016},
+  publisher = {IT Revolution Press}
+}
+
+@article{shahin2017continuous,
+  author  = {Shahin, Mojtaba and Ali Babar, Muhammad and Zhu, Liming},
+  title   = {Continuous Integration, Delivery and Deployment: A Systematic Review on Approaches, Tools, Challenges and Practices},
+  journal = {{IEEE} Access},
+  volume  = {5},
+  pages   = {3909--3943},
+  year    = {2017}
+}
+
+@misc{github_actions,
+  author       = {{GitHub}},
+  title        = {{GitHub Actions}: Automate Your Workflow from Idea to Production},
+  howpublished = {\url{https://docs.github.com/en/actions}},
+  year         = {2024},
+  note         = {Accessed: May 2026}
+}
+
+%% ── Container and Cloud Security ─────────────────────────────
+@misc{docker_security,
+  author       = {{Docker, Inc.}},
+  title        = {Docker Security Best Practices},
+  howpublished = {\url{https://docs.docker.com/engine/security/}},
+  year         = {2024},
+  note         = {Accessed: May 2026}
+}
+
+@misc{kubernetes_security,
+  author       = {{The Kubernetes Authors}},
+  title        = {Kubernetes Security and Compliance},
+  howpublished = {\url{https://kubernetes.io/docs/concepts/security/}},
+  year         = {2024},
+  note         = {Accessed: May 2026}
+}
+
+@misc{helm_chart,
+  author       = {{Helm Project}},
+  title        = {Helm: The Kubernetes Package Manager},
+  howpublished = {\url{https://helm.sh}},
+  year         = {2024},
+  note         = {Accessed: May 2026}
+}
+
+%% ── API and Web Security ──────────────────────────────────────
+@misc{owasp_api_top10,
+  author       = {{OWASP Foundation}},
+  title        = {{OWASP API Security Top 10} 2023},
+  howpublished = {\url{https://owasp.org/www-project-api-security/}},
+  year         = {2023},
+  note         = {Accessed: May 2026}
+}
+
+@misc{owasp_asvs,
+  author       = {{OWASP Foundation}},
+  title        = {{OWASP} Application Security Verification Standard ({ASVS}) 4.0},
+  howpublished = {\url{https://owasp.org/www-project-application-security-verification-standard/}},
+  year         = {2021},
+  note         = {Accessed: May 2026}
+}
+
+@article{fielding2000rest,
+  author  = {Fielding, Roy T. and Taylor, Richard N.},
+  title   = {Principled Design of the Modern {Web} Architecture},
+  journal = {{ACM} Transactions on Internet Technology},
+  volume  = {2},
+  number  = {2},
+  pages   = {115--150},
+  year    = {2002}
+}
+
+%% ── Database Security ────────────────────────────────────────
+@misc{postgresql_docs,
+  author       = {{The PostgreSQL Global Development Group}},
+  title        = {{PostgreSQL} 15 Documentation},
+  howpublished = {\url{https://www.postgresql.org/docs/15/}},
+  year         = {2023},
+  note         = {Accessed: May 2026}
+}
+
+@article{halfond2006classification,
+  author  = {Halfond, William G.~J. and Viegas, Jeremy and Orso, Alessandro},
+  title   = {A Classification of {SQL} Injection Attacks and Countermeasures},
+  journal = {Proceedings of the {IEEE} International Symposium on Secure Software Engineering},
+  pages   = {13--15},
+  year    = {2006}
+}
+
+%% ── Cryptographic Standards ──────────────────────────────────
+@misc{nist_fips_203,
+  author       = {{National Institute of Standards and Technology}},
+  title        = {{FIPS} 203: Module-Lattice-Based Key-Encapsulation Mechanism Standard},
+  howpublished = {\url{https://csrc.nist.gov/pubs/fips/203/final}},
+  year         = {2024},
+  note         = {Accessed: May 2026}
+}
+
+@misc{nist_fips_204,
+  author       = {{National Institute of Standards and Technology}},
+  title        = {{FIPS} 204: Module-Lattice-Based Digital Signature Standard},
+  howpublished = {\url{https://csrc.nist.gov/pubs/fips/204/final}},
+  year         = {2024},
+  note         = {Accessed: May 2026}
+}
+
+@misc{nist_fips_197,
+  author       = {{National Institute of Standards and Technology}},
+  title        = {{FIPS} 197: Advanced Encryption Standard ({AES})},
+  howpublished = {\url{https://csrc.nist.gov/publications/detail/fips/197/final}},
+  year         = {2001},
+  note         = {Accessed: May 2026}
+}
+
+%% ── AI and LLM Security ──────────────────────────────────────
+@inproceedings{dettmers2023qlora,
+  author    = {Dettmers, Tim and Pagnoni, Artidoro and Holtzman, Ari and Zettlemoyer, Luke},
+  title     = {{QLoRA}: Efficient Finetuning of Quantized {LLMs}},
+  booktitle = {Advances in Neural Information Processing Systems ({NeurIPS})},
+  year      = {2023}
+}
+
+@article{brown2020language,
+  author  = {Brown, Tom B. and Mann, Benjamin and Ryder, Nick and Subbiah, Melanie and Kaplan, Jared and others},
+  title   = {Language Models are Few-Shot Learners},
+  journal = {Advances in Neural Information Processing Systems},
+  volume  = {33},
+  pages   = {1877--1901},
+  year    = {2020}
+}
+
+@article{wei2022chain,
+  author  = {Wei, Jason and Wang, Xuezhi and Schuurmans, Dale and Bosma, Maarten and Ichter, Brian and Xia, Fei and Chi, Ed and Le, Quoc and Zhou, Denny},
+  title   = {Chain-of-Thought Prompting Elicits Reasoning in Large Language Models},
+  journal = {Advances in Neural Information Processing Systems},
+  volume  = {35},
+  year    = {2022}
+}
+
+%% ── Vulnerability Databases ──────────────────────────────────
+@misc{nvd_database,
+  author       = {{National Institute of Standards and Technology}},
+  title        = {National Vulnerability Database ({NVD})},
+  howpublished = {\url{https://nvd.nist.gov}},
+  year         = {2024},
+  note         = {Accessed: May 2026}
+}
+
+@misc{cve_program,
+  author       = {{MITRE Corporation}},
+  title        = {Common Vulnerabilities and Exposures ({CVE}) Program},
+  howpublished = {\url{https://cve.mitre.org}},
+  year         = {2024},
+  note         = {Accessed: May 2026}
+}
+
+%% ── Monitoring and Observability ─────────────────────────────
+@misc{prometheus_docs,
+  author       = {{Prometheus Authors}},
+  title        = {Prometheus Monitoring System and Time Series Database},
+  howpublished = {\url{https://prometheus.io/docs/}},
+  year         = {2024},
+  note         = {Accessed: May 2026}
+}
+
+@misc{grafana_docs,
+  author       = {{Grafana Labs}},
+  title        = {Grafana: Operational Dashboards for Your Data},
+  howpublished = {\url{https://grafana.com/docs/}},
+  year         = {2024},
+  note         = {Accessed: May 2026}
+}
+
+%% ── Taint and Program Analysis ───────────────────────────────
+@inproceedings{newsome2005dynamic,
+  author    = {Newsome, James and Song, Dawn},
+  title     = {Dynamic Taint Analysis for Automatic Detection, Analysis, and Signature Generation of Exploits on Commodity Software},
+  booktitle = {Proceedings of the Network and Distributed System Security Symposium ({NDSS})},
+  year      = {2005}
+}
+
+@inproceedings{enck2014taintdroid,
+  author    = {Enck, William and Gilbert, Peter and Han, Seungyeop and Tendulkar, Vasant and Chun, Byung-Gon and Cox, Landon P. and Jung, Jaeyeon and McDaniel, Patrick and Sheth, Anmol N.},
+  title     = {{TaintDroid}: An Information-Flow Tracking System for Realtime Privacy Monitoring on Smartphones},
+  booktitle = {{ACM} Transactions on Computer Systems},
+  volume    = {32},
+  number    = {2},
+  year      = {2014}
+}
+
+@inproceedings{livshits2005finding,
+  author    = {Livshits, V. Benjamin and Lam, Monica S.},
+  title     = {Finding Security Vulnerabilities in {Java} Applications with Static Analysis},
+  booktitle = {Proceedings of the 14th {USENIX} Security Symposium},
+  pages     = {271--286},
+  year      = {2005}
+}
+
+%% ── Software Supply Chain ────────────────────────────────────
+@article{ladisa2023sok,
+  author  = {Ladisa, Piergiorgio and Plate, Henrik and Martinez, Matias and Barais, Olivier},
+  title   = {{SoK}: Taxonomy of Attacks on Open-Source Supply Chains},
+  journal = {{IEEE} Symposium on Security and Privacy},
+  year    = {2023}
+}
+
+@misc{spdx_standard,
+  author       = {{Linux Foundation}},
+  title        = {{SPDX}: Software Package Data Exchange Standard},
+  howpublished = {\url{https://spdx.dev}},
+  year         = {2023},
+  note         = {Accessed: May 2026}
+}
+
+%% ── Code Duplication ─────────────────────────────────────────
+@inproceedings{roy2009comparison,
+  author    = {Roy, Chanchal K. and Cordy, James R. and Koschke, Rainer},
+  title     = {Comparison and Evaluation of Code Clone Detection Techniques and Tools: A Qualitative Approach},
+  booktitle = {Science of Computer Programming},
+  volume    = {74},
+  number    = {7},
+  pages     = {470--495},
+  year      = {2009}
+}
+
+%% ── Frontend and Accessibility ───────────────────────────────
+@misc{react_docs,
+  author       = {{Meta Platforms, Inc.}},
+  title        = {React: A {JavaScript} Library for Building User Interfaces},
+  howpublished = {\url{https://react.dev}},
+  year         = {2024},
+  note         = {Accessed: May 2026}
+}
+
+@misc{typescript_docs,
+  author       = {{Microsoft Corporation}},
+  title        = {{TypeScript}: {JavaScript} with Syntax for Types},
+  howpublished = {\url{https://www.typescriptlang.org}},
+  year         = {2024},
+  note         = {Accessed: May 2026}
+}

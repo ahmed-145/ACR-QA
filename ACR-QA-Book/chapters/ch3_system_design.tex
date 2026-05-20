@@ -1,0 +1,317 @@
+%% ============================================================
+%%  CHAPTER 3 — SYSTEM DESIGN & ARCHITECTURE
+%%  v5.0.0b1 — Updated May 2026
+%% ============================================================
+\chapter{System Design and Architecture}
+\label{ch:design}
+
+\section{Overview}
+
+This chapter presents the complete design and architecture of the \ACRQA{} system. It describes the twelve-stage processing pipeline, the canonical finding schema, the component interaction model, the database design, and the API surface. Design decisions are motivated throughout, with particular attention to how the architecture addresses the three deficiencies identified in Chapter~\ref{ch:intro}: fragmentation, signal noise, and lack of contextual reasoning.
+
+% -----------------------------------------------------------------
+\section{Architectural Goals and Design Principles}
+\label{sec:arch_goals}
+
+Six design principles guided the architecture: (1) \textbf{Single-schema normalisation} — all tool outputs are mapped to \texttt{CanonicalFinding} before any downstream processing, making every component tool-agnostic; (2) \textbf{Adapter isolation} — each tool integration is a self-contained module, so adding or removing a tool requires changes only to the adapter layer; (3) \textbf{Async-first processing} — scans execute on Celery workers so the API returns a job ID (HTTP~202) immediately; (4) \textbf{Fail-soft AI} — if Groq enrichment fails, findings are returned with raw tool data, so AI is an enhancement, not a dependency; (5) \textbf{Zero external runtime dependency} — the rule database and all tool binaries are bundled in container images; (6) \textbf{Horizontal scalability} — each worker is stateless; scaling requires only adding worker containers.
+
+% -----------------------------------------------------------------
+\section{High-Level Architecture}
+\label{sec:high_level_arch}
+
+Figure~\ref{fig:architecture_overview} illustrates the high-level component architecture of \ACRQA{}.
+
+\begin{figure}[htbp]
+  \centering
+  \includegraphics[width=0.94\textwidth,height=0.78\textheight,keepaspectratio]{arch_overview}
+  \caption{High-Level Architecture of the \ACRQA{} System (v4.0.0)}
+  \label{fig:architecture_overview}
+\end{figure}
+
+The six service layers — FastAPI API \cite{fastapi_framework}, React dashboard, Celery workers \cite{celery_project}, CORE engine, PostgreSQL \cite{postgresql_docs}, and the \texttt{config/rules.yml} knowledge base — communicate via a private Docker bridge network. Authentication \cite{fielding2000rest}, Prometheus \cite{prometheus_docs} instrumentation, and Pydantic v2 validation are applied at the API layer; all analysis executes asynchronously on Celery workers.
+
+% -----------------------------------------------------------------
+\section{The Twelve-Stage Processing Pipeline}
+\label{sec:pipeline}
+
+The core of \ACRQA{} is a twelve-stage sequential processing pipeline. Each stage receives the output of the preceding stage and produces an enriched artefact consumed by the next. Figure~\ref{fig:pipeline} illustrates the full pipeline flow.
+
+\begin{figure}[htbp]
+  \centering
+  \includegraphics[width=0.90\textwidth,height=0.78\textheight,keepaspectratio]{pipeline_stages}
+  \caption{The \ACRQA{} Twelve-Stage Analysis Pipeline}
+  \label{fig:pipeline}
+\end{figure}
+
+\subsection{Stage 0 — Rate Limit and Job Initialisation}
+
+Before tool execution begins, the API tier checks a Redis token-bucket rate limiter. If the request is within quota, a new analysis run record is created in PostgreSQL with status \texttt{QUEUED} and the job is published to the Celery task queue. The API returns the run ID immediately (HTTP 202 Accepted).
+
+\subsection{Stage 1 — Input \& Repository Ingestion}
+
+The Celery worker receives the job and validates the target path. Language detection is performed by scanning file extensions (e.g., \texttt{.py}, \texttt{.ts}, \texttt{go.mod}) to determine which adapters to activate. The run status is updated to \texttt{RUNNING}.
+
+\subsection{Stage 2 — Multi-Tool Execution}
+
+Stage 2 invokes all applicable tool adapters concurrently using Python's thread pool. Table~\ref{tab:tool_execution} shows the tool-to-language mapping and typical execution times.
+
+\begin{table}[H]
+\caption{Tool Execution Mapping and Typical Runtime (v4.0.0)}
+\label{tab:tool_execution}
+\centering
+\renewcommand{\arraystretch}{1.3}
+\begin{tabularx}{\textwidth}{@{} l l X r @{}}
+\toprule
+\textbf{Tool} & \textbf{Target} & \textbf{Analysis Mode} & \textbf{Typical Time} \\
+\midrule
+Ruff             & Python          & Linting + security rules (fast)    & 1--5 s   \\
+Bandit           & Python          & AST + CFG taint patterns           & 5--20 s  \\
+Semgrep          & Multi-language  & AST pattern matching               & 15--45 s \\
+Vulture          & Python          & Dead code detection                & 2--8 s   \\
+Radon            & Python          & Cyclomatic complexity              & 1--3 s   \\
+jscpd            & Multi-language  & Copy-paste duplication             & 3--10 s  \\
+Secrets Detector & All             & 15+ regex patterns                 & 1--3 s   \\
+ESLint-security  & JS / TS         & AST security rules                 & 5--15 s  \\
+npm audit        & Node.js deps    & CVE advisory database              & 3--8 s   \\
+gosec            & Go              & 35 AST + data-flow checks          & 5--20 s  \\
+staticcheck      & Go              & 21 correctness rules               & 3--10 s  \\
+SCA Scanner      & Python / Node   & pip-audit / npm CVE lookup         & 3--8 s   \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+Each adapter constructs the tool-specific command line, executes it as a managed subprocess with a 300-second timeout, and returns raw output. Tool failures are logged and silently skipped — a failed tool does not abort the pipeline.
+
+\subsection{Stage 3 — Normalisation, Filtering, and Deduplication}
+
+Stage 3 is the architectural heart of the system. Raw tool outputs are parsed by each adapter's \texttt{parse()} method and mapped to \texttt{CanonicalFinding} instances (Section~\ref{subsec:schema}). Seven sub-stages then execute in sequence: glob-based config filtering removes excluded paths; the \texttt{suppression\_rules} table suppresses known false positives; findings sharing a \texttt{(file, line, canonical\_rule\_id)} fingerprint are deduplicated and their confirming tools merged; the taint engine traces HTTP sources to dangerous sinks (Section~\ref{subsec:taint}); call-graph BFS penalises unreachable code (Section~\ref{subsec:callgraph}); a per-rule cap of five findings prevents noisy rules from dominating; and finally findings are sorted by confidence score descending.
+
+\subsubsection{The Canonical Finding Schema}
+\label{subsec:schema}
+
+The \texttt{CanonicalFinding} schema uses \texttt{file} and \texttt{line} as the canonical location fields (not \texttt{file\_path}/\texttt{line\_number}). Key fields:
+
+\begin{lstlisting}[language=Python, caption={Canonical Finding Schema (Pydantic v2, key fields)}, label={lst:finding_schema}]
+class CanonicalFinding(BaseModel):
+    id: UUID;  run_id: UUID
+    tool:      str        # e.g. "bandit,semgrep" (multi-tool)
+    rule_id:   str        # canonical ID  (SECURITY-001)
+    file:      str;  line: int  # NOTE: not file_path / line_number
+    code_snippet: Optional[str]
+    cwe_id:    Optional[str]   # "CWE-89"
+    severity:  Literal["CRITICAL","HIGH","MEDIUM","LOW","INFO"]
+    category:  Literal["security","style","dead-code",...]
+    confidence: Optional[float]      # 0-100, Stage 4
+    taint_path: Optional[list[str]]  # Stage 3
+    ai_explanation: Optional[str]    # Stage 4
+    is_suppressed:  bool = False
+\end{lstlisting}
+
+\subsection{Stage 4 — AI Explanation, Confidence Scoring, and Attestation}
+\label{subsec:stage4}
+
+Stage 4 runs three parallel enrichment processes for each non-suppressed finding:
+
+\subsubsection{Confidence Scoring}
+
+Each normalised finding receives a confidence score $C_s \in [0, 100]$ using a weighted combination of five deterministic signals:
+
+\begin{equation}
+  C_s = \sum_{i=1}^{5} w_i \cdot s_i + B_{\text{multi}}
+  \label{eq:confidence_score}
+\end{equation}
+
+\noindent where $B_{\text{multi}} = 5$ if two or more tools independently confirmed the finding at the same location, and zero otherwise. Table~\ref{tab:confidence_signals} defines the five signals.
+
+\begin{table}[H]
+\caption{Confidence Scoring Signals and Weights}
+\label{tab:confidence_signals}
+\centering
+\renewcommand{\arraystretch}{1.3}
+\begin{tabularx}{\textwidth}{@{} l X c c @{}}
+\toprule
+\textbf{Signal} & \textbf{Description} & \textbf{Weight $w_i$} & \textbf{Max} \\
+\midrule
+$s_1$: Severity         & CRITICAL/HIGH/MEDIUM/LOW scoring           & 0.40 & 40 \\
+$s_2$: Category         & Security $>$ design $>$ style              & 0.20 & 20 \\
+$s_3$: Tool Reliability & Known precision profile of originating tool & 0.15 & 15 \\
+$s_4$: Rule Specificity & CWE-mapped rules score higher              & 0.10 & 10 \\
+$s_5$: Fix Validation   & Auto-fix patch successfully generated      & 0.10 & 10 \\
+\midrule
+Multi-tool bonus $B_{\text{multi}}$ & $\geq$2 tools at same location & — & +5 \\
+Unreachable penalty  & Call graph: finding in dead code            & — & $-20$ \\
+\midrule
+\textbf{Total max} & & \textbf{1.00} & \textbf{100} \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\subsubsection{RAG-Assisted AI Enrichment with Entropy Validation}
+
+For each non-suppressed finding, the RAG stage performs:
+
+\begin{enumerate}
+  \item \textbf{Retrieval:} O(1) dictionary lookup of the rule's full entry from \texttt{config/rules.yml} by \texttt{canonical\_rule\_id}.
+  \item \textbf{Generation:} Three independent Groq LLaMA-3.3-70B calls at temperature 0.3. The prompt template includes the retrieved rule context, the code snippet, CWE ID, and severity.
+  \item \textbf{Entropy validation:} N-gram entropy ($n=3$) is computed for each response. Responses with $\hat{H} < 3.2$ bits are rejected. The accepted response with the highest entropy is selected.
+\end{enumerate}
+
+Figure~\ref{fig:rag_process} illustrates the complete enrichment process.
+
+\begin{figure}[htbp]
+  \centering
+  \includegraphics[width=0.88\textwidth,height=0.65\textheight,keepaspectratio]{rag_engine}
+  \caption{RAG-Assisted AI Enrichment Process for a Single Finding}
+  \label{fig:rag_process}
+\end{figure}
+
+\subsubsection{SLSA Attestation}
+
+Each completed scan produces a SLSA-compliant \cite{slsa_framework} cryptographic attestation document signed with both ECDSA-P256 (classical) and CRYSTALS-Dilithium3 (NIST FIPS 204, post-quantum resistant). The attestation captures the pipeline's input hash, findings count, tool versions, and timestamp, providing a tamper-evident audit trail for compliance workflows.
+
+\subsection{Stage 5 — Supply Chain Analysis}
+
+Stage 5 runs two parallel sub-analyses. The \textbf{SCA} scanner parses Python \texttt{requirements.txt} and Node.js \texttt{package-lock.json}, querying an offline OSV snapshot \cite{osv_database} ($\sim$1.5\,GB, updated weekly) to report dependency CVEs with CVSS scores and affected version ranges. The \textbf{CBoM} scanner performs AST-based detection of cryptographic API usage, classifying 62 algorithms as NIST Approved, Deprecated, or PQC-Vulnerable, and outputs a CycloneDX CBoM JSON document.
+
+\subsection{Stage 6 — Quality Gate Enforcement}
+
+Stage 6 evaluates results against configurable quality gate rules defined in \texttt{.acrqa.yml} and produces a binary pass/fail verdict. The gate fails on any CRITICAL finding with $C_s \geq 70$, more than five HIGH findings at that threshold, more than three security-class findings with $C_s \geq 50$, or any hardcoded secret above $C_s = 50$. PQC-vulnerable or deprecated cryptographic algorithms in the CBoM trigger warnings rather than failures. All remaining configurations yield a pass.
+
+\subsection{Stage 7 — Structured Output Delivery}
+
+Stage 7 serialises the complete analysis result. The REST API exposes four output formats:
+JSON (full structured result), SARIF~2.1 \cite{sarif_standard} (GitHub Advanced Security integration), HTML self-contained report, and PDF compliance report. Findings are also posted as inline PR review comments to the triggering GitHub pull request, if a \texttt{GITHUB\_TOKEN} is configured.
+
+% -----------------------------------------------------------------
+\section{Advanced Analysis Engines}
+\label{sec:advanced_engines}
+
+\subsection{Taint Analyser}
+\label{subsec:taint}
+
+The taint analyser performs intra-procedural data-flow analysis within each Python function. For each \texttt{FunctionDef} node, a \texttt{\_FunctionTaintVisitor} tracks five source patterns (HTTP request fields: \texttt{request.args}, \texttt{request.form}, \texttt{request.json}, \texttt{request.cookies}, and \texttt{os.environ}) propagating through assignment chains, f-strings, and string concatenations, until reaching one of three sink types: SQL \texttt{execute()} calls, \texttt{eval()}/\texttt{exec()}, and \texttt{subprocess} invocations.
+
+The taint confidence is computed as:
+\begin{equation}
+  C_{\text{taint}} = \max(0.4, \; 0.95 - 0.1 \times (h - 1))
+  \label{eq:taint_conf}
+\end{equation}
+where $h$ is the number of propagation hops from source to sink. A direct source-to-sink assignment ($h=1$) achieves $C_{\text{taint}} = 0.95$; each intermediate hop reduces confidence by 0.10. The taint path and confidence are stored in the \texttt{taint\_path} (JSONB) and \texttt{taint\_confidence} columns of the findings table.
+
+\subsection{Call-Graph Reachability Engine}
+\label{subsec:callgraph}
+
+The call-graph engine performs a pure-AST breadth-first search from identified application entry points to detect dead code. Entry point heuristics identify:
+\begin{itemize}
+  \item Flask/FastAPI route decorators (\texttt{@app.route}, \texttt{@router.get}, etc.);
+  \item Celery task decorators (\texttt{@app.task}, \texttt{@shared\_task});
+  \item \texttt{if \_\_name\_\_ == "\_\_main\_\_"} blocks.
+\end{itemize}
+
+All functions reachable within five call-graph hops from an entry point are marked as \textit{reachable}. Findings in functions never reachable from any entry point receive a $-20$ confidence penalty and are labelled \texttt{triage\_verdict = UNREACHABLE}. On benchmark repositories, this engine achieves a 0\% false-positive rate — it never penalises a truly reachable finding.
+
+% -----------------------------------------------------------------
+\section{Database Schema Design}
+\label{sec:db_design}
+
+The PostgreSQL \cite{postgresql_docs} schema is organised into ten primary tables. Figure~\ref{fig:db_schema} shows the entity-relationship diagram.
+
+\begin{figure}[htbp]
+  \centering
+  \includegraphics[width=0.95\textwidth,height=0.75\textheight,keepaspectratio]{er_diagram}
+  \caption{Database Entity-Relationship Diagram (10-Table Schema, v4.0.0)}
+  \label{fig:db_schema}
+\end{figure}
+
+The \texttt{analysis\_runs} table records job status through states: \texttt{QUEUED}, \texttt{RUNNING}, \texttt{COMPLETED}, \texttt{FAILED}, and \texttt{CANCELLED}. The \texttt{findings} table stores all normalised findings with their confidence scores and AI enrichment fields. Soft-suppressed findings are retained with \texttt{is\_suppressed = TRUE}, supporting audit requirements. The \texttt{llm\_explanations} table stores the full LLM prompt, raw response, entropy score, and self-evaluation score for every AI-enriched finding, providing complete provenance for every AI-generated artefact — directly addressing Research Question 2 (Section~\ref{sec:rqs}).
+
+% -----------------------------------------------------------------
+\section{API Design}
+\label{sec:api_design}
+
+The FastAPI application exposes 32 endpoints grouped into four resource namespaces. Table~\ref{tab:api_endpoints} summarises the principal endpoints.
+
+\begin{table}[H]
+\caption{Principal FastAPI REST Endpoints (v4.0.0)}
+\label{tab:api_endpoints}
+\centering
+\renewcommand{\arraystretch}{1.3}
+\begin{tabularx}{\textwidth}{@{} l l X @{}}
+\toprule
+\textbf{Method} & \textbf{Path} & \textbf{Description} \\
+\midrule
+POST   & \texttt{/v1/auth/token}              & Authenticate; receive JWT access token \\
+POST   & \texttt{/v1/runs}                    & Submit scan job; returns run UUID (202) \\
+GET    & \texttt{/v1/runs/\{id\}}             & Poll job status and progress \\
+GET    & \texttt{/v1/runs/\{id\}/findings}    & Paginated findings with severity/category filters \\
+GET    & \texttt{/v1/runs/\{id\}/findings/\{fid\}/autofix} & AI-generated auto-fix patch \\
+GET    & \texttt{/v1/runs/\{id\}/attestation} & SLSA + post-quantum attestation document \\
+GET    & \texttt{/v1/runs/\{id\}/sbom}        & CycloneDX 1.4 SBOM JSON \\
+GET    & \texttt{/v1/runs/\{id\}/supply-chain} & Supply chain CVE findings \\
+GET    & \texttt{/v1/runs/\{id\}/gate}        & Quality gate verdict \\
+POST   & \texttt{/v1/feedback}                & Developer true/false positive feedback \\
+GET    & \texttt{/health}                     & Service health check (no auth) \\
+GET    & \texttt{/metrics}                    & Prometheus metrics (no auth) \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+All endpoints except \texttt{/health} and \texttt{/metrics} require authentication via either a Bearer JWT token (HS256, 24-hour expiry) or an \texttt{X-API-Key} header (hashed with bcrypt in the \texttt{api\_keys} table). Tokens encode the user role (\texttt{analyst} or \texttt{admin}).
+
+% -----------------------------------------------------------------
+\needspace{18\baselineskip}
+\section{Deployment Architecture}
+\label{sec:deployment}
+
+The complete \ACRQA{} stack is defined as a Docker Compose application with seven services. Figure~\ref{fig:docker_compose} illustrates the service topology.
+
+\begin{figure}[htbp]
+  \centering
+  \includegraphics[width=0.94\textwidth,height=0.70\textheight,keepaspectratio]{docker_stack}
+  \caption{Docker Compose Service Topology (7 Services, v4.0.0)}
+  \label{fig:docker_compose}
+\end{figure}
+
+The seven services are: \texttt{api} (FastAPI), \texttt{worker} (Celery, 4 concurrency), \texttt{dashboard} (React Vite dev server or Nginx), \texttt{postgres} (PostgreSQL 15), \texttt{redis} (Redis 7, message broker + cache), \texttt{prometheus} (metrics scraping), and \texttt{grafana} (dashboards). All services communicate over a private Docker bridge network (\texttt{acrqa-network}), exposing only the API port (8000) and dashboard port (3000) externally.
+
+A Kubernetes \cite{kubernetes_security} Helm chart \cite{helm_chart} is also provided for production deployment, featuring HPA (2--20 pods on CPU/memory), PodDisruptionBudgets, NetworkPolicies, and cert-manager TLS via an Ingress controller. Terraform modules are provided for AWS (ECS + RDS + ElastiCache) and Railway (managed platform deployment).
+
+% -----------------------------------------------------------------
+\needspace{18\baselineskip}
+\section{v5.0.0 Extended Architecture: Four New Engines}
+\label{sec:v5_engines}
+
+Version 5.0.0 extends the core pipeline with four new analytical engines, each addressing a gap identified after v4.0.0 evaluation.
+
+\subsection{Heuristic Risk Predictor}
+\label{sec:risk_predictor_design}
+
+The Risk Predictor (\texttt{CORE/engines/risk\_predictor.py}) computes a \textit{per-file risk score} $R \in [0, 100]$ using a transparent weighted linear model:
+
+\begin{equation}
+R = w_1 \cdot \text{churn} + w_2 \cdot \text{complexity} + w_3 \cdot \text{age} + w_4 \cdot \text{authors} + w_5 \cdot \text{test\_gap}
+\end{equation}
+
+where churn is normalised lines-changed over 90 days, complexity is per-function cyclomatic complexity via \texttt{radon}, age is time-since-last-touch in days, authors counts unique committers, and test\_gap is the deficit between a file's critical-function count and its covered test count. Weights $w_1$--$w_5$ are documented in \texttt{config/risk\_weights.yml} and auditable. This is deliberately \textit{not} an ML model: the lack of labelled training data at thesis scale makes ML unjustifiable; the weighted linear model is defensible, reproducible, and explainable at committee level.
+
+\subsection{Time-Travel Vulnerability Analyzer}
+\label{sec:time_travel_design}
+
+The Time-Travel engine (\texttt{CORE/engines/time\_travel.py}) addresses a gap in all static SAST tools: the ability to answer \textit{when} and \textit{by whom} a vulnerability was introduced. It walks the last $N = 50$ commits (configurable; \texttt{--full-history} removes the cap) using \texttt{git log -L}, re-running a lightweight taint + normalisation pass on each commit's changed files. For each finding it records \texttt{first\_seen\_commit}, \texttt{first\_seen\_author}, and \texttt{regression\_count} (times the pattern appeared, disappeared, and reappeared). The analysis is bounded to $O(N \times t_{\text{scan}})$ where $t_{\text{scan}}$ is the per-file scan time; on a 50-commit history this runs in under 90 seconds for most repositories.
+
+\subsection{IaC Security Scanner}
+\label{sec:iac_design}
+
+The IaC Scanner (\texttt{CORE/engines/iac\_scanner.py}) extends coverage to Infrastructure-as-Code assets: Terraform HCL, Kubernetes manifests, Dockerfiles, and GitHub Actions YAML. Twenty-eight canonical \texttt{IAC-*} rules cover NIST SP~800-190 container baselines, CIS Kubernetes Benchmark, and Terraform CIS benchmarks. The scanner is implemented as a pure-Python rule engine (no external subprocess dependencies in the minimal path) for offline correctness; optional \texttt{checkov} and \texttt{kube-score} wrappers extend coverage in connected environments.
+
+\subsection{PR Risk Score}
+\label{sec:pr_risk_design}
+
+The PR Risk Score (\texttt{CORE/engines/pr\_risk.py}) collapses the multi-dimensional security surface of a pull request into a single $[0, 100]$ mergeable-or-not signal. It aggregates six sub-signals: new HIGH findings (weight~0.30), reachability ratio (weight~0.25), taint coverage gap (weight~0.20), file risk from the Heuristic Predictor (weight~0.10), PR size penalty (weight~0.10; cap at 300 lines), and exploit-verified findings (weight~0.05). A score $\geq 70$ generates an amber gate (manual review recommended); $\geq 85$ triggers a hard red gate for CI pipelines consuming the \texttt{POST /v1/runs/\{id\}/pr-risk} endpoint.
+
+% -----------------------------------------------------------------
+\section{Summary}
+
+This chapter has presented the complete system design of \ACRQA{} v5.0.0b1, including the twelve-stage processing pipeline, the canonical finding schema, the confidence scoring function, the taint analyser, the call-graph reachability engine, the RAG-and-entropy enrichment mechanism, the CBoM module, the 10-table database schema, the 52-endpoint FastAPI surface, the 7-service containerised deployment architecture, and the four new v5.0.0 engines (Heuristic Risk Predictor, Time-Travel Analyzer, IaC Scanner, PR Risk Score). Chapter~\ref{ch:implementation} details the implementation of each component.
+
+\clearpage

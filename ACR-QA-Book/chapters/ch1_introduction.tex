@@ -1,0 +1,138 @@
+%% ============================================================
+%%  CHAPTER 1 — INTRODUCTION
+%%  v4.0.0 — Updated May 2026
+%% ============================================================
+\chapter{Introduction}
+\label{ch:intro}
+
+\section{Overview}
+
+The rapid proliferation of software applications across every domain of modern life has simultaneously amplified the consequences of software security failures. From critical infrastructure control systems to consumer mobile applications, vulnerabilities in source code translate directly into financial losses, privacy breaches, and systemic risks. The Open Web Application Security Project (OWASP) estimates that over 70\% of successful cyber attacks exploit known, preventable software weaknesses — weaknesses that competent static analysis could detect before deployment \cite{owasp_top10_2021}.
+
+Static Application Security Testing (SAST) represents the first line of automated defence in the software development lifecycle. By analysing source code without executing it, SAST tools identify patterns associated with known vulnerability classes — SQL injection, cross-site scripting, insecure cryptographic primitives, hardcoded secrets, and dozens of other categories — and surface them to developers early in the development cycle, where remediation costs are lowest. Despite decades of maturity, however, the SAST tooling landscape in 2024--2026 exhibits three persistent and interrelated deficiencies:
+
+\begin{enumerate}
+  \item \textbf{Fragmentation.} No single tool provides comprehensive coverage across all languages, vulnerability classes, and coding contexts. Python-focused tools miss JavaScript-specific issues; dependency scanners overlook logical flaws; secrets detectors know nothing about algorithmic vulnerabilities. Achieving adequate coverage therefore requires operating multiple tools simultaneously, each with its own invocation syntax, configuration format, and output schema.
+
+  \item \textbf{Signal noise.} Static analysis tools are designed for high recall — they prefer to report a potential issue rather than miss one. The result is a large number of false positives that erode developer trust and cause \textit{alert fatigue}. When developers learn to ignore tool output, the value of analysis drops to zero \cite{johnson2013dont}. Studies report false positive rates ranging from 35\% to over 80\% in production deployments \cite{muske2016survey}.
+
+  \item \textbf{Lack of contextual reasoning.} Traditional SAST tools pattern-match against known rule libraries. They cannot explain \textit{why} a finding matters in the specific codebase under review, assess exploitability in context, suggest targeted remediation strategies, or understand architectural patterns. This gap leaves developers without the guidance they need to prioritise and fix issues efficiently.
+\end{enumerate}
+
+\ACRQA{} (Automated Code Review \& Quality Assurance) was conceived specifically to address these three deficiencies through a single, self-hosted, AI-augmented platform that orchestrates multiple tools, normalises their outputs, and enriches each finding with context-aware AI reasoning — all at zero recurring licensing cost.
+
+% -----------------------------------------------------------------
+\section{Problem Statement}
+\label{sec:problem}
+
+Modern software teams face a paradox: the more security tools they adopt, the more overwhelmed their developers become. Consider a typical mid-sized repository written in Python and JavaScript. To achieve reasonable security coverage, a team might run Bandit \cite{bandit_tool} for Python vulnerabilities, ESLint with security plugins \cite{eslint_security} for JavaScript, Semgrep \cite{semgrep_tool} for cross-language pattern matching, TruffleHog for secrets detection, and pip-audit for dependency vulnerabilities \cite{cve_program}. Each tool:
+
+\begin{itemize}
+  \item Produces output in a distinct format (SARIF, JSON, plain text, CSV);
+  \item Requires separate installation, configuration, and maintenance;
+  \item Reports findings using its own severity taxonomy and rule identifiers;
+  \item Generates duplicated or overlapping findings that must be manually deduplicated.
+\end{itemize}
+
+Aggregating, deduplicating, and prioritising hundreds or thousands of raw tool findings requires significant manual effort before any remediation work begins. More critically, raw tool output lacks the contextual interpretation that makes findings actionable: a junior developer confronted with a finding labelled ``CWE-89: SQL Injection'' and a snippet of vulnerable code may not know what exploit scenario is possible, how severe the risk is in the current context, or what the correct remediation looks like.
+
+Existing commercial solutions — such as Snyk, Veracode, SonarQube Enterprise, and CodeRabbit — address parts of this problem but introduce new barriers: high licensing costs, dependency on cloud infrastructure, limited transparency into AI reasoning, lock-in to vendor-defined rule sets, and a tendency toward LLM hallucination in AI-generated explanations. No open-source alternative combining multi-tool orchestration with RAG-grounded AI enrichment, call-graph reachability filtering, and post-quantum cryptographic awareness existed at the time of this project.
+
+% -----------------------------------------------------------------
+\section{Project Objectives}
+\label{sec:objectives}
+
+The primary objective is to design, implement, and validate \ACRQA{}: a self-hosted, AI-augmented static analysis platform for multi-language codebases. The specific objectives are:
+
+\begin{enumerate}
+  \item \textbf{Orchestrate} ten or more open-source SAST tools through a single invocation interface covering Python, JavaScript/TypeScript, and Go.
+  \item \textbf{Normalise} heterogeneous tool outputs into a single \texttt{CanonicalFinding} schema capturing tool identity, location, severity, CWE classification, confidence, and AI context.
+  \item \textbf{Score confidence} label-free using a five-signal weighted function that ranks findings by true-positive likelihood without a pre-labelled dataset.
+  \item \textbf{Enrich findings} via RAG: retrieve curated security rules (66 rules, 422 mappings) and feed them as grounding context to Groq LLaMA-3.3-70B, with N-gram entropy filtering across three independent runs to suppress hallucinations.
+  \item \textbf{Filter dead code} through call-graph BFS reachability from Flask/FastAPI routes, Celery tasks, and \texttt{\_\_main\_\_} blocks; penalise unreachable findings rather than suppressing them.
+  \item \textbf{Detect taint propagation} intra-procedurally from HTTP sources to SQL/eval/subprocess sinks with confidence decay over hop depth.
+  \item \textbf{Generate a CBoM} inventorying 62 cryptographic algorithms and flagging deprecated and PQC-vulnerable primitives per NIST FIPS~203 \cite{nist_fips_203} and FIPS~204 \cite{nist_fips_204}.
+  \item \textbf{Deliver} the full stack as a 7-service Docker Compose \cite{docker_security} application at zero recurring cost: FastAPI \cite{fastapi_framework} (32 endpoints), React~18 dashboard (WCAG~2.1~AA \cite{wcag21}), Celery \cite{celery_project} workers, PostgreSQL (10-table schema), Redis, Prometheus \cite{prometheus_docs}, and Grafana \cite{grafana_docs}.
+\end{enumerate}
+
+% -----------------------------------------------------------------
+\section{Scope and Limitations}
+\label{sec:scope}
+
+\ACRQA{} covers static analysis of Python, JavaScript/TypeScript, and Go repositories, addressing injection flaws, insecure dependencies, hardcoded secrets, cryptographic weaknesses, dead code, and code quality defects. The full stack includes a FastAPI REST API, React~18 dashboard (WCAG~2.1~AA, Arabic RTL), Celery async workers, PostgreSQL provenance schema, GitHub Actions \cite{github_actions} CI/CD, and a 2,311-test suite (pytest \cite{pytest_tool}) at 84.89\% coverage.
+
+Explicitly outside scope: dynamic testing (DAST/fuzzing), runtime monitoring, compiled binaries without source, mobile security, CSRF detection (requires runtime analysis of form submissions), and IDOR detection (requires authorisation context).
+
+% -----------------------------------------------------------------
+\needspace{18\baselineskip}
+\section{Evaluation Research Questions}
+\label{sec:rqs}
+
+Four evaluation questions guide the design, implementation, and benchmarking decisions of this project:
+
+\begin{description}
+  \item[\textbf{RQ1:}] Can Retrieval-Augmented Generation meaningfully reduce LLM hallucination in security finding explanations, and by how much compared to prompt-only baselines?
+
+  \item[\textbf{RQ2:}] How can full provenance for every AI-generated explanation be ensured, such that each claim is traceable to a specific retrieved rule and can be audited post-hoc?
+
+  \item[\textbf{RQ3:}] What confidence scoring approach, applicable without labelled training data, best separates true-positive security findings from noise in a multi-tool SAST pipeline?
+
+  \item[\textbf{RQ4:}] Does the combined \ACRQA{} pipeline achieve precision and recall comparable to industry-standard commercial SAST tools when evaluated on standard vulnerable-application benchmarks?
+\end{description}
+
+These four questions map directly onto the four novel contributions described in Section~\ref{sec:significance}: RAG grounding addresses RQ1, PostgreSQL provenance tracking addresses RQ2, the five-signal confidence scorer addresses RQ3, and the benchmark evaluation in Chapter~\ref{ch:testing} addresses RQ4.
+
+% -----------------------------------------------------------------
+\section{Significance of the Work}
+\label{sec:significance}
+
+This project makes four novel contributions to software security and AI-assisted development tooling:
+
+\begin{enumerate}
+  \item \textbf{Unified multi-tool orchestration:} To the best of the author's knowledge, \ACRQA{} is the first open-source platform to combine ten or more SAST tools with RAG-backed LLM enrichment, AST call-graph reachability, intra-procedural taint analysis, and cross-language correlation in a single self-hosted service at zero recurring cost.
+
+  \item \textbf{Label-free confidence scoring:} The five-signal weighted scorer enables finding prioritisation without any labelled vulnerability dataset — applicable from the first scan and validated at 94.2\% false-positive suppression accuracy.
+
+  \item \textbf{Entropy-based hallucination filtering:} The N-gram entropy filter ($\tau = 3.2$ bits) across three independent LLM runs rejects 96\% of low-quality responses without human review, providing a reusable pattern for any AI-assisted developer tooling.
+
+  \item \textbf{PQC-aware Cryptographic Bill of Materials:} The CBoM module classifies 62 algorithms against NIST's 2024 post-quantum migration guidance \cite{nist_pqc_2024} and attests scan artefacts with CRYSTALS-Dilithium3 signatures — to the author's knowledge the first SAST-integrated tool to perform systematic PQC assessment.
+\end{enumerate}
+
+% -----------------------------------------------------------------
+\section{Methodology Overview}
+\label{sec:methodology}
+
+The development of \ACRQA{} followed an iterative, test-driven methodology structured in twelve phases across the academic year October 2025 -- June 2026. Table~\ref{tab:phases} summarises the phase timeline.
+
+\begin{table}[H]
+\caption{Development Phases --- \ACRQA{} v4.0.0}
+\label{tab:phases}
+\centering
+\renewcommand{\arraystretch}{1.25}
+\begin{tabularx}{\textwidth}{@{} l l X @{}}
+\toprule
+\textbf{Phase} & \textbf{Period} & \textbf{Key Deliverables} \\
+\midrule
+1 & Oct 2025        & Tool survey; canonical schema; pipeline architecture \\
+2 & Nov 2025        & Python adapter (6 tools); normaliser; Flask prototype \\
+3 & Nov--Dec 2025   & RAG KB (66 rules); Groq LLM; confidence scorer; entropy filter \\
+4 & Jan 2026        & CBoM generator; test-gap detector; cross-language correlator \\
+5 & Jan--Feb 2026   & JS/TS adapter; Go adapter; 422 canonical rule mappings \\
+6 & Feb 2026        & Secrets detector; SCA scanner; offline OSV database \\
+7--8 & Feb--Mar 2026 & Benchmark evaluation; FP calibration; targeted refinements \\
+9 & Mar--Apr 2026   & Taint analyser; call-graph BFS; auto-fix patch generator \\
+10 & Apr 2026       & FastAPI migration (32 endpoints); React 18 + TS dashboard \\
+11 & Apr--May 2026  & Post-quantum attestation (Dilithium3); Helm chart; Terraform \\
+12 & May 2026       & WCAG 2.1 AA; Arabic RTL; 500 RPS load test; final evaluation \\
+Docs & May--Jun 2026 & Thesis book; presentation; demo video \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+% -----------------------------------------------------------------
+\section{Thesis Structure}
+\label{sec:structure}
+
+Chapter~2 surveys the state of the art in static analysis, AI-assisted code review, RAG, and cryptographic inventory. Chapter~3 details the overall system architecture: the twelve-stage pipeline, canonical schema, and database design. Chapter~4 covers the implementation of every component from the FastAPI layer and Celery workers to the confidence scorer, taint analyser, RAG knowledge base, CBoM module, and React~18 dashboard. Chapter~5 presents the full evaluation: 2,311-test suite (84.89\% coverage), 97.1\% detection precision, OWASP Top~10 coverage, performance benchmarks, and a commercial feature comparison. Chapter~6 summarises contributions, lessons learned, limitations, and future directions.
+
+\clearpage

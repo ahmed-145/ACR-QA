@@ -1,0 +1,687 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<title>ACR-QA Project Poster — Ahmed Mahmoud Abbas</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:ital,wght@0,300;0,400;0,600;0,700;0,800;0,900;1,400&family=JetBrains+Mono:wght@400;700&display=swap');
+
+*,*::before,*::after{
+  box-sizing:border-box;margin:0;padding:0;
+  -webkit-print-color-adjust:exact !important;
+  print-color-adjust:exact !important;
+  color-adjust:exact !important;
+}
+
+:root{
+  --navy:#002654;
+  --navy2:#00336E;
+  --gold:#C9A84C;
+  --gold2:#E8C96A;
+  --white:#FFFFFF;
+  --off:#F5F4F1;
+  --border:#D6CEBC;
+  --green:#059669;
+  --txt:#111827;
+  --txt2:#374151;
+  --txt3:#6B7280;
+  --red:#DC2626;
+  --purple:#6D28D9;
+}
+
+body{
+  font-family:'Inter',system-ui,sans-serif;
+  background:#C8C2B6;
+  min-height:100vh;
+  padding:20px;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  gap:14px;
+}
+
+/* ── POSTER ─────────────────────────────── */
+.poster{
+  width:1188px;
+  background:var(--navy);
+  border-radius:8px;
+  overflow:hidden;
+  box-shadow:0 24px 80px rgba(0,0,0,.45);
+}
+
+/* ── HEADER ─────────────────────────────── */
+.g-header{
+  background:var(--navy);
+  border-bottom:4px solid var(--gold);
+  padding:10px 24px;
+  display:flex;
+  align-items:center;
+  gap:18px;
+}
+.g-header-center{flex:1;text-align:center;}
+.g-header-center h1{
+  font-size:27px;font-weight:900;
+  color:var(--white);letter-spacing:-.03em;line-height:1;
+}
+.g-header-center h1 em{color:var(--gold);font-style:normal;}
+.g-header-center p{font-size:10px;color:rgba(255,255,255,.5);margin-top:3px;letter-spacing:.04em;}
+.g-header-right{text-align:right;flex-shrink:0;}
+.g-header-right .name{font-size:11px;font-weight:700;color:var(--gold2);}
+.g-header-right .meta{font-size:9px;color:rgba(255,255,255,.45);margin-top:2px;line-height:1.6;}
+
+/* ── 3×2 GRID ─────────────────────────── */
+.grid{
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:3px;
+  background:var(--navy);
+  padding:3px;
+}
+
+/* ── PANEL ───────────────────────────── */
+.panel{
+  background:var(--white);
+  display:flex;
+  flex-direction:column;
+  overflow:hidden;
+  min-height:460px;
+}
+.panel-hd{
+  background:var(--navy);
+  padding:6px 12px;
+  display:flex;
+  align-items:center;
+  gap:8px;
+  border-bottom:2px solid var(--gold);
+  flex-shrink:0;
+}
+.panel-hd .num{
+  width:20px;height:20px;border-radius:50%;
+  background:var(--gold);color:var(--navy);
+  font-size:9.5px;font-weight:800;
+  display:flex;align-items:center;justify-content:center;
+  flex-shrink:0;box-shadow:0 0 0 2px rgba(201,168,76,.3);
+}
+.panel-hd h2{font-size:10.5px;font-weight:700;color:var(--white);text-transform:uppercase;letter-spacing:.08em;}
+.panel-body{padding:12px;flex:1;display:flex;flex-direction:column;gap:8px;overflow:hidden;}
+
+/* ══ PANEL 1 — dark identity ══ */
+.p1-body{
+  background:var(--navy);
+  flex:1;display:flex;flex-direction:column;
+  align-items:center;justify-content:center;
+  gap:12px;padding:16px 14px;
+}
+.p1-big{text-align:center;}
+.p1-big .acr{font-size:72px;font-weight:900;color:var(--gold);letter-spacing:-.05em;line-height:.85;display:block;text-shadow:0 0 40px rgba(201,168,76,.35);}
+.p1-big .sub{font-size:11px;font-weight:300;color:rgba(255,255,255,.6);letter-spacing:.14em;margin-top:6px;display:block;text-transform:uppercase;}
+.gold-bar{width:56px;height:3px;background:var(--gold);border-radius:2px;}
+.p1-tag{font-size:10.5px;color:rgba(255,255,255,.55);text-align:center;line-height:1.5;max-width:260px;}
+
+.p1-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;width:100%;}
+.ps{
+  background:rgba(255,255,255,.06);
+  border:1px solid rgba(201,168,76,.3);
+  border-radius:7px;padding:9px 6px;text-align:center;
+}
+.ps .v{font-size:28px;font-weight:900;color:var(--gold);line-height:1;}
+.ps .l{font-size:7.5px;color:rgba(255,255,255,.45);margin-top:3px;line-height:1.3;}
+
+.log-box{
+  background:rgba(0,0,0,.4);border-left:3px solid var(--gold);
+  border-radius:4px;padding:7px 9px;width:100%;
+}
+.log-box .lt{font-size:7.5px;color:var(--gold);font-weight:700;text-transform:uppercase;letter-spacing:.06em;margin-bottom:3px;}
+.log-box p{font-family:'JetBrains Mono',monospace;font-size:8px;color:rgba(255,255,255,.65);line-height:1.5;}
+
+.credits-row{display:flex;flex-direction:column;gap:2px;width:100%;}
+.cr{font-size:8px;color:rgba(255,255,255,.5);}
+.cr strong{color:var(--gold2);font-weight:600;}
+
+/* ══ PANEL 2 — problems ══ */
+.prob-trio{display:flex;flex-direction:column;gap:6px;}
+.prob{border-radius:7px;padding:9px 11px;display:flex;align-items:center;gap:10px;}
+.prob.r{background:#FEF2F2;border-left:4px solid #EF4444;}
+.prob.a{background:#FFFBEB;border-left:4px solid #F59E0B;}
+.prob.b{background:#EFF6FF;border-left:4px solid #3B82F6;}
+.prob-ico{font-size:22px;flex-shrink:0;}
+.prob-txt h3{font-size:13px;font-weight:800;color:var(--txt);}
+.prob-txt p{font-size:10px;color:var(--txt2);margin-top:2px;line-height:1.4;}
+
+.rq-grid{display:grid;grid-template-columns:1fr 1fr;gap:5px;}
+.rq{background:var(--off);border-radius:6px;padding:7px 9px;border-left:3px solid var(--navy);}
+.rq .rq-pill{font-size:8.5px;font-weight:700;font-family:'JetBrains Mono',monospace;color:var(--gold);background:var(--navy);display:inline-block;padding:1px 6px;border-radius:3px;margin-bottom:3px;}
+.rq p{font-size:10px;color:var(--txt2);line-height:1.35;font-weight:600;}
+
+.goal{background:var(--navy);border-radius:7px;padding:10px 12px;margin-top:auto;}
+.goal h4{font-size:8.5px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--gold);margin-bottom:3px;}
+.goal p{font-size:9px;color:rgba(255,255,255,.7);line-height:1.45;}
+
+/* ══ PANEL 3 — architecture ══ */
+.arch-wrap{
+  flex:1;display:flex;flex-direction:column;
+  align-items:center;
+  padding:5px 10px 8px;
+  background:#0D1B2E;
+}
+.pipe-stage{
+  flex:1;width:96%;border-radius:5px;
+  padding:5px 10px;
+  display:flex;align-items:center;gap:8px;
+  min-height:0;overflow:hidden;
+}
+.pipe-stage.input {background:var(--navy);border:2px solid var(--gold);}
+.pipe-stage.tools {background:#EEF2FF;border:1.5px solid #C7D2FE;}
+.pipe-stage.norm  {background:#1E3A5F;border:1.5px solid rgba(201,168,76,.35);}
+.pipe-stage.conf  {background:#1E3A5F;border:1.5px solid rgba(201,168,76,.35);}
+.pipe-stage.rag   {background:#4C1D95;border:2px solid #8B5CF6;}
+.pipe-stage.cbom  {background:#1E3A5F;border:1.5px solid rgba(201,168,76,.35);}
+.pipe-stage.gate  {background:#064E3B;border:1.5px solid #34D399;}
+.pipe-stage.out   {background:#111827;border:1.5px solid #374151;}
+.pipe-ico{font-size:18px;flex-shrink:0;}
+.pipe-txt{flex:1;min-width:0;}
+.pipe-txt h3{font-size:10.5px;font-weight:700;color:var(--white);line-height:1.15;}
+.pipe-stage.tools .pipe-txt h3{color:#1E40AF;}
+.pipe-txt p{font-size:7.5px;color:rgba(255,255,255,.55);margin-top:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.pipe-stage.tools .pipe-txt p{color:#3730A3;}
+.pipe-badge{font-size:7.5px;font-weight:700;padding:2px 7px;border-radius:999px;background:rgba(201,168,76,.25);color:var(--gold2);flex-shrink:0;white-space:nowrap;}
+.pipe-stage.rag .pipe-badge{background:rgba(139,92,246,.35);color:#C4B5FD;}
+.pipe-stage.tools .pipe-badge{background:#C7D2FE;color:#3730A3;}
+.pipe-stage.gate .pipe-badge{background:rgba(52,211,153,.25);color:#34D399;}
+.pipe-arr{flex-shrink:0;display:flex;align-items:center;justify-content:center;height:11px;}
+
+.chip-row{display:flex;flex-wrap:wrap;gap:3px;margin-top:3px;}
+.chip{font-size:7px;font-weight:600;padding:1px 5px;border-radius:3px;background:#C7D2FE;color:#1E40AF;}
+
+.fig-cap{font-size:7.5px;color:rgba(255,255,255,.35);text-align:center;margin-top:5px;font-style:italic;}
+
+/* ══ PANEL 4 — results ══ */
+.big-nums{display:grid;grid-template-columns:1fr 1fr;gap:6px;}
+.bn{background:var(--navy);border-radius:8px;padding:12px 8px;text-align:center;}
+.bn .v{font-size:44px;font-weight:900;color:var(--gold);letter-spacing:-.04em;line-height:1;}
+.bn .u{font-size:22px;font-weight:800;color:var(--gold);}
+.bn .l{font-size:9px;color:rgba(255,255,255,.5);margin-top:4px;line-height:1.3;}
+.bn.g .v,.bn.g .u{color:#34D399;}
+.bn.am .v,.bn.am .u{color:#FCD34D;}
+.bn.pu .v,.bn.pu .u{color:#A78BFA;}
+
+.chart-img{width:100%;border-radius:5px;border:1px solid var(--border);display:block;}
+
+.mini-table{width:100%;border-collapse:collapse;font-size:9.5px;}
+.mini-table th{background:var(--navy);color:var(--gold);padding:3px 6px;font-size:7.5px;text-align:left;text-transform:uppercase;letter-spacing:.04em;}
+.mini-table td{padding:3px 6px;border-bottom:1px solid var(--border);color:var(--txt2);}
+.mini-table tr:nth-child(even) td{background:var(--off);}
+.ok{color:var(--green);font-weight:700;}
+.warn{color:#D97706;font-weight:700;}
+
+.owasp-row{display:flex;gap:3px;flex-wrap:wrap;}
+.ow{width:28px;height:28px;border-radius:4px;display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:7px;font-weight:700;gap:1px;}
+.ow.y{background:var(--navy);color:var(--gold);}
+.ow.n{background:#F3F4F6;color:#9CA3AF;border:1px solid #E5E7EB;}
+.ow .i{font-size:9px;}
+.ow .nm{font-size:6px;}
+
+/* ══ PANEL 5 — contributions ══ */
+.contrib-list{display:flex;flex-direction:column;gap:6px;}
+.contrib{display:flex;align-items:center;gap:9px;background:var(--off);border-radius:6px;padding:7px 10px;border-left:3px solid var(--navy);}
+.contrib.novel{border-left-color:var(--gold);background:#FFFCF2;}
+.c-ico{width:32px;height:32px;border-radius:7px;background:var(--navy);display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0;}
+.contrib.novel .c-ico{background:var(--gold);}
+.c-body h3{font-size:11px;font-weight:700;color:var(--navy);line-height:1.15;}
+.c-body p{font-size:9.5px;color:var(--txt2);margin-top:1px;line-height:1.35;}
+.ntag{display:inline-block;font-size:7px;font-weight:700;padding:1px 6px;border-radius:999px;background:#DCFCE7;color:#166534;border:1px solid #86EFAC;margin-left:5px;vertical-align:middle;letter-spacing:.03em;}
+
+/* before/after */
+.ba-grid{display:grid;grid-template-columns:1fr 1fr;gap:5px;}
+.ba-side{border-radius:5px;overflow:hidden;}
+.ba-label{font-size:8px;font-weight:700;color:#fff;padding:3px 8px;letter-spacing:.04em;}
+.ba-side.raw{border:1.5px solid #EF4444;}
+.ba-side.raw .ba-label{background:#EF4444;}
+.ba-side.acr{border:1.5px solid #34D399;}
+.ba-side.acr .ba-label{background:#059669;}
+.ba-pre{font-family:'JetBrains Mono',monospace;font-size:8px;padding:7px 9px;line-height:1.6;white-space:pre-wrap;background:#1C1C1C;color:#F87171;}
+.ba-acr-body{background:#0F2D1A;padding:7px 9px;display:flex;flex-direction:column;gap:5px;}
+.ba-rule{font-size:8px;font-weight:700;color:#34D399;font-family:'JetBrains Mono',monospace;}
+.ba-desc{font-size:8px;color:#D1FAE5;line-height:1.4;}
+.ba-fix{font-family:'JetBrains Mono',monospace;font-size:7.5px;border-radius:3px;padding:3px 6px;}
+.ba-fix.bad{background:rgba(239,68,68,.15);color:#FCA5A5;}
+.ba-fix.good{background:rgba(52,211,153,.15);color:#6EE7B7;}
+
+.compare-title{font-size:8px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--txt3);margin-bottom:4px;}
+
+/* ══ PANEL 6 — lessons & future ══ */
+.section-label{font-size:8.5px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--navy);padding-bottom:3px;border-bottom:2px solid var(--gold);margin-bottom:5px;}
+
+.lesson-grid{display:grid;grid-template-columns:1fr 1fr;gap:5px;}
+.lesson{display:flex;align-items:flex-start;gap:7px;}
+.lnum{width:20px;height:20px;border-radius:50%;background:var(--gold);color:var(--navy);font-size:9px;font-weight:800;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px;}
+.lesson h4{font-size:10.5px;font-weight:700;color:var(--navy);line-height:1.2;}
+.lesson p{font-size:9.5px;color:var(--txt2);margin-top:1px;line-height:1.35;}
+
+.future-list{display:flex;flex-direction:column;gap:4px;}
+.future{display:flex;align-items:center;gap:8px;padding:6px 9px;border-radius:5px;border:1px solid var(--border);background:var(--off);border-left:3px solid var(--navy);}
+.future.hi{border-left-color:var(--gold);}
+.f-ico{font-size:14px;flex-shrink:0;}
+.future h4{font-size:10.5px;font-weight:700;color:var(--navy);}
+.future p{font-size:9px;color:var(--txt2);}
+
+.conclusion{background:var(--navy);border-radius:6px;padding:10px 12px;margin-top:auto;}
+.conclusion h4{font-size:8.5px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--gold);margin-bottom:3px;}
+.conclusion p{font-size:9px;color:rgba(255,255,255,.75);line-height:1.5;}
+
+/* ── FOOTER ──────────────────────────── */
+.g-footer{
+  background:var(--navy);border-top:2px solid var(--gold);
+  padding:5px 24px;display:flex;align-items:center;justify-content:space-between;
+}
+.g-footer p{font-size:8px;color:rgba(255,255,255,.35);}
+.g-footer .fc{color:var(--gold);font-weight:600;}
+
+/* ── PRINT NOTE ──────────────────────── */
+.print-note{
+  max-width:1188px;width:100%;
+  background:#fff;border-radius:6px;border:1px solid var(--border);
+  padding:12px 16px;font-size:11px;color:var(--txt2);line-height:1.6;
+}
+.print-note strong{color:var(--navy);}
+
+@media print{
+  body{background:#C8C2B6 !important;padding:0;}
+  .poster{box-shadow:none;border-radius:0;width:100%;}
+  .print-note{display:none;}
+}
+</style>
+</head>
+<body>
+<div class="poster">
+
+<!-- HEADER -->
+<header class="g-header">
+  <img src="docs/media/ksiu-logo.png" width="64" height="64" alt="KSIU" style="flex-shrink:0;border-radius:50%;object-fit:cover;"/>
+  <div class="g-header-center">
+    <h1>ACR-QA: <em>Automated Code Review &amp; Quality Assurance</em></h1>
+    <p>King Salman International University · Faculty of Computer Science &amp; Engineering · El-Tor Campus, South Sinai</p>
+  </div>
+  <div class="g-header-right">
+    <div class="name">Ahmed Mahmoud Abbas — 222101213</div>
+    <div class="meta">CSE494 / AIE494 · Graduation Project 2 · 2025–2026<br/>Supervisor: Dr. Samy AbdelNabi<br/>Eng. Advisor: Eng. AbdulAziz Hassan</div>
+  </div>
+</header>
+
+<div class="grid">
+
+<!-- ══ PANEL 1 — Title & Identity ══ -->
+<div class="panel">
+  <div class="panel-hd"><div class="num">1</div><h2>Title &amp; Project Identity</h2></div>
+  <div class="p1-body">
+
+    <div class="p1-big">
+      <span class="acr">ACR-QA</span>
+      <span class="sub">AI-Powered Static Analysis Pipeline</span>
+    </div>
+
+    <div class="gold-bar"></div>
+
+    <p class="p1-tag">10+ tools · one schema · RAG-grounded AI · zero recurring cost</p>
+
+    <div class="p1-stats">
+      <div class="ps"><div class="v">97<span style="font-size:16px">%</span></div><div class="l">Overall<br/>Precision</div></div>
+      <div class="ps"><div class="v">1699</div><div class="l">Tests<br/>Passing</div></div>
+      <div class="ps"><div class="v">311</div><div class="l">Rule<br/>Mappings</div></div>
+    </div>
+
+    <div class="p1-stats" style="margin-top:-4px;">
+      <div class="ps"><div class="v">5</div><div class="l">Benchmark<br/>Repos</div></div>
+      <div class="ps"><div class="v">86<span style="font-size:16px">%</span></div><div class="l">Code<br/>Coverage</div></div>
+      <div class="ps"><div class="v">9/10</div><div class="l">OWASP<br/>Covered</div></div>
+    </div>
+
+    <div class="log-box">
+      <div class="lt">📋 Project Log · v3.3.0 · May 2026</div>
+      <p>1,699 tests · 97% precision · 100% AI rate · 836 findings · 311 rules · FastAPI · Celery · JWT · Docker</p>
+    </div>
+
+    <div class="credits-row">
+      <div class="cr"><strong>Stack:</strong> Python 3.11 · FastAPI · PostgreSQL · Redis · Groq LLaMA · Docker</div>
+      <div class="cr"><strong>Languages:</strong> Python · JS/TS · Go &nbsp;·&nbsp; <strong>LOC:</strong> ~11,000 &nbsp;·&nbsp; <strong>Oct 2025 – Jun 2026</strong></div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ══ PANEL 2 — Problem & Rationale ══ -->
+<div class="panel">
+  <div class="panel-hd"><div class="num">2</div><h2>Problem &amp; Rationale</h2></div>
+  <div class="panel-body">
+
+    <div class="prob-trio">
+      <div class="prob r">
+        <div class="prob-ico">🔔</div>
+        <div class="prob-txt">
+          <h3>Alert Fatigue</h3>
+          <p>10+ tools · no dedup · no ranking</p>
+        </div>
+      </div>
+      <div class="prob a">
+        <div class="prob-ico">🤖</div>
+        <div class="prob-txt">
+          <h3>LLM Hallucination</h3>
+          <p>Confident but wrong advice — no grounding</p>
+        </div>
+      </div>
+      <div class="prob b">
+        <div class="prob-ico">🕳</div>
+        <div class="prob-txt">
+          <h3>Invisible Test Gaps</h3>
+          <p>% metric hides complex untested functions</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="rq-grid">
+      <div class="rq"><div class="rq-pill">RQ1</div><p>Can RAG eliminate AI hallucination?</p></div>
+      <div class="rq"><div class="rq-pill">RQ2</div><p>Full provenance for every AI finding?</p></div>
+      <div class="rq"><div class="rq-pill">RQ3</div><p>Best confidence scoring model?</p></div>
+      <div class="rq"><div class="rq-pill">RQ4</div><p>Does pipeline match industry precision?</p></div>
+    </div>
+
+    <!-- Before / After visual — the core value prop -->
+    <div>
+      <div class="compare-title">Same finding — before &amp; after ACR-QA</div>
+      <div class="ba-grid">
+        <div class="ba-side raw">
+          <div class="ba-label">❌ Raw Bandit</div>
+          <pre class="ba-pre">Issue: [B608]
+Possible SQL injection
+Severity: Medium
+CWE: CWE-89
+Location: dao/student.py:42</pre>
+        </div>
+        <div class="ba-side acr">
+          <div class="ba-label">✅ ACR-QA Output</div>
+          <div class="ba-acr-body">
+            <div class="ba-rule">SECURITY-027 · HIGH · CWE-89</div>
+            <div class="ba-desc">String-formatted SQL → arbitrary command execution</div>
+            <div class="ba-fix bad">❌ "SELECT…WHERE '%s'" % name</div>
+            <div class="ba-fix good">✅ cursor.execute(q, (name,))</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="goal">
+      <h4>🎯 Goal</h4>
+      <p>Self-hosted · $0 · one schema · RAG-restricted LLM · entropy scoring · PostgreSQL audit trail</p>
+    </div>
+
+  </div>
+</div>
+
+<!-- ══ PANEL 3 — Architecture ══ -->
+<div class="panel">
+  <div class="panel-hd"><div class="num">3</div><h2>System Architecture</h2></div>
+  <div class="arch-wrap">
+
+    <div class="pipe-stage input">
+      <div class="pipe-ico">📁</div>
+      <div class="pipe-txt"><h3>Code Repository</h3><p>Python · JavaScript/TypeScript · Go</p></div>
+      <div class="pipe-badge">Input</div>
+    </div>
+    <div class="pipe-arr"><svg width="14" height="12" viewBox="0 0 14 12"><line x1="7" y1="0" x2="7" y2="8" stroke="#C9A84C" stroke-width="2"/><polygon points="3,7 7,12 11,7" fill="#C9A84C"/></svg></div>
+
+    <div class="pipe-stage tools">
+      <div class="pipe-ico">🔧</div>
+      <div class="pipe-txt">
+        <h3>Static Analysis Layer</h3>
+        <div class="chip-row">
+          <span class="chip">Ruff</span><span class="chip">Bandit</span><span class="chip">Semgrep</span>
+          <span class="chip">ESLint</span><span class="chip">gosec</span><span class="chip">staticcheck</span>
+          <span class="chip">pip-audit</span><span class="chip">Vulture</span><span class="chip">jscpd</span><span class="chip">Radon</span>
+        </div>
+      </div>
+      <div class="pipe-badge">10 Tools</div>
+    </div>
+    <div class="pipe-arr"><svg width="14" height="12" viewBox="0 0 14 12"><line x1="7" y1="0" x2="7" y2="8" stroke="#C9A84C" stroke-width="2"/><polygon points="3,7 7,12 11,7" fill="#C9A84C"/></svg></div>
+
+    <div class="pipe-stage norm">
+      <div class="pipe-ico">🔄</div>
+      <div class="pipe-txt"><h3>Normalizer &amp; Deduplicator</h3><p>311 mappings → CanonicalFinding · −27% noise</p></div>
+      <div class="pipe-badge">311 Rules</div>
+    </div>
+    <div class="pipe-arr"><svg width="14" height="12" viewBox="0 0 14 12"><line x1="7" y1="0" x2="7" y2="8" stroke="#C9A84C" stroke-width="2"/><polygon points="3,7 7,12 11,7" fill="#C9A84C"/></svg></div>
+
+    <div class="pipe-stage conf">
+      <div class="pipe-ico">📊</div>
+      <div class="pipe-txt"><h3>Multi-Signal Confidence Scorer</h3><p>5 signals · weighted score 0–100</p></div>
+      <div class="pipe-badge">0 – 100</div>
+    </div>
+    <div class="pipe-arr"><svg width="14" height="12" viewBox="0 0 14 12"><line x1="7" y1="0" x2="7" y2="8" stroke="#C9A84C" stroke-width="2"/><polygon points="3,7 7,12 11,7" fill="#C9A84C"/></svg></div>
+
+    <div class="pipe-stage rag">
+      <div class="pipe-ico">✨</div>
+      <div class="pipe-txt"><h3>RAG Explainer + Entropy Scoring</h3><p>66 rules · Groq LLaMA · 3× runs · N-gram entropy</p></div>
+      <div class="pipe-badge" style="background:rgba(139,92,246,.3);color:#C4B5FD;">Novel</div>
+    </div>
+    <div class="pipe-arr"><svg width="14" height="12" viewBox="0 0 14 12"><line x1="7" y1="0" x2="7" y2="8" stroke="#C9A84C" stroke-width="2"/><polygon points="3,7 7,12 11,7" fill="#C9A84C"/></svg></div>
+
+    <div class="pipe-stage cbom">
+      <div class="pipe-ico">🔐</div>
+      <div class="pipe-txt"><h3>CBoM Scanner</h3><p>62 algos · NIST PQC 2024 · SAFE / WARN / UNSAFE</p></div>
+      <div class="pipe-badge">62 Algos</div>
+    </div>
+    <div class="pipe-arr"><svg width="14" height="12" viewBox="0 0 14 12"><line x1="7" y1="0" x2="7" y2="8" stroke="#C9A84C" stroke-width="2"/><polygon points="3,7 7,12 11,7" fill="#C9A84C"/></svg></div>
+
+    <div class="pipe-stage gate">
+      <div class="pipe-ico">🚦</div>
+      <div class="pipe-txt"><h3>Quality Gate + Provenance</h3><p>Block / Warn · CI/CD gate · full audit trail</p></div>
+      <div class="pipe-badge" style="background:rgba(52,211,153,.2);color:#34D399;">CI/CD</div>
+    </div>
+    <div class="pipe-arr"><svg width="14" height="12" viewBox="0 0 14 12"><line x1="7" y1="0" x2="7" y2="8" stroke="#C9A84C" stroke-width="2"/><polygon points="3,7 7,12 11,7" fill="#C9A84C"/></svg></div>
+
+    <div class="pipe-stage out">
+      <div class="pipe-ico">📈</div>
+      <div class="pipe-txt"><h3>Dashboard · GitHub PR · SARIF</h3><p>22 endpoints · Prometheus · inline suggestions</p></div>
+      <div class="pipe-badge" style="background:rgba(75,85,99,.4);color:#9CA3AF;">Output</div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ PANEL 4 — Results ══ -->
+<div class="panel">
+  <div class="panel-hd"><div class="num">4</div><h2>Results &amp; Findings</h2></div>
+  <div class="panel-body">
+
+    <div class="big-nums">
+      <div class="bn"><div class="v">97<span class="u">%</span></div><div class="l">Precision<br/>882 findings</div></div>
+      <div class="bn g"><div class="v">9<span class="u">/10</span></div><div class="l">OWASP Top 10<br/>covered</div></div>
+      <div class="bn am"><div class="v">−27<span class="u">%</span></div><div class="l">Noise<br/>reduction</div></div>
+      <div class="bn pu"><div class="v">83<span class="u">%</span></div><div class="l">Recall<br/>DVPWA</div></div>
+    </div>
+
+    <!-- Real chart -->
+    <img src="docs/evaluation/precision_recall_chart.png" alt="Precision / Recall"
+         class="chart-img" style="max-height:120px;object-fit:contain;"/>
+    <p style="font-size:7.5px;color:var(--txt3);text-align:center;margin-top:-4px;font-style:italic;">Fig. 3 — Precision &amp; Recall by repository (evaluation suite)</p>
+
+    <!-- Compact table — 5 repos -->
+    <table class="mini-table">
+      <thead><tr><th>Repo</th><th>Findings</th><th>Precision</th><th>Sec. Prec.</th></tr></thead>
+      <tbody>
+        <tr><td>DVPWA</td><td>44</td><td class="warn">81.8%</td><td class="ok">100%</td></tr>
+        <tr><td>Pygoat</td><td>440</td><td class="ok">96.4%</td><td class="ok">100%</td></tr>
+        <tr><td>VulPy</td><td>293</td><td class="ok">100%</td><td class="ok">100%</td></tr>
+        <tr><td>DSVW</td><td>59</td><td class="ok">100%</td><td class="ok">100%</td></tr>
+        <tr><td>GoVWA <span style="font-size:7px;color:var(--purple);font-weight:700;">Go</span></td><td>46</td><td class="ok">100%</td><td class="ok">100%</td></tr>
+      </tbody>
+    </table>
+
+    <!-- OWASP strip -->
+    <div>
+      <div style="font-size:7.5px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--txt3);margin-bottom:4px;">OWASP Top 10 (2021) Coverage</div>
+      <div class="owasp-row">
+        <div class="ow y"><div class="i">✓</div><div class="nm">A01</div></div>
+        <div class="ow y"><div class="i">✓</div><div class="nm">A02</div></div>
+        <div class="ow y"><div class="i">✓</div><div class="nm">A03</div></div>
+        <div class="ow y"><div class="i">✓</div><div class="nm">A04</div></div>
+        <div class="ow y"><div class="i">✓</div><div class="nm">A05</div></div>
+        <div class="ow y"><div class="i">✓</div><div class="nm">A06</div></div>
+        <div class="ow y"><div class="i">✓</div><div class="nm">A07</div></div>
+        <div class="ow y"><div class="i">✓</div><div class="nm">A08</div></div>
+        <div class="ow n"><div class="i">⚠</div><div class="nm">A09</div></div>
+        <div class="ow y"><div class="i">✓</div><div class="nm">A10</div></div>
+      </div>
+      <p style="font-size:7px;color:var(--txt3);margin-top:2px;">A09 = runtime logging · planned Phase 2</p>
+    </div>
+
+    <!-- Noise reduction chart -->
+    <img src="docs/evaluation/noise_reduction.png" alt="Noise Reduction"
+         class="chart-img" style="max-height:100px;object-fit:contain;"/>
+    <p style="font-size:7.5px;color:var(--txt3);text-align:center;margin-top:-4px;font-style:italic;">Fig. 4 — Raw vs ACR-QA output · noise reduction per repo</p>
+
+  </div>
+</div>
+
+<!-- ══ PANEL 5 — Contributions ══ -->
+<div class="panel">
+  <div class="panel-hd"><div class="num">5</div><h2>Novel Technical Contributions</h2></div>
+  <div class="panel-body">
+
+    <div class="contrib-list">
+      <div class="contrib novel">
+        <div class="c-ico">✨</div>
+        <div class="c-body">
+          <h3>RAG + Semantic Entropy Scoring <span class="ntag">NOVEL</span></h3>
+          <p>3× LLM runs · N-gram score · flags hallucination</p>
+        </div>
+      </div>
+      <div class="contrib novel">
+        <div class="c-ico">🔐</div>
+        <div class="c-body">
+          <h3>CBoM Scanner — NIST PQC 2024 <span class="ntag">NOVEL</span></h3>
+          <p>62 algorithms · SAFE / WARN / UNSAFE · Python + JS/TS</p>
+        </div>
+      </div>
+      <div class="contrib novel">
+        <div class="c-ico">🔍</div>
+        <div class="c-body">
+          <h3>AST Test Gap Analyzer <span class="ntag">NOVEL</span></h3>
+          <p>AST match · complexity rank · no commercial equivalent</p>
+        </div>
+      </div>
+      <div class="contrib">
+        <div class="c-ico">📊</div>
+        <div class="c-body">
+          <h3>5-Signal Confidence Scorer (0–100)</h3>
+          <p>5 weighted signals · score 0–100</p>
+        </div>
+      </div>
+      <div class="contrib novel">
+        <div class="c-ico">🔗</div>
+        <div class="c-body">
+          <h3>Cross-Language Correlator <span class="ntag">NOVEL</span></h3>
+          <p>SQLi→XSS chains · Python↔JS/TS</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Comparison table — compact -->
+    <div style="margin-top:2px;">
+      <div class="compare-title">ACR-QA vs Competitors</div>
+      <table class="mini-table" style="font-size:8px;">
+        <thead><tr><th>Feature</th><th style="background:#00336E;color:var(--gold);">ACR-QA</th><th>SonarQube / CodeRabbit</th></tr></thead>
+        <tbody>
+          <tr><td>Multi-tool normalisation</td><td class="ok" style="text-align:center;">✓</td><td style="text-align:center;color:var(--red);">✗</td></tr>
+          <tr><td>RAG-grounded AI explanations</td><td class="ok" style="text-align:center;">✓</td><td style="text-align:center;color:#D97706;">Partial</td></tr>
+          <tr><td>Entropy confidence scoring</td><td class="ok" style="text-align:center;">✓</td><td style="text-align:center;color:var(--red);">✗</td></tr>
+          <tr><td>CBoM + NIST PQC</td><td class="ok" style="text-align:center;">✓</td><td style="text-align:center;color:var(--red);">✗</td></tr>
+          <tr><td>AST test gap analysis</td><td class="ok" style="text-align:center;">✓</td><td style="text-align:center;color:var(--red);">✗</td></tr>
+          <tr><td>Self-hosted / $0 recurring</td><td class="ok" style="text-align:center;">✓</td><td style="text-align:center;color:var(--red);">✗</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+  </div>
+</div>
+
+<!-- ══ PANEL 6 — Lessons & Future ══ -->
+<div class="panel">
+  <div class="panel-hd"><div class="num">6</div><h2>Lessons Learned &amp; Future Work</h2></div>
+  <div class="panel-body">
+
+    <div class="section-label">💡 Lessons Learned</div>
+    <div class="lesson-grid">
+      <div class="lesson">
+        <div class="lnum">1</div>
+        <div>
+          <h4>Grounding beats prompting</h4>
+          <p>Retrieval beats system prompts</p>
+        </div>
+      </div>
+      <div class="lesson">
+        <div class="lnum">2</div>
+        <div>
+          <h4>Entropy = natural confidence</h4>
+          <p>Variance → confidence, zero labels</p>
+        </div>
+      </div>
+      <div class="lesson">
+        <div class="lnum">3</div>
+        <div>
+          <h4>Schema-first design scales</h4>
+          <p>One schema → adapters just work</p>
+        </div>
+      </div>
+      <div class="lesson">
+        <div class="lnum">4</div>
+        <div>
+          <h4>Honest scoping wins</h4>
+          <p>Scope exclusions preserve precision</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="section-label" style="margin-top:4px;">🚀 Future Work</div>
+    <div class="future-list">
+      <div class="future hi">
+        <div class="f-ico">🔀</div>
+        <div><h4>Interprocedural Data-Flow</h4><p>Cross-function vuln chains</p></div>
+      </div>
+      <div class="future hi">
+        <div class="f-ico">🛠</div>
+        <div><h4>Autofix: 8 → 50+ rules</h4><p>Inline PR suggestions</p></div>
+      </div>
+      <div class="future">
+        <div class="f-ico">🧪</div>
+        <div><h4>Formal User Study (8–10)</h4><p>Fix time · trust calibration</p></div>
+      </div>
+      <div class="future">
+        <div class="f-ico">☁️</div>
+        <div><h4>SaaS + MCP Server</h4><p>Multi-tenant · OAuth2 · IDE plugin</p></div>
+      </div>
+    </div>
+
+    <div class="conclusion">
+      <h4>Conclusion</h4>
+      <p><strong style="color:var(--gold2)">97% precision</strong> · 882 findings · <strong style="color:var(--gold2)">−27% noise</strong> · 9/10 OWASP · 1,699 tests.<br/>4 novel contributions: entropy scoring · NIST PQC CBoM · AST test gaps · cross-language correlator.<br/>Self-hosted · $0 recurring · full CI/CD · Docker Compose.</p>
+    </div>
+
+  </div>
+</div>
+
+</div><!-- /grid -->
+
+<footer class="g-footer">
+  <p>CSE494 / AIE494 · Graduation Project 2 · Assignment 04, Q1</p>
+  <p class="fc">ACR-QA · King Salman International University · 2025–2026</p>
+  <p>Ahmed Mahmoud Abbas · 222101213 · Dr. Samy AbdelNabi</p>
+</footer>
+
+</div><!-- /poster -->
+
+<div class="print-note">
+  <strong>🖨 Print:</strong> Chrome → Print → ☑ Background graphics → Paper A1 (single sheet) <em>or</em> A4 Landscape × 6 sheets to mount in 3×2 grid.<br/>
+  <strong>Panel order:</strong> ① Title → ② Problem → ③ Architecture → ④ Results → ⑤ Contributions → ⑥ Lessons &amp; Future
+</div>
+
+</body>
+</html>

@@ -1,0 +1,100 @@
+HOW TO COMPILE ON OVERLEAF
+===========================
+
+1. Go to https://overleaf.com and create a new project
+   → "Upload Project" → upload this entire ACR-QA-Book folder as a ZIP
+
+2. Set the compiler:
+   → Menu → Compiler → pdfLaTeX
+
+3. Set the main document:
+   → Menu → Main document → main.tex
+
+4. Compile order (first time only):
+   pdfLaTeX → BibTeX → pdfLaTeX → pdfLaTeX
+   (Overleaf handles this automatically after the first compile)
+
+5. Click "Recompile" — your PDF will appear on the right.
+
+FOLDER STRUCTURE
+================
+ACR-QA-Book/
+├── main.tex                      ← Master file (compile this)
+├── references.bib                ← Bibliography
+├── frontmatter/
+│   ├── cover.tex                 ← Cover page
+│   ├── acknowledgements.tex
+│   ├── abstract.tex
+│   └── symbols.tex               ← List of symbols
+├── chapters/
+│   ├── ch1_introduction.tex
+│   ├── ch2_literature.tex
+│   ├── ch3_system_design.tex
+│   ├── ch4_implementation.tex
+│   ├── ch5_testing.tex
+│   └── ch6_conclusion.tex
+└── figures/
+    └── README.txt                ← Add your image files here
+
+THINGS TO FILL IN
+=================
+All placeholders have been filled in:
+- Student ID: 222101213 (Ahmed Mahmoud Abbas)
+- Supervisor: Dr. Samy AbdelNabi
+- Course: CSE494 — Graduation Project 2
+- Faculty: Faculty of Computer Science and Engineering
+No remaining \todo{} placeholders.
+
+FIGURES — WIRED IN (v3.2.4 update)
+====================================
+The book uses figures from:
+  figures/                ← PlantUML-rendered PNGs live here
+  ../docs/media/          (ER diagram, logo, PR mockups)
+  ../docs/evaluation/     (benchmark charts)
+
+STEP 1 — Render PlantUML diagrams to PNG:
+  Option A (online):  https://www.plantuml.com/plantuml/uml/
+  Option B (local):   java -jar plantuml.jar figures/*.puml
+  Option C (VS Code): PlantUML extension — Alt+D to preview, right-click → Export PNG
+
+.puml source files in figures/:
+  arch_overview.puml     ← god-mode component architecture (UPDATED May 12 — RE-RENDER!)
+  docker_stack.puml      ← god-mode Docker Compose topology (rendered ✓)
+  scan_flow.puml         ← god-mode end-to-end sequence diagram (rendered ✓)
+  pipeline_stages.puml   ← 8-stage activity diagram (needs render → pipeline_stages.png)
+  rag_engine.puml        ← RAG enrichment sequence (needs render → rag_engine.png)
+  finding_lifecycle.puml ← finding lifecycle sequence
+  confidence_scoring.puml← confidence scoring component
+
+IMPORTANT — arch_overview.puml was rewritten on May 12 with accurate v3.2.4 content.
+The old arch_overview.png in figures/ is from May 7 and is OUTDATED. You MUST
+re-render arch_overview.puml to get the correct god-mode diagram in your PDF.
+After rendering, if PlantUML names the file arch_overview1.png, run:
+  cp figures/arch_overview1.png figures/arch_overview.png
+
+STEP 2 — Place rendered PNGs in figures/:
+  arch_overview.png      ← Ch.3  fig:architecture_overview
+  pipeline_stages.png    ← Ch.3  fig:pipeline
+  er_diagram.png         ← Ch.3  fig:db_schema (copy from docs/media/ if needed)
+  rag_engine.png         ← Ch.3  fig:rag_process
+  scan_flow.png          ← Ch.3  fig:scan_flow
+  docker_stack.png       ← Ch.3  fig:docker_compose
+  pr-comment-mockup1.png ← Ch.4  fig:pr_comment_overview  (copy from docs/media/)
+  pr-comment-mockup2.png ← Ch.4  fig:pr_comment_detail    (copy from docs/media/)
+
+STEP 3 — Evaluation figures (copy from docs/evaluation/):
+  precision_recall_chart.png  ← Ch.5
+  confusion_matrix.png        ← Ch.5
+  severity_distribution.png   ← Ch.5
+  comparative_benchmark.png   ← Ch.5
+  noise_reduction.png         ← Ch.5
+  category_breakdown.png      ← Ch.5
+
+NOTE: The \graphicspath in main.tex points to figures/, ../docs/media/, and
+../docs/evaluation/. For Overleaf, copy ALL PNGs into figures/ before zipping
+and uploading — this is the simplest approach.
+
+PACKAGES REQUIRED
+=================
+All standard packages are available on Overleaf automatically.
+No extra installation needed.
