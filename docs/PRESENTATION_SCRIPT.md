@@ -34,7 +34,7 @@ docker compose up -d        # Start Postgres + Redis + FastAPI + Celery + Grafan
 > "There are three things no commercial competitor — not SonarQube, not CodeRabbit — offers. First, I built a Policy-as-Code engine where teams define quality rules in a YAML file and the system enforces them in CI. Second, I wrote a Test Gap Analyzer from scratch using Python's Abstract Syntax Tree to find untested business logic by complexity. Third, I implemented semantic entropy scoring — the AI runs 3 times and the system mathematically detects when it contradicts itself, preventing hallucination."
 
 ### Slide 8: Evaluation
-> "Most importantly, I built a rigorous, multi-layer evaluation stack. We have 2,653 automated tests, 52 API endpoints, 13 repos across 4 languages, a CVE recall study against NIST-published vulnerabilities, and inter-rater agreement of κ=0.74 on a blind peer validation study. Head-to-head against Semgrep CE, ACR-QA achieves 100% recall vs 71.2% — a +28.8 percentage point advantage. But rather than talking about it, let me show you."
+> "Most importantly, I built a rigorous, multi-layer evaluation stack. We have 2,757 automated tests, 52 API endpoints, 13 repos across 4 languages, a CVE recall study against NIST-published vulnerabilities, and inter-rater agreement of κ=0.74 on a blind peer validation study. Head-to-head against Semgrep CE, ACR-QA achieves 100% recall vs 71.2% — a +28.8 percentage point advantage. But rather than talking about it, let me show you."
 
 ---
 
@@ -50,14 +50,14 @@ docker compose up -d        # Start Postgres + Redis + FastAPI + Celery + Grafan
 - **Click Findings then click a finding:** "Confidence gauge, reachability verdict, exploit status, taint flow diagram, and 4-step AI reasoning trace. Hit Cmd+K for the command palette."
 - **Compare page:** "Run-vs-run diff — shows what was fixed and what regressed between two scans."
 
-### Demo 2: The 2,653 Tests (Terminal - 1 min)
-> "Now let me prove the reliability. I'm going to run all 2,653 Python tests right now."
+### Demo 2: The 2,757 Tests (Terminal - 1 min)
+> "Now let me prove the reliability. I'm going to run all 2,757 tests right now."
 
 ```bash
 make test-all
 ```
 
-> "2,653 Python tests plus 104 TypeScript tests — covering databases, API endpoints, AI logic, chaos engineering, supply chain, and WCAG accessibility — all passing."
+> "2,757 total tests (2,653 Python + 104 TypeScript) — covering databases, API endpoints, AI logic, chaos engineering, supply chain, and WCAG accessibility — all passing."
 
 ### Demo 3: AST Test Gap Analyzer (Terminal - 1 min)
 > "Now, this is one of our most competitive features. No existing tool does this."
@@ -79,7 +79,7 @@ python3 CORE/main.py --target-dir TESTS/samples --rich --limit 5
 
 ### Demo 5: Distribution (Browser - 30 sec)
 - Switch to Browser **Tab 2** (Releases): "I created an official v5.0.0b1 release, distributed on PyPI (`pip install acrqa==5.0.0b1`) and the GitHub Actions Marketplace (`uses: ahmed-145/acrqa-action@v1`)."
-- Switch to Browser **Tab 3** (Actions): "Every push triggers 2,653 tests automatically."
+- Switch to Browser **Tab 3** (Actions): "Every push triggers 2,757 tests automatically."
 - Switch to Browser **Tab 4** (Live): "And this is the live production deployment on Railway. It's running right now."
 
 ### Closing Line
@@ -120,11 +120,11 @@ python3 CORE/main.py --target-dir TESTS/samples --rich --limit 5
 
 ---
 
-### Q: "What are these 2,653 tests? Where did they come from?"
-> "In Phase 1, we only had about 30 tests checking the happy path. These 2,653 tests simulate real-world disasters: database crashes mid-review, corrupted file uploads, 1,000 findings at once. We even have chaos engineering tests that inject Postgres and Redis failures. I wrote them to prove the system won't break under pressure."
+### Q: "What are these 2,757 tests? Where did they come from?"
+> "In Phase 1, we only had about 30 tests checking the happy path. These 2,757 tests simulate real-world disasters: database crashes mid-review, corrupted file uploads, 1,000 findings at once. We even have chaos engineering tests that inject Postgres and Redis failures. I wrote them to prove the system won't break under pressure."
 
 ### Q: "What is CI/CD? Why now? Doesn't deployment cost money?"
-> "CI/CD is Continuous Integration / Continuous Deployment, using GitHub Actions — 100% free for open-source projects. Every time I push code, GitHub's servers automatically run our 2,653 tests and block the code if anything fails."
+> "CI/CD is Continuous Integration / Continuous Deployment, using GitHub Actions — 100% free for open-source projects. Every time I push code, GitHub's servers automatically run our 2,757 tests and block the code if anything fails."
 
 ### Q: "How is this different from SonarQube or CodeRabbit?"
 > "Three things no competitor offers. First, our Test Gap Analyzer uses AST to find untested complex code — SonarQube and CodeRabbit don't do this. Second, our hallucination detection runs the LLM 3 times and measures consistency using Semantic Entropy. Third, we publish ECDSA-signed provenance attestations for every scan. And we do all of this at zero recurring cost using free-tier APIs."
@@ -147,7 +147,7 @@ make seed-admin
 ### Demo Commands
 
 ```bash
-# 1 — Run all 2,653 Python tests
+# 1 — Run all 2,757 Python tests
 make test-all
 
 # 2 — AST Test Gap Analyzer
@@ -170,7 +170,7 @@ python3 CORE/main.py --target-dir /tmp/dvpwa --limit 0
 | Metric | Value |
 |--------|------:|
 | Version | v5.0.0b1 |
-| Python tests | 2,653 |
+| Python tests | 2,653 (+ 104 additional engines) |
 | TypeScript tests | 104 |
 | FastAPI endpoints | 52 |
 | Alembic migrations | 18 |

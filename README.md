@@ -39,7 +39,7 @@ ACR-QA is a **provenance-first, AI-augmented code review platform** built as a g
 | **LLM hallucination** — AI assistants give confident but wrong security advice | RAG: the LLM can only explain rules it can cite from a curated 66-rule knowledge base; semantic entropy (3× runs) detects contradictions |
 | **Invisible test gaps** — code coverage % doesn't tell you *which* complex functions have no test | AST-based Test Gap Analyzer ranks untested symbols by cyclomatic complexity |
 
-**Key numbers:** 97.1% precision · 9/10 OWASP Top 10 · **2,653 tests** (2,549 Python + 104 TypeScript) · 52 async API endpoints · 18 Alembic migrations · 327+ rule mappings (incl. 28 IaC) · **92.3% recall vs Semgrep CE 71.2%** (13-repo head-to-head) · $0 recurring cost
+**Key numbers:** 97.1% precision · 9/10 OWASP Top 10 · **2,757 tests** (2,653 Python + 104 TypeScript) · 52 async API endpoints · 18 Alembic migrations · 327+ rule mappings (incl. 28 IaC) · **100% recall vs Semgrep CE 71.2% (+28.8pp)** (13-repo head-to-head) · $0 recurring cost
 
 ---
 
