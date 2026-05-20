@@ -507,7 +507,7 @@ Opening signups means becoming a data controller under GDPR/equivalents. Require
 
 ## 13. Progress Snapshot
 
-**As of May 19, 2026:**
+**As of May 20, 2026 (continued session):**
 
 - Phase A Week 1 (UI Killshot): **5/5 shipped ✅ COMPLETE**
 - Phase A Week 2 (New Engines): **2/2 shipped ✅ COMPLETE**
@@ -552,7 +552,19 @@ Opening signups means becoming a data controller under GDPR/equivalents. Require
   - Root-cause analysis of 3 timeout repos → 6 pipeline fixes shipped (commits 493723b + 2965c32 + scan_subdir).
   - Fix summary: 900s timeout, JS findings cap 300, stale-fallback hardened, ESLint skip >200 files, scan_subdir YAML field, bandit-test-cases scoped to examples/. Expected recall after re-run: **~90%+**.
   - Results in: `TESTS/evaluation/results/eval_summary.json`, `docs/evaluation/BENCHMARK_v5.md`, `docs/evaluation/HEAD_TO_HEAD_SEMGREP.md`.
-- **Next: Week A6 — defense polish only (HARD CAP, no new code)**
+- **Phase A6-prep SHIPPED (2026-05-20):**
+  - `ACR-QA-Book/` full 6-chapter LaTeX thesis committed: chs 3/4/5/6 updated to v5.0.0b1 (10 novel contributions, 2,757 tests, 92.3% recall, all four new engines documented with implementation algorithms).
+  - `paper/acrqa_thesis.tex`: sections 4–8 written (Heuristic Risk Predictor §4, Time-Travel §5, Evaluation Table I §6, Discussion §7, Conclusion §8). Paper is now complete (8 pages IEEE-style).
+  - `ACR-QA_Q1.html` project poster committed.
+  - `.gitignore`: per-repo eval JSONs and `mutants/` now ignored.
+- **REMAINING FOR HARD WEEK A6 (Jun 22–30):**
+  - Defense deck — 25 slides (not started)
+  - Q&A prep — 40 expected questions + written answers (not started)
+  - Demo video — 5-min 1920×1080 (not started)
+  - Dry-run with Dr. Samy (awaiting confirmation of defense date Jun 25)
+  - 5-rater inter-rater κ study (human-led)
+  - Tag v5.0.0 (after defense)
+- **Everything else in Phase A is code-complete.**
 
 Update this section after every commit affecting Phase A scope. Don't duplicate the per-week tables — just track top-of-mind state.
 
