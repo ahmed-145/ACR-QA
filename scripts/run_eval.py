@@ -236,6 +236,7 @@ def main(argv: list[str] | None = None) -> int:
     p.add_argument("--semgrep", action="store_true", help="Also run Semgrep CE for head-to-head")
     p.add_argument("--dry-run", action="store_true", help="Print commands, don't execute")
     p.add_argument("--cve", action="store_true", help="Also scan CVE repos (default: skip)")
+    p.add_argument("--cve-only", action="store_true", help="Scan CVE repos only (skip non-CVE benchmark repos)")
     p.add_argument(
         "--timeout",
         type=int,
@@ -243,6 +244,8 @@ def main(argv: list[str] | None = None) -> int:
         help="Per-repo ACR-QA scan timeout in seconds (default: 900)",
     )
     args = p.parse_args(argv)
+    if args.cve_only:
+        args.cve = True  # cve-only implies --cve
 
     entries = load_ground_truth()
     print(f"Loaded {len(entries)} ground-truth YAMLs")
@@ -250,6 +253,8 @@ def main(argv: list[str] | None = None) -> int:
     results = []
     for entry in entries:
         name = entry["_yaml_file"]
+        if args.cve_only and not _is_cve(name):
+            continue  # skip non-CVE repos when --cve-only
         if _is_cve(name) and not args.cve:
             print(f"[skip CVE] {name}")
             results.append(
