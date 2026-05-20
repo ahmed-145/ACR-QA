@@ -48,7 +48,12 @@ def load_ground_truth() -> list[dict]:
     return entries
 
 
-def scan_acrqa(target_dir: str, yaml_name: str, dry_run: bool = False) -> list[dict]:
+def scan_acrqa(
+    target_dir: str,
+    yaml_name: str,
+    dry_run: bool = False,
+    timeout: int = 900,
+) -> list[dict]:
     out_file = OUT_DIR / f"acrqa-{yaml_name}.json"
     cmd = [
         sys.executable,
@@ -65,15 +70,13 @@ def scan_acrqa(target_dir: str, yaml_name: str, dry_run: bool = False) -> list[d
         return []
     print(f"  Scanning {target_dir} ...", end=" ", flush=True)
     t0 = time.time()
-    # Snapshot existing per-PID files so we can detect the new one after the scan
     outputs_dir = ROOT / "DATA" / "outputs"
-    existing_pids = set(outputs_dir.glob("findings_pid*.json")) if outputs_dir.exists() else set()
     try:
         env = {**os.environ}  # already has dotenv loaded
-        proc = subprocess.run(cmd, capture_output=True, text=True, timeout=300, cwd=str(ROOT), env=env)
+        proc = subprocess.run(cmd, capture_output=True, text=True, timeout=timeout, cwd=str(ROOT), env=env)
         elapsed = time.time() - t0
         print(f"{elapsed:.0f}s")
-        # 1. Try stdout JSON (--json flag)
+        # 1. Try stdout JSON (--json flag) — most reliable, no stale-data risk
         findings = []
         stdout = proc.stdout.strip()
         if stdout.startswith("[") or stdout.startswith("{"):
@@ -82,23 +85,37 @@ def scan_acrqa(target_dir: str, yaml_name: str, dry_run: bool = False) -> list[d
                 findings = raw if isinstance(raw, list) else raw.get("findings", [])
             except json.JSONDecodeError:
                 pass
-        # 2. Fall back: pick up the new per-PID file written by main.py
+        # 2. Fall back: per-PID file written by this exact process (match proc.pid unavailable
+        #    after Popen completes, so match by mtime strictly after t0 AND within the elapsed
+        #    window — this prevents picking up files from concurrent test runs).
         if not findings and outputs_dir.exists():
-            new_pids = set(outputs_dir.glob("findings_pid*.json")) - existing_pids
-            if new_pids:
-                newest = max(new_pids, key=lambda p: p.stat().st_mtime)
-                with open(newest) as f:
-                    findings = json.load(f)
-        # 3. Last resort: shared findings.json (may be stale from prior run)
+            candidates = [
+                p for p in outputs_dir.glob("findings_pid*.json") if t0 <= p.stat().st_mtime <= t0 + elapsed + 5
+            ]
+            if candidates:
+                newest = max(candidates, key=lambda p: p.stat().st_mtime)
+                try:
+                    data = json.loads(newest.read_text())
+                    # Reject synthetic test fixtures that leak from pytest runs
+                    real = [f for f in data if f.get("message") != "Test security finding"]
+                    if real:
+                        findings = real
+                except Exception:
+                    pass
+        # 3. Last resort: shared findings.json written strictly during this scan
         if not findings:
             fallback = outputs_dir / "findings.json"
-            if fallback.exists() and fallback.stat().st_mtime > t0:
-                with open(fallback) as f:
-                    findings = json.load(f)
+            if fallback.exists() and t0 <= fallback.stat().st_mtime <= t0 + elapsed + 5:
+                try:
+                    data = json.loads(fallback.read_text())
+                    findings = [f for f in data if f.get("message") != "Test security finding"]
+                except Exception:
+                    pass
         out_file.write_text(json.dumps(findings, indent=2))
         return findings
     except subprocess.TimeoutExpired:
-        print("TIMEOUT")
+        print(f"TIMEOUT (>{timeout}s)")
+        out_file.write_text("[]")
         return []
     except Exception as exc:
         print(f"ERROR: {exc}")
@@ -213,6 +230,12 @@ def main(argv: list[str] | None = None) -> int:
     p.add_argument("--semgrep", action="store_true", help="Also run Semgrep CE for head-to-head")
     p.add_argument("--dry-run", action="store_true", help="Print commands, don't execute")
     p.add_argument("--cve", action="store_true", help="Also scan CVE repos (default: skip)")
+    p.add_argument(
+        "--timeout",
+        type=int,
+        default=900,
+        help="Per-repo ACR-QA scan timeout in seconds (default: 900)",
+    )
     args = p.parse_args(argv)
 
     entries = load_ground_truth()
@@ -242,7 +265,7 @@ def main(argv: list[str] | None = None) -> int:
         print(f"\n[{name}]")
         expected = entry.get("expected_findings", [])
 
-        acrqa_findings = scan_acrqa(local_path, name, dry_run=args.dry_run)
+        acrqa_findings = scan_acrqa(local_path, name, dry_run=args.dry_run, timeout=args.timeout)
         acrqa_recall = compute_recall(expected, acrqa_findings)
 
         row = {

@@ -657,6 +657,21 @@ export default [
         if removed:
             logger.info("Deduplication removed %d duplicate findings", removed)
 
+        # Cap total findings per repo to avoid downstream taint/DB overhead on
+        # large JS/TS codebases (616-file repos like JuiceShop generate 1200+
+        # raw findings; processing every one through taint+exploit adds minutes).
+        # Priority: HIGH > MEDIUM > LOW; within same severity, preserve order.
+        _SEV_ORDER = {"high": 0, "medium": 1, "low": 2}
+        MAX_JS_FINDINGS = 300
+        if len(deduped) > MAX_JS_FINDINGS:
+            deduped.sort(key=lambda f: _SEV_ORDER.get(f.severity.lower(), 3))
+            logger.info(
+                "JS findings cap: keeping top %d of %d (sorted by severity)",
+                MAX_JS_FINDINGS,
+                len(deduped),
+            )
+            deduped = deduped[:MAX_JS_FINDINGS]
+
         return deduped
 
     def get_rule_mappings(self) -> dict[str, str]:
