@@ -557,10 +557,13 @@ Opening signups means becoming a data controller under GDPR/equivalents. Require
   - `paper/acrqa_thesis.tex`: sections 4–8 written (Heuristic Risk Predictor §4, Time-Travel §5, Evaluation Table I §6, Discussion §7, Conclusion §8). Paper is now complete (8 pages IEEE-style).
   - `ACR-QA_Q1.html` project poster committed.
   - `.gitignore`: per-repo eval JSONs and `mutants/` now ignored.
+- **CVE God-Mode Pass (2026-05-20):** ✅ COMPLETE
+  - All 20 CVE YAMLs audited; `canonical_id` field bug fixed; 8/8 detectable confirmed (100%); 12 honest FNs documented.
+- **Week A6 pre-work (2026-05-20):**
+  - ✅ Defense deck — `docs/DEFENSE_DECK.tex` + compiled PDF (25 slides, Beamer metropolis, 435KB)
+  - ✅ Q&A prep — `docs/QA_PREP.md` (40 questions, 10 categories, full written answers)
 - **REMAINING FOR HARD WEEK A6 (Jun 22–30):**
-  - Defense deck — 25 slides (not started)
-  - Q&A prep — 40 expected questions + written answers (not started)
-  - Demo video — 5-min 1920×1080 (not started)
+  - Demo video — 5-min 1920×1080 (human-led, OBS)
   - Dry-run with Dr. Samy (awaiting confirmation of defense date Jun 25)
   - 5-rater inter-rater κ study (human-led)
   - Tag v5.0.0 (after defense)
