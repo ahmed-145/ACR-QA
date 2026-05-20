@@ -233,9 +233,19 @@ class JavaScriptAdapter(LanguageAdapter):
         logger.info("Found %d JS/TS files to analyze", len(js_files))
         results: dict[str, Any] = {"eslint": [], "semgrep": {}, "npm_audit": {}, "errors": []}
 
-        # Run ESLint
-        eslint_output = output_path / "eslint.json"
-        self._run_eslint(js_files, eslint_output, results)
+        # ESLint spawns a full Node.js process per batch; it dominates wall time on
+        # large codebases (>200 files).  Above that threshold we rely on Semgrep alone
+        # so that eval scans on repos like JuiceShop (616 TS files) stay under 900s.
+        _ESLINT_FILE_LIMIT = 200
+        if len(js_files) > _ESLINT_FILE_LIMIT:
+            logger.info(
+                "Skipping ESLint (%d files > %d limit); using Semgrep only",
+                len(js_files),
+                _ESLINT_FILE_LIMIT,
+            )
+        else:
+            eslint_output = output_path / "eslint.json"
+            self._run_eslint(js_files, eslint_output, results)
 
         # Run Semgrep with JS rules
         semgrep_output = output_path / "semgrep_js.json"
