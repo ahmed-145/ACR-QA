@@ -90,6 +90,18 @@ def summarize(repos: list[dict[str, Any]]) -> dict[str, Any]:
 
 def write_markdown(summary: dict[str, Any], dest: Path) -> None:
     """Write a human-readable markdown summary to *dest*."""
+    # Load recall data from eval_summary.json if available
+    eval_json = dest.parent.parent.parent / "TESTS" / "evaluation" / "results" / "eval_summary.json"
+    recall_by_yaml: dict[str, dict] = {}
+    if eval_json.exists():
+        try:
+            eval_data = json.loads(eval_json.read_text())
+            for row in eval_data.get("results", []):
+                if "acrqa" in row:
+                    recall_by_yaml[row["yaml"]] = row
+        except Exception:
+            pass
+
     lines: list[str] = []
     lines.append("# ACR-QA Benchmark Summary\n")
     lines.append(f"_Generated: {time.strftime('%Y-%m-%d %H:%M:%S')}_\n")
@@ -98,14 +110,44 @@ def write_markdown(summary: dict[str, Any], dest: Path) -> None:
         f"**{summary['total_expected_findings']} expected findings** · "
         f"**{summary['repos_pending_verification']} pending verification**\n",
     )
-    lines.append("| YAML | Repo | Language | CWE | Expected | Pending | Local | Recall target |")
-    lines.append("|---|---|---|---|---:|---:|---|---:|")
-    for r in summary["rows"]:
-        lines.append(
-            f"| {r['yaml']} | {r['repo'] or '—'} | {r['language'] or '—'} | "
-            f"{r['cwe'] or '—'} | {r['expected_count']} | {r['pending_verification']} | "
-            f"{'✅' if r['local_path'] else '—'} | {r['recall_target'] if r['recall_target'] is not None else '—'} |",
-        )
+
+    if recall_by_yaml:
+        # Include recall columns when eval results are available
+        acrqa_avg = eval_data.get("acrqa_average_recall")
+        sg_avg = eval_data.get("semgrep_average_recall")
+        if acrqa_avg is not None:
+            lines.append(
+                f"**ACR-QA avg recall: {acrqa_avg:.1%}** · "
+                f"**Semgrep CE avg recall: {sg_avg:.1%}** (13 non-CVE repos)\n"
+            )
+        lines.append("| Repo | Lang | Exp | ACR-QA | Found | Semgrep | Found |")
+        lines.append("|------|------|----:|:------:|------:|:-------:|------:|")
+        for r in summary["rows"]:
+            yaml_name = r["yaml"]
+            if yaml_name in recall_by_yaml:
+                er = recall_by_yaml[yaml_name]
+                ar = er["acrqa"]
+                sg = er.get("semgrep", {})
+                ar_str = f"{ar['recall']:.0%}" if ar.get("recall") is not None else "—"
+                sg_str = f"{sg['recall']:.0%}" if sg.get("recall") is not None else "—"
+                lines.append(
+                    f"| {r['repo'] or '—'} | {r['language'] or '—'} | "
+                    f"{ar['expected']} | {ar_str} | {ar['found']} | {sg_str} | {sg.get('found', '—')} |"
+                )
+            elif r.get("yaml", "").startswith("cve-"):
+                lines.append(
+                    f"| {r['repo'] or '—'} | {r['language'] or '—'} | "
+                    f"0 | CVE | — | CVE | — |"
+                )
+    else:
+        lines.append("| YAML | Repo | Language | CWE | Expected | Pending | Local | Recall target |")
+        lines.append("|---|---|---|---|---:|---:|---|---:|")
+        for r in summary["rows"]:
+            lines.append(
+                f"| {r['yaml']} | {r['repo'] or '—'} | {r['language'] or '—'} | "
+                f"{r['cwe'] or '—'} | {r['expected_count']} | {r['pending_verification']} | "
+                f"{'✅' if r['local_path'] else '—'} | {r['recall_target'] if r['recall_target'] is not None else '—'} |",
+            )
     dest.write_text("\n".join(lines) + "\n", encoding="utf-8")
 
 

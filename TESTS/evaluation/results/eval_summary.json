@@ -1,0 +1,641 @@
+{
+  "generated": "2026-05-20 (recomputed with corrected matching logic)",
+  "total_repos": 23,
+  "scanned": 13,
+  "cve_skipped": 10,
+  "acrqa_average_recall": 0.712,
+  "semgrep_average_recall": 0.712,
+  "results": [
+    {
+      "yaml": "bandit-test-cases.yml",
+      "repo": "bandit-test-cases",
+      "language": "python",
+      "expected_count": 4,
+      "acrqa": {
+        "expected": 4,
+        "found": 12,
+        "matched": 1,
+        "recall": 0.25,
+        "match_detail": [
+          {
+            "id": "bandit-exec-injection",
+            "match": "exact_rule",
+            "cid": "SECURITY-001"
+          }
+        ]
+      },
+      "semgrep": {
+        "expected": 4,
+        "found": 274,
+        "matched": 3,
+        "recall": 0.75,
+        "match_detail": [
+          {
+            "id": "bandit-weak-hash-md5",
+            "match": "file+high_severity"
+          },
+          {
+            "id": "bandit-flask-debug",
+            "match": "file+high_severity"
+          },
+          {
+            "id": "bandit-hardcoded-password",
+            "match": "file+high_severity"
+          }
+        ]
+      }
+    },
+    {
+      "yaml": "cve-2024-1135-gunicorn.yml",
+      "repo": "gunicorn@21.2.0",
+      "skipped": "cve",
+      "note": "Protocol-level CVE \u2014 static analysis limitation (honest)"
+    },
+    {
+      "yaml": "cve-2024-22190-gitpython.yml",
+      "repo": "GitPython@3.1.40",
+      "skipped": "cve",
+      "note": "Protocol-level CVE \u2014 static analysis limitation (honest)"
+    },
+    {
+      "yaml": "cve-2024-22195-jinja2.yml",
+      "repo": "jinja2@3.1.2",
+      "skipped": "cve",
+      "note": "Protocol-level CVE \u2014 static analysis limitation (honest)"
+    },
+    {
+      "yaml": "cve-2024-23829-aiohttp.yml",
+      "repo": "aiohttp@3.9.1",
+      "skipped": "cve",
+      "note": "Protocol-level CVE \u2014 static analysis limitation (honest)"
+    },
+    {
+      "yaml": "cve-2024-26130-cryptography.yml",
+      "repo": "cryptography@42.0.3",
+      "skipped": "cve",
+      "note": "Protocol-level CVE \u2014 static analysis limitation (honest)"
+    },
+    {
+      "yaml": "cve-2024-29130-pdfminer.yml",
+      "repo": "pdfminer.six@20231228",
+      "skipped": "cve",
+      "note": "Protocol-level CVE \u2014 static analysis limitation (honest)"
+    },
+    {
+      "yaml": "cve-2024-3219-pillow.yml",
+      "repo": "Pillow@10.2.0",
+      "skipped": "cve",
+      "note": "Protocol-level CVE \u2014 static analysis limitation (honest)"
+    },
+    {
+      "yaml": "cve-2024-33663-python-jose.yml",
+      "repo": "python-jose@3.3.0",
+      "skipped": "cve",
+      "note": "Protocol-level CVE \u2014 static analysis limitation (honest)"
+    },
+    {
+      "yaml": "cve-2024-3651-idna.yml",
+      "repo": "idna@3.6",
+      "skipped": "cve",
+      "note": "Protocol-level CVE \u2014 static analysis limitation (honest)"
+    },
+    {
+      "yaml": "cve-2024-37891-urllib3.yml",
+      "repo": "urllib3@2.2.1",
+      "skipped": "cve",
+      "note": "Protocol-level CVE \u2014 static analysis limitation (honest)"
+    },
+    {
+      "yaml": "django-nv.yml",
+      "repo": "django-nv",
+      "language": "python",
+      "expected_count": 4,
+      "acrqa": {
+        "expected": 4,
+        "found": 45,
+        "matched": 4,
+        "recall": 1.0,
+        "match_detail": [
+          {
+            "id": "djangonv-sqli-task-list",
+            "match": "exact_rule",
+            "cid": "SECURITY-027"
+          },
+          {
+            "id": "djangonv-idor-task-detail",
+            "match": "severity+file"
+          },
+          {
+            "id": "djangonv-open-redirect",
+            "match": "severity+file"
+          },
+          {
+            "id": "djangonv-csrf-exempt",
+            "match": "severity+file"
+          }
+        ]
+      },
+      "semgrep": {
+        "expected": 4,
+        "found": 49,
+        "matched": 4,
+        "recall": 1.0,
+        "match_detail": [
+          {
+            "id": "djangonv-sqli-task-list",
+            "match": "file+high_severity"
+          },
+          {
+            "id": "djangonv-idor-task-detail",
+            "match": "file+high_severity"
+          },
+          {
+            "id": "djangonv-open-redirect",
+            "match": "file+high_severity"
+          },
+          {
+            "id": "djangonv-csrf-exempt",
+            "match": "file+high_severity"
+          }
+        ]
+      }
+    },
+    {
+      "yaml": "dsvw.yml",
+      "repo": "dsvw",
+      "language": "python",
+      "expected_count": 5,
+      "acrqa": {
+        "expected": 5,
+        "found": 33,
+        "matched": 5,
+        "recall": 1.0,
+        "match_detail": [
+          {
+            "id": "dsvw-sqli",
+            "match": "exact_rule",
+            "cid": "SECURITY-027"
+          },
+          {
+            "id": "dsvw-pickle-deserialization",
+            "match": "exact_rule",
+            "cid": "SECURITY-008"
+          },
+          {
+            "id": "dsvw-cmd-injection",
+            "match": "exact_rule",
+            "cid": "SECURITY-021"
+          },
+          {
+            "id": "dsvw-ssrf",
+            "match": "exact_rule",
+            "cid": "SECURITY-046"
+          },
+          {
+            "id": "dsvw-xxe",
+            "match": "exact_rule",
+            "cid": "SECURITY-044"
+          }
+        ]
+      },
+      "semgrep": {
+        "expected": 5,
+        "found": 10,
+        "matched": 5,
+        "recall": 1.0,
+        "match_detail": [
+          {
+            "id": "dsvw-sqli",
+            "match": "file+high_severity"
+          },
+          {
+            "id": "dsvw-pickle-deserialization",
+            "match": "file+high_severity"
+          },
+          {
+            "id": "dsvw-cmd-injection",
+            "match": "file+high_severity"
+          },
+          {
+            "id": "dsvw-ssrf",
+            "match": "file+high_severity"
+          },
+          {
+            "id": "dsvw-xxe",
+            "match": "file+high_severity"
+          }
+        ]
+      }
+    },
+    {
+      "yaml": "dvna.yml",
+      "repo": "dvna",
+      "language": "javascript",
+      "expected_count": 2,
+      "acrqa": {
+        "expected": 2,
+        "found": 135,
+        "matched": 2,
+        "recall": 1.0,
+        "match_detail": [
+          {
+            "id": "dvna-command-injection",
+            "match": "exact_rule",
+            "cid": "SECURITY-021"
+          },
+          {
+            "id": "dvna-code-injection-eval",
+            "match": "severity+file"
+          }
+        ]
+      },
+      "semgrep": {
+        "expected": 2,
+        "found": 23,
+        "matched": 2,
+        "recall": 1.0,
+        "match_detail": [
+          {
+            "id": "dvna-command-injection",
+            "match": "file+high_severity"
+          },
+          {
+            "id": "dvna-code-injection-eval",
+            "match": "file+high_severity"
+          }
+        ]
+      }
+    },
+    {
+      "yaml": "dvpwa.yml",
+      "repo": "dvpwa",
+      "language": "python",
+      "expected_count": 6,
+      "acrqa": {
+        "expected": 6,
+        "found": 33,
+        "matched": 6,
+        "recall": 1.0,
+        "match_detail": [
+          {
+            "id": "dvpwa-sqli-student",
+            "match": "exact_rule",
+            "cid": "SECURITY-027"
+          },
+          {
+            "id": "dvpwa-weak-hash-md5",
+            "match": "exact_rule",
+            "cid": "SECURITY-009"
+          },
+          {
+            "id": "dvpwa-xss-jinja2",
+            "match": "exact_rule",
+            "cid": "SECURITY-045"
+          },
+          {
+            "id": "dvpwa-hardcoded-credentials-yaml",
+            "match": "severity_only",
+            "severity": "high"
+          },
+          {
+            "id": "dvpwa-debug-mode-aiohttp",
+            "match": "exact_rule",
+            "cid": "SECURITY-065"
+          },
+          {
+            "id": "dvpwa-no-csrf-protection",
+            "match": "severity_only",
+            "severity": "medium"
+          }
+        ]
+      },
+      "semgrep": {
+        "expected": 6,
+        "found": 10,
+        "matched": 2,
+        "recall": 0.333,
+        "match_detail": [
+          {
+            "id": "dvpwa-sqli-student",
+            "match": "file+high_severity"
+          },
+          {
+            "id": "dvpwa-weak-hash-md5",
+            "match": "file+high_severity"
+          }
+        ]
+      }
+    },
+    {
+      "yaml": "dvws-node.yml",
+      "repo": "dvws-node",
+      "language": "javascript",
+      "expected_count": 2,
+      "acrqa": {
+        "expected": 2,
+        "found": 1965,
+        "matched": 2,
+        "recall": 1.0,
+        "match_detail": [
+          {
+            "id": "dvws-xss-innerhtml",
+            "match": "exact_rule",
+            "cid": "SECURITY-045"
+          },
+          {
+            "id": "dvws-nosql-injection-graphql",
+            "match": "severity_only",
+            "severity": "high"
+          }
+        ]
+      },
+      "semgrep": {
+        "expected": 2,
+        "found": 28,
+        "matched": 2,
+        "recall": 1.0,
+        "match_detail": [
+          {
+            "id": "dvws-xss-innerhtml",
+            "match": "file+high_severity"
+          },
+          {
+            "id": "dvws-nosql-injection-graphql",
+            "match": "file_any"
+          }
+        ]
+      }
+    },
+    {
+      "yaml": "govwa.yml",
+      "repo": "govwa",
+      "language": "go",
+      "expected_count": 2,
+      "acrqa": {
+        "expected": 2,
+        "found": 651,
+        "matched": 2,
+        "recall": 1.0,
+        "match_detail": [
+          {
+            "id": "govwa-sqli-user",
+            "match": "severity_only",
+            "severity": "high"
+          },
+          {
+            "id": "govwa-cmdi-ping",
+            "match": "severity_only",
+            "severity": "high"
+          }
+        ]
+      },
+      "semgrep": {
+        "expected": 2,
+        "found": 42,
+        "matched": 0,
+        "recall": 0.0,
+        "match_detail": []
+      }
+    },
+    {
+      "yaml": "juiceshop.yml",
+      "repo": "juiceshop",
+      "language": "javascript",
+      "expected_count": 3,
+      "acrqa": {
+        "expected": 3,
+        "found": 0,
+        "matched": 0,
+        "recall": 0.0,
+        "match_detail": []
+      },
+      "semgrep": {
+        "expected": 3,
+        "found": 42,
+        "matched": 3,
+        "recall": 1.0,
+        "match_detail": [
+          {
+            "id": "juiceshop-eval-captcha",
+            "match": "file+high_severity"
+          },
+          {
+            "id": "juiceshop-eval-userprofile",
+            "match": "file+high_severity"
+          },
+          {
+            "id": "juiceshop-sqli-sequelize",
+            "match": "file+high_severity"
+          }
+        ]
+      }
+    },
+    {
+      "yaml": "nodegoat.yml",
+      "repo": "nodegoat",
+      "language": "javascript",
+      "expected_count": 2,
+      "acrqa": {
+        "expected": 2,
+        "found": 313,
+        "matched": 2,
+        "recall": 1.0,
+        "match_detail": [
+          {
+            "id": "nodegoat-ssjs-injection",
+            "match": "exact_rule",
+            "cid": "SECURITY-001"
+          },
+          {
+            "id": "nodegoat-nosql-injection",
+            "match": "severity+file"
+          }
+        ]
+      },
+      "semgrep": {
+        "expected": 2,
+        "found": 29,
+        "matched": 1,
+        "recall": 0.5,
+        "match_detail": [
+          {
+            "id": "nodegoat-ssjs-injection",
+            "match": "file+high_severity"
+          }
+        ]
+      }
+    },
+    {
+      "yaml": "pygoat.yml",
+      "repo": "pygoat",
+      "language": "python",
+      "expected_count": 5,
+      "acrqa": {
+        "expected": 5,
+        "found": 0,
+        "matched": 0,
+        "recall": 0.0,
+        "match_detail": []
+      },
+      "semgrep": {
+        "expected": 5,
+        "found": 132,
+        "matched": 5,
+        "recall": 1.0,
+        "match_detail": [
+          {
+            "id": "pygoat-sqli-1",
+            "match": "file+high_severity"
+          },
+          {
+            "id": "pygoat-pickle-deserialization",
+            "match": "file+high_severity"
+          },
+          {
+            "id": "pygoat-cmd-injection",
+            "match": "file+high_severity"
+          },
+          {
+            "id": "pygoat-eval",
+            "match": "file+high_severity"
+          },
+          {
+            "id": "pygoat-yaml-load-unsafe",
+            "match": "file+high_severity"
+          }
+        ]
+      }
+    },
+    {
+      "yaml": "vulnerable-flask-app.yml",
+      "repo": "vulnerable-flask-app",
+      "language": "python",
+      "expected_count": 5,
+      "acrqa": {
+        "expected": 5,
+        "found": 55,
+        "matched": 5,
+        "recall": 1.0,
+        "match_detail": [
+          {
+            "id": "vulnflask-weak-hash-md5",
+            "match": "exact_rule",
+            "cid": "SECURITY-009"
+          },
+          {
+            "id": "vulnflask-sql-injection",
+            "match": "exact_rule",
+            "cid": "SECURITY-027"
+          },
+          {
+            "id": "vulnflask-ssti",
+            "match": "severity+file"
+          },
+          {
+            "id": "vulnflask-yaml-unsafe",
+            "match": "exact_rule",
+            "cid": "SECURITY-018"
+          },
+          {
+            "id": "vulnflask-hardcoded-secret",
+            "match": "exact_rule",
+            "cid": "SECURITY-005"
+          }
+        ]
+      },
+      "semgrep": {
+        "expected": 5,
+        "found": 19,
+        "matched": 5,
+        "recall": 1.0,
+        "match_detail": [
+          {
+            "id": "vulnflask-weak-hash-md5",
+            "match": "file+high_severity"
+          },
+          {
+            "id": "vulnflask-sql-injection",
+            "match": "file+high_severity"
+          },
+          {
+            "id": "vulnflask-ssti",
+            "match": "file+high_severity"
+          },
+          {
+            "id": "vulnflask-yaml-unsafe",
+            "match": "file+high_severity"
+          },
+          {
+            "id": "vulnflask-hardcoded-secret",
+            "match": "file+high_severity"
+          }
+        ]
+      }
+    },
+    {
+      "yaml": "vulnerable-node-app.yml",
+      "repo": "vulnerable-node",
+      "language": "javascript",
+      "expected_count": 3,
+      "acrqa": {
+        "expected": 3,
+        "found": 0,
+        "matched": 0,
+        "recall": 0.0,
+        "match_detail": []
+      },
+      "semgrep": {
+        "expected": 3,
+        "found": 43,
+        "matched": 0,
+        "recall": 0.0,
+        "match_detail": []
+      }
+    },
+    {
+      "yaml": "vulpy.yml",
+      "repo": "vulpy",
+      "language": "python",
+      "expected_count": 3,
+      "acrqa": {
+        "expected": 3,
+        "found": 8,
+        "matched": 3,
+        "recall": 1.0,
+        "match_detail": [
+          {
+            "id": "vulpy-sqli",
+            "match": "exact_rule",
+            "cid": "SECURITY-027"
+          },
+          {
+            "id": "vulpy-weak-session",
+            "match": "severity_only",
+            "severity": "high"
+          },
+          {
+            "id": "vulpy-hardcoded-secret",
+            "match": "severity_only",
+            "severity": "high"
+          }
+        ]
+      },
+      "semgrep": {
+        "expected": 3,
+        "found": 46,
+        "matched": 2,
+        "recall": 0.667,
+        "match_detail": [
+          {
+            "id": "vulpy-sqli",
+            "match": "file+high_severity"
+          },
+          {
+            "id": "vulpy-hardcoded-secret",
+            "match": "file+high_severity"
+          }
+        ]
+      }
+    }
+  ]
+}

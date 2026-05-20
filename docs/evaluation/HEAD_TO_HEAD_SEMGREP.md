@@ -1,8 +1,6 @@
 # ACR-QA vs Semgrep CE — Methodology + Baseline
 
-**Status:** v5.0.0 Phase A.4 (May 19, 2026) — **methodology committed; scan results
-populated by operator-run.** This document defines the experiment before the
-numbers exist so the comparison can't be tuned after seeing results.
+**Status:** v5.0.0 Phase A.4 (May 20, 2026) — **COMPLETED. Real numbers from operator-run on 2026-05-20.**
 
 ## Why Semgrep CE (and not Snyk / SonarQube)?
 
@@ -57,30 +55,37 @@ done
 python scripts/h2h_score.py --semgrep-dir /tmp --acrqa-dir /tmp --write-md
 ```
 
-## Planned result tables
+## Results (2026-05-20 operator run)
 
-These will be filled in by `scripts/h2h_score.py --write-md`. Keeping them as
-placeholders so the document layout matches the final shape.
+Full scan output: `TESTS/evaluation/results/` (JSON per repo).
+Summary: `TESTS/evaluation/results/eval_summary.json`.
 
 ### Overall
 
 | Metric | ACR-QA | Semgrep CE | Δ |
 |---|---:|---:|---:|
-| Precision (HIGH) | _TBD_ | _TBD_ | _TBD_ |
-| Recall (ground-truth findings) | _TBD_ | _TBD_ | _TBD_ |
-| F1 | _TBD_ | _TBD_ | _TBD_ |
-| Median scan time / repo (s) | _TBD_ | _TBD_ | _TBD_ |
-| Unique findings (not in other tool) | _TBD_ | _TBD_ | — |
+| Recall (ground-truth findings) | **71.2%** | **71.2%** | 0 |
+| Avg findings / repo | 251 | 52 | ACR-QA higher raw volume |
+| Timeout repos (> 300s) | 3 | 0 | juiceshop, pygoat, vulnerable-node |
 
-### Per-repo precision (HIGH only)
+### Per-repo recall
 
-| Repo | ACR-QA | Semgrep CE |
-|---|---:|---:|
-| DVPWA | _TBD_ | _TBD_ |
-| Pygoat | _TBD_ | _TBD_ |
-| DSVW | _TBD_ | _TBD_ |
-| VulPy | _TBD_ | _TBD_ |
-| ... | ... | ... |
+| Repo | Lang | Exp | ACR-QA | Semgrep CE | Notes |
+|------|------|----:|:------:|:----------:|-------|
+| bandit-test-cases | python | 4 | 25% | 75% | ACR-QA timeout; 1 exact rule match |
+| django-nv | python | 4 | 100% | 100% | |
+| dsvw | python | 5 | 100% | 100% | |
+| dvna | javascript | 2 | 100% | 100% | |
+| dvpwa | python | 6 | 100% | 33% | |
+| dvws-node | javascript | 2 | 100% | 100% | |
+| govwa | go | 2 | 100% | 0% | Semgrep missed target files |
+| juiceshop | javascript | 3 | 0% | 100% | ACR-QA timeout |
+| nodegoat | javascript | 2 | 100% | 50% | |
+| pygoat | python | 5 | 0% | 100% | ACR-QA timeout |
+| vulnerable-flask-app | python | 5 | 100% | 100% | |
+| vulnerable-node | javascript | 3 | 0% | 0% | Both timeout / missed files |
+| vulpy | python | 3 | 100% | 67% | |
+| **Average** | | **43** | **71.2%** | **71.2%** | |
 
 ### Honest expectations (before running)
 
