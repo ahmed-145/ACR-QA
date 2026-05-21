@@ -1,33 +1,28 @@
 # ACR-QA Benchmark Summary
 
-_Generated: 2026-05-20 (updated: bandit-test-cases scope fix → 100% ACR-QA recall)_
+_Generated: 2026-05-21 05:25:27_
 
-**23 repos** · **46 expected findings** · **10 pending verification**
-
-**ACR-QA avg recall: 100%** · **Semgrep CE avg recall: 71.2%** (13 non-CVE repos)
+**33 repos** · **54 expected findings** · **9 pending verification**
 
 | Repo | Lang | Exp | ACR-QA | Found | Semgrep | Found |
 |------|------|----:|:------:|------:|:-------:|------:|
-| bandit-test-cases | python | 4 | 100% | 45 | 75% | 9 |
-| gunicorn@21.2.0 | python | 0 | CVE | — | CVE | — |
-| GitPython@3.1.40 | python | 0 | CVE | — | CVE | — |
-| jinja2@3.1.2 | python | 0 | CVE | — | CVE | — |
-| aiohttp@3.9.1 | python | 0 | CVE | — | CVE | — |
-| cryptography@42.0.3 | python | 0 | CVE | — | CVE | — |
-| pdfminer.six@20231228 | python | 0 | CVE | — | CVE | — |
-| Pillow@10.2.0 | python | 0 | CVE | — | CVE | — |
-| python-jose@3.3.0 | python | 0 | CVE | — | CVE | — |
-| idna@3.6 | python | 0 | CVE | — | CVE | — |
-| urllib3@2.2.1 | python | 0 | CVE | — | CVE | — |
-| django-nv | python | 4 | 100% | 45 | 100% | 49 |
-| dsvw | python | 5 | 100% | 33 | 100% | 10 |
-| dvna | javascript | 2 | 100% | 135 | 100% | 23 |
-| dvpwa | python | 6 | 100% | 33 | 33% | 10 |
-| dvws-node | javascript | 2 | 100% | 285 | 100% | 29 |
-| govwa | go | 2 | 100% | 285 | 0% | 42 |
-| juiceshop | javascript | 3 | 100% | 301 | 100% | 42 |
-| nodegoat | javascript | 2 | 100% | 294 | 50% | 29 |
-| pygoat | python | 5 | 100% | 126 | 100% | 132 |
-| vulnerable-flask-app | python | 5 | 100% | 55 | 100% | 19 |
-| vulnerable-node | javascript | 3 | 100% | 273 | 0% | 43 |
-| vulpy | python | 3 | 100% | 73 | 67% | 46 |
+| Werkzeug@0.11.10 | python | 1 | 100% | 136 | — | — |
+| PyYAML@3.13 | python | 1 | 100% | 25 | — | — |
+| jquery@3.3.1 | javascript | 0 | — | 0 | — | — |
+| celery@5.2.1 | python | 1 | 100% | 42 | — | — |
+| paramiko@2.10.0 | python | 0 | — | 0 | — | — |
+| GitPython@3.1.26 | python | 1 | 100% | 95 | — | — |
+| ansible-core@2.15.5 | python | 0 | — | 0 | — | — |
+| PyYAML@5.3.1 | python | 1 | 100% | 25 | — | — |
+| crypt4gh@1.6 | python | 0 | — | 0 | — | — |
+| cookiecutter@1.7.3 | python | 1 | 100% | 102 | — | — |
+| GitPython@3.1.40 | python | 0 | — | 0 | — | — |
+| jinja2@3.1.2 | python | 0 | — | 0 | — | — |
+| aiohttp@3.9.1 | python | 0 | — | 0 | — | — |
+| cryptography@42.0.3 | python | 0 | — | 0 | — | — |
+| pdfminer.six@20231228 | python | 0 | — | 0 | — | — |
+| Pillow@9.0.0rc2 | python | 1 | 100% | 70 | — | — |
+| python-jose@3.3.0 | python | 0 | — | 0 | — | — |
+| idna@3.6 | python | 0 | — | 0 | — | — |
+| urllib3@2.2.1 | python | 0 | — | 0 | — | — |
+| dask@2021.9.1 | python | 1 | 100% | 37 | — | — |
