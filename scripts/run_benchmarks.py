@@ -135,10 +135,7 @@ def write_markdown(summary: dict[str, Any], dest: Path) -> None:
                     f"{ar['expected']} | {ar_str} | {ar['found']} | {sg_str} | {sg.get('found', '—')} |"
                 )
             elif r.get("yaml", "").startswith("cve-"):
-                lines.append(
-                    f"| {r['repo'] or '—'} | {r['language'] or '—'} | "
-                    f"0 | CVE | — | CVE | — |"
-                )
+                lines.append(f"| {r['repo'] or '—'} | {r['language'] or '—'} | " f"0 | CVE | — | CVE | — |")
     else:
         lines.append("| YAML | Repo | Language | CWE | Expected | Pending | Local | Recall target |")
         lines.append("|---|---|---|---|---:|---:|---|---:|")
