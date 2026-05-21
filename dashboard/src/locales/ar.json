@@ -2,6 +2,7 @@
   "nav": {
     "scans": "الفحوصات",
     "supplyChain": "سلسلة التوريد",
+    "compare": "مقارنة",
     "settings": "الإعدادات"
   },
   "scans": {
@@ -14,7 +15,19 @@
     "totalFindings": "إجمالي النتائج",
     "highSeverity": "خطورة عالية",
     "noScansYet": "لا توجد فحوصات بعد",
-    "noScansDescription": "أرسل فحصك الأول للبدء."
+    "noScansDescription": "أرسل فحصك الأول للبدء.",
+    "scanType": {
+      "full": "فحص كامل",
+      "fullDesc": "SAST + ذكاء اصطناعي + جميع المحركات",
+      "iac": "فاحص IaC",
+      "iacDesc": "Terraform, K8s, Dockerfile",
+      "sca": "SCA (التبعيات)",
+      "scaDesc": "ثغرات CVE المعروفة في التبعيات",
+      "secrets": "كاشف الأسرار",
+      "secretsDesc": "مفاتيح API والرموز وكلمات المرور",
+      "aiDetect": "كاشف كود الذكاء الاصطناعي",
+      "aiDetectDesc": "اكتشاف الكود المولَّد بواسطة نماذج اللغة"
+    }
   },
   "findings": {
     "title": "النتائج",
@@ -22,6 +35,37 @@
     "rule": "القاعدة",
     "file": "الملف",
     "message": "الرسالة"
+  },
+  "runs": {
+    "tabs": {
+      "findings": "النتائج",
+      "compliance": "OWASP",
+      "supply": "سلسلة التوريد",
+      "heatmap": "خريطة الحرارة",
+      "timeline": "الجدول الزمني",
+      "prRisk": "مخاطر PR",
+      "analytics": "التحليلات"
+    },
+    "riskMap": "خريطة المخاطر",
+    "prRisk": {
+      "title": "درجة مخاطر PR",
+      "subtitle": "درجة مخاطر الدمج (0 = آمن، 100 = محظور)",
+      "contributions": "مساهمات المخاطر",
+      "why": "لماذا هذه الدرجة؟"
+    },
+    "analytics": {
+      "costBenefit": "تحليل التكلفة والعائد",
+      "reviewBottleneck": "اختناق المراجعة"
+    },
+    "secondOpinion": {
+      "title": "رأي ثانٍ",
+      "description": "احصل على حكم ذكاء اصطناعي ثانٍ من مزوِّد مختلف للتحقق من هذه النتيجة.",
+      "request": "طلب رأي ثانٍ",
+      "consulting": "استشارة النموذج الثاني…",
+      "agree": "النموذجان متفقان",
+      "disagree": "النموذجان مختلفان — يُوصى بالمراجعة اليدوية",
+      "rerun": "إعادة التشغيل"
+    }
   },
   "settings": {
     "title": "الإعدادات",
@@ -34,7 +78,17 @@
     "signOut": "تسجيل الخروج",
     "healthy": "يعمل",
     "unreachable": "غير متاح",
-    "checking": "جارٍ التحقق"
+    "checking": "جارٍ التحقق",
+    "apiKeys": "مفاتيح API",
+    "dangerZone": "المنطقة الخطرة"
+  },
+  "compare": {
+    "title": "مقارنة عمليات الفحص",
+    "subtitle": "اختر فحصين لمقارنة نتائجهما — المُصلَح والمُقدَّم وغير المتغير.",
+    "runA": "فحص A",
+    "runB": "فحص B",
+    "notSelected": "غير محدد",
+    "compare": "مقارنة"
   },
   "language": {
     "label": "اللغة",

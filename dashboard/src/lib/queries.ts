@@ -78,3 +78,9 @@ export const useDeleteApiKey = () => {
     onSuccess: () => qc.invalidateQueries({ queryKey: ["api-keys"] }),
   });
 };
+
+export const useRiskMap = (runId: number, refresh = false) =>
+  useQuery({ queryKey: ["risk-map", runId, refresh], queryFn: () => api.getRiskMap(runId, refresh), enabled: !!runId });
+
+export const useAIDetection = () =>
+  useMutation({ mutationFn: ({ target, threshold }: { target: string; threshold?: number }) => api.postAIDetection(target, threshold) });

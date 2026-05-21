@@ -283,3 +283,41 @@ export const deleteAccount = async () => {
   });
   if (!res.ok) throw new Error(`DELETE account: ${res.status}`);
 };
+
+// ── Risk Map ──────────────────────────────────────────────────────────────────
+
+export interface FileRiskScore {
+  file_path: string;
+  score: number;
+  features: Record<string, number>;
+  contributions: Record<string, number>;
+}
+
+export interface RiskMapResponse {
+  run_id: number;
+  cached: boolean;
+  total_files: number;
+  files: FileRiskScore[];
+}
+
+export const getRiskMap = (runId: number, refresh = false) =>
+  get<RiskMapResponse>(`/v1/runs/${runId}/risk-map${refresh ? "?refresh=true" : ""}`);
+
+// ── AI Detection ──────────────────────────────────────────────────────────────
+
+export interface AIDetectFile {
+  file_path: string;
+  score: number;
+  flagged: boolean;
+}
+
+export interface AIDetectResponse {
+  success: boolean;
+  total_files: number;
+  flagged_files: number;
+  flagged_percentage: number;
+  files: AIDetectFile[];
+}
+
+export const postAIDetection = (target: string, threshold = 0.7) =>
+  post<AIDetectResponse>("/v1/scans/ai-detection", { target, threshold });

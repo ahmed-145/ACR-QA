@@ -11,7 +11,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/dialog";
-import { Loader2, ArrowLeft, Shield, Package, BarChart3, FileDown, GitPullRequest, TrendingUp } from "lucide-react";
+import { Loader2, ArrowLeft, Shield, Package, BarChart3, FileDown, GitPullRequest, TrendingUp, Map } from "lucide-react";
 import { type Finding } from "@/lib/api";
 import { useState } from "react";
 import { severityColor } from "@/lib/utils";
@@ -62,7 +62,16 @@ export function RunDetailPage() {
           <Button
             variant="outline"
             size="sm"
-            className="no-print ml-2"
+            aria-label="View risk map"
+            onClick={() => navigate(`/runs/${runId}/risk-map`)}
+          >
+            <Map className="h-4 w-4 mr-1" aria-hidden />
+            Risk Map
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            className="no-print"
             aria-label={t("common.exportPdf")}
             onClick={() => window.print()}
           >

@@ -10,7 +10,7 @@ import { Input } from "@/components/ui/input";
 import { Dialog } from "@/components/ui/dialog";
 import { toast } from "@/components/ui/toast";
 import { Loader2, Play, RefreshCw, TrendingUp } from "lucide-react";
-import { submitIacScan, submitScaScan, submitSecretsScan } from "@/lib/api";
+import { submitIacScan, submitScaScan, submitSecretsScan, postAIDetection } from "@/lib/api";
 
 export function ScansPage() {
   const { data, isLoading, refetch } = useRuns(30);
@@ -21,11 +21,19 @@ export function ScansPage() {
   const [targetDir, setTargetDir] = useState("");
   const [repoName, setRepoName] = useState("");
   const [activeJobId, setActiveJobId] = useState<string | null>(null);
-  const [scanMode, setScanMode] = useState<"full" | "iac" | "sca" | "secrets">("full");
+  const [scanMode, setScanMode] = useState<"full" | "iac" | "sca" | "secrets" | "ai-detect">("full");
+  const [aiResult, setAiResult] = useState<{ flagged: number; total: number; pct: number } | null>(null);
 
   async function handleScan(e: React.FormEvent) {
     e.preventDefault();
+    setAiResult(null);
     try {
+      if (scanMode === "ai-detect") {
+        const res = await postAIDetection(targetDir);
+        setAiResult({ flagged: res.flagged_files, total: res.total_files, pct: res.flagged_percentage });
+        toast(`AI Detection: ${res.flagged_files}/${res.total_files} files flagged`, "success");
+        return;
+      }
       let job;
       if (scanMode === "iac") job = await submitIacScan(targetDir, repoName);
       else if (scanMode === "sca") job = await submitScaScan(targetDir, repoName);
@@ -127,26 +135,42 @@ export function ScansPage() {
             <label className="text-sm font-medium">Target directory</label>
             <Input value={targetDir} onChange={(e) => setTargetDir(e.target.value)} placeholder="/path/to/repo" required className="mt-1" />
           </div>
-          <div>
-            <label className="text-sm font-medium">Repo name</label>
-            <Input value={repoName} onChange={(e) => setRepoName(e.target.value)} placeholder="my-service" required className="mt-1" />
-          </div>
+          {scanMode !== "ai-detect" && (
+            <div>
+              <label className="text-sm font-medium">Repo name</label>
+              <Input value={repoName} onChange={(e) => setRepoName(e.target.value)} placeholder="my-service" required className="mt-1" />
+            </div>
+          )}
           <div>
             <label className="text-sm font-medium mb-2 block">Scan type</label>
             <div className="grid grid-cols-2 gap-2">
-              {(["full", "iac", "sca", "secrets"] as const).map((mode) => (
+              {([
+                { mode: "full", title: "Full Scan", desc: "SAST + AI + all engines" },
+                { mode: "iac", title: "IaC Scanner", desc: "Terraform, K8s, Dockerfile" },
+                { mode: "sca", title: "SCA (Dependencies)", desc: "Known CVEs in deps" },
+                { mode: "secrets", title: "Secrets Detector", desc: "API keys, tokens, passwords" },
+                { mode: "ai-detect", title: "AI Code Detector", desc: "Detect LLM-generated code" },
+              ] as const).map(({ mode, title, desc }) => (
                 <button
                   key={mode}
                   type="button"
-                  onClick={() => setScanMode(mode)}
+                  onClick={() => { setScanMode(mode); setAiResult(null); }}
                   className={`rounded-lg border px-3 py-2 text-sm text-left transition-colors ${scanMode === mode ? "border-primary bg-primary/5 font-medium" : "hover:bg-muted"}`}
                 >
-                  <div className="font-medium">{mode === "full" ? "Full Scan" : mode === "iac" ? "IaC Scanner" : mode === "sca" ? "SCA (Dependencies)" : "Secrets Detector"}</div>
-                  <div className="text-xs text-muted-foreground">{mode === "full" ? "SAST + AI + all engines" : mode === "iac" ? "Terraform, K8s, Dockerfile" : mode === "sca" ? "Known CVEs in deps" : "API keys, tokens, passwords"}</div>
+                  <div className="font-medium">{title}</div>
+                  <div className="text-xs text-muted-foreground">{desc}</div>
                 </button>
               ))}
             </div>
           </div>
+          {aiResult && (
+            <div className="rounded-lg border bg-muted/30 p-3 text-sm space-y-1">
+              <div className="font-medium">AI Detection Results</div>
+              <div className="text-muted-foreground">
+                {aiResult.flagged} / {aiResult.total} files flagged ({aiResult.pct.toFixed(1)}% likely AI-generated)
+              </div>
+            </div>
+          )}
           {activeJobId && (
             <div className="rounded-lg border p-3">
               <ScanProgress jobId={activeJobId} onComplete={handleScanComplete} />

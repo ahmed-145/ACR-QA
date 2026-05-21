@@ -2,6 +2,7 @@
   "nav": {
     "scans": "Scans",
     "supplyChain": "Supply Chain",
+    "compare": "Compare",
     "settings": "Settings"
   },
   "scans": {
@@ -14,7 +15,19 @@
     "totalFindings": "Total Findings",
     "highSeverity": "HIGH Severity",
     "noScansYet": "No scans yet",
-    "noScansDescription": "Submit your first scan to get started."
+    "noScansDescription": "Submit your first scan to get started.",
+    "scanType": {
+      "full": "Full Scan",
+      "fullDesc": "SAST + AI + all engines",
+      "iac": "IaC Scanner",
+      "iacDesc": "Terraform, K8s, Dockerfile",
+      "sca": "SCA (Dependencies)",
+      "scaDesc": "Known CVEs in deps",
+      "secrets": "Secrets Detector",
+      "secretsDesc": "API keys, tokens, passwords",
+      "aiDetect": "AI Code Detector",
+      "aiDetectDesc": "Detect LLM-generated code"
+    }
   },
   "findings": {
     "title": "Findings",
@@ -22,6 +35,37 @@
     "rule": "Rule",
     "file": "File",
     "message": "Message"
+  },
+  "runs": {
+    "tabs": {
+      "findings": "Findings",
+      "compliance": "OWASP",
+      "supply": "Supply Chain",
+      "heatmap": "Heatmap",
+      "timeline": "Timeline",
+      "prRisk": "PR Risk",
+      "analytics": "Analytics"
+    },
+    "riskMap": "Risk Map",
+    "prRisk": {
+      "title": "PR Risk Score",
+      "subtitle": "Merge risk score (0 = safe, 100 = block)",
+      "contributions": "Risk Contributions",
+      "why": "Why this score?"
+    },
+    "analytics": {
+      "costBenefit": "Cost-Benefit Analysis",
+      "reviewBottleneck": "Review Bottleneck"
+    },
+    "secondOpinion": {
+      "title": "Second Opinion",
+      "description": "Get a second AI verdict from a different provider to cross-check this finding.",
+      "request": "Request Second Opinion",
+      "consulting": "Consulting second model…",
+      "agree": "Models agree",
+      "disagree": "Models disagree — manual review recommended",
+      "rerun": "Re-run"
+    }
   },
   "settings": {
     "title": "Settings",
@@ -34,7 +78,17 @@
     "signOut": "Sign out",
     "healthy": "healthy",
     "unreachable": "unreachable",
-    "checking": "checking"
+    "checking": "checking",
+    "apiKeys": "API Keys",
+    "dangerZone": "Danger Zone"
+  },
+  "compare": {
+    "title": "Compare Runs",
+    "subtitle": "Select two scans to diff their findings — fixed, introduced, and unchanged.",
+    "runA": "Run A",
+    "runB": "Run B",
+    "notSelected": "not selected",
+    "compare": "Compare"
   },
   "language": {
     "label": "Language",

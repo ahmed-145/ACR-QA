@@ -6,6 +6,8 @@ import { LoginPage } from "@/routes/auth.login";
 import { ScansPage } from "@/routes/index";
 import { RunDetailPage } from "@/routes/runs.$id";
 import { RunComparePage } from "@/routes/runs.$id.compare";
+import { RiskMapPage } from "@/routes/runs.$id.risk-map";
+import { ComparePage } from "@/routes/compare";
 import { SupplyChainPage } from "@/routes/supply-chain";
 import { SettingsPage } from "@/routes/settings";
 
@@ -28,6 +30,8 @@ export default function App() {
             <Route index element={<ScansPage />} />
             <Route path="/runs/:id" element={<RunDetailPage />} />
             <Route path="/runs/:id/compare" element={<RunComparePage />} />
+            <Route path="/runs/:id/risk-map" element={<RiskMapPage />} />
+            <Route path="/compare" element={<ComparePage />} />
             <Route path="/supply-chain" element={<SupplyChainPage />} />
             <Route path="/settings" element={<SettingsPage />} />
           </Route>
