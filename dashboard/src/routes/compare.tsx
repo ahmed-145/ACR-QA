@@ -5,9 +5,11 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { GitCompare, Loader2 } from "lucide-react";
+import { useTranslation } from "react-i18next";
 
 export function ComparePage() {
   const navigate = useNavigate();
+  const { t } = useTranslation();
   const { data, isLoading } = useRuns(50);
   const [selectedA, setSelectedA] = useState<number | null>(null);
   const [selectedB, setSelectedB] = useState<number | null>(null);
@@ -39,31 +41,29 @@ export function ComparePage() {
       <div>
         <h1 className="text-2xl font-bold flex items-center gap-2">
           <GitCompare className="h-6 w-6" aria-hidden />
-          Compare Runs
+          {t("compare.title")}
         </h1>
-        <p className="text-sm text-muted-foreground mt-1">
-          Select two scans to diff their findings — fixed, introduced, and unchanged.
-        </p>
+        <p className="text-sm text-muted-foreground mt-1">{t("compare.subtitle")}</p>
       </div>
 
       <Card>
         <CardContent className="pt-4">
           <div className="flex items-center gap-4 flex-wrap">
             <div className="flex items-center gap-2 text-sm">
-              <span className="font-medium">Run A:</span>
+              <span className="font-medium">{t("compare.runA")}:</span>
               {selectedA ? (
                 <Badge variant="default">#{selectedA}</Badge>
               ) : (
-                <span className="text-muted-foreground">not selected</span>
+                <span className="text-muted-foreground">{t("compare.notSelected")}</span>
               )}
             </div>
             <span className="text-muted-foreground">vs</span>
             <div className="flex items-center gap-2 text-sm">
-              <span className="font-medium">Run B:</span>
+              <span className="font-medium">{t("compare.runB")}:</span>
               {selectedB ? (
                 <Badge variant="secondary">#{selectedB}</Badge>
               ) : (
-                <span className="text-muted-foreground">not selected</span>
+                <span className="text-muted-foreground">{t("compare.notSelected")}</span>
               )}
             </div>
             <Button
@@ -72,7 +72,7 @@ export function ComparePage() {
               onClick={handleCompare}
             >
               <GitCompare className="h-4 w-4 mr-1.5" aria-hidden />
-              Compare
+              {t("compare.compare")}
             </Button>
           </div>
         </CardContent>
@@ -80,14 +80,14 @@ export function ComparePage() {
 
       {isLoading ? (
         <div className="flex justify-center py-12 text-muted-foreground gap-2">
-          <Loader2 className="h-5 w-5 animate-spin" /> Loading scans…
+          <Loader2 className="h-5 w-5 animate-spin" /> {t("common.loading")}
         </div>
       ) : runs.length === 0 ? (
-        <p className="text-center py-12 text-muted-foreground">No scans available yet.</p>
+        <p className="text-center py-12 text-muted-foreground">{t("scans.noScansYet")}</p>
       ) : (
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm">Select two runs (click to toggle A / B)</CardTitle>
+            <CardTitle className="text-sm">{t("compare.selectHint", "Select two runs (click to toggle A / B)")}</CardTitle>
           </CardHeader>
           <CardContent className="p-0">
             <div className="divide-y">

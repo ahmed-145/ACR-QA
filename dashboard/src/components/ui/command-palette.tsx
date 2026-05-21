@@ -51,7 +51,11 @@ export function CommandPalette() {
   }, []);
 
   useEffect(() => {
-    if (open) setTimeout(() => inputRef.current?.focus(), 50);
+    if (!open) return;
+    const raf = requestAnimationFrame(() => {
+      inputRef.current?.focus();
+    });
+    return () => cancelAnimationFrame(raf);
   }, [open]);
 
   function handleKeyDown(e: React.KeyboardEvent) {

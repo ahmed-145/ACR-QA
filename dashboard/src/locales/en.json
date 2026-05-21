@@ -88,7 +88,8 @@
     "runA": "Run A",
     "runB": "Run B",
     "notSelected": "not selected",
-    "compare": "Compare"
+    "compare": "Compare",
+    "selectHint": "Select two runs (click to toggle A / B)"
   },
   "language": {
     "label": "Language",

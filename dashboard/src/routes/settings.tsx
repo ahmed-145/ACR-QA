@@ -246,8 +246,8 @@ export function SettingsPage() {
               placeholder="Key name (e.g. github-actions)"
               className="flex-1 text-sm"
             />
-            <Button type="submit" size="sm" disabled={createKey.isPending || !newKeyName.trim()}>
-              {createKey.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Plus className="h-4 w-4" />}
+            <Button type="submit" size="sm" aria-label="Create API key" disabled={createKey.isPending || !newKeyName.trim()}>
+              {createKey.isPending ? <Loader2 className="h-4 w-4 animate-spin" aria-hidden /> : <Plus className="h-4 w-4" aria-hidden />}
             </Button>
           </form>
         </CardContent>

@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { ArrowLeft, RefreshCw, Loader2, AlertTriangle } from "lucide-react";
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 
 function scoreBand(score: number): { label: string; variant: "destructive" | "default" | "secondary" | "outline" } {
   if (score >= 75) return { label: "Critical", variant: "destructive" };
@@ -32,6 +33,7 @@ function ScoreBar({ score }: { score: number }) {
 export function RiskMapPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const { t } = useTranslation();
   const runId = Number(id);
   const [refresh, setRefresh] = useState(false);
   const { data, isLoading, error, refetch } = useRiskMap(runId, refresh);
@@ -47,7 +49,7 @@ export function RiskMapPage() {
           <ArrowLeft className="h-4 w-4" />
         </Button>
         <div className="flex-1">
-          <h1 className="text-2xl font-bold">Risk Map</h1>
+          <h1 className="text-2xl font-bold">{t("runs.riskMap")}</h1>
           <p className="text-sm text-muted-foreground mt-0.5">
             Run #{runId} · Per-file heuristic risk scores (0–100)
             {data && <span className="ml-2 text-xs">{data.cached ? "· cached" : "· computed"}</span>}
@@ -133,10 +135,11 @@ export function RiskMapPage() {
               <div className="divide-y max-h-[600px] overflow-y-auto">
                 {sorted.map((f) => {
                   const { label, variant } = scoreBand(f.score);
+                  const toNum = (x: unknown) => (typeof x === "number" ? x : 0);
                   const topContrib = Object.entries(f.contributions ?? {})
-                    .sort(([, a], [, b]) => (b as number) - (a as number))
+                    .sort(([, a], [, b]) => toNum(b) - toNum(a))
                     .slice(0, 3)
-                    .filter(([, v]) => (v as number) > 0);
+                    .filter(([, v]) => toNum(v) > 0);
                   return (
                     <div key={f.file_path} className="px-4 py-3 space-y-1.5">
                       <div className="flex items-center gap-2">
