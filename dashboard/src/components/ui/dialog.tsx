@@ -20,18 +20,36 @@ export function Dialog({ open, onClose, title, children, className }: DialogProp
   if (!open) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center">
-      <div className="fixed inset-0 bg-black/40" onClick={onClose} />
-      <div role="dialog" aria-modal="true" aria-label={title} className={cn("relative z-50 w-full max-w-3xl max-h-[90vh] overflow-y-auto rounded-xl border bg-background shadow-xl", className)}>
+    <div
+      style={{ position: "fixed", inset: 0, zIndex: 50, display: "flex", alignItems: "center", justifyContent: "center" }}
+      onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}
+    >
+      <div data-testid="dialog-backdrop" style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.65)", backdropFilter: "blur(4px)" }} onClick={onClose} />
+      <div
+        role="dialog"
+        aria-modal="true"
+        aria-label={title}
+        style={{
+          position: "relative", zIndex: 51, width: "100%", maxWidth: "780px",
+          maxHeight: "90vh", overflowY: "auto", borderRadius: 14,
+          background: "var(--bg-2)", border: "1px solid var(--border-2)",
+          boxShadow: "0 24px 64px rgba(0,0,0,0.8)", margin: "0 16px",
+        }}
+        className={cn("", className)}
+      >
         {title && (
-          <div className="flex items-center justify-between border-b px-6 py-4">
-            <h2 className="text-lg font-semibold">{title}</h2>
-            <button onClick={onClose} className="rounded p-1 hover:bg-muted">
-              <X className="h-4 w-4" />
+          <div style={{
+            display: "flex", alignItems: "center", justifyContent: "space-between",
+            padding: "18px 24px", borderBottom: "1px solid var(--border)",
+            position: "sticky", top: 0, background: "var(--bg-2)", zIndex: 1,
+          }}>
+            <h2 style={{ margin: 0, fontSize: 16, fontWeight: 600, color: "var(--fg)" }}>{title}</h2>
+            <button onClick={onClose} className="modal-close" aria-label="Close">
+              <X size={15} />
             </button>
           </div>
         )}
-        <div className="p-6">{children}</div>
+        <div style={{ padding: 24 }}>{children}</div>
       </div>
     </div>
   );

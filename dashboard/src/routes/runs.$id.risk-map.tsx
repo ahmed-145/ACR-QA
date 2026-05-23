@@ -1,31 +1,28 @@
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate, Link } from "react-router-dom";
 import { useRiskMap } from "@/lib/queries";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { ArrowLeft, RefreshCw, Loader2, AlertTriangle } from "lucide-react";
+import { ArrowLeft, RefreshCw, AlertTriangle } from "lucide-react";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 
-function scoreBand(score: number): { label: string; variant: "destructive" | "default" | "secondary" | "outline" } {
-  if (score >= 75) return { label: "Critical", variant: "destructive" };
-  if (score >= 50) return { label: "High", variant: "default" };
-  if (score >= 25) return { label: "Medium", variant: "secondary" };
-  return { label: "Low", variant: "outline" };
+function scoreBand(score: number): { label: string; cls: string } {
+  if (score >= 75) return { label: "Critical", cls: "high" };
+  if (score >= 50) return { label: "High", cls: "med" };
+  if (score >= 25) return { label: "Medium", cls: "low" };
+  return { label: "Low", cls: "lo" };
 }
 
 function ScoreBar({ score }: { score: number }) {
   const color =
-    score >= 75 ? "bg-red-500" :
-    score >= 50 ? "bg-orange-400" :
-    score >= 25 ? "bg-yellow-400" :
-    "bg-green-400";
+    score >= 75 ? "var(--high)" :
+    score >= 50 ? "var(--med)" :
+    score >= 25 ? "#facc15" :
+    "var(--low)";
   return (
-    <div className="flex items-center gap-2 min-w-0">
-      <div className="flex-1 h-2 rounded-full bg-muted overflow-hidden">
-        <div className={`h-full rounded-full transition-all ${color}`} style={{ width: `${score}%` }} />
+    <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+      <div style={{ flex: 1, height: 5, borderRadius: 999, background: "rgba(255,255,255,0.05)", overflow: "hidden" }}>
+        <div style={{ height: "100%", borderRadius: 999, background: color, width: `${score}%`, transition: "width 0.3s" }} />
       </div>
-      <span className="text-xs tabular-nums w-8 text-right">{score}</span>
+      <span style={{ fontFamily: "var(--mono)", fontSize: 11, color: "var(--fg-4)", width: 28, textAlign: "right" }}>{score}</span>
     </div>
   );
 }
@@ -43,114 +40,121 @@ export function RiskMapPage() {
   const topRisk = sorted.slice(0, 5);
 
   return (
-    <div className="space-y-6 max-w-5xl mx-auto">
-      <div className="flex items-center gap-4">
-        <Button variant="ghost" size="icon" onClick={() => navigate(`/runs/${runId}`)}>
-          <ArrowLeft className="h-4 w-4" />
-        </Button>
-        <div className="flex-1">
-          <h1 className="text-2xl font-bold">{t("runs.riskMap")}</h1>
-          <p className="text-sm text-muted-foreground mt-0.5">
-            Run #{runId} · Per-file heuristic risk scores (0–100)
-            {data && <span className="ml-2 text-xs">{data.cached ? "· cached" : "· computed"}</span>}
-          </p>
+    <>
+      <div className="topbar">
+        <div className="crumbs">
+          <Link to="/" style={{ color: "var(--fg-4)" }}>Scans</Link>
+          <span className="sep">/</span>
+          <Link to={`/runs/${runId}`} style={{ color: "var(--fg-4)" }}>Run #{runId}</Link>
+          <span className="sep">/</span>
+          <span className="cur">Risk Map</span>
+          {data && <span className="id-pill">{data.cached ? "cached" : "computed"}</span>}
         </div>
-        <Button
-          variant="outline"
-          size="sm"
+        <div className="grow" />
+        <button
+          className="btn-ghost"
           onClick={() => { setRefresh(true); refetch(); }}
           disabled={isLoading}
+          aria-label="Refresh risk map"
         >
-          {isLoading ? <Loader2 className="h-4 w-4 animate-spin mr-1" /> : <RefreshCw className="h-4 w-4 mr-1" />}
-          Refresh
-        </Button>
+          <RefreshCw size={13} aria-hidden /> Refresh
+        </button>
       </div>
 
-      {isLoading && (
-        <div className="flex justify-center py-16 text-muted-foreground gap-2">
-          <Loader2 className="h-5 w-5 animate-spin" /> Computing risk scores…
-        </div>
-      )}
-
-      {error && (
-        <Card className="border-red-200">
-          <CardContent className="pt-4 flex items-center gap-2 text-red-600 text-sm">
-            <AlertTriangle className="h-4 w-4 shrink-0" />
-            Failed to load risk map. The run may have no findings yet.
-          </CardContent>
-        </Card>
-      )}
-
-      {data && !isLoading && (
-        <>
-          {/* Summary row */}
-          <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
-            {[
-              { label: "Files Analyzed", value: data.total_files },
-              { label: "Critical (≥75)", value: files.filter((f) => f.score >= 75).length, danger: true },
-              { label: "High (50–74)", value: files.filter((f) => f.score >= 50 && f.score < 75).length },
-              { label: "Avg Score", value: files.length ? Math.round(files.reduce((s, f) => s + f.score, 0) / files.length) : 0 },
-            ].map(({ label, value, danger }) => (
-              <Card key={label}>
-                <CardContent className="pt-4">
-                  <div className={`text-2xl font-bold ${danger && Number(value) > 0 ? "text-red-600" : ""}`}>{value}</div>
-                  <div className="text-xs text-muted-foreground mt-1">{label}</div>
-                </CardContent>
-              </Card>
-            ))}
+      <div className="page-pad" style={{ maxWidth: 1100 }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 20 }}>
+          <button className="btn-icon" aria-label="Go back" onClick={() => navigate(`/runs/${runId}`)}>
+            <ArrowLeft size={14} aria-hidden />
+          </button>
+          <div>
+            <h1 className="title" style={{ margin: 0 }}>{t("runs.riskMap")}</h1>
+            <p style={{ margin: 0, fontSize: 13, color: "var(--fg-4)" }}>Run #{runId} · Per-file heuristic risk scores (0–100)</p>
           </div>
+        </div>
 
-          {/* Top 5 hotspots */}
-          {topRisk.length > 0 && (
-            <Card>
-              <CardHeader className="pb-2">
-                <CardTitle className="text-base flex items-center gap-2">
-                  <AlertTriangle className="h-4 w-4 text-orange-500" aria-hidden />
-                  Top Risk Hotspots
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-3">
-                {topRisk.map((f) => {
-                  const { label, variant } = scoreBand(f.score);
-                  return (
-                    <div key={f.file_path} className="space-y-1">
-                      <div className="flex items-center gap-2">
-                        <Badge variant={variant} className="text-[10px] px-1.5 shrink-0">{label}</Badge>
-                        <span className="font-mono text-xs truncate flex-1">{f.file_path}</span>
+        {isLoading && (
+          <div className="empty"><span className="spinner" /> Computing risk scores…</div>
+        )}
+
+        {error && (
+          <div style={{ background: "rgba(239,68,68,0.08)", border: "1px solid var(--high-bdr)", borderRadius: 9, padding: "14px 18px", display: "flex", alignItems: "center", gap: 10, fontSize: 13, color: "var(--high-fg)" }}>
+            <AlertTriangle size={14} aria-hidden />
+            Failed to load risk map. The run may have no findings yet.
+          </div>
+        )}
+
+        {data && !isLoading && (
+          <>
+            {/* Summary stats */}
+            <div className="stats">
+              {[
+                { label: "Files Analyzed", value: data.total_files, danger: false },
+                { label: "Critical (≥75)", value: files.filter((f) => f.score >= 75).length, danger: files.filter((f) => f.score >= 75).length > 0 },
+                { label: "High (50–74)", value: files.filter((f) => f.score >= 50 && f.score < 75).length, danger: false },
+                { label: "Avg Score", value: files.length ? Math.round(files.reduce((s, f) => s + f.score, 0) / files.length) : 0, danger: false },
+              ].map(({ label, value, danger }) => (
+                <div key={label} className="stat">
+                  <div className="lbl">{label}</div>
+                  <div className={`num${danger ? " danger" : ""}`}>{value}</div>
+                </div>
+              ))}
+            </div>
+
+            {/* Top 5 hotspots */}
+            {topRisk.length > 0 && (
+              <div className="panel" style={{ marginBottom: 16 }}>
+                <div className="panel-head">
+                  <span className="panel-title" style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                    <AlertTriangle size={13} style={{ color: "var(--med)" }} aria-hidden />
+                    Top Risk Hotspots
+                  </span>
+                </div>
+                <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+                  {topRisk.map((f) => {
+                    const { label, cls } = scoreBand(f.score);
+                    return (
+                      <div key={f.file_path}>
+                        <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 4 }}>
+                          <span className={`sev ${cls}`}>{label}</span>
+                          <span style={{ fontFamily: "var(--mono)", fontSize: 12, color: "var(--fg-3)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", flex: 1 }}>
+                            {f.file_path}
+                          </span>
+                        </div>
+                        <ScoreBar score={f.score} />
                       </div>
-                      <ScoreBar score={f.score} />
-                    </div>
-                  );
-                })}
-              </CardContent>
-            </Card>
-          )}
+                    );
+                  })}
+                </div>
+              </div>
+            )}
 
-          {/* Full file table */}
-          <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-base">All Files ({files.length})</CardTitle>
-            </CardHeader>
-            <CardContent className="p-0">
-              <div className="divide-y max-h-[600px] overflow-y-auto">
+            {/* Full file table */}
+            <div className="panel" style={{ padding: 0, overflow: "hidden" }}>
+              <div className="panel-head" style={{ padding: "14px 18px 12px" }}>
+                <span className="panel-title">All Files</span>
+                <span className="panel-sub">{files.length} files</span>
+              </div>
+              <div style={{ maxHeight: 600, overflowY: "auto", borderTop: "1px solid var(--border)" }}>
                 {sorted.map((f) => {
-                  const { label, variant } = scoreBand(f.score);
+                  const { label, cls } = scoreBand(f.score);
                   const toNum = (x: unknown) => (typeof x === "number" ? x : 0);
                   const topContrib = Object.entries(f.contributions ?? {})
                     .sort(([, a], [, b]) => toNum(b) - toNum(a))
                     .slice(0, 3)
                     .filter(([, v]) => toNum(v) > 0);
                   return (
-                    <div key={f.file_path} className="px-4 py-3 space-y-1.5">
-                      <div className="flex items-center gap-2">
-                        <Badge variant={variant} className="text-[10px] px-1.5 shrink-0">{label}</Badge>
-                        <span className="font-mono text-xs truncate flex-1">{f.file_path}</span>
+                    <div key={f.file_path} style={{ padding: "12px 18px", borderBottom: "1px solid var(--border)" }}>
+                      <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 4 }}>
+                        <span className={`sev ${cls}`}>{label}</span>
+                        <span style={{ fontFamily: "var(--mono)", fontSize: 12, color: "var(--fg-3)", flex: 1, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                          {f.file_path}
+                        </span>
                       </div>
                       <ScoreBar score={f.score} />
                       {topContrib.length > 0 && (
-                        <div className="flex flex-wrap gap-1 pt-0.5">
+                        <div style={{ display: "flex", gap: 6, flexWrap: "wrap", marginTop: 4 }}>
                           {topContrib.map(([k, v]) => (
-                            <span key={k} className="text-[10px] bg-muted rounded px-1.5 py-0.5 text-muted-foreground">
+                            <span key={k} style={{ fontFamily: "var(--mono)", fontSize: 10, background: "rgba(255,255,255,0.04)", border: "1px solid var(--border)", borderRadius: 4, padding: "1px 7px", color: "var(--fg-5)" }}>
                               {k}: {Number(v).toFixed(2)}
                             </span>
                           ))}
@@ -160,10 +164,10 @@ export function RiskMapPage() {
                   );
                 })}
               </div>
-            </CardContent>
-          </Card>
-        </>
-      )}
-    </div>
+            </div>
+          </>
+        )}
+      </div>
+    </>
   );
 }

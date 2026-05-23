@@ -63,7 +63,7 @@ describe("FindingsTable", () => {
   it("calls onSelect when row clicked", () => {
     const onSelect = vi.fn();
     render(<FindingsTable findings={[makeF()]} onSelect={onSelect} />);
-    fireEvent.click(screen.getByText("S001").closest("tr")!);
+    fireEvent.click(screen.getByText("S001").closest("[role=button]")!);
     expect(onSelect).toHaveBeenCalledWith(expect.objectContaining({ id: 1 }));
   });
 });

@@ -12,6 +12,8 @@ export default defineConfig({
   server: {
     proxy: {
       "/v1": { target: "http://localhost:8002", changeOrigin: true },
+      "/health": { target: "http://localhost:8002", changeOrigin: true },
+      "/celery": { target: "http://localhost:8002", changeOrigin: true },
       "/openapi.json": { target: "http://localhost:8002", changeOrigin: true },
     },
   },

@@ -4,12 +4,12 @@ import { useRuns, useSubmitScan } from "@/lib/queries";
 import { ScanCard } from "@/components/scans/ScanCard";
 import { TrendChart } from "@/components/scans/TrendChart";
 import { ScanProgress } from "@/components/scans/ScanProgress";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Dialog } from "@/components/ui/dialog";
 import { toast } from "@/components/ui/toast";
-import { Loader2, Play, RefreshCw, TrendingUp } from "lucide-react";
+import { CountUp } from "@/components/ui/CountUp";
+import { Sparkline } from "@/components/ui/Sparkline";
+import { StatusBar } from "@/components/ui/StatusBar";
+import { Play, RefreshCw, CheckCircle2, BookOpen } from "lucide-react";
 import { submitIacScan, submitScaScan, submitSecretsScan, postAIDetection } from "@/lib/api";
 
 export function ScansPage() {
@@ -54,96 +54,157 @@ export function ScansPage() {
   }
 
   const runs = data?.runs ?? [];
+  const completedRuns = runs.filter((r) => r.status === "completed");
+  const last7 = completedRuns.slice(0, 7).reverse();
   const stats = {
     total: runs.length,
-    completed: runs.filter((r) => r.status === "completed").length,
+    completed: completedRuns.length,
     totalFindings: runs.reduce((s, r) => s + r.total_findings, 0),
     highCount: runs.reduce((s, r) => s + r.high_count, 0),
   };
+  const sparkHigh  = last7.map((r) => r.high_count);
+  const sparkTotal = last7.map((r) => r.total_findings);
+  const showOnboard = runs.length === 0;
 
   return (
-    <div className="space-y-6 max-w-7xl mx-auto">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold">Scans Dashboard</h1>
-          <p className="text-muted-foreground text-sm mt-1">Recent analysis runs and security findings</p>
+    <>
+      {/* Topbar */}
+      <div className="topbar">
+        <div className="crumbs">
+          <span className="cur">Scans Dashboard</span>
         </div>
-        <div className="flex gap-2">
-          <Button variant="outline" size="sm" aria-label="Refresh scan list" onClick={() => refetch()}>
-            <RefreshCw className="h-4 w-4 mr-1" aria-hidden /> Refresh
-          </Button>
-          <Button size="sm" aria-label="Start a new scan" onClick={() => setShowScanDialog(true)}>
-            <Play className="h-4 w-4 mr-1" aria-hidden /> New Scan
-          </Button>
-        </div>
+        <div className="grow" />
+        <button className="btn-icon" aria-label="Refresh scan list" onClick={() => refetch()}>
+          <RefreshCw size={14} aria-hidden />
+        </button>
+        <button className="btn-prim" aria-label="Start a new scan" onClick={() => setShowScanDialog(true)}>
+          <Play size={13} aria-hidden />
+          New Scan
+        </button>
       </div>
 
-      {/* Stats row */}
-      <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
-        {[
-          { label: "Total Scans", value: stats.total },
-          { label: "Completed", value: stats.completed },
-          { label: "Total Findings", value: stats.totalFindings },
-          { label: "HIGH Severity", value: stats.highCount, danger: stats.highCount > 0 },
-        ].map(({ label, value, danger }) => (
-          <Card key={label}>
-            <CardContent className="pt-4">
-              <div className={`text-2xl font-bold ${danger ? "text-red-600" : ""}`}>{value}</div>
-              <div className="text-xs text-muted-foreground mt-1">{label}</div>
-            </CardContent>
-          </Card>
-        ))}
-      </div>
+      <div className="page-pad">
+        <h1 className="title">Scans Dashboard</h1>
+        <p className="subtitle">Recent analysis runs and security findings</p>
 
-      {/* Trend chart */}
-      <Card>
-        <CardHeader className="pb-2">
-          <CardTitle className="text-base flex items-center gap-2">
-            <TrendingUp className="h-4 w-4" /> Findings Trend
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
+        {/* Onboarding */}
+        {showOnboard && (
+          <div className="onboard-card">
+            <div style={{ width: 40, height: 40, borderRadius: 10, background: "var(--gradient)", display: "grid", placeItems: "center", flexShrink: 0 }}>
+              <BookOpen size={18} style={{ color: "#fff" }} aria-hidden />
+            </div>
+            <div style={{ flex: 1 }}>
+              <div style={{ fontSize: 14, fontWeight: 600, color: "var(--fg)", marginBottom: 6 }}>Welcome to ACR-QA</div>
+              <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+                {[
+                  { step: "Start your first scan", done: false },
+                  { step: "Configure .acrqa.yml policy", done: false },
+                  { step: "Invite team members", done: false },
+                ].map(({ step, done }) => (
+                  <div key={step} className={`onboard-step${done ? " done" : ""}`}>
+                    <div className={`onboard-check${done ? " done" : ""}`}>
+                      {done && <CheckCircle2 size={10} aria-hidden />}
+                    </div>
+                    {step}
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Stats */}
+        <div className="stats">
+          <div className="stat">
+            <div className="lbl">Total Scans</div>
+            <div className="num"><CountUp value={stats.total} /></div>
+            <div className="stat-foot">
+              <span className="delta">{stats.completed} completed</span>
+              {sparkTotal.length > 1 && <Sparkline data={sparkTotal} color="var(--purple)" />}
+            </div>
+          </div>
+          <div className="stat">
+            <div className="lbl">Completed</div>
+            <div className="num"><CountUp value={stats.completed} /></div>
+            <div className="stat-foot">
+              <span className="delta">{runs.length > 0 ? Math.round((stats.completed / runs.length) * 100) : 0}% success rate</span>
+            </div>
+          </div>
+          <div className="stat">
+            <div className="lbl">Total Findings</div>
+            <div className="num"><CountUp value={stats.totalFindings} /></div>
+            <div className="stat-foot">
+              <span className="delta">all runs</span>
+              {sparkTotal.length > 1 && <Sparkline data={sparkTotal} color="var(--blue)" />}
+            </div>
+          </div>
+          <div className="stat">
+            <div className="lbl">HIGH Severity</div>
+            <div className={`num${stats.highCount > 0 ? " danger" : ""}`}><CountUp value={stats.highCount} /></div>
+            <div className="stat-foot">
+              <span className="delta">needs attention</span>
+              {sparkHigh.length > 1 && <Sparkline data={sparkHigh} color="var(--high)" />}
+            </div>
+          </div>
+        </div>
+
+        {/* Trend chart */}
+        <div className="panel" style={{ marginBottom: 24 }}>
+          <div className="panel-head">
+            <span className="panel-title">Findings Trend</span>
+          </div>
           <TrendChart />
-        </CardContent>
-      </Card>
+        </div>
 
-      {/* Scan list */}
-      <div>
-        <h2 className="text-lg font-semibold mb-3">Recent Scans</h2>
+        {/* Scan list */}
+        <div className="findings-head">
+          <h3>
+            Recent Scans
+            {runs.length > 0 && <span className="n">{runs.length}</span>}
+          </h3>
+        </div>
+
         {isLoading ? (
-          <div className="flex items-center gap-2 text-muted-foreground py-8 justify-center">
-            <Loader2 className="h-5 w-5 animate-spin" /> Loading scans…
+          <div className="empty">
+            <span className="spinner" />
+            Loading scans…
           </div>
         ) : runs.length === 0 ? (
-          <div className="text-center py-16 text-muted-foreground">
-            <p className="mb-3">No scans yet.</p>
-            <Button onClick={() => setShowScanDialog(true)}>
-              <Play className="h-4 w-4 mr-1" /> Run your first scan
-            </Button>
+          <div className="empty">
+            <p>No scans yet.</p>
+            <button className="btn-prim" onClick={() => setShowScanDialog(true)}>
+              <Play size={13} aria-hidden /> Run your first scan
+            </button>
           </div>
         ) : (
-          <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-3">
+          <div style={{ display: "grid", gap: 10, gridTemplateColumns: "repeat(auto-fill, minmax(340px, 1fr))" }}>
             {runs.map((r) => <ScanCard key={r.id} run={r} />)}
           </div>
         )}
       </div>
 
+      <StatusBar items={[
+        { label: "Scans", value: stats.total },
+        { label: "Findings", value: stats.totalFindings },
+        { label: "HIGH", value: stats.highCount, color: stats.highCount > 0 ? "var(--high)" : "var(--low)" },
+      ]} />
+
       {/* New scan dialog */}
       <Dialog open={showScanDialog} onClose={() => setShowScanDialog(false)} title="New Scan">
-        <form onSubmit={handleScan} className="space-y-4">
-          <div>
-            <label className="text-sm font-medium">Target directory</label>
-            <Input value={targetDir} onChange={(e) => setTargetDir(e.target.value)} placeholder="/path/to/repo" required className="mt-1" />
+        <form onSubmit={handleScan} style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+          <div className="field">
+            <label>Target directory</label>
+            <input className="inp" value={targetDir} onChange={(e) => setTargetDir(e.target.value)} placeholder="/path/to/repo" required />
           </div>
           {scanMode !== "ai-detect" && (
-            <div>
-              <label className="text-sm font-medium">Repo name</label>
-              <Input value={repoName} onChange={(e) => setRepoName(e.target.value)} placeholder="my-service" required className="mt-1" />
+            <div className="field">
+              <label>Repo name</label>
+              <input className="inp" value={repoName} onChange={(e) => setRepoName(e.target.value)} placeholder="my-service" required />
             </div>
           )}
-          <div>
-            <label className="text-sm font-medium mb-2 block">Scan type</label>
-            <div className="grid grid-cols-2 gap-2">
+          <div className="field">
+            <label>Scan type</label>
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8, marginTop: 4 }}>
               {([
                 { mode: "full", title: "Full Scan", desc: "SAST + AI + all engines" },
                 { mode: "iac", title: "IaC Scanner", desc: "Terraform, K8s, Dockerfile" },
@@ -155,36 +216,44 @@ export function ScansPage() {
                   key={mode}
                   type="button"
                   onClick={() => { setScanMode(mode); setAiResult(null); }}
-                  className={`rounded-lg border px-3 py-2 text-sm text-left transition-colors ${scanMode === mode ? "border-primary bg-primary/5 font-medium" : "hover:bg-muted"}`}
+                  style={{
+                    borderRadius: 8,
+                    padding: "10px 12px",
+                    textAlign: "left",
+                    background: scanMode === mode ? "var(--ai-bg)" : "transparent",
+                    border: `1px solid ${scanMode === mode ? "var(--ai-bdr)" : "var(--border-2)"}`,
+                    cursor: "pointer",
+                    transition: "background 0.15s",
+                  }}
                 >
-                  <div className="font-medium">{title}</div>
-                  <div className="text-xs text-muted-foreground">{desc}</div>
+                  <div style={{ fontSize: 13, fontWeight: 600, color: "var(--fg)", marginBottom: 2 }}>{title}</div>
+                  <div style={{ fontSize: 11.5, color: "var(--fg-4)" }}>{desc}</div>
                 </button>
               ))}
             </div>
           </div>
           {aiResult && (
-            <div className="rounded-lg border bg-muted/30 p-3 text-sm space-y-1">
-              <div className="font-medium">AI Detection Results</div>
-              <div className="text-muted-foreground">
+            <div style={{ background: "rgba(16,185,129,0.08)", border: "1px solid var(--low-bdr)", borderRadius: 8, padding: "12px 14px" }}>
+              <div style={{ fontSize: 13, fontWeight: 600, color: "var(--low-fg)", marginBottom: 4 }}>AI Detection Results</div>
+              <div style={{ fontSize: 12.5, color: "var(--fg-3)" }}>
                 {aiResult.flagged} / {aiResult.total} files flagged ({aiResult.pct.toFixed(1)}% likely AI-generated)
               </div>
             </div>
           )}
           {activeJobId && (
-            <div className="rounded-lg border p-3">
+            <div style={{ border: "1px solid var(--border-2)", borderRadius: 8, padding: 12 }}>
               <ScanProgress jobId={activeJobId} onComplete={handleScanComplete} />
             </div>
           )}
-          <div className="flex gap-2 justify-end">
-            <Button type="button" variant="outline" onClick={() => setShowScanDialog(false)}>Cancel</Button>
-            <Button type="submit" disabled={submitMutation.isPending || !!activeJobId}>
-              {submitMutation.isPending ? <Loader2 className="h-4 w-4 animate-spin mr-1" /> : <Play className="h-4 w-4 mr-1" />}
+          <div style={{ display: "flex", gap: 8, justifyContent: "flex-end" }}>
+            <button type="button" className="btn-ghost" onClick={() => setShowScanDialog(false)}>Cancel</button>
+            <button type="submit" className="btn-prim" disabled={submitMutation.isPending || !!activeJobId}>
+              {submitMutation.isPending ? <span className="spinner" style={{ width: 14, height: 14 }} /> : <Play size={13} aria-hidden />}
               Start Scan
-            </Button>
+            </button>
           </div>
         </form>
       </Dialog>
-    </div>
+    </>
   );
 }

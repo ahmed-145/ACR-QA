@@ -1,8 +1,5 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
 import { useAuth, loginApi } from "@/lib/auth";
 import { Shield } from "lucide-react";
 
@@ -30,47 +27,54 @@ export function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-muted/30">
-      <Card className="w-full max-w-sm">
-        <CardHeader className="text-center">
-          <div className="flex justify-center mb-2">
-            <Shield className="h-10 w-10 text-primary" />
+    <div className="login-page">
+      <div className="login-card">
+        <div className="login-brand">
+          <div className="logo" aria-hidden><Shield size={14} /></div>
+          <div className="wm-stack">
+            <h1 className="wm" style={{ margin: 0 }}>ACR-QA</h1>
+            <span className="ver">v5.0.0-b1</span>
           </div>
-          <CardTitle className="text-2xl">ACR-QA</CardTitle>
-          <p className="text-sm text-muted-foreground">Automated Code Review & Quality Assurance</p>
-        </CardHeader>
-        <CardContent>
-          <form onSubmit={submit} className="space-y-4">
-            <div>
-              <label htmlFor="email" className="text-sm font-medium">Email</label>
-              <Input
-                id="email"
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                required
-                className="mt-1"
-              />
-            </div>
-            <div>
-              <label htmlFor="password" className="text-sm font-medium">Password</label>
-              <Input
-                id="password"
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required
-                className="mt-1"
-                placeholder="changeme123!"
-              />
-            </div>
-            {error && <p className="text-sm text-destructive">{error}</p>}
-            <Button type="submit" className="w-full" disabled={loading}>
-              {loading ? "Signing in…" : "Sign in"}
-            </Button>
-          </form>
-        </CardContent>
-      </Card>
+        </div>
+
+        <div>
+          <div style={{ fontSize: 20, fontWeight: 700, color: "var(--fg)", marginBottom: 4 }}>Sign in</div>
+          <div style={{ fontSize: 13, color: "var(--fg-4)" }}>Automated Code Review &amp; Quality Assurance</div>
+        </div>
+
+        <form onSubmit={submit} className="login-fields">
+          <div className="field">
+            <label htmlFor="email">Email</label>
+            <input
+              id="email"
+              className="inp"
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              required
+              autoComplete="email"
+            />
+          </div>
+          <div className="field">
+            <label htmlFor="password">Password</label>
+            <input
+              id="password"
+              className="inp"
+              type="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
+              placeholder="changeme123!"
+              autoComplete="current-password"
+            />
+          </div>
+          {error && <div className="login-error">{error}</div>}
+          <button type="submit" className="btn-prim" style={{ width: "100%", justifyContent: "center", height: 40 }} disabled={loading}>
+            {loading ? <span className="spinner" style={{ width: 16, height: 16 }} /> : null}
+            {loading ? "Signing in…" : "Sign in"}
+          </button>
+        </form>
+      </div>
     </div>
   );
 }

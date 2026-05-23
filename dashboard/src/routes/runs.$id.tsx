@@ -1,5 +1,5 @@
-import { useParams, useNavigate } from "react-router-dom";
-import { useFindings, useStats, useSupplyChain, usePrRisk, useCostBenefit, useReviewBottleneck } from "@/lib/queries";
+import { useParams, useNavigate, Link } from "react-router-dom";
+import { useFindings, useStats, useSupplyChain, usePrRisk, useCostBenefit, useReviewBottleneck, useRunSummary, useAttestation } from "@/lib/queries";
 import { FindingsTable } from "@/components/findings/FindingsTable";
 import { FindingModal } from "@/components/findings/FindingModal";
 import { OwaspHeatmap } from "@/components/compliance/OwaspHeatmap";
@@ -7,23 +7,21 @@ import { RiskHeatmap } from "@/components/findings/RiskHeatmap";
 import { VulnerabilityTimeline } from "@/components/findings/VulnerabilityTimeline";
 import { DependencyTree } from "@/components/supply/DependencyTree";
 import { SbomDownload } from "@/components/supply/SbomDownload";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/dialog";
-import { Loader2, ArrowLeft, Shield, Package, BarChart3, FileDown, GitPullRequest, TrendingUp, Map } from "lucide-react";
+import { SkeletonCard } from "@/components/ui/skeleton";
+import { ArrowLeft, FileDown, Map } from "lucide-react";
 import { type Finding } from "@/lib/api";
 import { useState } from "react";
-import { severityColor } from "@/lib/utils";
 import { useTranslation } from "react-i18next";
-import { SkeletonCard } from "@/components/ui/skeleton";
+
+const TABS = ["findings", "summary", "compliance", "supply", "heatmap", "timeline", "pr-risk", "analytics", "attestation"] as const;
+type Tab = typeof TABS[number];
 
 export function RunDetailPage() {
   const { id } = useParams<{ id: string }>();
   const runId = Number(id);
   const navigate = useNavigate();
   const [selectedFinding, setSelectedFinding] = useState<Finding | null>(null);
-  const [activeTab, setActiveTab] = useState("findings");
+  const [activeTab, setActiveTab] = useState<Tab>("findings");
   const { t } = useTranslation();
 
   const { data: findingsData, isLoading: findingsLoading } = useFindings(runId);
@@ -32,251 +30,314 @@ export function RunDetailPage() {
   const { data: prRisk } = usePrRisk(runId);
   const { data: costBenefit } = useCostBenefit(runId);
   const { data: reviewBottleneck } = useReviewBottleneck(runId);
+  const { data: runSummary } = useRunSummary(runId);
+  const { data: attestation } = useAttestation(runId);
 
   const findings = findingsData?.findings ?? [];
 
-  const severityCounts = findings.reduce(
+  const sevCounts = findings.reduce(
     (acc, f) => { acc[f.severity] = (acc[f.severity] ?? 0) + 1; return acc; },
     {} as Record<string, number>
   );
 
   return (
-    <div className="space-y-6 max-w-7xl mx-auto">
-      {/* Header */}
-      <div className="flex items-center gap-4">
-        <Button variant="ghost" size="icon" onClick={() => navigate(-1)}>
-          <ArrowLeft className="h-4 w-4" />
-        </Button>
-        <div className="flex-1">
-          <h1 className="text-2xl font-bold">Run #{runId}</h1>
-          <p className="text-sm text-muted-foreground mt-0.5">Detailed analysis results</p>
+    <>
+      {/* Topbar */}
+      <div className="topbar">
+        <div className="crumbs">
+          <Link to="/" className="sep" style={{ color: "var(--fg-4)" }}>Scans</Link>
+          <span className="sep">/</span>
+          <span className="cur">Run #{runId}</span>
+          <span className="id-pill">#{runId}</span>
         </div>
-        <div className="flex items-center gap-2 flex-wrap">
+        <div className="grow" />
+        <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
           {(["HIGH", "MEDIUM", "LOW"] as const).map((sev) =>
-            severityCounts[sev] ? (
-              <Badge key={sev} className={severityColor(sev)}>
-                {severityCounts[sev]} {sev}
-              </Badge>
+            sevCounts[sev] ? (
+              <span key={sev} className={`sev ${sev === "HIGH" ? "high" : sev === "MEDIUM" ? "med" : "low"}`}>
+                {sevCounts[sev]} {sev}
+              </span>
             ) : null
           )}
-          <Button
-            variant="outline"
-            size="sm"
-            aria-label="View risk map"
-            onClick={() => navigate(`/runs/${runId}/risk-map`)}
-          >
-            <Map className="h-4 w-4 mr-1" aria-hidden />
-            Risk Map
-          </Button>
-          <Button
-            variant="outline"
-            size="sm"
-            className="no-print"
-            aria-label={t("common.exportPdf")}
-            onClick={() => window.print()}
-          >
-            <FileDown className="h-4 w-4 mr-1" aria-hidden />
-            {t("common.exportPdf")}
-          </Button>
+          <button className="btn-ghost" aria-label="View risk map" onClick={() => navigate(`/runs/${runId}/risk-map`)}>
+            <Map size={13} aria-hidden /> Risk Map
+          </button>
+          <button className="btn-ghost no-print" aria-label={t("common.exportPdf")} onClick={() => window.print()}>
+            <FileDown size={13} aria-hidden /> {t("common.exportPdf")}
+          </button>
         </div>
       </div>
 
-      {/* Stats row */}
-      {statsLoading ? (
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          {[0, 1, 2, 3].map((i) => <SkeletonCard key={i} />)}
+      <div className="page-pad">
+        {/* Back + heading */}
+        <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 20 }}>
+          <button className="btn-icon" aria-label="Go back" onClick={() => navigate(-1)}>
+            <ArrowLeft size={14} aria-hidden />
+          </button>
+          <div>
+            <h1 className="title" style={{ margin: 0 }}>Run #{runId}</h1>
+            <p style={{ margin: 0, fontSize: 13, color: "var(--fg-4)" }}>Detailed analysis results</p>
+          </div>
         </div>
-      ) : stats ? (
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          {[
-            { label: "Total Findings", value: stats.total_findings },
-            { label: "HIGH", value: stats.high, danger: stats.high > 0 },
-            { label: "MEDIUM", value: stats.medium },
-            { label: "LOW", value: stats.low },
-          ].map(({ label, value, danger }) => (
-            <Card key={label}>
-              <CardContent className="pt-4">
-                <div className={`text-2xl font-bold ${danger ? "text-red-600" : ""}`}>{value}</div>
-                <div className="text-xs text-muted-foreground mt-1">{label}</div>
-              </CardContent>
-            </Card>
+
+        {/* Stats */}
+        {statsLoading ? (
+          <div className="stats">
+            {[0, 1, 2, 3].map((i) => <SkeletonCard key={i} />)}
+          </div>
+        ) : stats ? (
+          <div className="stats">
+            {[
+              { label: "Total Findings", value: stats.total_findings, danger: false },
+              { label: "HIGH", value: stats.high, danger: stats.high > 0 },
+              { label: "MEDIUM", value: stats.medium, danger: false },
+              { label: "LOW", value: stats.low, danger: false },
+            ].map(({ label, value, danger }) => (
+              <div key={label} className="stat">
+                <div className="lbl">{label}</div>
+                <div className={`num${danger ? " danger" : ""}`}>{value}</div>
+              </div>
+            ))}
+          </div>
+        ) : null}
+
+        {/* Tabs */}
+        <div className="tabs">
+          {TABS.map((tab) => (
+            <button key={tab} className={`tab${activeTab === tab ? " on" : ""}`} onClick={() => setActiveTab(tab)}>
+              {tab === "pr-risk" ? "PR Risk" : tab === "attestation" ? "Attestation" : tab.charAt(0).toUpperCase() + tab.slice(1)}
+            </button>
           ))}
         </div>
-      ) : null}
 
-      {/* Tabs */}
-      <Tabs value={activeTab} onChange={setActiveTab}>
-        <TabsList>
-          <TabsTrigger value="findings" icon={<Shield className="h-3.5 w-3.5" />} label="Findings" active={activeTab === "findings"} onClick={() => setActiveTab("findings")} />
-          <TabsTrigger value="compliance" icon={<BarChart3 className="h-3.5 w-3.5" />} label="OWASP" active={activeTab === "compliance"} onClick={() => setActiveTab("compliance")} />
-          <TabsTrigger value="supply" icon={<Package className="h-3.5 w-3.5" />} label="Supply Chain" active={activeTab === "supply"} onClick={() => setActiveTab("supply")} />
-          <TabsTrigger value="heatmap" icon={<BarChart3 className="h-3.5 w-3.5" />} label="Heatmap" active={activeTab === "heatmap"} onClick={() => setActiveTab("heatmap")} />
-          <TabsTrigger value="timeline" icon={<BarChart3 className="h-3.5 w-3.5" />} label="Timeline" active={activeTab === "timeline"} onClick={() => setActiveTab("timeline")} />
-          <TabsTrigger value="pr-risk" icon={<GitPullRequest className="h-3.5 w-3.5" />} label="PR Risk" active={activeTab === "pr-risk"} onClick={() => setActiveTab("pr-risk")} />
-          <TabsTrigger value="analytics" icon={<TrendingUp className="h-3.5 w-3.5" />} label="Analytics" active={activeTab === "analytics"} onClick={() => setActiveTab("analytics")} />
-        </TabsList>
-
-        <TabsContent active={activeTab === "findings"}>
-          {findingsLoading ? (
-            <div className="flex items-center justify-center py-16 text-muted-foreground gap-2">
-              <Loader2 className="h-5 w-5 animate-spin" /> Loading findings…
-            </div>
+        {/* Tab content */}
+        {activeTab === "findings" && (
+          findingsLoading ? (
+            <div className="empty"><span className="spinner" /> Loading findings…</div>
           ) : (
             <FindingsTable findings={findings} onSelect={setSelectedFinding} />
-          )}
-        </TabsContent>
+          )
+        )}
 
-        <TabsContent active={activeTab === "compliance"}>
-          <Card>
-            <CardContent className="pt-4">
-              <OwaspHeatmap runId={runId} />
-            </CardContent>
-          </Card>
-        </TabsContent>
+        {activeTab === "compliance" && (
+          <div className="panel">
+            <OwaspHeatmap runId={runId} />
+          </div>
+        )}
 
-        <TabsContent active={activeTab === "supply"}>
-          {scLoading ? (
-            <div className="flex items-center justify-center py-16 text-muted-foreground gap-2">
-              <Loader2 className="h-5 w-5 animate-spin" /> Loading supply chain…
-            </div>
+        {activeTab === "supply" && (
+          scLoading ? (
+            <div className="empty"><span className="spinner" /> Loading supply chain…</div>
           ) : supplyChain ? (
-            <div className="space-y-4">
-              <div className="flex items-center justify-between">
-                <div className="text-sm text-muted-foreground">
-                  {supplyChain.dependencies.length} dependencies analysed
-                </div>
+            <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+                <span style={{ fontSize: 13, color: "var(--fg-4)" }}>{supplyChain.dependencies.length} dependencies analysed</span>
                 <SbomDownload runId={runId} />
               </div>
               <DependencyTree deps={supplyChain.dependencies} />
             </div>
           ) : (
-            <div className="text-center py-12 text-muted-foreground">No supply-chain data</div>
-          )}
-        </TabsContent>
+            <div className="empty">No supply-chain data</div>
+          )
+        )}
 
-        <TabsContent active={activeTab === "heatmap"}>
-          <Card>
-            <CardContent className="pt-4">
-              <RiskHeatmap runId={runId} />
-            </CardContent>
-          </Card>
-        </TabsContent>
+        {activeTab === "heatmap" && (
+          <div className="panel">
+            <RiskHeatmap runId={runId} />
+          </div>
+        )}
 
-        <TabsContent active={activeTab === "timeline"}>
-          <Card>
-            <CardContent className="pt-4">
-              <VulnerabilityTimeline limit={30} />
-            </CardContent>
-          </Card>
-        </TabsContent>
+        {activeTab === "timeline" && (
+          <div className="panel">
+            <VulnerabilityTimeline limit={30} />
+          </div>
+        )}
 
-        <TabsContent active={activeTab === "pr-risk"}>
-          {prRisk ? (
-            <div className="space-y-4">
+        {activeTab === "pr-risk" && (
+          prRisk ? (
+            <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
               {/* Score banner */}
-              <Card>
-                <CardContent className="pt-6 pb-6">
-                  <div className="flex items-center gap-6">
-                    <div className={`text-6xl font-black tabular-nums ${prRisk.band === "red" ? "text-red-600" : prRisk.band === "yellow" ? "text-yellow-500" : "text-green-600"}`}>
-                      {prRisk.score}
-                    </div>
-                    <div>
-                      <Badge className={`text-sm px-3 py-1 ${prRisk.band === "red" ? "bg-red-100 text-red-700" : prRisk.band === "yellow" ? "bg-yellow-100 text-yellow-700" : "bg-green-100 text-green-700"}`}>
-                        {prRisk.band.toUpperCase()} RISK
-                      </Badge>
-                      <p className="text-sm text-muted-foreground mt-1">Merge risk score (0 = safe, 100 = block)</p>
-                    </div>
+              <div className="panel">
+                <div style={{ display: "flex", alignItems: "center", gap: 24 }}>
+                  <div style={{
+                    fontSize: 64, fontWeight: 900, lineHeight: 1,
+                    color: prRisk.band === "red" ? "var(--high)" : prRisk.band === "yellow" ? "var(--med)" : "var(--low)",
+                    fontVariantNumeric: "tabular-nums",
+                  }}>
+                    {prRisk.score}
                   </div>
-                </CardContent>
-              </Card>
+                  <div>
+                    <span className={`sev ${prRisk.band === "red" ? "high" : prRisk.band === "yellow" ? "med" : "low"}`} style={{ fontSize: 12 }}>
+                      {prRisk.band.toUpperCase()} RISK
+                    </span>
+                    <p style={{ fontSize: 12, color: "var(--fg-4)", margin: "6px 0 0" }}>Merge risk score (0 = safe, 100 = block)</p>
+                  </div>
+                </div>
+              </div>
               {/* Contributions */}
-              <Card>
-                <CardHeader className="pb-2"><CardTitle className="text-sm">Risk Contributions</CardTitle></CardHeader>
-                <CardContent>
-                  <div className="space-y-2">
-                    {Object.entries(prRisk.contributions).map(([key, val]) => (
-                      <div key={key} className="flex items-center gap-3">
-                        <span className="text-xs text-muted-foreground w-40 shrink-0">{key.replace(/_/g, " ")}</span>
-                        <div className="flex-1 h-2 rounded-full bg-muted overflow-hidden">
-                          <div className="h-full rounded-full bg-primary" style={{ width: `${Math.min(100, (val as number) * 100)}%` }} />
-                        </div>
-                        <span className="text-xs tabular-nums w-10 text-right">{((val as number) * 100).toFixed(0)}%</span>
+              <div className="panel">
+                <div className="panel-head"><span className="panel-title">Risk Contributions</span></div>
+                <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+                  {Object.entries(prRisk.contributions).map(([key, val]) => (
+                    <div key={key} className="risk-bar-item">
+                      <div className="risk-bar-label-row">
+                        <span style={{ fontSize: 12, color: "var(--fg-3)" }}>{key.replace(/_/g, " ")}</span>
+                        <span style={{ fontFamily: "var(--mono)", fontSize: 11, color: "var(--fg-4)" }}>{((val as number) * 100).toFixed(0)}%</span>
                       </div>
-                    ))}
-                  </div>
-                </CardContent>
-              </Card>
-              {/* Explainer bullets */}
+                      <div className="risk-bar-track">
+                        <div className="risk-bar-fill" style={{ width: `${Math.min(100, (val as number) * 100)}%`, background: "var(--purple)" }} />
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
               {prRisk.explainer.length > 0 && (
-                <Card>
-                  <CardHeader className="pb-2"><CardTitle className="text-sm">Why this score?</CardTitle></CardHeader>
-                  <CardContent>
-                    <ul className="space-y-1 text-sm">
-                      {prRisk.explainer.map((line, i) => <li key={i} className="flex gap-2"><span className="text-muted-foreground">•</span>{line}</li>)}
-                    </ul>
-                  </CardContent>
-                </Card>
+                <div className="panel">
+                  <div className="panel-head"><span className="panel-title">Why this score?</span></div>
+                  <ul style={{ margin: 0, padding: 0, listStyle: "none", display: "flex", flexDirection: "column", gap: 6 }}>
+                    {prRisk.explainer.map((line, i) => (
+                      <li key={i} style={{ display: "flex", gap: 8, fontSize: 13, color: "var(--fg-3)" }}>
+                        <span style={{ color: "var(--purple)" }}>•</span>{line}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
               )}
             </div>
           ) : (
-            <div className="flex items-center justify-center py-16 text-muted-foreground gap-2">
-              <Loader2 className="h-5 w-5 animate-spin" /> Loading PR risk…
-            </div>
-          )}
-        </TabsContent>
+            <div className="empty"><span className="spinner" /> Loading PR risk…</div>
+          )
+        )}
 
-        <TabsContent active={activeTab === "analytics"}>
-          <div className="grid md:grid-cols-2 gap-4">
-            {/* Cost-Benefit */}
+        {activeTab === "analytics" && (
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
             {costBenefit && (
-              <Card>
-                <CardHeader className="pb-2"><CardTitle className="text-sm">Cost-Benefit Analysis</CardTitle></CardHeader>
-                <CardContent>
-                  <div className="space-y-3">
-                    {[
-                      { label: "Analysis cost", value: `$${costBenefit.analysis_cost_usd.toFixed(4)}` },
-                      { label: "Developer hours saved", value: `${costBenefit.hours_saved.toFixed(1)} h` },
-                      { label: "Dev cost saved", value: `$${costBenefit.dev_cost_saved_usd.toFixed(2)}` },
-                      { label: "ROI multiplier", value: costBenefit.roi_multiplier },
-                      { label: "Cost per finding", value: costBenefit.total_findings > 0 ? `$${costBenefit.cost_per_finding.toFixed(4)}` : "—" },
-                    ].map(({ label, value }) => (
-                      <div key={label} className="flex justify-between text-sm border-b last:border-0 pb-2 last:pb-0">
-                        <span className="text-muted-foreground">{label}</span>
-                        <span className="font-medium tabular-nums">{value}</span>
-                      </div>
-                    ))}
-                  </div>
-                </CardContent>
-              </Card>
+              <div className="panel">
+                <div className="panel-head"><span className="panel-title">Cost-Benefit Analysis</span></div>
+                <div className="cost-row" style={{ gridTemplateColumns: "1fr 1fr", marginBottom: 0 }}>
+                  {[
+                    { label: "Analysis cost", value: `$${costBenefit.analysis_cost_usd.toFixed(4)}` },
+                    { label: "Hours saved", value: `${costBenefit.hours_saved.toFixed(1)} h` },
+                    { label: "Dev cost saved", value: `$${costBenefit.dev_cost_saved_usd.toFixed(2)}` },
+                    { label: "ROI multiplier", value: String(costBenefit.roi_multiplier) },
+                  ].map(({ label, value }) => (
+                    <div key={label} className="cost-cell">
+                      <div className="lbl">{label}</div>
+                      <div className="val">{value}</div>
+                    </div>
+                  ))}
+                </div>
+              </div>
             )}
-            {/* Review Bottleneck */}
             {reviewBottleneck && (
-              <Card>
-                <CardHeader className="pb-2"><CardTitle className="text-sm">Review Bottleneck</CardTitle></CardHeader>
-                <CardContent>
-                  <div className="space-y-3">
-                    {[
-                      { label: "Median time to first review", value: `${reviewBottleneck.median_time_to_first_review_hours.toFixed(1)} h` },
-                      { label: "Reviewer load Gini", value: reviewBottleneck.reviewer_load_gini.toFixed(2) },
-                      { label: "Merged without comment", value: `${(reviewBottleneck.pct_merged_without_comment * 100).toFixed(0)}%` },
-                      { label: "Top-3 reviewer share", value: `${(reviewBottleneck.top3_reviewer_share * 100).toFixed(0)}%` },
-                      { label: "Stale PRs", value: `${reviewBottleneck.stale_pr_count}` },
-                      { label: "Commits analysed", value: `${reviewBottleneck.total_commits_analyzed}` },
-                    ].map(({ label, value }) => (
-                      <div key={label} className="flex justify-between text-sm border-b last:border-0 pb-2 last:pb-0">
-                        <span className="text-muted-foreground">{label}</span>
-                        <span className="font-medium tabular-nums">{value}</span>
-                      </div>
-                    ))}
+              <div className="panel">
+                <div className="panel-head"><span className="panel-title">Review Bottleneck</span></div>
+                {[
+                  { label: "Median first review", value: `${reviewBottleneck.median_time_to_first_review_hours.toFixed(1)} h` },
+                  { label: "Reviewer load Gini", value: reviewBottleneck.reviewer_load_gini.toFixed(2) },
+                  { label: "Merged w/o comment", value: `${(reviewBottleneck.pct_merged_without_comment * 100).toFixed(0)}%` },
+                  { label: "Top-3 reviewer share", value: `${(reviewBottleneck.top3_reviewer_share * 100).toFixed(0)}%` },
+                  { label: "Stale PRs", value: String(reviewBottleneck.stale_pr_count) },
+                ].map(({ label, value }) => (
+                  <div key={label} className="setting-row">
+                    <span className="lbl">{label}</span>
+                    <span className="val">{value}</span>
                   </div>
-                </CardContent>
-              </Card>
+                ))}
+              </div>
             )}
           </div>
-        </TabsContent>
-      </Tabs>
+        )}
 
-      {/* Finding detail modal */}
+        {activeTab === "summary" && (
+          <div className="panel">
+            {runSummary ? (
+              <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+                <div style={{ display: "grid", gridTemplateColumns: "repeat(4,1fr)", gap: 0 }}>
+                  {[
+                    { lbl: "TOTAL", v: runSummary.stats.total },
+                    { lbl: "HIGH",  v: runSummary.stats.high  },
+                    { lbl: "MEDIUM",v: runSummary.stats.medium},
+                    { lbl: "LOW",   v: runSummary.stats.low   },
+                  ].map(({ lbl, v }) => (
+                    <div key={lbl} className="sig">
+                      <div className="lbl">{lbl}</div>
+                      <div className="v">{v}</div>
+                    </div>
+                  ))}
+                </div>
+                <div style={{
+                  background: "var(--bg-3)", borderRadius: 8, padding: "16px 20px",
+                  fontFamily: "var(--mono)", fontSize: 12.5, color: "var(--fg-2)", lineHeight: 1.8,
+                  whiteSpace: "pre-wrap", border: "1px solid var(--border)",
+                }}>
+                  {runSummary.summary_markdown}
+                </div>
+              </div>
+            ) : (
+              <div className="empty"><span className="spinner" /> Loading summary…</div>
+            )}
+          </div>
+        )}
+
+        {activeTab === "attestation" && (
+          <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+            {attestation ? (
+              <>
+                <div className="panel">
+                  <div className="panel-head"><span className="panel-title">Provenance Attestation</span></div>
+                  <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+                    {/* Verified banner */}
+                    <div style={{
+                      display: "flex", alignItems: "center", gap: 12, padding: "14px 18px",
+                      borderRadius: 8, border: `1px solid ${attestation.signature_valid ? "rgba(16,185,129,0.3)" : "rgba(239,68,68,0.3)"}`,
+                      background: attestation.signature_valid ? "rgba(16,185,129,0.08)" : "rgba(239,68,68,0.08)",
+                    }}>
+                      <span style={{ fontSize: 22 }}>{attestation.signature_valid ? "✓" : "✗"}</span>
+                      <div>
+                        <div style={{ fontWeight: 700, fontSize: 15, color: attestation.signature_valid ? "var(--low-fg)" : "var(--high-fg)" }}>
+                          {attestation.signature_valid ? "Signature Verified" : "Signature Invalid"}
+                        </div>
+                        <div style={{ fontSize: 12, color: "var(--fg-4)", marginTop: 2 }}>
+                          SLSA-grade cryptographic provenance for run #{runId}
+                        </div>
+                      </div>
+                      {attestation.post_quantum && (
+                        <span className="sev low" style={{ marginLeft: "auto" }}>Post-Quantum</span>
+                      )}
+                    </div>
+                    {/* Details */}
+                    {[
+                      { label: "Key ID", value: attestation.key_id ?? "N/A" },
+                      { label: "Created", value: attestation.created_at },
+                      { label: "Algorithms", value: attestation.signature_algorithms.join(", ") || "N/A" },
+                    ].map(({ label, value }) => (
+                      <div key={label} className="setting-row">
+                        <span style={{ fontSize: 12, color: "var(--fg-4)" }}>{label}</span>
+                        <span style={{ fontFamily: "var(--mono)", fontSize: 11, color: "var(--fg-2)" }}>{value}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+                <div className="panel">
+                  <div className="panel-head"><span className="panel-title">Raw Bundle</span></div>
+                  <pre style={{
+                    background: "var(--bg)", borderRadius: 7, padding: 16,
+                    fontFamily: "var(--mono)", fontSize: 11, color: "var(--fg-3)",
+                    overflow: "auto", maxHeight: 320, margin: 0,
+                    border: "1px solid var(--border)",
+                  }}>
+                    {JSON.stringify(attestation.bundle, null, 2)}
+                  </pre>
+                </div>
+              </>
+            ) : (
+              <div className="empty">No attestation found for this run.</div>
+            )}
+          </div>
+        )}
+      </div>
+
       {selectedFinding && (
         <FindingModal
           finding={selectedFinding}
@@ -284,6 +345,6 @@ export function RunDetailPage() {
           onClose={() => setSelectedFinding(null)}
         />
       )}
-    </div>
+    </>
   );
 }

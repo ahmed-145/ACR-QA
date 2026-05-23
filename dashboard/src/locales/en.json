@@ -3,7 +3,12 @@
     "scans": "Scans",
     "supplyChain": "Supply Chain",
     "compare": "Compare",
-    "settings": "Settings"
+    "settings": "Settings",
+    "allFindings": "All Findings",
+    "repos": "Repositories",
+    "cost": "Cost & ROI",
+    "rules": "Rules Browser",
+    "policy": "Policy"
   },
   "scans": {
     "title": "Scans Dashboard",

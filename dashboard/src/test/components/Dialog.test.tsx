@@ -21,7 +21,7 @@ describe("Dialog", () => {
   it("calls onClose when backdrop clicked", () => {
     const onClose = vi.fn();
     render(<Dialog open={true} onClose={onClose}>Body</Dialog>);
-    const backdrop = document.querySelector(".fixed.inset-0.bg-black\\/40");
+    const backdrop = document.querySelector("[data-testid='dialog-backdrop']");
     fireEvent.click(backdrop!);
     expect(onClose).toHaveBeenCalled();
   });
@@ -29,7 +29,7 @@ describe("Dialog", () => {
   it("calls onClose when X button clicked", () => {
     const onClose = vi.fn();
     render(<Dialog open={true} onClose={onClose} title="Close Me">Body</Dialog>);
-    const xBtn = document.querySelector("button.rounded");
+    const xBtn = document.querySelector("button.modal-close");
     fireEvent.click(xBtn!);
     expect(onClose).toHaveBeenCalled();
   });

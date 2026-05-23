@@ -18,7 +18,7 @@ export const useAuth = create<AuthState>()(
       logout: () => set({ token: null, user: null }),
       isAuthenticated: () => !!get().token,
     }),
-    { name: "acrqa-auth" }
+    { name: "acrqa_auth" }
   )
 );
 

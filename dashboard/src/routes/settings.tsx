@@ -1,12 +1,8 @@
 import { useState, useEffect } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Badge } from "@/components/ui/badge";
 import { useAuth } from "@/lib/auth";
 import { useApiKeys, useCreateApiKey, useDeleteApiKey } from "@/lib/queries";
 import { deleteAccount } from "@/lib/api";
-import { Wifi, WifiOff, Server, User, Shield, CheckCircle, XCircle, Loader2, Key, Plus, Trash2 } from "lucide-react";
+import { CheckCircle, XCircle, Loader2, Trash2, Plus } from "lucide-react";
 import { toast } from "@/components/ui/toast";
 
 type HealthStatus = "checking" | "ok" | "error";
@@ -31,9 +27,9 @@ function useHealthCheck(url: string) {
 }
 
 function StatusDot({ status }: { status: HealthStatus }) {
-  if (status === "checking") return <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />;
-  if (status === "ok") return <CheckCircle className="h-4 w-4 text-green-600" />;
-  return <XCircle className="h-4 w-4 text-red-500" />;
+  if (status === "checking") return <Loader2 size={14} className="animate-spin" style={{ color: "var(--fg-4)" }} />;
+  if (status === "ok") return <CheckCircle size={14} style={{ color: "var(--low)" }} />;
+  return <XCircle size={14} style={{ color: "var(--high)" }} />;
 }
 
 export function SettingsPage() {
@@ -41,8 +37,8 @@ export function SettingsPage() {
   const mode = import.meta.env.VITE_ACRQA_MODE ?? "online";
   const isOffline = mode === "offline";
 
-  const apiStatus = useHealthCheck("/v1/health");
-  const celeryStatus = useHealthCheck("/v1/celery/health");
+  const apiStatus = useHealthCheck("/health");
+  const celeryStatus = useHealthCheck("/health");
 
   const { data: apiKeys, isLoading: keysLoading } = useApiKeys();
   const createKey = useCreateApiKey();
@@ -101,184 +97,164 @@ export function SettingsPage() {
   }
 
   return (
-    <div className="space-y-6 max-w-2xl mx-auto">
-      <div>
-        <h1 className="text-2xl font-bold">Settings</h1>
-        <p className="text-sm text-muted-foreground mt-1">System status and account configuration</p>
+    <>
+      <div className="topbar">
+        <div className="crumbs">
+          <span className="cur">Settings</span>
+        </div>
       </div>
 
-      {/* Mode card */}
-      <Card>
-        <CardHeader className="pb-2">
-          <CardTitle className="text-base flex items-center gap-2">
-            {isOffline ? <WifiOff className="h-4 w-4" /> : <Wifi className="h-4 w-4" />}
-            Operation Mode
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-3">
-          <div className="flex items-center justify-between">
-            <span className="text-sm">Current mode</span>
-            <Badge variant={isOffline ? "destructive" : "default"} className="uppercase text-xs">
-              {mode}
-            </Badge>
+      <div className="page-pad" style={{ maxWidth: 720 }}>
+        <h1 className="title">Settings</h1>
+        <p className="subtitle">System status and account configuration</p>
+
+        {/* Operation Mode */}
+        <div className="panel" style={{ marginBottom: 16 }}>
+          <div className="panel-head">
+            <span className="panel-title">Operation Mode</span>
+            <span className="panel-sub" style={{ color: isOffline ? "var(--med)" : "var(--low)" }}>
+              {mode.toUpperCase()}
+            </span>
           </div>
           {isOffline && (
-            <p className="text-xs text-muted-foreground bg-muted/50 rounded p-2">
-              Offline mode: LLM calls routed to local Ollama endpoint. Set{" "}
-              <code className="font-mono">ACRQA_LLM_PROVIDER=ollama</code> and{" "}
-              <code className="font-mono">ACRQA_MODE=offline</code> in the backend environment.
+            <p style={{ fontSize: 12, color: "var(--fg-4)", margin: 0, lineHeight: 1.6 }}>
+              Offline mode: LLM calls routed to local Ollama endpoint.
+              Set <code style={{ fontFamily: "var(--mono)", color: "var(--purple)" }}>ACRQA_LLM_PROVIDER=ollama</code> and{" "}
+              <code style={{ fontFamily: "var(--mono)", color: "var(--purple)" }}>ACRQA_MODE=offline</code> in the backend environment.
             </p>
           )}
-        </CardContent>
-      </Card>
+        </div>
 
-      {/* Live status */}
-      <Card>
-        <CardHeader className="pb-2">
-          <CardTitle className="text-base flex items-center gap-2">
-            <Server className="h-4 w-4" /> Live Status
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-3">
-            {[
-              { label: "FastAPI backend", status: apiStatus },
-              { label: "Celery worker", status: celeryStatus },
-            ].map(({ label, status }) => (
-              <div key={label} className="flex items-center justify-between py-1 border-b last:border-0">
-                <span className="text-sm">{label}</span>
-                <div className="flex items-center gap-2">
-                  <StatusDot status={status} />
-                  <span className="text-xs text-muted-foreground">
-                    {status === "checking" ? "checking" : status === "ok" ? "healthy" : "unreachable"}
-                  </span>
-                </div>
-              </div>
-            ))}
+        {/* Live Status */}
+        <div className="panel" style={{ marginBottom: 16 }}>
+          <div className="panel-head">
+            <span className="panel-title">Live Status</span>
           </div>
-        </CardContent>
-      </Card>
+          {[
+            { label: "FastAPI backend", status: apiStatus },
+            { label: "Celery worker", status: celeryStatus },
+          ].map(({ label, status }) => (
+            <div key={label} className="setting-row">
+              <span className="lbl">{label}</span>
+              <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                <StatusDot status={status} />
+                <span className="val">{status === "checking" ? "checking…" : status === "ok" ? "healthy" : "unreachable"}</span>
+              </div>
+            </div>
+          ))}
+        </div>
 
-      {/* Account */}
-      <Card>
-        <CardHeader className="pb-2">
-          <CardTitle className="text-base flex items-center gap-2">
-            <User className="h-4 w-4" /> Account
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-3">
+        {/* Account */}
+        <div className="panel" style={{ marginBottom: 16 }}>
+          <div className="panel-head">
+            <span className="panel-title">Account</span>
+          </div>
           {user && (
             <>
-              <div className="flex items-center justify-between">
-                <span className="text-sm text-muted-foreground">Email</span>
-                <span className="text-sm font-medium">{user.email}</span>
+              <div className="setting-row">
+                <span className="lbl">Email</span>
+                <span className="val">{user.email}</span>
               </div>
-              <div className="flex items-center justify-between">
-                <span className="text-sm text-muted-foreground">Role</span>
-                <Badge variant="outline" className="text-xs">
-                  <Shield className="h-3 w-3 mr-1" />
-                  {user.role ?? "analyst"}
-                </Badge>
+              <div className="setting-row">
+                <span className="lbl">Role</span>
+                <span className="val">{user.role ?? "analyst"}</span>
               </div>
             </>
           )}
-          <div className="flex gap-2 pt-2">
-            <Button variant="outline" size="sm" onClick={handleCopyToken}>
-              Copy API token
-            </Button>
-            <Button variant="destructive" size="sm" onClick={handleLogout}>
-              Sign out
-            </Button>
+          <div style={{ display: "flex", gap: 8, paddingTop: 12 }}>
+            <button className="btn-ghost" onClick={handleCopyToken}>Copy API token</button>
+            <button className="btn-danger" onClick={handleLogout}>Sign out</button>
           </div>
-        </CardContent>
-      </Card>
+        </div>
 
-      {/* API Keys */}
-      <Card>
-        <CardHeader className="pb-2">
-          <CardTitle className="text-base flex items-center gap-2">
-            <Key className="h-4 w-4" /> API Keys
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <p className="text-xs text-muted-foreground">Use API keys for CI/CD integrations. Keys are shown once — store them securely.</p>
+        {/* API Keys */}
+        <div className="panel" style={{ marginBottom: 16 }}>
+          <div className="panel-head">
+            <span className="panel-title">API Keys</span>
+          </div>
+          <p style={{ fontSize: 12, color: "var(--fg-4)", marginBottom: 16, marginTop: 0 }}>
+            Use API keys for CI/CD integrations. Keys are shown once — store them securely.
+          </p>
 
           {newKeyValue && (
-            <div className="rounded-lg bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 p-3 space-y-2">
-              <p className="text-xs font-medium text-green-800 dark:text-green-300">New key created — copy it now, it won't be shown again:</p>
-              <div className="flex gap-2 items-center">
-                <code className="flex-1 font-mono text-xs bg-white dark:bg-black/20 px-2 py-1 rounded border truncate">{newKeyValue}</code>
-                <Button size="sm" variant="outline" onClick={() => { navigator.clipboard.writeText(newKeyValue); toast("Copied", "success"); }}>Copy</Button>
+            <div style={{ background: "rgba(16,185,129,0.08)", border: "1px solid var(--low-bdr)", borderRadius: 8, padding: "12px 14px", marginBottom: 16 }}>
+              <p style={{ fontSize: 12, fontWeight: 600, color: "var(--low-fg)", marginTop: 0, marginBottom: 8 }}>
+                New key created — copy it now, it won't be shown again:
+              </p>
+              <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+                <code style={{ flex: 1, fontFamily: "var(--mono)", fontSize: 12, background: "var(--bg)", padding: "6px 10px", borderRadius: 6, border: "1px solid var(--border-2)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                  {newKeyValue}
+                </code>
+                <button className="btn-ghost" style={{ height: 28, padding: "0 10px", fontSize: 12 }} onClick={() => { navigator.clipboard.writeText(newKeyValue); toast("Copied", "success"); }}>Copy</button>
               </div>
-              <Button size="sm" variant="ghost" className="text-xs" onClick={() => setNewKeyValue(null)}>Dismiss</Button>
+              <button style={{ fontSize: 11.5, color: "var(--fg-4)", background: "none", border: "none", cursor: "pointer", marginTop: 6, padding: 0 }} onClick={() => setNewKeyValue(null)}>Dismiss</button>
             </div>
           )}
 
           {keysLoading ? (
-            <div className="flex items-center gap-2 text-muted-foreground text-sm"><Loader2 className="h-4 w-4 animate-spin" /> Loading…</div>
+            <div style={{ display: "flex", alignItems: "center", gap: 8, color: "var(--fg-4)", fontSize: 13 }}>
+              <span className="spinner" /> Loading…
+            </div>
           ) : apiKeys && apiKeys.length > 0 ? (
-            <div className="space-y-2">
+            <div style={{ display: "flex", flexDirection: "column", gap: 8, marginBottom: 16 }}>
               {apiKeys.map((k) => (
-                <div key={k.id} className="flex items-center justify-between rounded border px-3 py-2 text-sm">
-                  <div>
-                    <span className="font-medium">{k.name}</span>
-                    <span className="text-muted-foreground ml-2 font-mono text-xs">{k.prefix}…</span>
-                  </div>
-                  <div className="flex items-center gap-3">
-                    <span className="text-xs text-muted-foreground hidden sm:inline">
-                      {k.last_used_at ? `Used ${new Date(k.last_used_at).toLocaleDateString()}` : "Never used"}
-                    </span>
-                    <Button variant="ghost" size="icon" aria-label="Revoke key" className="h-7 w-7 text-red-500 hover:text-red-700" onClick={() => handleDeleteKey(k.id)}>
-                      <Trash2 className="h-3.5 w-3.5" />
-                    </Button>
-                  </div>
+                <div key={k.id} className="key-row">
+                  <span className="key-name">{k.name}</span>
+                  <span className="key-prefix">{k.prefix}…</span>
+                  <span className="key-date">{k.last_used_at ? `Used ${new Date(k.last_used_at).toLocaleDateString()}` : "Never used"}</span>
+                  <button
+                    className="btn-icon"
+                    style={{ width: 28, height: 28, borderColor: "var(--high-bdr)", color: "var(--high-fg)" }}
+                    aria-label="Revoke key"
+                    onClick={() => handleDeleteKey(k.id)}
+                  >
+                    <Trash2 size={12} aria-hidden />
+                  </button>
                 </div>
               ))}
             </div>
           ) : (
-            <p className="text-sm text-muted-foreground">No API keys yet.</p>
+            <p style={{ fontSize: 13, color: "var(--fg-4)", marginBottom: 16 }}>No API keys yet.</p>
           )}
 
-          <form onSubmit={handleCreateKey} className="flex gap-2">
-            <Input
+          <form onSubmit={handleCreateKey} style={{ display: "flex", gap: 8 }}>
+            <input
+              className="inp"
               value={newKeyName}
               onChange={(e) => setNewKeyName(e.target.value)}
               placeholder="Key name (e.g. github-actions)"
-              className="flex-1 text-sm"
             />
-            <Button type="submit" size="sm" aria-label="Create API key" disabled={createKey.isPending || !newKeyName.trim()}>
-              {createKey.isPending ? <Loader2 className="h-4 w-4 animate-spin" aria-hidden /> : <Plus className="h-4 w-4" aria-hidden />}
-            </Button>
+            <button type="submit" className="btn-prim" aria-label="Create API key" disabled={createKey.isPending || !newKeyName.trim()}>
+              {createKey.isPending ? <span className="spinner" style={{ width: 14, height: 14 }} aria-hidden /> : <Plus size={14} aria-hidden />}
+            </button>
           </form>
-        </CardContent>
-      </Card>
+        </div>
 
-      {/* Danger zone */}
-      <Card className="border-red-200 dark:border-red-900">
-        <CardHeader className="pb-2">
-          <CardTitle className="text-base text-red-600">Danger Zone</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-3">
-          <p className="text-sm text-muted-foreground">Permanently delete your account and all associated data. This cannot be undone.</p>
+        {/* Danger zone */}
+        <div className="panel" style={{ border: "1px solid var(--high-bdr)" }}>
+          <div className="panel-head">
+            <span className="panel-title" style={{ color: "var(--high-fg)" }}>Danger Zone</span>
+          </div>
+          <p style={{ fontSize: 13, color: "var(--fg-4)", marginBottom: 12 }}>
+            Permanently delete your account and all associated data. This cannot be undone.
+          </p>
           {!deleteConfirm ? (
-            <Button variant="outline" size="sm" className="border-red-300 text-red-600 hover:bg-red-50" onClick={() => setDeleteConfirm(true)}>
-              Delete my account
-            </Button>
+            <button className="btn-danger" onClick={() => setDeleteConfirm(true)}>Delete my account</button>
           ) : (
-            <div className="space-y-2">
-              <p className="text-sm font-medium text-red-600">Are you sure? This is irreversible.</p>
-              <div className="flex gap-2">
-                <Button variant="destructive" size="sm" onClick={handleDeleteAccount}>Yes, delete everything</Button>
-                <Button variant="outline" size="sm" onClick={() => setDeleteConfirm(false)}>Cancel</Button>
+            <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+              <p style={{ fontSize: 13, fontWeight: 600, color: "var(--high-fg)", margin: 0 }}>Are you sure? This is irreversible.</p>
+              <div style={{ display: "flex", gap: 8 }}>
+                <button className="btn-danger" onClick={handleDeleteAccount}>Yes, delete everything</button>
+                <button className="btn-ghost" onClick={() => setDeleteConfirm(false)}>Cancel</button>
               </div>
             </div>
           )}
-        </CardContent>
-      </Card>
+        </div>
 
-      <div className="text-xs text-muted-foreground text-center pt-2">
-        ACR-QA v5.0.0b1 · Phase A complete
+        <div style={{ textAlign: "center", fontSize: 11.5, color: "var(--fg-5)", marginTop: 32 }}>
+          ACR-QA v5.0.0b1 · Phase A complete
+        </div>
       </div>
-    </div>
+    </>
   );
 }

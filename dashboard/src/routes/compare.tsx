@@ -1,10 +1,7 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { useRuns } from "@/lib/queries";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { GitCompare, Loader2 } from "lucide-react";
+import { GitCompare } from "lucide-react";
 import { useTranslation } from "react-i18next";
 
 export function ComparePage() {
@@ -37,60 +34,63 @@ export function ComparePage() {
   }
 
   return (
-    <div className="space-y-6 max-w-4xl mx-auto">
-      <div>
-        <h1 className="text-2xl font-bold flex items-center gap-2">
-          <GitCompare className="h-6 w-6" aria-hidden />
-          {t("compare.title")}
-        </h1>
-        <p className="text-sm text-muted-foreground mt-1">{t("compare.subtitle")}</p>
+    <>
+      <div className="topbar">
+        <div className="crumbs">
+          <Link to="/" style={{ color: "var(--fg-4)" }}>Scans</Link>
+          <span className="sep">/</span>
+          <span className="cur">Compare</span>
+        </div>
+        <div className="grow" />
+        <button
+          className="btn-prim"
+          disabled={!selectedA || !selectedB}
+          onClick={handleCompare}
+          aria-label="Compare selected runs"
+        >
+          <GitCompare size={13} aria-hidden />
+          {t("compare.compare")}
+        </button>
       </div>
 
-      <Card>
-        <CardContent className="pt-4">
-          <div className="flex items-center gap-4 flex-wrap">
-            <div className="flex items-center gap-2 text-sm">
-              <span className="font-medium">{t("compare.runA")}:</span>
-              {selectedA ? (
-                <Badge variant="default">#{selectedA}</Badge>
-              ) : (
-                <span className="text-muted-foreground">{t("compare.notSelected")}</span>
-              )}
-            </div>
-            <span className="text-muted-foreground">vs</span>
-            <div className="flex items-center gap-2 text-sm">
-              <span className="font-medium">{t("compare.runB")}:</span>
-              {selectedB ? (
-                <Badge variant="secondary">#{selectedB}</Badge>
-              ) : (
-                <span className="text-muted-foreground">{t("compare.notSelected")}</span>
-              )}
-            </div>
-            <Button
-              className="ml-auto"
-              disabled={!selectedA || !selectedB}
-              onClick={handleCompare}
-            >
-              <GitCompare className="h-4 w-4 mr-1.5" aria-hidden />
-              {t("compare.compare")}
-            </Button>
-          </div>
-        </CardContent>
-      </Card>
+      <div className="page-pad" style={{ maxWidth: 860 }}>
+        <h1 className="title">{t("compare.title")}</h1>
+        <p className="subtitle">{t("compare.subtitle")}</p>
 
-      {isLoading ? (
-        <div className="flex justify-center py-12 text-muted-foreground gap-2">
-          <Loader2 className="h-5 w-5 animate-spin" /> {t("common.loading")}
+        {/* Selection status */}
+        <div className="panel" style={{ marginBottom: 20 }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 20, flexWrap: "wrap" }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+              <span style={{ fontFamily: "var(--mono)", fontSize: 11, color: "var(--fg-5)", fontWeight: 700 }}>RUN A</span>
+              {selectedA ? (
+                <span className="id-pill" style={{ color: "var(--purple)", borderColor: "var(--ai-bdr)" }}>#{selectedA}</span>
+              ) : (
+                <span style={{ fontSize: 12, color: "var(--fg-5)" }}>{t("compare.notSelected")}</span>
+              )}
+            </div>
+            <span style={{ color: "var(--fg-5)", fontSize: 13 }}>vs</span>
+            <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+              <span style={{ fontFamily: "var(--mono)", fontSize: 11, color: "var(--fg-5)", fontWeight: 700 }}>RUN B</span>
+              {selectedB ? (
+                <span className="id-pill">{selectedB}</span>
+              ) : (
+                <span style={{ fontSize: 12, color: "var(--fg-5)" }}>{t("compare.notSelected")}</span>
+              )}
+            </div>
+          </div>
         </div>
-      ) : runs.length === 0 ? (
-        <p className="text-center py-12 text-muted-foreground">{t("scans.noScansYet")}</p>
-      ) : (
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm">{t("compare.selectHint", "Select two runs (click to toggle A / B)")}</CardTitle>
-          </CardHeader>
-          <CardContent className="p-0">
-            <div className="divide-y">
+
+        {/* Run picker */}
+        {isLoading ? (
+          <div className="empty"><span className="spinner" /> {t("common.loading")}</div>
+        ) : runs.length === 0 ? (
+          <div className="empty">{t("scans.noScansYet")}</div>
+        ) : (
+          <div className="panel" style={{ padding: 0, overflow: "hidden" }}>
+            <div className="panel-head" style={{ padding: "14px 18px 12px" }}>
+              <span className="panel-title">{t("compare.selectHint", "Click to toggle A / B selection")}</span>
+            </div>
+            <div style={{ borderTop: "1px solid var(--border)" }}>
               {runs.map((r) => {
                 const label = selLabel(r.id);
                 return (
@@ -98,37 +98,57 @@ export function ComparePage() {
                     key={r.id}
                     type="button"
                     onClick={() => toggleSelect(r.id)}
-                    className={`w-full flex items-center gap-3 px-4 py-3 text-left text-sm transition-colors hover:bg-muted/50 ${label ? "bg-primary/5" : ""}`}
+                    style={{
+                      width: "100%",
+                      display: "grid",
+                      gridTemplateColumns: "40px 1fr auto",
+                      alignItems: "center",
+                      gap: 12,
+                      padding: "12px 18px",
+                      borderBottom: "1px solid var(--border)",
+                      background: label ? "rgba(167,139,250,0.06)" : "transparent",
+                      cursor: "pointer",
+                      textAlign: "left",
+                      border: "none",
+                      borderBottomColor: "var(--border)",
+                      borderBottomWidth: 1,
+                      borderBottomStyle: "solid",
+                      transition: "background 0.1s",
+                    }}
                   >
                     {label ? (
-                      <Badge variant={label === "A" ? "default" : "secondary"} className="w-7 justify-center shrink-0">
-                        {label}
-                      </Badge>
+                      <span style={{
+                        fontFamily: "var(--mono)", fontSize: 11, fontWeight: 700,
+                        color: label === "A" ? "var(--purple)" : "var(--blue)",
+                        background: label === "A" ? "var(--ai-bg)" : "rgba(96,165,250,0.08)",
+                        border: `1px solid ${label === "A" ? "var(--ai-bdr)" : "rgba(96,165,250,0.3)"}`,
+                        borderRadius: 5, padding: "2px 8px",
+                      }}>{label}</span>
                     ) : (
-                      <div className="w-7 h-6 rounded border border-dashed border-muted-foreground/30 shrink-0" />
+                      <span style={{ width: 32, height: 22, borderRadius: 5, border: "1px dashed var(--border-2)", display: "inline-block" }} />
                     )}
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2">
-                        <span className="font-medium">#{r.id}</span>
-                        <span className="text-muted-foreground truncate">{r.repo_name}</span>
+                    <div>
+                      <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                        <span style={{ fontFamily: "var(--mono)", fontSize: 12, color: "var(--fg)", fontWeight: 600 }}>#{r.id}</span>
+                        <span style={{ fontSize: 13, color: "var(--fg-3)" }}>{r.repo_name}</span>
                       </div>
-                      <div className="text-xs text-muted-foreground mt-0.5">
+                      <div style={{ fontFamily: "var(--mono)", fontSize: 11, color: "var(--fg-5)", marginTop: 2 }}>
                         {new Date(r.started_at).toLocaleString()} · {r.total_findings} findings
                       </div>
                     </div>
-                    <div className="flex gap-1.5 shrink-0">
-                      {r.high_count > 0 && (
-                        <Badge variant="destructive" className="text-[10px] px-1.5">{r.high_count}H</Badge>
-                      )}
-                      <Badge variant="outline" className="text-[10px] px-1.5 capitalize">{r.status}</Badge>
+                    <div style={{ display: "flex", gap: 6 }}>
+                      {r.high_count > 0 && <span className="sev high">{r.high_count}H</span>}
+                      <span className="sev low" style={{ borderColor: "var(--border-2)", color: "var(--fg-4)", background: "rgba(255,255,255,0.04)" }}>
+                        {r.status}
+                      </span>
                     </div>
                   </button>
                 );
               })}
             </div>
-          </CardContent>
-        </Card>
-      )}
-    </div>
+          </div>
+        )}
+      </div>
+    </>
   );
 }

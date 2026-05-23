@@ -1,59 +1,92 @@
-import { useState, useCallback, useRef, type ReactNode } from "react";
-import { cn } from "@/lib/utils";
-import { CheckCircle, XCircle, Info } from "lucide-react";
+import { create } from "zustand";
+import { useEffect } from "react";
+import { CheckCircle, AlertCircle, AlertTriangle, Info, X } from "lucide-react";
 
-export type ToastVariant = "success" | "error" | "info";
+export type ToastVariant = "success" | "error" | "info" | "warning";
 
-interface Toast {
-  id: number;
-  message: string;
+interface ToastItem {
+  id: string;
+  title: string;
   variant: ToastVariant;
+  duration?: number;
 }
 
-let _addToast: ((msg: string, variant?: ToastVariant) => void) | null = null;
+interface ToastStore {
+  toasts: ToastItem[];
+  add: (t: Omit<ToastItem, "id">) => void;
+  remove: (id: string) => void;
+}
+
+const useToastStore = create<ToastStore>()((set) => ({
+  toasts: [],
+  add: (t) => set((s) => ({ toasts: [...s.toasts, { ...t, id: Math.random().toString(36).slice(2) }] })),
+  remove: (id) => set((s) => ({ toasts: s.toasts.filter((t) => t.id !== id) })),
+}));
 
 export function toast(message: string, variant: ToastVariant = "info") {
-  _addToast?.(message, variant);
+  useToastStore.getState().add({ title: message, variant, duration: 3500 });
 }
 
-export function Toaster() {
-  const [toasts, setToasts] = useState<Toast[]>([]);
-  const counterRef = useRef(0);
+const ICONS: Record<ToastVariant, React.ReactNode> = {
+  success: <CheckCircle  size={14} style={{ color: "var(--low)",  flexShrink: 0 }} aria-hidden />,
+  error:   <AlertCircle  size={14} style={{ color: "var(--high)", flexShrink: 0 }} aria-hidden />,
+  warning: <AlertTriangle size={14} style={{ color: "var(--med)", flexShrink: 0 }} aria-hidden />,
+  info:    <Info          size={14} style={{ color: "var(--blue)", flexShrink: 0 }} aria-hidden />,
+};
 
-  const add = useCallback((message: string, variant: ToastVariant = "info") => {
-    const id = ++counterRef.current;
-    setToasts((prev) => [...prev, { id, message, variant }]);
-    setTimeout(() => setToasts((prev) => prev.filter((t) => t.id !== id)), 4000);
-  }, []);
+const BORDER: Record<ToastVariant, string> = {
+  success: "var(--low-bdr)",
+  error:   "var(--high-bdr)",
+  warning: "var(--med-bdr)",
+  info:    "rgba(96,165,250,0.25)",
+};
 
-  _addToast = add;
+function ToastEntry({ t }: { t: ToastItem }) {
+  const remove = useToastStore((s) => s.remove);
+  useEffect(() => {
+    const timer = setTimeout(() => remove(t.id), t.duration ?? 3500);
+    return () => clearTimeout(timer);
+  }, [t.id, t.duration, remove]);
 
   return (
-    <div className="fixed bottom-4 right-4 z-[100] flex flex-col gap-2">
-      {toasts.map((t) => (
-        <ToastItem key={t.id} toast={t} onDismiss={() => setToasts((prev) => prev.filter((x) => x.id !== t.id))} />
-      ))}
+    <div
+      role="alert"
+      aria-live="polite"
+      style={{
+        minWidth: 260, maxWidth: 360,
+        background: "var(--bg-3)",
+        border: `1px solid ${BORDER[t.variant]}`,
+        borderRadius: 10,
+        padding: "11px 14px",
+        display: "flex", alignItems: "center", gap: 10,
+        boxShadow: "0 8px 24px rgba(0,0,0,0.6)",
+        animation: "acr-fadein 0.18s ease",
+        fontSize: 13, color: "var(--fg-2)",
+      }}
+    >
+      {ICONS[t.variant]}
+      <span style={{ flex: 1, fontWeight: 500 }}>{t.title}</span>
+      <button
+        onClick={() => remove(t.id)}
+        aria-label="Dismiss"
+        style={{ background: "transparent", border: "none", color: "var(--fg-5)", cursor: "pointer", display: "flex", padding: 0 }}
+      >
+        <X size={12} aria-hidden />
+      </button>
     </div>
   );
 }
 
-function ToastItem({ toast: t, onDismiss }: { toast: Toast; onDismiss: () => void }) {
-  const icons: Record<ToastVariant, ReactNode> = {
-    success: <CheckCircle className="h-4 w-4 text-green-600" />,
-    error: <XCircle className="h-4 w-4 text-red-600" />,
-    info: <Info className="h-4 w-4 text-blue-600" />,
-  };
+export function Toaster() {
+  const toasts = useToastStore((s) => s.toasts);
+  if (!toasts.length) return null;
   return (
     <div
-      onClick={onDismiss}
-      className={cn(
-        "flex cursor-pointer items-center gap-3 rounded-lg border bg-background px-4 py-3 shadow-lg text-sm max-w-sm",
-        t.variant === "error" && "border-red-200",
-        t.variant === "success" && "border-green-200"
-      )}
+      className="toast-container"
+      role="region"
+      aria-label="Notifications"
     >
-      {icons[t.variant]}
-      <span>{t.message}</span>
+      {toasts.map((t) => <ToastEntry key={t.id} t={t} />)}
     </div>
   );
 }
