@@ -7,7 +7,7 @@ import AxeBuilder from "@axe-core/playwright";
 async function mockAuth(page: Parameters<typeof test>[1] extends (args: { page: infer P }) => unknown ? P : never) {
   await page.addInitScript(() => {
     localStorage.setItem(
-      "acrqa-auth",
+      "acrqa_auth",
       JSON.stringify({
         state: {
           token: "test-token",
@@ -23,7 +23,7 @@ test.describe("WCAG 2.1 AA — Scans page", () => {
   test("has no critical/serious axe violations", async ({ page }) => {
     await mockAuth(page);
     await page.route("/v1/**", (route) => route.fulfill({ json: { runs: [] } }));
-    await page.goto("/");
+    await page.goto("/scans");
     await page.waitForLoadState("networkidle");
 
     const results = await new AxeBuilder({ page })
@@ -106,11 +106,11 @@ test.describe("Mobile viewport — 375px", () => {
     expect(box?.width).toBeLessThanOrEqual(375);
   });
 
-  test("header is visible at 375px", async ({ page }) => {
+  test("nav is visible at 375px", async ({ page }) => {
     await mockAuth(page);
     await page.route("/v1/**", (route) => route.fulfill({ json: { runs: [] } }));
     await page.goto("/");
-    await expect(page.getByRole("banner")).toBeVisible();
+    await expect(page.getByRole("navigation")).toBeVisible();
   });
 
   test("nav links exist at 375px", async ({ page }) => {

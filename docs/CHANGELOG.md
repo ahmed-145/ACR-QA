@@ -2,6 +2,97 @@
 
 All notable changes to ACR-QA are documented here.
 
+## [v5.0.0b2] — 2026-05-23
+
+### Summary
+
+Week A6 pre-defense polish: **Phase 6 Trust page shipped, full test suite clean, Celery
+queue mismatch resolved, scan pipeline confirmed end-to-end, UI bugs fixed, DB migrations
+0019–0020 applied.**
+
+### Added — Phase 6: Public Trust Page
+
+- **`dashboard/src/routes/trust.$repoName.tsx`** — public posture page per repo; no auth
+  required; ECDSA-verifiable badge; in-browser WebCrypto ECDSA P-256 signature verification;
+  SVG badge generation; compliance timeline; counts by severity; shareable `/trust/:repoName` URL.
+- **`FRONTEND/api/routers/trust.py`** — 4 endpoints: `GET /v1/trust/{repo}` (posture JSON),
+  `GET /v1/trust/{repo}/attestation` (ECDSA bundle), `GET /v1/trust/{repo}/public-key`,
+  `GET /v1/trust/{repo}/badge.svg` (embeddable SVG badge).
+- **`dashboard/src/App.tsx`** — `/trust/:repoName` wired as PUBLIC route outside `<Layout />`
+  (no auth guard); lazy-loaded with `<Suspense>`.
+- **Trust CSS** — full `.trust-*` class set added to `acr.css`: `.trust-page`,
+  `.trust-hero`, `.trust-counts`, `.trust-compliance-status.{pass,warn,fail}`,
+  `.trust-verify-badge.{valid,invalid,verifying,unavailable}`, etc.
+
+### Added — Vulnerabilities List Page
+
+- **`dashboard/src/routes/vulnerabilities.tsx`** — new `/vulnerabilities` list page with
+  severity/status filters, pagination, column-sorted table, links to `/vuln/:shortId` detail.
+- **`dashboard/src/App.tsx`** — `/vulnerabilities` route wired (was blank page before).
+- **Migrations 0019 + 0020** — `vulnerabilities` table + materialised relationship views.
+  Applied via `alembic upgrade head`; resolves 500 errors on `/v1/vulnerabilities` and
+  `/v1/inbox`.
+
+### Added — Dark/Light Theme Toggle
+
+- **`dashboard/src/routes/_layout.tsx`** — Moon/Sun toggle button in sidebar footer;
+  persists choice to `localStorage["acrqa-theme"]`; toggles `dark` class on
+  `document.documentElement`.
+
+### Fixed — Celery Queue Mismatch (scans were stuck "queued" forever)
+
+- **Root cause:** worker was started with `-Q default` but Celery tasks enqueue to
+  the `celery` queue (Celery's default queue name). `redis.llen("celery")` = N,
+  `redis.llen("default")` = 0 — confirmed mismatch.
+- **Fix:** removed `-Q default` flag; worker now listens on the `celery` queue by default.
+- **`.env`** — added `REDIS_HOST=localhost` and `REDIS_PORT=6380` (Redis runs in Docker
+  on host port 6380, not the default 6379).
+- **`FRONTEND/api/main.py`** — added `load_dotenv()` call so FastAPI picks up `.env`
+  on startup; `CORE/tasks.py` reads `REDIS_PORT` env var so broker URL is correct.
+- **Confirmed working:** task `ae7aab7a` completed in 328s, run ID 285, 48 AI explanations,
+  ECDSA attestation stored (key `9ac4a287fc93f607`).
+
+### Fixed — JWT Expiry (15 min → 8 h for demo)
+
+- **`FRONTEND/auth/jwt_utils.py`** — reads `JWT_ACCESS_TTL_MINUTES` env var (default 15).
+- **`.env`** — added `JWT_ACCESS_TTL_MINUTES=480` (8 hours); prevents "Failed to start scan"
+  errors caused by expired tokens during demo sessions.
+- **`dashboard/src/lib/api.ts`** — `get()`, `post()`, `patch()` helpers now detect HTTP 401,
+  call `useAuth.logout()`, and redirect to `/login` automatically instead of showing the
+  generic "Failed to start scan" error.
+
+### Fixed — UI Bugs
+
+- **Findings sticky header** (`dashboard/src/routes/findings.tsx`) — column header
+  `top: "53px"` → `top: "108px"` (53px topbar + 55px filter bar); header now sticks
+  flush below the filter bar instead of overlapping it.
+- **`.sticky-filters` CSS** — `top: 0` → `top: 53px`; filter bar now sticks below the
+  topbar instead of sliding under it.
+- **WCAG AA contrast** — `--fg-4: #71717a` (4.09:1 fail) → `#909090`; `--fg-5: #52525b`
+  (2.55:1 fail) → `#808080`. Both now pass 4.5:1 minimum on `#0a0a0c` background.
+
+### Fixed — Test Suite (all green)
+
+- **Playwright E2E** — fixed auth localStorage key mismatch (`"acrqa-auth"` → `"acrqa_auth"`
+  in `dashboard.spec.ts` and `accessibility.spec.ts`); fixed `goto("/")` → `goto("/scans")`
+  (HomeRedirect sends to /inbox when authenticated); converted `loginAndGo` calls to
+  `mockAuth + page.route()` pattern (no live API needed); fixed mobile test banner landmark
+  (`getByRole("banner")` → `getByRole("navigation")`); fixed Policy page crash (provide
+  full PolicyData mock); added Fleet, Workbench, and Trust page E2E tests.
+- **Vitest** — removed unused `userEvent` import from `Skeleton.test.tsx`; fixed
+  `no-constant-binary-expression` in `utils.test.ts`.
+- **ruff** — fixed `UP017` (datetime.UTC Python 3.11+ only), `F401` (unused hashlib),
+  `I001` (import sort), `E702` (semicolons), `B904` (exception chaining without `from e`).
+- **Final counts:** pytest 2,569 pass · Vitest 104/104 · Playwright 55/55 · ESLint 0 errors.
+
+### Changed
+
+- **`.acrqa.yml`** — `max_explanations: 50` → `10`; reduces scan time from ~10 min to
+  ~2 min on the demo target.
+- **`dashboard/src/lib/api.ts`** — 401 auto-logout added to all three HTTP helpers.
+
+---
+
 ## [v5.0.0b1] — 2026-05-20
 
 ### Summary

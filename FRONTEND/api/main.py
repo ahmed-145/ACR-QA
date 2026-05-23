@@ -16,7 +16,15 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 
-from fastapi import Depends, FastAPI, Query  # noqa: E402
+# Load .env so REDIS_PORT, DB_*, GROQ_* etc. are available without exporting them manually
+try:
+    from dotenv import load_dotenv
+
+    load_dotenv(Path(__file__).parent.parent.parent / ".env", override=False)
+except ImportError:
+    pass
+
+from fastapi import Depends, FastAPI, Query  # noqa: E402, I001
 from fastapi.middleware.cors import CORSMiddleware  # noqa: E402
 
 from CORE import __version__  # noqa: E402
@@ -24,7 +32,18 @@ from CORE.utils.metrics import metrics  # noqa: E402
 from DATABASE.database import Database  # noqa: E402
 from FRONTEND.api.deps import get_current_user, get_db  # noqa: E402
 from FRONTEND.api.models import HealthOut  # noqa: E402
-from FRONTEND.api.routers import auth, findings, runs, scans  # noqa: E402
+from FRONTEND.api.routers import (
+    auth,
+    findings,
+    fleet,
+    inbox,
+    relationships,
+    runs,
+    scans,
+    trust,
+    vulnerabilities,
+    workbench,
+)  # noqa: E402
 
 # OpenTelemetry — degrades silently when OTEL_EXPORTER_OTLP_ENDPOINT is not set
 _otel_endpoint = os.getenv("OTEL_EXPORTER_OTLP_ENDPOINT")
@@ -81,6 +100,12 @@ app.include_router(auth.router, prefix="/v1")
 app.include_router(runs.router, prefix="/v1")
 app.include_router(scans.router, prefix="/v1")
 app.include_router(findings.router, prefix="/v1")
+app.include_router(vulnerabilities.router, prefix="/v1")
+app.include_router(inbox.router, prefix="/v1")
+app.include_router(relationships.router)
+app.include_router(fleet.router)
+app.include_router(workbench.router)
+app.include_router(trust.router)
 
 # ── Main UI (static HTML + vanilla JS, API-wired) ─────────────────────────────
 _UI_DIR = Path(__file__).parent.parent / "static" / "ui"
@@ -361,6 +386,34 @@ async def test_gaps(
 
     data = get_test_gap_data(target_dir=target, test_dir=test_dir)
     return {"success": True, **data}
+
+
+@app.get("/v1/rules", tags=["runs"], summary="List all canonical detection rules")
+async def list_rules(user: dict = Depends(get_current_user)):
+    from CORE.engines.normalizer import RULE_MAPPING
+
+    canonical: dict[str, dict] = {}
+    for tool_id, canonical_id in RULE_MAPPING.items():
+        if canonical_id not in canonical:
+            parts = canonical_id.split("-")
+            category = parts[0].lower() if parts else "other"
+            severity = (
+                "high"
+                if "SECURITY" in canonical_id or "HARDCODE" in canonical_id
+                else "medium"
+                if "COMPLEXITY" in canonical_id or "DUP" in canonical_id
+                else "low"
+            )
+            canonical[canonical_id] = {
+                "canonical_id": canonical_id,
+                "category": category,
+                "severity": severity,
+                "tool_ids": [],
+            }
+        canonical[canonical_id]["tool_ids"].append(tool_id)
+
+    rules = sorted(canonical.values(), key=lambda r: r["canonical_id"])
+    return {"success": True, "total": len(rules), "rules": rules}
 
 
 @app.get("/v1/policy", tags=["runs"], summary="Active .acrqa.yml policy configuration")

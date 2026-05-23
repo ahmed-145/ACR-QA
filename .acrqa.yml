@@ -51,7 +51,7 @@ reporting:
 
 ai:
   enabled: true
-  max_explanations: 50
+  max_explanations: 10
   model: llama-3.1-8b-instant
 
 quality_gate:

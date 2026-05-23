@@ -7,7 +7,8 @@ describe("cn", () => {
   });
 
   it("handles conditional classes", () => {
-    expect(cn("base", false && "nope", "yes")).toBe("base yes");
+    const flag = false as boolean;
+    expect(cn("base", flag && "nope", "yes")).toBe("base yes");
   });
 
   it("resolves tailwind conflicts (last wins)", () => {

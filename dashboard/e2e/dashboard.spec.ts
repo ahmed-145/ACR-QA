@@ -4,7 +4,7 @@ import { test, expect } from "@playwright/test";
 async function mockAuth(page: Parameters<typeof test>[1] extends (args: { page: infer P }) => unknown ? P : never) {
   await page.addInitScript(() => {
     localStorage.setItem(
-      "acrqa-auth",
+      "acrqa_auth",
       JSON.stringify({
         state: {
           token: "test-token",
@@ -50,14 +50,14 @@ test.describe("Scans page", () => {
     await mockAuth(page);
     await page.route("/v1/runs*", (route) => route.fulfill({ json: { runs: [] } }));
     await page.route("/v1/**", (route) => route.fulfill({ json: {} }));
-    await page.goto("/");
+    await page.goto("/scans");
     await expect(page.getByText("No scans yet")).toBeVisible({ timeout: 5000 });
   });
 
   test("New Scan button opens dialog", async ({ page }) => {
     await mockAuth(page);
     await page.route("/v1/**", (route) => route.fulfill({ json: { runs: [] } }));
-    await page.goto("/");
+    await page.goto("/scans");
     await page.getByRole("button", { name: /New Scan/i }).click();
     await expect(page.getByRole("dialog")).toBeVisible();
   });
@@ -65,7 +65,7 @@ test.describe("Scans page", () => {
   test("New Scan dialog has target directory and repo name fields", async ({ page }) => {
     await mockAuth(page);
     await page.route("/v1/**", (route) => route.fulfill({ json: { runs: [] } }));
-    await page.goto("/");
+    await page.goto("/scans");
     await page.getByRole("button", { name: /New Scan/i }).click();
     await expect(page.getByPlaceholder(/path\/to\/repo/i)).toBeVisible();
     await expect(page.getByPlaceholder(/my-service/i)).toBeVisible();

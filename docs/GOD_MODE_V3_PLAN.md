@@ -562,6 +562,27 @@ Opening signups means becoming a data controller under GDPR/equivalents. Require
 - **Week A6 pre-work (2026-05-20):**
   - ✅ Defense deck — `docs/DEFENSE_DECK.tex` + compiled PDF (25 slides, Beamer metropolis, 435KB)
   - ✅ Q&A prep — `docs/QA_PREP.md` (40 questions, 10 categories, full written answers)
+- **v5.0.0b2 shipped (2026-05-23) — Phase 6 + pre-defense polish:**
+  - ✅ **Phase 6 Trust page** — `/trust/:repoName` public posture page; ECDSA in-browser
+    verification; SVG badge; 4 API endpoints (`trust.py` router). Public route outside
+    `<Layout />` auth guard.
+  - ✅ **Vulnerabilities list page** — `/vulnerabilities` was a blank page (no route).
+    Created `vulnerabilities.tsx`, wired route, applied migrations 0019 (vulnerabilities
+    table) + 0020 (materialised views). `/v1/inbox` 500 also fixed.
+  - ✅ **Celery queue mismatch resolved** — worker was listening on `default` queue,
+    tasks queued to `celery` queue. Fixed + confirmed: run 285 completed (328s, 48 AI
+    explanations, attestation key 9ac4a287fc93f607).
+  - ✅ **JWT 8h expiry** — `JWT_ACCESS_TTL_MINUTES=480` in `.env`; 401 auto-logout in
+    `api.ts` helpers.
+  - ✅ **UI fixes** — findings sticky header top: 53→108px; `.sticky-filters` top: 0→53px;
+    WCAG AA contrast for `--fg-4`/`--fg-5`.
+  - ✅ **Full test suite clean** — pytest 2,569 · Vitest 104 · Playwright 55 · ESLint 0.
+  - ✅ **Dark/Light theme toggle** in sidebar.
+  - ✅ **`max_explanations: 10`** — scan time reduced from ~10 min to ~2 min.
+  - Backend tests: **2,653** (unchanged — no new backend engines in b2)
+  - Frontend tests: **104** (unchanged)
+  - Migrations: **18 → 20** (0019 vulnerabilities, 0020 relationship views)
+  - API endpoints: **52** (unchanged)
 - **REMAINING FOR HARD WEEK A6 (Jun 22–30):**
   - Demo video — 5-min 1920×1080 (human-led, OBS)
   - Dry-run with Dr. Samy (awaiting confirmation of defense date Jun 25)

@@ -1,11 +1,19 @@
+import { useState, useEffect } from "react";
 import { Navigate, Outlet, NavLink, useNavigate } from "react-router-dom";
 import { useAuth } from "@/lib/auth";
 import { ModeBadge } from "@/components/mode/ModeBadge";
 import { CommandPalette } from "@/components/ui/command-palette";
 import { ErrorBoundary } from "@/components/ui/error-boundary";
-import { Shield, LayoutDashboard, Package, Settings, LogOut, Moon, Sun, Languages, GitCompare } from "lucide-react";
-import { useState, useEffect } from "react";
-import { Button } from "@/components/ui/button";
+import { ThreatLevel } from "@/components/ui/ThreatLevel";
+import { AlertBanner } from "@/components/ui/AlertBanner";
+import { ShortcutsModal } from "@/components/ui/ShortcutsModal";
+import { useDensityEffect } from "@/lib/useDensity";
+import { useRuns, useInbox } from "@/lib/queries";
+import {
+  LayoutDashboard, Package, Settings, LogOut, GitCompare,
+  Brain, BarChart2, Languages, Search, DollarSign, GitBranch,
+  Shield, List, Home, Inbox, Map, Terminal, Sun, Moon,
+} from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { setLanguage } from "@/lib/i18n";
 
@@ -13,102 +21,164 @@ export function Layout() {
   const { isAuthenticated, logout, user } = useAuth();
   const navigate = useNavigate();
   const { t, i18n } = useTranslation();
-  const [dark, setDark] = useState(() => document.documentElement.classList.contains("dark"));
   const isRtl = i18n.language === "ar";
+  useDensityEffect();
+  const [shortcutsOpen, setShortcutsOpen] = useState(false);
+  const [isDark, setIsDark] = useState(() => document.documentElement.classList.contains("dark"));
+  function toggleTheme() {
+    const next = !isDark;
+    setIsDark(next);
+    document.documentElement.classList.toggle("dark", next);
+    localStorage.setItem("acrqa-theme", next ? "dark" : "light");
+  }
+  const { data: runsData } = useRuns(5);
+  const latestCompleted = runsData?.runs?.find((r) => r.status === "completed");
+  const highCount = latestCompleted?.high_count ?? 0;
+  const { data: inboxData } = useInbox();
+  const inboxCount = inboxData?.total ?? 0;
 
   useEffect(() => {
-    document.documentElement.classList.toggle("dark", dark);
-  }, [dark]);
+    function onKey(e: KeyboardEvent) {
+      const tag = (e.target as HTMLElement).tagName;
+      if (tag === "INPUT" || tag === "TEXTAREA" || tag === "SELECT") return;
+      if (e.key === "?") { e.preventDefault(); setShortcutsOpen((v) => !v); }
+    }
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, []);
 
   if (!isAuthenticated()) return <Navigate to="/login" replace />;
 
-  const navItems = [
-    { to: "/", icon: <LayoutDashboard className="h-4 w-4" aria-hidden />, label: t("nav.scans") },
-    { to: "/supply-chain", icon: <Package className="h-4 w-4" aria-hidden />, label: t("nav.supplyChain") },
-    { to: "/compare", icon: <GitCompare className="h-4 w-4" aria-hidden />, label: "Compare" },
-    { to: "/settings", icon: <Settings className="h-4 w-4" aria-hidden />, label: t("nav.settings") },
+  const navSections = [
+    {
+      label: "Analysis",
+      items: [
+        { to: "/inbox", icon: <Inbox size={15} aria-hidden />, label: "Inbox", count: inboxCount || undefined },
+        { to: "/overview", icon: <Home size={15} aria-hidden />, label: "Overview" },
+        { to: "/scans", icon: <LayoutDashboard size={15} aria-hidden />, label: t("nav.scans") },
+        { to: "/findings", icon: <Search size={15} aria-hidden />, label: "All Findings" },
+        { to: "/vulnerabilities", icon: <Shield size={15} aria-hidden />, label: "Vulnerabilities" },
+        { to: "/repos", icon: <GitBranch size={15} aria-hidden />, label: "Repositories" },
+        { to: "/compare", icon: <GitCompare size={15} aria-hidden />, label: "Compare" },
+        { to: "/supply-chain", icon: <Package size={15} aria-hidden />, label: t("nav.supplyChain") },
+      ],
+    },
+    {
+      label: "Intelligence",
+      items: [
+        { to: "/fleet",      icon: <Map size={15} aria-hidden />,       label: "Fleet" },
+        { to: "/workbench",  icon: <Terminal size={15} aria-hidden />,  label: "Workbench" },
+        { to: "/analytics",  icon: <BarChart2 size={15} aria-hidden />, label: "Analytics" },
+        { to: "/ai-detect",  icon: <Brain size={15} aria-hidden />,     label: "AI Detector" },
+        { to: "/cost",       icon: <DollarSign size={15} aria-hidden />, label: "Cost & ROI" },
+      ],
+    },
+    {
+      label: "Config",
+      items: [
+        { to: "/rules", icon: <List size={15} aria-hidden />, label: "Rules Browser" },
+        { to: "/policy", icon: <Shield size={15} aria-hidden />, label: "Policy" },
+        { to: "/settings", icon: <Settings size={15} aria-hidden />, label: t("nav.settings") },
+      ],
+    },
   ];
 
-  function toggleLanguage() {
-    setLanguage(isRtl ? "en" : "ar");
-  }
+  const emailDisplay = user?.email ?? "user@acrqa";
+  const initials = emailDisplay.slice(0, 2).toUpperCase();
+  const username = emailDisplay.split("@")[0];
 
   return (
-    <div className="min-h-screen flex flex-col">
-      {/* Header */}
-      <header className="sticky top-0 z-40 border-b bg-background/95 backdrop-blur" role="banner">
-        <div className="flex h-14 items-center gap-4 px-4 md:px-6">
-          <div className="flex items-center gap-2 font-semibold" aria-label="ACR-QA home">
-            <Shield className="h-5 w-5 text-primary" aria-hidden />
-            <span className="hidden md:inline">ACR-QA</span>
+    <div className="app" dir={isRtl ? "rtl" : "ltr"}>
+      {/* SIDEBAR */}
+      <aside className="sidebar" role="navigation" aria-label="Main navigation">
+        {/* Brand */}
+        <div className="brand-row">
+          <div className="logo" aria-hidden>✦</div>
+          <div className="wm-stack">
+            <span className="wm">ACR-QA</span>
+            <span className="ver">v5.0.0-b1</span>
           </div>
+        </div>
 
-          <nav aria-label="Main navigation" className="flex items-center gap-1 ml-4">
-            {navItems.map(({ to, icon, label }) => (
+        {/* Nav sections */}
+        {navSections.map((section) => (
+          <div key={section.label}>
+            <div className="nav-section">{section.label}</div>
+            {section.items.map(({ to, icon, label }) => (
               <NavLink
                 key={to}
                 to={to}
-                end={to === "/"}
-                className={({ isActive }) =>
-                  `flex items-center gap-1.5 rounded-md px-3 py-1.5 text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ${isActive ? "bg-primary text-primary-foreground" : "hover:bg-muted"}`
-                }
-                aria-current={undefined}
+                className={({ isActive }) => `nav-item${isActive ? " on" : ""}`}
               >
-                {icon}
-                <span className="hidden sm:inline">{label}</span>
+                <span className="ico">{icon}</span>
+                {label}
               </NavLink>
             ))}
-          </nav>
+          </div>
+        ))}
 
-          <div className="ml-auto flex items-center gap-2">
-            <ModeBadge />
+        {/* Footer */}
+        <div className="sb-footer">
+          <div className="sb-status">
+            <span className="led" aria-hidden />
+            API connected
+            <span style={{ marginLeft: "auto" }}>
+              <ThreatLevel highCount={highCount} />
+            </span>
+          </div>
+          <div className="sb-acct">
+            <div className="avatar" aria-hidden>{initials}</div>
+            <div className="stack">
+              <span className="nm">{username}</span>
+              <span className="sub">{user?.role ?? "analyst"}</span>
+            </div>
+          </div>
 
-            {/* Language toggle */}
-            <Button
-              variant="ghost"
-              size="icon"
+          {/* Footer actions */}
+          <div style={{ display: "flex", gap: 6, marginTop: 4 }}>
+            <button
+              className="btn-icon"
+              style={{ flex: 1 }}
               aria-label={isRtl ? "Switch to English" : "Switch to Arabic (عربي)"}
-              onClick={toggleLanguage}
+              onClick={() => setLanguage(isRtl ? "en" : "ar")}
               title={isRtl ? "English" : "عربي"}
             >
-              <Languages className="h-4 w-4" aria-hidden />
-            </Button>
-
-            <Button
-              variant="ghost"
-              size="icon"
-              aria-label={dark ? "Switch to light mode" : "Switch to dark mode"}
-              onClick={() => setDark(!dark)}
+              <Languages size={14} aria-hidden />
+            </button>
+            <button
+              className="btn-icon"
+              style={{ flex: 1 }}
+              aria-label={isDark ? "Switch to light mode" : "Switch to dark mode"}
+              onClick={toggleTheme}
+              title={isDark ? "Light mode" : "Dark mode"}
             >
-              {dark ? <Sun className="h-4 w-4" aria-hidden /> : <Moon className="h-4 w-4" aria-hidden />}
-            </Button>
-
-            {user && (
-              <span className="text-xs text-muted-foreground hidden md:inline" aria-label={`Signed in as ${user.email}`}>
-                {user.email}
-              </span>
-            )}
-
-            <Button
-              variant="ghost"
-              size="icon"
+              {isDark ? <Sun size={14} aria-hidden /> : <Moon size={14} aria-hidden />}
+            </button>
+            <ModeBadge />
+            <button
+              className="btn-icon"
+              style={{ flex: 1 }}
               aria-label="Sign out"
               onClick={() => { logout(); navigate("/login"); }}
             >
-              <LogOut className="h-4 w-4" aria-hidden />
-            </Button>
+              <LogOut size={14} aria-hidden />
+            </button>
           </div>
         </div>
-      </header>
+      </aside>
 
-      {/* Main */}
-      <main id="main-content" className="flex-1 px-4 py-6 md:px-6 md:py-8" role="main">
-        <ErrorBoundary>
-          <Outlet />
-        </ErrorBoundary>
-      </main>
+      {/* MAIN COLUMN */}
+      <div className="main">
+        <AlertBanner highCount={highCount} runId={latestCompleted?.id} />
+        <main id="main-content" role="main">
+          <ErrorBoundary>
+            <Outlet />
+          </ErrorBoundary>
+        </main>
+      </div>
 
       <CommandPalette />
+      <ShortcutsModal open={shortcutsOpen} onClose={() => setShortcutsOpen(false)} />
     </div>
   );
 }

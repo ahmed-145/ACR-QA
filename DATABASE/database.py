@@ -6,6 +6,7 @@ Handles provenance storage and retrieval
 import json
 import logging
 import os
+from datetime import timezone as _tz
 from pathlib import Path
 
 import psycopg2
@@ -202,7 +203,43 @@ class Database:
             confidence,
         )
         result = self.execute(query, values, fetch=True)
-        return result[0]["id"] if result else None
+        finding_id = result[0]["id"] if result else None
+
+        # Auto-fingerprint and link to a Vulnerability row
+        if finding_id:
+            try:
+                from datetime import datetime
+
+                from CORE.engines.fingerprint import compute_fingerprint
+
+                fp = compute_fingerprint(
+                    canonical_rule_id=finding_dict.get("canonical_rule_id") or finding_dict.get("rule_id") or "UNKNOWN",
+                    file_path=finding_dict.get("file", ""),
+                    evidence=finding_dict.get("evidence"),
+                    message=finding_dict.get("message", ""),
+                )
+                now = datetime.now(_tz.utc)  # noqa: UP017
+                vuln = self.upsert_vulnerability(
+                    fp,
+                    {
+                        "canonical_rule_id": finding_dict.get("canonical_rule_id")
+                        or finding_dict.get("rule_id")
+                        or "UNKNOWN",
+                        "file_path": finding_dict.get("file", ""),
+                        "severity": finding_dict.get("severity", "low"),
+                        "category": finding_dict.get("category"),
+                        "message": finding_dict.get("message"),
+                        "first_seen_run_id": run_id,
+                        "first_seen_at": now,
+                        "last_seen_at": now,
+                    },
+                )
+                if vuln:
+                    self.link_finding_to_vulnerability(finding_id, vuln["id"])
+            except Exception:
+                pass  # fingerprinting failure must never break the scan pipeline
+
+        return finding_id
 
     def upsert_pr_risk_score(self, run_id: int, result_dict: dict, changed_lines: int = 0) -> int | None:
         """Insert or update a row in pr_risk_scores for run_id (v5.0.0 A5)."""
@@ -1097,6 +1134,414 @@ class Database:
         )
         counts["users"] = 1
         return counts
+
+    # ── INBOX (Phase 2) ───────────────────────────────────────────────────────
+
+    def get_inbox(self, owner: str | None = None, stale_days: int = 7, limit: int = 50) -> dict:
+        """Return pre-categorised inbox sections for the Inbox page.
+
+        Sections (each a list of vulnerability rows):
+          regressions   — status = 'regressed'
+          stale_tps     — confirmed TP, not touched in stale_days, not resolved
+          disagreements — has a finding where second_opinion_agreement = FALSE
+          new_vulns     — status = 'detected', last 14 days
+          assigned_to_me — owner matches the caller's identity
+          pr_vulns      — vulns linked to PR findings (run_id has pr_number set)
+        """
+        results: dict[str, list[dict]] = {}
+
+        # Regressions
+        rows = self.execute(
+            "SELECT * FROM vulnerabilities WHERE status = 'regressed' ORDER BY updated_at DESC LIMIT %s",
+            (limit,),
+            fetch=True,
+        )
+        results["regressions"] = [dict(r) for r in (rows or [])]
+
+        # Stale TPs: confirmed/assigned, has TP triage, updated > stale_days ago
+        rows = self.execute(
+            """
+            SELECT DISTINCT v.*
+            FROM vulnerabilities v
+            JOIN findings f ON f.vulnerability_id = v.id
+            WHERE v.status IN ('confirmed','assigned','in_progress')
+              AND f.triage_verdict = 'TP'
+              AND v.updated_at < NOW() - INTERVAL '%s days'
+            ORDER BY v.updated_at ASC
+            LIMIT %s
+            """,
+            (stale_days, limit),
+            fetch=True,
+        )
+        results["stale_tps"] = [dict(r) for r in (rows or [])]
+
+        # Disagreements: second_opinion_agreement = false
+        rows = self.execute(
+            """
+            SELECT DISTINCT v.*
+            FROM vulnerabilities v
+            JOIN findings f ON f.vulnerability_id = v.id
+            WHERE f.second_opinion_agreement = FALSE
+              AND v.status NOT IN ('dismissed','verified','fixed')
+            ORDER BY v.severity DESC, v.created_at DESC
+            LIMIT %s
+            """,
+            (limit,),
+            fetch=True,
+        )
+        results["disagreements"] = [dict(r) for r in (rows or [])]
+
+        # New vulns: detected in last 14 days
+        rows = self.execute(
+            """
+            SELECT * FROM vulnerabilities
+            WHERE status = 'detected'
+              AND created_at > NOW() - INTERVAL '14 days'
+            ORDER BY severity DESC, created_at DESC
+            LIMIT %s
+            """,
+            (limit,),
+            fetch=True,
+        )
+        results["new_vulns"] = [dict(r) for r in (rows or [])]
+
+        # Assigned to me
+        if owner:
+            rows = self.execute(
+                """
+                SELECT * FROM vulnerabilities
+                WHERE owner = %s
+                  AND status NOT IN ('dismissed','verified','fixed')
+                ORDER BY
+                    CASE severity WHEN 'high' THEN 1 WHEN 'medium' THEN 2 ELSE 3 END,
+                    updated_at DESC
+                LIMIT %s
+                """,
+                (owner, limit),
+                fetch=True,
+            )
+            results["assigned_to_me"] = [dict(r) for r in (rows or [])]
+        else:
+            results["assigned_to_me"] = []
+
+        # PR vulns: linked to runs that have a pr_number
+        rows = self.execute(
+            """
+            SELECT DISTINCT v.*
+            FROM vulnerabilities v
+            JOIN findings f ON f.vulnerability_id = v.id
+            JOIN analysis_runs ar ON ar.id = f.run_id
+            WHERE ar.pr_number IS NOT NULL
+              AND v.status NOT IN ('dismissed','verified','fixed')
+            ORDER BY v.severity DESC, v.created_at DESC
+            LIMIT %s
+            """,
+            (limit,),
+            fetch=True,
+        )
+        results["pr_vulns"] = [dict(r) for r in (rows or [])]
+
+        return results
+
+    # ── VULNERABILITIES (Phase 0) ─────────────────────────────────────────────
+
+    VULN_STATUSES = frozenset(
+        {"detected", "confirmed", "assigned", "in_progress", "fixed", "verified", "regressed", "dismissed"}
+    )
+
+    def upsert_vulnerability(self, fingerprint: str, defaults: dict) -> dict:
+        """Insert a new Vulnerability or return the existing one for this fingerprint.
+
+        `defaults` fields (all optional except fingerprint which is the key):
+            short_id, canonical_rule_id, file_path, severity, category, message,
+            first_seen_run_id, first_seen_at, last_seen_at
+
+        On conflict (fingerprint already exists) we only update `last_seen_at`
+        and bump `updated_at`. Status and owner are never overwritten by a scan.
+
+        Returns the full vulnerability row as a dict.
+        """
+        from CORE.engines.fingerprint import short_fingerprint
+
+        short_id = defaults.get("short_id") or short_fingerprint(fingerprint)
+        query = """
+            INSERT INTO vulnerabilities
+                (fingerprint, short_id, canonical_rule_id, file_path,
+                 severity, category, message,
+                 first_seen_run_id, first_seen_at, last_seen_at)
+            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+            ON CONFLICT (fingerprint) DO UPDATE
+                SET last_seen_at = EXCLUDED.last_seen_at,
+                    updated_at   = NOW()
+            RETURNING *
+        """
+        rows = self.execute(
+            query,
+            (
+                fingerprint,
+                short_id,
+                defaults.get("canonical_rule_id", "UNKNOWN"),
+                defaults.get("file_path", ""),
+                defaults.get("severity", "low"),
+                defaults.get("category"),
+                defaults.get("message"),
+                defaults.get("first_seen_run_id"),
+                defaults.get("first_seen_at"),
+                defaults.get("last_seen_at"),
+            ),
+            fetch=True,
+        )
+        return dict(rows[0]) if rows else {}
+
+    def link_finding_to_vulnerability(self, finding_id: int, vulnerability_id: int) -> None:
+        """Set findings.vulnerability_id for a finding that has been matched."""
+        self.execute(
+            "UPDATE findings SET vulnerability_id = %s WHERE id = %s",
+            (vulnerability_id, finding_id),
+        )
+
+    def get_vulnerability(self, vulnerability_id: int) -> dict | None:
+        """Fetch a single vulnerability by PK."""
+        rows = self.execute("SELECT * FROM vulnerabilities WHERE id = %s", (vulnerability_id,), fetch=True)
+        return dict(rows[0]) if rows else None
+
+    def get_vulnerability_by_fingerprint(self, fingerprint: str) -> dict | None:
+        """Fetch a vulnerability by its stable fingerprint."""
+        rows = self.execute("SELECT * FROM vulnerabilities WHERE fingerprint = %s", (fingerprint,), fetch=True)
+        return dict(rows[0]) if rows else None
+
+    def get_vulnerability_by_short_id(self, short_id: str) -> dict | None:
+        """Fetch a vulnerability by its short URL-friendly ID."""
+        rows = self.execute("SELECT * FROM vulnerabilities WHERE short_id = %s", (short_id,), fetch=True)
+        return dict(rows[0]) if rows else None
+
+    def list_vulnerabilities(
+        self,
+        status: str | None = None,
+        severity: str | None = None,
+        canonical_rule_id: str | None = None,
+        owner: str | None = None,
+        limit: int = 100,
+        offset: int = 0,
+    ) -> list[dict]:
+        """List vulnerabilities with optional filters, ordered by severity then age."""
+        conditions = []
+        params: list = []
+
+        if status:
+            conditions.append("status = %s")
+            params.append(status)
+        if severity:
+            conditions.append("severity = %s")
+            params.append(severity)
+        if canonical_rule_id:
+            conditions.append("canonical_rule_id = %s")
+            params.append(canonical_rule_id)
+        if owner:
+            conditions.append("owner = %s")
+            params.append(owner)
+
+        where = ("WHERE " + " AND ".join(conditions)) if conditions else ""
+        params.extend([limit, offset])
+
+        query = f"""
+            SELECT * FROM vulnerabilities
+            {where}
+            ORDER BY
+                CASE severity WHEN 'high' THEN 1 WHEN 'medium' THEN 2 ELSE 3 END,
+                first_seen_at DESC NULLS LAST
+            LIMIT %s OFFSET %s
+        """
+        rows = self.execute(query, tuple(params), fetch=True)
+        return [dict(r) for r in rows] if rows else []
+
+    def count_vulnerabilities(
+        self,
+        status: str | None = None,
+        severity: str | None = None,
+    ) -> int:
+        """Return total count matching optional filters."""
+        conditions = []
+        params: list = []
+        if status:
+            conditions.append("status = %s")
+            params.append(status)
+        if severity:
+            conditions.append("severity = %s")
+            params.append(severity)
+        where = ("WHERE " + " AND ".join(conditions)) if conditions else ""
+        rows = self.execute(f"SELECT COUNT(*) as n FROM vulnerabilities {where}", tuple(params), fetch=True)
+        return int(rows[0]["n"]) if rows else 0
+
+    def update_vulnerability_status(self, vulnerability_id: int, status: str, resolved_at=None) -> None:
+        """Transition a vulnerability's lifecycle status."""
+        if status not in self.VULN_STATUSES:
+            raise ValueError(f"Invalid vuln status: {status!r}")
+        if status in ("fixed", "verified", "dismissed") and resolved_at is None:
+            self.execute(
+                "UPDATE vulnerabilities SET status = %s, resolved_at = NOW(), updated_at = NOW() WHERE id = %s",
+                (status, vulnerability_id),
+            )
+        else:
+            self.execute(
+                "UPDATE vulnerabilities SET status = %s, updated_at = NOW() WHERE id = %s",
+                (status, vulnerability_id),
+            )
+
+    def update_vulnerability_owner(self, vulnerability_id: int, owner: str | None) -> None:
+        """Assign or unassign an owner for a vulnerability."""
+        self.execute(
+            "UPDATE vulnerabilities SET owner = %s, updated_at = NOW() WHERE id = %s",
+            (owner, vulnerability_id),
+        )
+
+    def get_vulnerability_findings(self, vulnerability_id: int) -> list[dict]:
+        """Return all findings linked to this vulnerability, newest run first."""
+        query = """
+            SELECT f.*, ar.started_at as run_started_at, ar.repo_name
+            FROM findings f
+            JOIN analysis_runs ar ON ar.id = f.run_id
+            WHERE f.vulnerability_id = %s
+            ORDER BY ar.started_at DESC
+        """
+        rows = self.execute(query, (vulnerability_id,), fetch=True)
+        return [dict(r) for r in rows] if rows else []
+
+    # ===== RELATIONSHIPS =====
+
+    def refresh_relationship_views(self) -> None:
+        """Refresh all four relationship materialised views concurrently."""
+        for view in ("mv_vuln_same_rule", "mv_vuln_same_file", "mv_vuln_taint_chain", "mv_vuln_author"):
+            try:
+                self.execute(f"REFRESH MATERIALIZED VIEW CONCURRENTLY {view}")
+            except Exception as e:
+                logger.warning(f"Could not refresh {view}: {e}")
+
+    def get_related_vulnerabilities(self, vulnerability_id: int) -> list[dict]:
+        """Return related vulns from all edge types, merged and sorted by score desc."""
+        query = """
+            SELECT
+                rel.related_id,
+                rel.edge_type,
+                rel.score,
+                v.short_id,
+                v.canonical_rule_id,
+                v.severity,
+                v.status,
+                v.file_path,
+                v.title
+            FROM (
+                SELECT related_id, edge_type, score FROM mv_vuln_same_rule  WHERE vuln_id = %s
+                UNION ALL
+                SELECT related_id, edge_type, score FROM mv_vuln_same_file  WHERE vuln_id = %s
+                UNION ALL
+                SELECT related_id, edge_type, score FROM mv_vuln_taint_chain WHERE vuln_id = %s
+            ) rel
+            JOIN vulnerabilities v ON v.id = rel.related_id
+            ORDER BY rel.score DESC, v.severity
+            LIMIT 20
+        """
+        rows = self.execute(query, (vulnerability_id, vulnerability_id, vulnerability_id), fetch=True)
+        return [dict(r) for r in rows] if rows else []
+
+    def get_rule_stats(self, canonical_rule_id: str) -> dict:
+        """Return aggregate stats for a rule across all vulnerabilities."""
+        rows = self.execute(
+            """
+            SELECT
+                COUNT(*)                                          AS total,
+                COUNT(*) FILTER (WHERE status NOT IN ('dismissed','fixed','verified')) AS open,
+                COUNT(*) FILTER (WHERE severity = 'high')        AS high,
+                COUNT(*) FILTER (WHERE severity = 'medium')      AS medium,
+                COUNT(*) FILTER (WHERE severity = 'low')         AS low,
+                COUNT(DISTINCT file_path)                        AS files_affected,
+                COUNT(DISTINCT owner) FILTER (WHERE owner IS NOT NULL) AS owners
+            FROM vulnerabilities
+            WHERE canonical_rule_id = %s
+            """,
+            (canonical_rule_id,),
+            fetch=True,
+        )
+        row = rows[0] if rows else {}
+        return {
+            "canonical_rule_id": canonical_rule_id,
+            "total": int(row.get("total") or 0),
+            "open": int(row.get("open") or 0),
+            "high": int(row.get("high") or 0),
+            "medium": int(row.get("medium") or 0),
+            "low": int(row.get("low") or 0),
+            "files_affected": int(row.get("files_affected") or 0),
+            "owners": int(row.get("owners") or 0),
+        }
+
+    def get_author_vulnerabilities(self, owner: str, limit: int = 50) -> list[dict]:
+        """Return all open vulnerabilities assigned to an owner, newest first."""
+        query = """
+            SELECT id, short_id, canonical_rule_id, severity, status, file_path, title, updated_at
+            FROM vulnerabilities
+            WHERE owner = %s
+              AND status NOT IN ('dismissed', 'fixed', 'verified')
+            ORDER BY
+                CASE severity WHEN 'high' THEN 1 WHEN 'medium' THEN 2 ELSE 3 END,
+                updated_at DESC NULLS LAST
+            LIMIT %s
+        """
+        rows = self.execute(query, (owner, limit), fetch=True)
+        return [dict(r) for r in rows] if rows else []
+
+    def search_objects(self, q: str, limit: int = 10) -> dict:
+        """Full-text prefix search across vulns, rules, and authors."""
+        like = f"%{q}%"
+        prefix = f"{q}%"
+
+        vuln_rows = self.execute(
+            """
+            SELECT short_id, canonical_rule_id, severity, status, file_path, title
+            FROM vulnerabilities
+            WHERE short_id ILIKE %s
+               OR title ILIKE %s
+               OR file_path ILIKE %s
+               OR canonical_rule_id ILIKE %s
+            ORDER BY severity, updated_at DESC NULLS LAST
+            LIMIT %s
+            """,
+            (prefix, like, like, like, limit),
+            fetch=True,
+        )
+
+        rule_rows = self.execute(
+            """
+            SELECT DISTINCT canonical_rule_id,
+                   COUNT(*) FILTER (WHERE status NOT IN ('dismissed','fixed','verified')) AS open_count
+            FROM vulnerabilities
+            WHERE canonical_rule_id ILIKE %s
+            GROUP BY canonical_rule_id
+            ORDER BY open_count DESC
+            LIMIT %s
+            """,
+            (like, limit),
+            fetch=True,
+        )
+
+        author_rows = self.execute(
+            """
+            SELECT owner,
+                   COUNT(*) FILTER (WHERE status NOT IN ('dismissed','fixed','verified')) AS open_count
+            FROM vulnerabilities
+            WHERE owner ILIKE %s AND owner IS NOT NULL
+            GROUP BY owner
+            ORDER BY open_count DESC
+            LIMIT %s
+            """,
+            (like, limit),
+            fetch=True,
+        )
+
+        return {
+            "vulns": [dict(r) for r in vuln_rows] if vuln_rows else [],
+            "rules": [dict(r) for r in rule_rows] if rule_rows else [],
+            "authors": [dict(r) for r in author_rows] if author_rows else [],
+        }
 
     def close(self):
         """Close database connection pool"""

@@ -1,5 +1,4 @@
 import { render, screen } from "@testing-library/react";
-import userEvent from "@testing-library/user-event";
 import { describe, it, expect } from "vitest";
 import { Skeleton, SkeletonCard, SkeletonTable } from "@/components/ui/skeleton";
 import { ErrorBoundary } from "@/components/ui/error-boundary";
