@@ -47,18 +47,28 @@ REPORT_FILE = ROOT / "docs/evaluation/PRECISION_BENCHMARK.md"
 # (we exclude test/example/vendor noise to get a clean FP rate on production code).
 TEST_PATH_PATTERNS = re.compile(
     r"(?:^|/)(tests?|testing|test_|_test\.|spec[_/]|fixtures?|examples?|"
-    r"benchmarks?|demos?|vendor|third.?party|node_modules|__pycache__|\.git|"
-    r"docs?/|changelog|CHANGELOG|migrations?|conftest|setup\.py$|setup\.cfg$|"
-    r"pyproject\.toml$|tox\.ini$|Makefile$)(?:/|$|\.)",
+    r"benchmarks?|demos?|vendor|_vendor|third.?party|node_modules|__pycache__|\.git|"
+    r"docs?/|changelog|CHANGELOG|migrations?|conftest|tasks?/|noxfile|"
+    r"setup\.py$|setup\.cfg$|pyproject\.toml$|tox\.ini$|Makefile$)(?:/|$|\.)",
     re.IGNORECASE,
 )
 
-# Security rule IDs that are high-confidence — treat production-code hits as TP candidates
+# Bandit B105 "possible hardcoded password" fires on trivially short or purely punctuation
+# strings — these are always false positives (e.g. "(" ")" "with" as token comparisons).
+_TRIVIAL_PASSWORD_RE = re.compile(r"Possible hardcoded password: '([^']{0,6})'", re.IGNORECASE)
+
+# Security rule IDs that are high-confidence — treat production-code hits as TP candidates.
+# NOTE: SECURITY-005 (bandit B105 hardcoded-password) is intentionally excluded — it has
+# a very high FP rate on string comparisons (e.g. operator tokens, config keys).
 HIGH_CONFIDENCE_RULES = {
     # Python injection / dangerous eval
-    "SECURITY-001", "SECURITY-002", "SECURITY-003", "SECURITY-004", "SECURITY-005",
-    "SECURITY-006", "SECURITY-007", "SECURITY-008", "SECURITY-009", "SECURITY-010",
-    # Hardcoded secrets
+    "SECURITY-001", "SECURITY-002", "SECURITY-003", "SECURITY-004",
+    "SECURITY-006", "SECURITY-007", "SECURITY-009", "SECURITY-010",
+    # Pickle/marshal deserialization (context-sensitive; only high when no test path)
+    "SECURITY-008",
+    # subprocess with shell=True (injection risk)
+    "SECURITY-021", "SECURITY-024",
+    # Hardcoded secrets (only when not SECURITY-005 variant)
     "SECRET-001", "SECRET-002", "SECRET-003",
     # SQL injection
     "SQLI-001", "SQLI-002",
@@ -73,8 +83,12 @@ HIGH_CONFIDENCE_RULES = {
 # Rules that are almost always noise in mature production code
 LOW_SIGNAL_RULES = {
     "QUALITY-001", "QUALITY-002", "QUALITY-003",
-    "COMPLEXITY-001", "COMPLEXITY-002",
-    "DEAD-001",  # dead code
+    "COMPLEXITY-001", "COMPLEXITY-002",  # cyclomatic complexity
+    "DEAD-001", "DEAD-002", "DEAD-003", "DEAD-004",  # dead code / unreachable
+    "SOLID-001", "SOLID-002", "SOLID-003",  # SOLID principle metrics
+    "STYLE-001", "STYLE-002", "STYLE-003", "STYLE-004",  # code style
+    "IMPORT-001", "IMPORT-002", "IMPORT-003", "IMPORT-004",  # import ordering / issues
+    "VAR-001", "VAR-002", "VAR-003", "VAR-004",  # variable usage
 }
 
 
@@ -228,11 +242,20 @@ def triage_finding(f: dict, repo_name: str) -> dict:
     if sev not in ("high", "medium"):
         return {"verdict": "SKIP", "reason": "low severity — excluded from precision denominator"}
 
+    # Strip the absolute path prefix up to and including the repo name so that
+    # TEST_PATH_PATTERNS only matches path components WITHIN the repo, not the
+    # absolute path (e.g. /home/user/.../TESTS/evaluation/cloned/precision_corpus/requests/...).
+    # We extract the relative path starting from after "<repo_name>/".
+    rel_path = path
+    repo_marker = f"/{repo_name}/"
+    if repo_marker in path:
+        rel_path = path.split(repo_marker, 1)[1]
+
     # Test / vendor / example paths → automatic FP
-    if TEST_PATH_PATTERNS.search(path):
+    if TEST_PATH_PATTERNS.search(rel_path):
         return {
             "verdict": "AUTO_FP",
-            "reason": f"path matches test/example/vendor pattern: {path}",
+            "reason": f"path matches test/example/vendor pattern: {rel_path}",
         }
 
     # Low-signal quality rules → likely FP
@@ -242,15 +265,27 @@ def triage_finding(f: dict, repo_name: str) -> dict:
             "reason": f"low-signal quality rule {rule} in mature codebase",
         }
 
+    # SECURITY-005 (hardcoded password) with a trivially short or punctuation-only "password"
+    # is a classic bandit B105 false positive (e.g. operator tokens like "(", ")", "with").
+    msg_raw = f.get("message") or ""
+    if rule == "SECURITY-005":
+        m = _TRIVIAL_PASSWORD_RE.search(msg_raw)
+        if m:
+            token = m.group(1)
+            if len(token) <= 6 or not any(c.isalnum() for c in token):
+                return {
+                    "verdict": "AUTO_FP",
+                    "reason": f"B105 trivial-token FP: flagged '{token}' as password",
+                }
+        return {"verdict": "NEEDS_REVIEW", "reason": f"SECURITY-005 hardcoded-password in production code — token: {msg_raw[:80]}"}
+
     # HIGH severity + high-confidence security rule in production code → TP candidate
     if sev == "high" and rule in HIGH_CONFIDENCE_RULES:
         # Further check: is message about a known-safe pattern?
-        msg = (f.get("message") or "").lower()
-        # yaml.load flagged in pyyaml itself is a TP (they use it intentionally but it's flagged)
-        # subprocess.run in production code is a TP candidate
+        msg = msg_raw.lower()
+        # yaml.load flagged in pyyaml itself is intentional but still a detectable risk
         safe_patterns = [
             "# nosec", "# noqa", "safe=true", "safe_load",
-            "in tests", "for testing",
         ]
         if any(p in msg for p in safe_patterns):
             return {"verdict": "AUTO_FP", "reason": f"message indicates intentional safe use: {msg[:80]}"}
@@ -277,14 +312,16 @@ def conservative_verdict(t: dict) -> str:
     """
     Conservative precision: NEEDS_REVIEW counted as FP (worst case for precision).
     """
-    return t["verdict"] if t["verdict"] in ("AUTO_TP", "AUTO_FP") else "AUTO_FP"
+    v = t["triage"]["verdict"]
+    return v if v in ("AUTO_TP", "AUTO_FP") else "AUTO_FP"
 
 
 def optimistic_verdict(t: dict) -> str:
     """
     Optimistic precision: NEEDS_REVIEW counted as TP (best case for precision).
     """
-    return t["verdict"] if t["verdict"] in ("AUTO_TP", "AUTO_FP") else "AUTO_TP"
+    v = t["triage"]["verdict"]
+    return v if v in ("AUTO_TP", "AUTO_FP") else "AUTO_TP"
 
 
 def compute_precision(triaged: list[dict], mode: str = "conservative") -> dict:

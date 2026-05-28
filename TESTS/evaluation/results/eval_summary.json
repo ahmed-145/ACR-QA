@@ -1,8 +1,21 @@
 {
   "generated": "2026-05-21 05:25:27",
+  "precision_updated": "2026-05-28",
   "total_repos": 33,
   "scanned": 20,
   "cve_skipped": 0,
+  "precision_benchmark": {
+    "corpus": "precision_corpus_pins.yml",
+    "corpus_size": 30,
+    "repos_with_findings": 24,
+    "total_high_med_findings": 941,
+    "auto_tp": 54,
+    "auto_fp": 748,
+    "needs_review": 139,
+    "conservative_precision": 0.0574,
+    "optimistic_precision": 0.2051,
+    "note": "Conservative=NEEDS_REVIEW→FP; Optimistic=NEEDS_REVIEW→TP. True precision lies between bounds. Low score driven by quality/style rules over-firing on mature codebases and Go adapter returning 0 findings (staticcheck normalization gap). See docs/evaluation/PRECISION_BENCHMARK.md"
+  },
   "average_recall": 1.0,
   "results": [
     {

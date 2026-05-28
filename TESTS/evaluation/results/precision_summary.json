@@ -1,0 +1,309 @@
+{
+  "generated": "2026-05-28 20:04 UTC",
+  "corpus": "precision_corpus_pins.yml",
+  "corpus_size": 24,
+  "total_high_med_findings": 941,
+  "conservative_precision": {
+    "mode": "conservative",
+    "tp": 54,
+    "fp": 887,
+    "needs_review": 139,
+    "total": 941,
+    "precision": 0.057385759829968117
+  },
+  "optimistic_precision": {
+    "mode": "optimistic",
+    "tp": 193,
+    "fp": 748,
+    "needs_review": 139,
+    "total": 941,
+    "precision": 0.2051009564293305
+  },
+  "needs_review_count": 139,
+  "language_breakdown": {
+    "python": {
+      "high_med": 573,
+      "auto_tp": 29,
+      "auto_fp": 430,
+      "needs_review": 114
+    },
+    "javascript": {
+      "high_med": 368,
+      "auto_tp": 25,
+      "auto_fp": 318,
+      "needs_review": 25
+    }
+  },
+  "per_repo": [
+    {
+      "repo": "packaging",
+      "language": "python",
+      "total_findings": 30,
+      "high_med_findings": 20,
+      "auto_tp": 3,
+      "auto_fp": 17,
+      "needs_review": 0
+    },
+    {
+      "repo": "urllib3",
+      "language": "python",
+      "total_findings": 36,
+      "high_med_findings": 16,
+      "auto_tp": 0,
+      "auto_fp": 14,
+      "needs_review": 2
+    },
+    {
+      "repo": "requests",
+      "language": "python",
+      "total_findings": 65,
+      "high_med_findings": 23,
+      "auto_tp": 0,
+      "auto_fp": 23,
+      "needs_review": 0
+    },
+    {
+      "repo": "charset-normalizer",
+      "language": "python",
+      "total_findings": 60,
+      "high_med_findings": 10,
+      "auto_tp": 0,
+      "auto_fp": 10,
+      "needs_review": 0
+    },
+    {
+      "repo": "setuptools",
+      "language": "python",
+      "total_findings": 32,
+      "high_med_findings": 32,
+      "auto_tp": 7,
+      "auto_fp": 16,
+      "needs_review": 9
+    },
+    {
+      "repo": "cryptography",
+      "language": "python",
+      "total_findings": 0,
+      "high_med_findings": 0,
+      "auto_tp": 0,
+      "auto_fp": 0,
+      "needs_review": 0
+    },
+    {
+      "repo": "python-dateutil",
+      "language": "python",
+      "total_findings": 114,
+      "high_med_findings": 36,
+      "auto_tp": 0,
+      "auto_fp": 26,
+      "needs_review": 10
+    },
+    {
+      "repo": "pyyaml",
+      "language": "python",
+      "total_findings": 55,
+      "high_med_findings": 35,
+      "auto_tp": 0,
+      "auto_fp": 34,
+      "needs_review": 1
+    },
+    {
+      "repo": "pydantic",
+      "language": "python",
+      "total_findings": 51,
+      "high_med_findings": 51,
+      "auto_tp": 3,
+      "auto_fp": 42,
+      "needs_review": 6
+    },
+    {
+      "repo": "pygments",
+      "language": "python",
+      "total_findings": 71,
+      "high_med_findings": 50,
+      "auto_tp": 2,
+      "auto_fp": 26,
+      "needs_review": 22
+    },
+    {
+      "repo": "click",
+      "language": "python",
+      "total_findings": 63,
+      "high_med_findings": 21,
+      "auto_tp": 1,
+      "auto_fp": 11,
+      "needs_review": 9
+    },
+    {
+      "repo": "numpy",
+      "language": "python",
+      "total_findings": 24,
+      "high_med_findings": 24,
+      "auto_tp": 2,
+      "auto_fp": 20,
+      "needs_review": 2
+    },
+    {
+      "repo": "pycparser",
+      "language": "python",
+      "total_findings": 60,
+      "high_med_findings": 9,
+      "auto_tp": 0,
+      "auto_fp": 8,
+      "needs_review": 1
+    },
+    {
+      "repo": "anyio",
+      "language": "python",
+      "total_findings": 58,
+      "high_med_findings": 24,
+      "auto_tp": 4,
+      "auto_fp": 16,
+      "needs_review": 4
+    },
+    {
+      "repo": "attrs",
+      "language": "python",
+      "total_findings": 69,
+      "high_med_findings": 24,
+      "auto_tp": 1,
+      "auto_fp": 23,
+      "needs_review": 0
+    },
+    {
+      "repo": "h11",
+      "language": "python",
+      "total_findings": 75,
+      "high_med_findings": 25,
+      "auto_tp": 0,
+      "auto_fp": 19,
+      "needs_review": 6
+    },
+    {
+      "repo": "fsspec",
+      "language": "python",
+      "total_findings": 96,
+      "high_med_findings": 65,
+      "auto_tp": 0,
+      "auto_fp": 49,
+      "needs_review": 16
+    },
+    {
+      "repo": "pytest",
+      "language": "python",
+      "total_findings": 65,
+      "high_med_findings": 48,
+      "auto_tp": 4,
+      "auto_fp": 30,
+      "needs_review": 14
+    },
+    {
+      "repo": "pandas",
+      "language": "python",
+      "total_findings": 34,
+      "high_med_findings": 34,
+      "auto_tp": 2,
+      "auto_fp": 21,
+      "needs_review": 11
+    },
+    {
+      "repo": "httpx",
+      "language": "python",
+      "total_findings": 81,
+      "high_med_findings": 26,
+      "auto_tp": 0,
+      "auto_fp": 25,
+      "needs_review": 1
+    },
+    {
+      "repo": "axios",
+      "language": "javascript",
+      "total_findings": 300,
+      "high_med_findings": 14,
+      "auto_tp": 7,
+      "auto_fp": 1,
+      "needs_review": 6
+    },
+    {
+      "repo": "express",
+      "language": "javascript",
+      "total_findings": 298,
+      "high_med_findings": 298,
+      "auto_tp": 0,
+      "auto_fp": 288,
+      "needs_review": 10
+    },
+    {
+      "repo": "nextjs",
+      "language": "javascript",
+      "total_findings": 23,
+      "high_med_findings": 18,
+      "auto_tp": 6,
+      "auto_fp": 10,
+      "needs_review": 2
+    },
+    {
+      "repo": "react",
+      "language": "javascript",
+      "total_findings": 0,
+      "high_med_findings": 0,
+      "auto_tp": 0,
+      "auto_fp": 0,
+      "needs_review": 0
+    },
+    {
+      "repo": "webpack",
+      "language": "javascript",
+      "total_findings": 238,
+      "high_med_findings": 28,
+      "auto_tp": 10,
+      "auto_fp": 16,
+      "needs_review": 2
+    },
+    {
+      "repo": "n8n",
+      "language": "javascript",
+      "total_findings": 21,
+      "high_med_findings": 10,
+      "auto_tp": 2,
+      "auto_fp": 3,
+      "needs_review": 5
+    },
+    {
+      "repo": "gin",
+      "language": "go",
+      "total_findings": 0,
+      "high_med_findings": 0,
+      "auto_tp": 0,
+      "auto_fp": 0,
+      "needs_review": 0
+    },
+    {
+      "repo": "caddy",
+      "language": "go",
+      "total_findings": 0,
+      "high_med_findings": 0,
+      "auto_tp": 0,
+      "auto_fp": 0,
+      "needs_review": 0
+    },
+    {
+      "repo": "syncthing",
+      "language": "go",
+      "total_findings": 0,
+      "high_med_findings": 0,
+      "auto_tp": 0,
+      "auto_fp": 0,
+      "needs_review": 0
+    },
+    {
+      "repo": "frp",
+      "language": "go",
+      "total_findings": 0,
+      "high_med_findings": 0,
+      "auto_tp": 0,
+      "auto_fp": 0,
+      "needs_review": 0
+    }
+  ]
+}
