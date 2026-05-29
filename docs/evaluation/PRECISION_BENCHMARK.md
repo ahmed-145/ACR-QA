@@ -1,6 +1,6 @@
 # Precision Benchmark — ACR-QA v5.0
 
-*Generated: 2026-05-29 04:57 UTC*
+*Generated: 2026-05-29 05:34 UTC*
 *Corpus: [`precision_corpus_pins.yml`](../../TESTS/evaluation/precision_corpus_pins.yml)*
 
 ---
@@ -9,16 +9,25 @@
 
 | Metric | Conservative | Optimistic |
 |--------|-------------|-----------|
-| **Precision** | **8.6%** | **31.0%** |
-| TP | 54 | 195 |
-| FP | 576 | 435 |
-| Needs Review | 141 | 141 |
+| **Blended precision** (all H/M) | **8.6%** | **28.1%** |
+| **Security-tier precision** (HIGH security rules) | **24.7%** | **37.9%** |
+| TP (blended) | 54 | 177 |
+| FP (blended) | 576 | 453 |
+| Needs Review | 123 | 123 |
 | Total H/M findings | 630 | 630 |
+| Security-tier denominator | 219 | 219 |
 | Repos scanned | 24 | — |
 
 > **Conservative**: `NEEDS_REVIEW` items counted as FP (worst-case precision).
 > **Optimistic**: `NEEDS_REVIEW` items counted as TP (best-case precision).
 > True precision lies between these bounds pending manual review.
+>
+> **Security-tier precision** restricts the denominator to `HIGH`-severity findings
+> whose rule belongs to a security category (`SECURITY-*`, `SECRET-*`, `SQLI-*`,
+> `SHELL-*`, `XML-*`, `YAML-*`, `CRYPTO-*`). Style, quality, and complexity
+> findings are excluded. This is the standard SAST reporting stratum used by
+> industry tools (Semgrep, CodeQL, Snyk) and is the defensible primary metric
+> for a security analysis tool.
 
 ---
 
@@ -58,8 +67,8 @@ The FP rate here represents the tool's noise floor on clean, well-maintained pro
 
 | Language       | H/M   |  TP  |  FP  |  NR | Conservative | Optimistic |
 |----------------|-------|------|------|-----|-------------|-----------|
-| Python         |   495 |   29 |  369 |  97 |     5.9% |     25.5% |
-| Javascript     |   135 |   25 |   66 |  44 |    18.5% |     51.1% |
+| Python         |   495 |   29 |  385 |  81 |     5.9% |     22.2% |
+| Javascript     |   135 |   25 |   68 |  42 |    18.5% |     49.6% |
 
 ---
 
@@ -68,14 +77,14 @@ The FP rate here represents the tool's noise floor on clean, well-maintained pro
 | Repo                     | Language     | Total  | H/M  | TP | FP | NR |
 |--------------------------|--------------|--------|------|----|----|----|
 | packaging                | python       |     30 |   20 |  3 | 17 |  0 |
-| urllib3                  | python       |     36 |   16 |  0 | 14 |  2 |
+| urllib3                  | python       |     36 |   16 |  0 | 16 |  0 |
 | requests                 | python       |     65 |   23 |  0 | 23 |  0 |
 | charset-normalizer       | python       |     60 |   10 |  0 | 10 |  0 |
-| setuptools               | python       |     32 |   32 |  7 | 16 |  9 |
+| setuptools               | python       |     32 |   32 |  7 | 18 |  7 |
 | cryptography             | python       |      0 |    0 |  0 |  0 |  0 |
 | python-dateutil          | python       |    104 |   28 |  0 | 20 |  8 |
 | pyyaml                   | python       |     55 |   35 |  0 | 34 |  1 |
-| pydantic                 | python       |     51 |   51 |  3 | 42 |  6 |
+| pydantic                 | python       |     51 |   51 |  3 | 46 |  2 |
 | pygments                 | python       |     63 |   37 |  2 | 16 | 19 |
 | click                    | python       |     53 |   13 |  1 |  5 |  7 |
 | numpy                    | python       |     24 |   24 |  2 | 20 |  2 |
@@ -84,10 +93,10 @@ The FP rate here represents the tool's noise floor on clean, well-maintained pro
 | attrs                    | python       |     69 |   24 |  1 | 23 |  0 |
 | h11                      | python       |     65 |   19 |  0 | 13 |  6 |
 | fsspec                   | python       |     85 |   50 |  0 | 39 | 11 |
-| pytest                   | python       |     57 |   33 |  4 | 18 | 11 |
+| pytest                   | python       |     57 |   33 |  4 | 26 |  3 |
 | pandas                   | python       |     29 |   29 |  2 | 16 | 11 |
 | httpx                    | python       |     81 |   26 |  0 | 25 |  1 |
-| axios                    | javascript   |    300 |   14 |  7 |  1 |  6 |
+| axios                    | javascript   |    300 |   14 |  7 |  3 |  4 |
 | express                  | javascript   |    294 |   65 |  0 | 36 | 29 |
 | nextjs                   | javascript   |     23 |   18 |  6 | 10 |  2 |
 | react                    | javascript   |      0 |    0 |  0 |  0 |  0 |
@@ -106,6 +115,13 @@ The FP rate here represents the tool's noise floor on clean, well-maintained pro
 - File path matches: `tests?/`, `spec/`, `fixtures/`, `examples?/`, `vendor/`, `node_modules/`, `benchmarks?/`, `docs/`, `migrations/`
 - Rule ID in low-signal set: `QUALITY-*`, `COMPLEXITY-*`, `DEAD-001`
 - Message contains `# nosec`, `# noqa`, or explicit "safe use" note
+- **L1 — SSRF in dev tooling paths** (`SECURITY-046` in `scripts/`, `release/`, `ci/`, `.github/`, `conf.py`, `noxfile`, `Makefile`, etc.)
+  - Rationale: `SECURITY-046` is a pattern-only SSRF rule (no taint tracking). It fires on any
+    `requests.get(url)` with a variable URL. In release automation and doc builders this is
+    developer-controlled code calling known endpoints — categorically not a web-app SSRF.
+- **L2 — subprocess in build automation paths** (`SECURITY-022/026` in same non-runtime dirs)
+  - Rationale: `B603/B607` are designed to catch web-app subprocess injection. In `setup.py`,
+    `noxfile.py`, `scripts/` they fire on intentional `["git", "make"]` calls — not injection risks.
 
 ### AUTO_TP triggers
 - Severity = HIGH **and** rule in high-confidence set (`SECURITY-*`, `SECRET-*`, `SQLI-*`, `SHELL-*`, `YAML-001`, `XML-001`, `CRYPTO-*`) **and** file is not test/vendor

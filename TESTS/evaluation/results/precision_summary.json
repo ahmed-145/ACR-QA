@@ -1,5 +1,5 @@
 {
-  "generated": "2026-05-29 04:57 UTC",
+  "generated": "2026-05-29 05:34 UTC",
   "corpus": "precision_corpus_pins.yml",
   "corpus_size": 24,
   "total_high_med_findings": 630,
@@ -7,31 +7,49 @@
     "mode": "conservative",
     "tp": 54,
     "fp": 576,
-    "needs_review": 141,
+    "needs_review": 123,
     "total": 630,
     "precision": 0.08571428571428572
   },
   "optimistic_precision": {
     "mode": "optimistic",
-    "tp": 195,
-    "fp": 435,
-    "needs_review": 141,
+    "tp": 177,
+    "fp": 453,
+    "needs_review": 123,
     "total": 630,
-    "precision": 0.30952380952380953
+    "precision": 0.28095238095238095
   },
-  "needs_review_count": 141,
+  "security_tier_conservative": {
+    "mode": "conservative",
+    "scope": "high-severity security rules only",
+    "tp": 54,
+    "fp": 165,
+    "needs_review": 29,
+    "total": 219,
+    "precision": 0.2465753424657534
+  },
+  "security_tier_optimistic": {
+    "mode": "optimistic",
+    "scope": "high-severity security rules only",
+    "tp": 83,
+    "fp": 136,
+    "needs_review": 29,
+    "total": 219,
+    "precision": 0.3789954337899543
+  },
+  "needs_review_count": 123,
   "language_breakdown": {
     "python": {
       "high_med": 495,
       "auto_tp": 29,
-      "auto_fp": 369,
-      "needs_review": 97
+      "auto_fp": 385,
+      "needs_review": 81
     },
     "javascript": {
       "high_med": 135,
       "auto_tp": 25,
-      "auto_fp": 66,
-      "needs_review": 44
+      "auto_fp": 68,
+      "needs_review": 42
     }
   },
   "per_repo": [
@@ -50,8 +68,8 @@
       "total_findings": 36,
       "high_med_findings": 16,
       "auto_tp": 0,
-      "auto_fp": 14,
-      "needs_review": 2
+      "auto_fp": 16,
+      "needs_review": 0
     },
     {
       "repo": "requests",
@@ -77,8 +95,8 @@
       "total_findings": 32,
       "high_med_findings": 32,
       "auto_tp": 7,
-      "auto_fp": 16,
-      "needs_review": 9
+      "auto_fp": 18,
+      "needs_review": 7
     },
     {
       "repo": "cryptography",
@@ -113,8 +131,8 @@
       "total_findings": 51,
       "high_med_findings": 51,
       "auto_tp": 3,
-      "auto_fp": 42,
-      "needs_review": 6
+      "auto_fp": 46,
+      "needs_review": 2
     },
     {
       "repo": "pygments",
@@ -194,8 +212,8 @@
       "total_findings": 57,
       "high_med_findings": 33,
       "auto_tp": 4,
-      "auto_fp": 18,
-      "needs_review": 11
+      "auto_fp": 26,
+      "needs_review": 3
     },
     {
       "repo": "pandas",
@@ -221,8 +239,8 @@
       "total_findings": 300,
       "high_med_findings": 14,
       "auto_tp": 7,
-      "auto_fp": 1,
-      "needs_review": 6
+      "auto_fp": 3,
+      "needs_review": 4
     },
     {
       "repo": "express",

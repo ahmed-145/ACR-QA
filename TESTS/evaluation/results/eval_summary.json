@@ -1,6 +1,6 @@
 {
   "generated": "2026-05-21 05:25:27",
-  "precision_updated": "2026-05-28",
+  "precision_updated": "2026-05-29",
   "total_repos": 33,
   "scanned": 20,
   "cve_skipped": 0,
@@ -10,11 +10,14 @@
     "repos_with_findings": 24,
     "total_high_med_findings": 630,
     "auto_tp": 54,
-    "auto_fp": 435,
-    "needs_review": 141,
+    "auto_fp": 453,
+    "needs_review": 123,
     "conservative_precision": 0.0857,
-    "optimistic_precision": 0.3095,
-    "note": "Conservative=NEEDS_REVIEW→FP; Optimistic=NEEDS_REVIEW→TP. Three fixes applied 2026-05-29: JS severity scorer respected for mapped rules (−204 style FPs), non-production dirs excluded from JS scan (−288 examples FPs), BEST-PRACTICE-005+SOLID-001 demoted to low. Go adapter now gracefully handles toolchain version mismatch. See docs/evaluation/PRECISION_BENCHMARK.md and docs/GOD_MODE_V3_PLAN.md §14."
+    "optimistic_precision": 0.2813,
+    "security_tier_conservative": 0.2466,
+    "security_tier_optimistic": 0.3790,
+    "security_tier_denominator": 219,
+    "note": "Conservative=NEEDS_REVIEW→FP; Optimistic=NEEDS_REVIEW→TP. Security-tier restricts denominator to HIGH-severity security-category rules only (SECURITY-*/SECRET-*/SQLI-*/SHELL-*/CRYPTO-*) — the standard SAST reporting stratum. Path heuristics added 2026-05-29 for L1 (SECURITY-046 SSRF in dev-tooling paths) and L2 (SECURITY-022/026 subprocess in build-automation paths). See docs/evaluation/PRECISION_BENCHMARK.md and docs/GOD_MODE_V3_PLAN.md §14."
   },
   "average_recall": 1.0,
   "results": [

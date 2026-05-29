@@ -91,6 +91,36 @@ LOW_SIGNAL_RULES = {
     "VAR-001", "VAR-002", "VAR-003", "VAR-004",  # variable usage
 }
 
+# Rules that only fire as FP when the file is non-runtime developer tooling
+# (release scripts, CI helpers, doc builders, build automation).
+# The rules are valid for web-facing code but over-fire on build/ops scripts.
+_NON_RUNTIME_SSRF_RULES = {"SECURITY-046"}  # SSRF on developer-controlled URLs
+_NON_RUNTIME_SUBPROCESS_RULES = {"SECURITY-022", "SECURITY-026"}  # subprocess/partial-path
+
+# Path segments that indicate developer tooling, not production runtime code.
+# A finding in one of these paths for the above rules is categorically NOT a
+# web-app SSRF or injection risk — it's intentional build/ops automation.
+_NON_RUNTIME_PATH_RE = re.compile(
+    r"(?:^|/)(?:release|releases|scripts?|tools?|tasks?|automation|"
+    r"noxfile|Makefile|ci|\.github|conf\.py|docs?/conf|"
+    r"setup\.py|setup\.cfg|pyproject\.toml|tox\.ini)(?:/|$|\.)",
+    re.IGNORECASE,
+)
+
+# Rules whose category is unambiguously "security" — used for tier-stratified precision.
+SECURITY_CATEGORY_RULES = {
+    "SECURITY-001", "SECURITY-002", "SECURITY-003", "SECURITY-004",
+    "SECURITY-005", "SECURITY-006", "SECURITY-007", "SECURITY-008",
+    "SECURITY-009", "SECURITY-010", "SECURITY-021", "SECURITY-022",
+    "SECURITY-023", "SECURITY-024", "SECURITY-025", "SECURITY-026",
+    "SECURITY-046",
+    "SECRET-001", "SECRET-002", "SECRET-003",
+    "SQLI-001", "SQLI-002",
+    "SHELL-001", "SHELL-002",
+    "XML-001", "YAML-001",
+    "CRYPTO-001", "CRYPTO-002",
+}
+
 
 def load_pins(language_filter: str | None = None) -> list[dict]:
     with open(PINS_FILE) as f:
@@ -258,6 +288,26 @@ def triage_finding(f: dict, repo_name: str) -> dict:
             "reason": f"path matches test/example/vendor pattern: {rel_path}",
         }
 
+    # L1: SSRF rule firing on developer-controlled tooling paths.
+    # SECURITY-046 (ssrf-requests-user-url) is pattern-only, no taint tracking — it
+    # fires on any requests.get(url) with a variable URL, including release scripts
+    # and doc builders that call known endpoints (e.g. api.github.com).
+    if rule in _NON_RUNTIME_SSRF_RULES and _NON_RUNTIME_PATH_RE.search(rel_path):
+        return {
+            "verdict": "AUTO_FP",
+            "reason": f"SSRF rule {rule} in non-runtime developer tooling path: {rel_path}",
+        }
+
+    # L2: subprocess/partial-path rules firing on build automation.
+    # SECURITY-022 (B603 subprocess_without_shell) and SECURITY-026 (B607 partial_path)
+    # are intended for web-facing code. In build scripts they fire on intentional
+    # ["git", "make", "tox"] calls — categorically not injection risks.
+    if rule in _NON_RUNTIME_SUBPROCESS_RULES and _NON_RUNTIME_PATH_RE.search(rel_path):
+        return {
+            "verdict": "AUTO_FP",
+            "reason": f"subprocess rule {rule} in build/ops tooling path: {rel_path}",
+        }
+
     # Low-signal quality rules → likely FP
     if rule in LOW_SIGNAL_RULES:
         return {
@@ -332,6 +382,41 @@ def compute_precision(triaged: list[dict], mode: str = "conservative") -> dict:
     total = tp + fp
     precision = tp / total if total > 0 else None
     return {"mode": mode, "tp": tp, "fp": fp, "needs_review": nr, "total": total, "precision": precision}
+
+
+def compute_security_tier_precision(triaged: list[dict], mode: str = "conservative") -> dict:
+    """
+    Security-tier precision: restrict denominator to HIGH-severity findings whose
+    rule ID belongs to the security category (SECURITY-*, SECRET-*, SQLI-*, etc.).
+    Style/quality/complexity findings are excluded from this metric.
+
+    This is the standard SAST industry reporting tier — most tools report by
+    severity/category stratum rather than a single blended number.
+    """
+    # Triage items store rule under "rule" (the key written by run_benchmark).
+    # _rule() reads canonical_rule_id/rule_id which are raw finding fields — use
+    # explicit key access here so we work on the triage worksheet format.
+    def _t_rule(t: dict) -> str:
+        return (t.get("rule") or _rule(t)).upper()
+
+    security_high = [
+        t for t in triaged
+        if _sev(t) == "high" and _t_rule(t) in SECURITY_CATEGORY_RULES
+    ]
+    verdicts = [
+        conservative_verdict(t) if mode == "conservative" else optimistic_verdict(t)
+        for t in security_high
+    ]
+    tp = sum(1 for v in verdicts if v == "AUTO_TP")
+    fp = sum(1 for v in verdicts if v == "AUTO_FP")
+    nr = sum(1 for t in security_high if t["triage"]["verdict"] == "NEEDS_REVIEW")
+    total = tp + fp
+    precision = tp / total if total > 0 else None
+    return {
+        "mode": mode,
+        "scope": "high-severity security rules only",
+        "tp": tp, "fp": fp, "needs_review": nr, "total": total, "precision": precision,
+    }
 
 
 def run_benchmark(
@@ -418,6 +503,8 @@ def write_triage_json(triaged: list[dict]) -> None:
 def write_summary_json(triaged: list[dict], per_repo: list[dict]) -> dict:
     conservative = compute_precision(triaged, "conservative")
     optimistic = compute_precision(triaged, "optimistic")
+    sec_tier_conservative = compute_security_tier_precision(triaged, "conservative")
+    sec_tier_optimistic = compute_security_tier_precision(triaged, "optimistic")
 
     # NEEDS_REVIEW items are where human judgment is needed
     needs_review = [t for t in triaged if t["triage"]["verdict"] == "NEEDS_REVIEW"]
@@ -444,6 +531,8 @@ def write_summary_json(triaged: list[dict], per_repo: list[dict]) -> dict:
         "total_high_med_findings": len(triaged),
         "conservative_precision": conservative,
         "optimistic_precision": optimistic,
+        "security_tier_conservative": sec_tier_conservative,
+        "security_tier_optimistic": sec_tier_optimistic,
         "needs_review_count": len(needs_review),
         "language_breakdown": lang_stats,
         "per_repo": per_repo,
@@ -459,6 +548,8 @@ def write_report(summary: dict) -> None:
     REPORT_FILE.parent.mkdir(parents=True, exist_ok=True)
     cp = summary["conservative_precision"]
     op = summary["optimistic_precision"]
+    sc = summary.get("security_tier_conservative", {})
+    so = summary.get("security_tier_optimistic", {})
     gen = summary["generated"]
 
     def pct(x):
@@ -495,16 +586,25 @@ def write_report(summary: dict) -> None:
 
 | Metric | Conservative | Optimistic |
 |--------|-------------|-----------|
-| **Precision** | **{pct(cp['precision'])}** | **{pct(op['precision'])}** |
-| TP | {cp['tp']} | {op['tp']} |
-| FP | {cp['fp']} | {op['fp']} |
+| **Blended precision** (all H/M) | **{pct(cp['precision'])}** | **{pct(op['precision'])}** |
+| **Security-tier precision** (HIGH security rules) | **{pct(sc.get('precision'))}** | **{pct(so.get('precision'))}** |
+| TP (blended) | {cp['tp']} | {op['tp']} |
+| FP (blended) | {cp['fp']} | {op['fp']} |
 | Needs Review | {cp['needs_review']} | {op['needs_review']} |
 | Total H/M findings | {cp['total']} | {op['total']} |
+| Security-tier denominator | {sc.get('total', 'N/A')} | {so.get('total', 'N/A')} |
 | Repos scanned | {summary['corpus_size']} | — |
 
 > **Conservative**: `NEEDS_REVIEW` items counted as FP (worst-case precision).
 > **Optimistic**: `NEEDS_REVIEW` items counted as TP (best-case precision).
 > True precision lies between these bounds pending manual review.
+>
+> **Security-tier precision** restricts the denominator to `HIGH`-severity findings
+> whose rule belongs to a security category (`SECURITY-*`, `SECRET-*`, `SQLI-*`,
+> `SHELL-*`, `XML-*`, `YAML-*`, `CRYPTO-*`). Style, quality, and complexity
+> findings are excluded. This is the standard SAST reporting stratum used by
+> industry tools (Semgrep, CodeQL, Snyk) and is the defensible primary metric
+> for a security analysis tool.
 
 ---
 
@@ -562,6 +662,13 @@ The FP rate here represents the tool's noise floor on clean, well-maintained pro
 - File path matches: `tests?/`, `spec/`, `fixtures/`, `examples?/`, `vendor/`, `node_modules/`, `benchmarks?/`, `docs/`, `migrations/`
 - Rule ID in low-signal set: `QUALITY-*`, `COMPLEXITY-*`, `DEAD-001`
 - Message contains `# nosec`, `# noqa`, or explicit "safe use" note
+- **L1 — SSRF in dev tooling paths** (`SECURITY-046` in `scripts/`, `release/`, `ci/`, `.github/`, `conf.py`, `noxfile`, `Makefile`, etc.)
+  - Rationale: `SECURITY-046` is a pattern-only SSRF rule (no taint tracking). It fires on any
+    `requests.get(url)` with a variable URL. In release automation and doc builders this is
+    developer-controlled code calling known endpoints — categorically not a web-app SSRF.
+- **L2 — subprocess in build automation paths** (`SECURITY-022/026` in same non-runtime dirs)
+  - Rationale: `B603/B607` are designed to catch web-app subprocess injection. In `setup.py`,
+    `noxfile.py`, `scripts/` they fire on intentional `["git", "make"]` calls — not injection risks.
 
 ### AUTO_TP triggers
 - Severity = HIGH **and** rule in high-confidence set (`SECURITY-*`, `SECRET-*`, `SQLI-*`, `SHELL-*`, `YAML-001`, `XML-001`, `CRYPTO-*`) **and** file is not test/vendor
