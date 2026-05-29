@@ -1,0 +1,209 @@
+{
+  "generated": "2026-05-29 17:14 UTC",
+  "corpus": "precision_corpus_pins.yml",
+  "corpus_repos": 24,
+  "pipeline_description": "Analytical ablation over 1942 cached precision-corpus findings (24 production repos, post-dedup). Pre-dedup cross-tool duplicates estimated from CROSS_TOOL_GROUPS overlap analysis.",
+  "total_findings_post_dedup": 1942,
+  "pre_dedup_estimate": {
+    "extra_duplicates": 0,
+    "pre_dedup_total": 1942,
+    "pre_dedup_hm": 630,
+    "note": "Precision corpus = clean production code. Cross-tool duplicates \u2248 0 because clean repos rarely trigger the same injection-class rule from multiple tools. Dedup value manifests primarily on vulnerable codebases (see recall corpus analysis)."
+  },
+  "tool_distribution_hm": {
+    "bandit": 255,
+    "semgrep": 143,
+    "radon": 80,
+    "ruff": 52,
+    "eslint": 44,
+    "cbom": 31,
+    "vulture": 23,
+    "taint_analyzer": 2
+  },
+  "reachability_distribution_hm": {
+    "UNKNOWN": 594,
+    "REACHABLE": 29,
+    "UNREACHABLE": 7
+  },
+  "rungs": [
+    {
+      "rung": 0,
+      "label": "Raw (all tools, all severity)",
+      "description": "All 1942 findings including LOW severity \u2014 maximum analyst load, minimum precision.",
+      "finding_count": 1942,
+      "hm_count": 630,
+      "analyst_hours_hm": 485.5,
+      "conservative": {
+        "tp": 54,
+        "fp": 576,
+        "needs_review": 123,
+        "total": 630,
+        "precision": 0.0857
+      },
+      "optimistic": {
+        "tp": 177,
+        "fp": 453,
+        "needs_review": 123,
+        "total": 630,
+        "precision": 0.281
+      }
+    },
+    {
+      "rung": 1,
+      "label": "+ Severity filter (H/M only)",
+      "description": "Filter to HIGH and MEDIUM severity. LOW findings (radon/vulture/ruff quality metrics) excluded \u2014 these are noise for security review.",
+      "finding_count": 630,
+      "hm_count": 630,
+      "analyst_hours_hm": 157.5,
+      "conservative": {
+        "tp": 54,
+        "fp": 576,
+        "needs_review": 123,
+        "total": 630,
+        "precision": 0.0857
+      },
+      "optimistic": {
+        "tp": 177,
+        "fp": 453,
+        "needs_review": 123,
+        "total": 630,
+        "precision": 0.281
+      },
+      "delta_analyst_hours": 328.0
+    },
+    {
+      "rung": 2,
+      "label": "+ Reachability demotion (UNREACHABLE \u2192 LOW)",
+      "description": "Demote 7 UNREACHABLE findings to LOW severity. UNREACHABLE cohort triage: 1 AUTO_TP, 6 AUTO_FP/NR. Note: 1 confirmed TP(s) are demoted \u2014 these are genuine security issues in dead-code functions. This is the T4.4 trade-off: reachability demotion prioritises exploitability over existence. A gated variant (preserve AUTO_TP regardless of reachability) would avoid this precision dip.",
+      "finding_count": 623,
+      "hm_count": 623,
+      "analyst_hours_hm": 155.8,
+      "conservative": {
+        "tp": 53,
+        "fp": 570,
+        "needs_review": 118,
+        "total": 623,
+        "precision": 0.0851
+      },
+      "optimistic": {
+        "tp": 171,
+        "fp": 452,
+        "needs_review": 118,
+        "total": 623,
+        "precision": 0.2745
+      },
+      "delta_analyst_hours": 1.6999999999999886,
+      "unreachable_cohort": {
+        "count": 7,
+        "auto_tp": 1,
+        "auto_fp_or_nr": 6
+      }
+    },
+    {
+      "rung": 3,
+      "label": "Security-tier only (H-sev SECURITY-*/SECRET-*/etc.)",
+      "description": "Restrict to HIGH-severity findings whose rule ID belongs to the security category (injection, secrets, crypto, XML/YAML). This is the standard SAST industry reporting stratum \u2014 precision peaks here because quality/style noise is excluded.",
+      "finding_count": 219,
+      "hm_count": 219,
+      "analyst_hours_hm": 54.8,
+      "conservative": {
+        "tp": 54,
+        "fp": 165,
+        "needs_review": 29,
+        "total": 219,
+        "precision": 0.2466
+      },
+      "optimistic": {
+        "tp": 83,
+        "fp": 136,
+        "needs_review": 29,
+        "total": 219,
+        "precision": 0.379
+      },
+      "delta_analyst_hours": 101.00000000000001,
+      "reduction_vs_raw": 88.7
+    }
+  ],
+  "per_tool_standalone": [
+    {
+      "tool": "bandit",
+      "hm_count": 255,
+      "conservative_precision": 0.0706,
+      "optimistic_precision": 0.2627,
+      "security_tier_count": 129,
+      "security_tier_conservative": 0.1395,
+      "security_tier_optimistic": 0.1628,
+      "analyst_hours": 63.8
+    },
+    {
+      "tool": "semgrep",
+      "hm_count": 143,
+      "conservative_precision": 0.1888,
+      "optimistic_precision": 0.4545,
+      "security_tier_count": 75,
+      "security_tier_conservative": 0.36,
+      "security_tier_optimistic": 0.7067,
+      "analyst_hours": 35.8
+    },
+    {
+      "tool": "radon",
+      "hm_count": 80,
+      "conservative_precision": 0.0,
+      "optimistic_precision": 0.0,
+      "security_tier_count": 0,
+      "security_tier_conservative": null,
+      "security_tier_optimistic": null,
+      "analyst_hours": 20.0
+    },
+    {
+      "tool": "ruff",
+      "hm_count": 52,
+      "conservative_precision": 0.0,
+      "optimistic_precision": 0.0,
+      "security_tier_count": 0,
+      "security_tier_conservative": null,
+      "security_tier_optimistic": null,
+      "analyst_hours": 13.0
+    },
+    {
+      "tool": "eslint",
+      "hm_count": 44,
+      "conservative_precision": 0.0,
+      "optimistic_precision": 0.6591,
+      "security_tier_count": 0,
+      "security_tier_conservative": null,
+      "security_tier_optimistic": null,
+      "analyst_hours": 11.0
+    },
+    {
+      "tool": "cbom",
+      "hm_count": 31,
+      "conservative_precision": 0.2581,
+      "optimistic_precision": 0.4839,
+      "security_tier_count": 13,
+      "security_tier_conservative": 0.6154,
+      "security_tier_optimistic": 0.6154,
+      "analyst_hours": 7.8
+    },
+    {
+      "tool": "vulture",
+      "hm_count": 23,
+      "conservative_precision": 0.0,
+      "optimistic_precision": 0.0,
+      "security_tier_count": 0,
+      "security_tier_conservative": null,
+      "security_tier_optimistic": null,
+      "analyst_hours": 5.8
+    },
+    {
+      "tool": "taint_analyzer",
+      "hm_count": 2,
+      "conservative_precision": 0.5,
+      "optimistic_precision": 0.5,
+      "security_tier_count": 2,
+      "security_tier_conservative": 0.5,
+      "security_tier_optimistic": 0.5,
+      "analyst_hours": 0.5
+    }
+  ]
+}

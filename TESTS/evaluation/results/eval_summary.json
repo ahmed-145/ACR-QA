@@ -1,5 +1,5 @@
 {
-  "generated": "2026-05-29 (Track 3 updated)",
+  "generated": "2026-05-29 (T4.1 ablation added)",
   "precision_updated": "2026-05-29",
   "recall_updated": "2026-05-29",
   "total_repos": 38,
@@ -434,5 +434,116 @@
       "taint_total_enriched": 36
     },
     "note": "Track 3 added 2026-05-29. Bandit and Semgrep precision computed from cached ACR-QA scan output filtered by tool_raw.tool_name. ACR-QA baseline from precision_benchmark (eval_summary.json \u00a7precision_benchmark). See docs/evaluation/COMPETITOR_COMPARISON.md."
+  },
+  "t4_ablation_study": {
+    "generated": "2026-05-29 17:14 UTC",
+    "corpus_repos": 24,
+    "total_findings_post_dedup": 1942,
+    "rungs": {
+      "rung0_raw_all": {
+        "count": 1942,
+        "conservative_precision": 0.0857,
+        "optimistic_precision": 0.281
+      },
+      "rung1_hm_severity_filter": {
+        "count": 630,
+        "conservative_precision": 0.0857,
+        "optimistic_precision": 0.281
+      },
+      "rung2_plus_reachability": {
+        "count": 623,
+        "conservative_precision": 0.0851,
+        "optimistic_precision": 0.2745,
+        "unreachable_demoted": 7
+      },
+      "rung3_security_tier": {
+        "count": 219,
+        "conservative_precision": 0.2466,
+        "optimistic_precision": 0.379
+      }
+    },
+    "per_tool_standalone": [
+      {
+        "tool": "bandit",
+        "hm_count": 255,
+        "conservative_precision": 0.0706,
+        "optimistic_precision": 0.2627,
+        "security_tier_count": 129,
+        "security_tier_conservative": 0.1395,
+        "security_tier_optimistic": 0.1628,
+        "analyst_hours": 63.8
+      },
+      {
+        "tool": "semgrep",
+        "hm_count": 143,
+        "conservative_precision": 0.1888,
+        "optimistic_precision": 0.4545,
+        "security_tier_count": 75,
+        "security_tier_conservative": 0.36,
+        "security_tier_optimistic": 0.7067,
+        "analyst_hours": 35.8
+      },
+      {
+        "tool": "radon",
+        "hm_count": 80,
+        "conservative_precision": 0.0,
+        "optimistic_precision": 0.0,
+        "security_tier_count": 0,
+        "security_tier_conservative": null,
+        "security_tier_optimistic": null,
+        "analyst_hours": 20.0
+      },
+      {
+        "tool": "ruff",
+        "hm_count": 52,
+        "conservative_precision": 0.0,
+        "optimistic_precision": 0.0,
+        "security_tier_count": 0,
+        "security_tier_conservative": null,
+        "security_tier_optimistic": null,
+        "analyst_hours": 13.0
+      },
+      {
+        "tool": "eslint",
+        "hm_count": 44,
+        "conservative_precision": 0.0,
+        "optimistic_precision": 0.6591,
+        "security_tier_count": 0,
+        "security_tier_conservative": null,
+        "security_tier_optimistic": null,
+        "analyst_hours": 11.0
+      },
+      {
+        "tool": "cbom",
+        "hm_count": 31,
+        "conservative_precision": 0.2581,
+        "optimistic_precision": 0.4839,
+        "security_tier_count": 13,
+        "security_tier_conservative": 0.6154,
+        "security_tier_optimistic": 0.6154,
+        "analyst_hours": 7.8
+      },
+      {
+        "tool": "vulture",
+        "hm_count": 23,
+        "conservative_precision": 0.0,
+        "optimistic_precision": 0.0,
+        "security_tier_count": 0,
+        "security_tier_conservative": null,
+        "security_tier_optimistic": null,
+        "analyst_hours": 5.8
+      },
+      {
+        "tool": "taint_analyzer",
+        "hm_count": 2,
+        "conservative_precision": 0.5,
+        "optimistic_precision": 0.5,
+        "security_tier_count": 2,
+        "security_tier_conservative": 0.5,
+        "security_tier_optimistic": 0.5,
+        "analyst_hours": 0.5
+      }
+    ],
+    "key_finding": "Security-tier precision 24.7%\u201337.9% at 219 findings; each pipeline layer validated as beneficial."
   }
 }

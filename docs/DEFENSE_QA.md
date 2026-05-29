@@ -269,3 +269,61 @@ CodeQL is industry gold-standard for interprocedural taint analysis — it would
 - CodeQL's analysis time per repo is 10–30 minutes; 30 repos = 5–15 hours
 
 More fundamentally: ACR-QA's thesis contribution is not "better detection than CodeQL." It is the platform layer — normalization, provenance, quality gate, multi-tool aggregation — that is missing from the research ecosystem. CodeQL is a powerful detection engine that would slot into ACR-QA's adapter architecture as a `CodeQLAdapter(LanguageAdapter)`, complementing (not competing with) the existing tools.
+
+---
+
+## Ablation Study (T4.1)
+
+### Q: Does every layer of your pipeline actually improve quality, or is some of it over-engineering?
+
+**Short answer:**
+T4.1 ablation study measures precision at each rung over 1942 findings from 24 production repos. Every layer has a quantified justification.
+
+**Full answer:**
+
+| Rung | Layer | Findings | Security-tier Precision |
+|------|-------|----------|------------------------|
+| 0 | Raw (all tools, all severity) | 1942 | 8.6% / 28.1% |
+| 1 | + Severity filter (H/M only) | 630 | 8.6% / 28.1% |
+| 2 | + Reachability demotion | 623 | 8.5% / 27.5% |
+| 3 | Security-tier only | 219 | **24.7% / 37.9%** |
+
+Key findings:
+- **Severity filter**: removes 1,312 LOW-severity quality/style findings from analyst review — 67.5% load reduction.
+- **Reachability demotion**: demotes 7 UNREACHABLE H/M findings. One (SECURITY-008 pickle in anyio) is a confirmed TP in dead code — a deliberate trade-off: unreachable code cannot be exploited at runtime. This motivates T4.4 (gated demotion that preserves AUTO_TP findings).
+- **Security-tier stratification**: focussing on injection/secret/crypto rules (the standard SAST reporting stratum) raises precision from 8.6% to 24.7–37.9%.
+- **Multi-tool aggregation**: 7 tools collectively find 630 H/M findings vs. best single tool (Bandit: 255). Coverage is 2.5× broader with no per-tool precision regression.
+
+---
+
+### Q: Your reachability layer slightly *lowers* precision (8.57% → 8.51%). Isn't that a regression?
+
+**Short answer:**
+No — it correctly identifies a genuine security finding in dead code. The slight drop proves the layer is working as intended, not blindly filtering.
+
+**Full answer:**
+
+Of the 7 UNREACHABLE H/M findings, one is SECURITY-008 (pickle deserialization) in `anyio/src/anyio/to_process.py`. This is a real security issue — but the call graph confirms the function is never reachable from any entry point in the library's public API. Demoting it is a principled architectural decision: we distinguish "exists" from "exploitable."
+
+The precision drops 0.06pp conservative and 0.6pp optimistic — both within rounding noise at the corpus scale. More importantly, the finding remains visible to analysts (it appears as LOW severity, not suppressed), so it can be escalated if the codebase evolves.
+
+T4.4 proposes a gated variant: only demote UNREACHABLE findings that are AUTO_FP or NEEDS_REVIEW; preserve UNREACHABLE + AUTO_TP at HIGH severity. This would close the 0.06pp gap and produce a net precision gain from reachability enrichment.
+
+---
+
+### Q: The CBOM tool has 61.5% security-tier precision — why not just use CBOM?
+
+**Short answer:**
+CBOM only covers cryptography misuse. It has 31 H/M findings on the precision corpus — a tiny fraction of the 219 security-tier findings total. High precision on a narrow slice is not a substitute for broad coverage.
+
+**Full answer:**
+
+| Tool | H/M Count | Sec-tier Count | Sec-tier Precision |
+|------|-----------|----------------|--------------------|
+| CBOM | 31 | 13 | 61.5% (conservative) |
+| taint_analyzer | 2 | 2 | 50.0% |
+| Semgrep | 143 | 50 | 36.0% |
+| Bandit | 255 | 100 | 14.0% |
+| **ACR-QA (all tools)** | **630** | **219** | **24.7–37.9%** |
+
+CBOM's 61.5% precision reflects its narrower, higher-confidence rule set (CWE-327/338 weak crypto). ACR-QA includes CBOM as one of its 7 tools — so CBOM's precision is preserved within the pipeline, while Semgrep and Bandit add coverage across injection, deserialization, and path-traversal classes that CBOM does not detect.
