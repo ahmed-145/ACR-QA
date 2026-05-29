@@ -50,10 +50,7 @@ def load_per_repo_data() -> list[dict]:
             findings = json.load(fh)
 
         hm = [f for f in findings if ab._sev(f) in ("high", "medium")]
-        sec = [
-            f for f in findings
-            if ab._sev(f) == "high" and ab._rule(f) in ab.SECURITY_CATEGORY_RULES
-        ]
+        sec = [f for f in findings if ab._sev(f) == "high" and ab._rule(f) in ab.SECURITY_CATEGORY_RULES]
 
         def _counts(fs: list[dict]) -> tuple[int, int, int]:
             tp = fp = nr = 0
@@ -78,18 +75,20 @@ def load_per_repo_data() -> list[dict]:
                 lang = "javascript"
                 break
 
-        rows.append({
-            "repo": repo,
-            "language": lang,
-            "hm_total": len(hm),
-            "hm_tp": hm_tp,
-            "hm_fp": hm_fp,
-            "hm_nr": hm_nr,
-            "sec_total": len(sec),
-            "sec_tp": sec_tp,
-            "sec_fp": sec_fp,
-            "sec_nr": sec_nr,
-        })
+        rows.append(
+            {
+                "repo": repo,
+                "language": lang,
+                "hm_total": len(hm),
+                "hm_tp": hm_tp,
+                "hm_fp": hm_fp,
+                "hm_nr": hm_nr,
+                "sec_total": len(sec),
+                "sec_tp": sec_tp,
+                "sec_fp": sec_fp,
+                "sec_nr": sec_nr,
+            }
+        )
     return rows
 
 
@@ -234,10 +233,7 @@ def _pct(v: float | None, decimals: int = 1) -> str:
 
 
 def _ci_str(ci: dict) -> str:
-    return (
-        f"{_pct(ci.get('point_estimate'))} "
-        f"[{_pct(ci.get('ci_95_lo'))}, {_pct(ci.get('ci_95_hi'))}]"
-    )
+    return f"{_pct(ci.get('point_estimate'))} " f"[{_pct(ci.get('ci_95_lo'))}, {_pct(ci.get('ci_95_hi'))}]"
 
 
 def _write_markdown(r: dict) -> None:
@@ -256,10 +252,14 @@ def _write_markdown(r: dict) -> None:
     ]
 
     display_keys = [
-        "hm_conservative", "hm_optimistic",
-        "sec_conservative", "sec_optimistic",
-        "hm_conservative_py", "hm_conservative_js",
-        "sec_conservative_py", "sec_conservative_js",
+        "hm_conservative",
+        "hm_optimistic",
+        "sec_conservative",
+        "sec_optimistic",
+        "hm_conservative_py",
+        "hm_conservative_js",
+        "sec_conservative_py",
+        "sec_conservative_js",
     ]
     for k in display_keys:
         ci = m[k]
@@ -303,7 +303,7 @@ def _write_markdown(r: dict) -> None:
         "",
         f"Security-tier CI width: {_pct(m['sec_conservative']['ci_95_width'])} — ",
         "a ±{:.1f}pp range. This is expected for a 24-repo precision corpus; ".format(
-            (m['sec_conservative']['ci_95_width'] or 0) * 100 / 2
+            (m["sec_conservative"]["ci_95_width"] or 0) * 100 / 2
         ),
         "a corpus of 100+ repos would narrow this to under ±5pp.",
         "",
@@ -368,10 +368,7 @@ def _update_eval_summary(r: dict) -> None:
             "ci_95_lo": m["hm_conservative"]["ci_95_lo"],
             "ci_95_hi": m["hm_conservative"]["ci_95_hi"],
         },
-        "note": (
-            "Per-repo bootstrap resampling. Conservative=NEEDS_REVIEW→FP, "
-            "Optimistic=NEEDS_REVIEW→TP."
-        ),
+        "note": ("Per-repo bootstrap resampling. Conservative=NEEDS_REVIEW→FP, " "Optimistic=NEEDS_REVIEW→TP."),
     }
     summary["generated"] = "2026-05-29 (T4.2 bootstrap CI added)"
 

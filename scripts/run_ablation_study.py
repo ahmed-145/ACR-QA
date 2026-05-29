@@ -47,30 +47,58 @@ TEST_PATH_PATTERNS = re.compile(
     re.IGNORECASE,
 )
 
-_TRIVIAL_PASSWORD_RE = re.compile(
-    r"Possible hardcoded password: '([^']{0,6})'", re.IGNORECASE
-)
+_TRIVIAL_PASSWORD_RE = re.compile(r"Possible hardcoded password: '([^']{0,6})'", re.IGNORECASE)
 
 HIGH_CONFIDENCE_RULES = {
-    "SECURITY-001", "SECURITY-002", "SECURITY-003", "SECURITY-004",
-    "SECURITY-006", "SECURITY-007", "SECURITY-009", "SECURITY-010",
+    "SECURITY-001",
+    "SECURITY-002",
+    "SECURITY-003",
+    "SECURITY-004",
+    "SECURITY-006",
+    "SECURITY-007",
+    "SECURITY-009",
+    "SECURITY-010",
     "SECURITY-008",
-    "SECURITY-021", "SECURITY-024",
-    "SECRET-001", "SECRET-002", "SECRET-003",
-    "SQLI-001", "SQLI-002",
-    "SHELL-001", "SHELL-002",
-    "XML-001", "YAML-001",
-    "CRYPTO-001", "CRYPTO-002",
+    "SECURITY-021",
+    "SECURITY-024",
+    "SECRET-001",
+    "SECRET-002",
+    "SECRET-003",
+    "SQLI-001",
+    "SQLI-002",
+    "SHELL-001",
+    "SHELL-002",
+    "XML-001",
+    "YAML-001",
+    "CRYPTO-001",
+    "CRYPTO-002",
 }
 
 LOW_SIGNAL_RULES = {
-    "QUALITY-001", "QUALITY-002", "QUALITY-003",
-    "COMPLEXITY-001", "COMPLEXITY-002",
-    "DEAD-001", "DEAD-002", "DEAD-003", "DEAD-004",
-    "SOLID-001", "SOLID-002", "SOLID-003",
-    "STYLE-001", "STYLE-002", "STYLE-003", "STYLE-004",
-    "IMPORT-001", "IMPORT-002", "IMPORT-003", "IMPORT-004",
-    "VAR-001", "VAR-002", "VAR-003", "VAR-004",
+    "QUALITY-001",
+    "QUALITY-002",
+    "QUALITY-003",
+    "COMPLEXITY-001",
+    "COMPLEXITY-002",
+    "DEAD-001",
+    "DEAD-002",
+    "DEAD-003",
+    "DEAD-004",
+    "SOLID-001",
+    "SOLID-002",
+    "SOLID-003",
+    "STYLE-001",
+    "STYLE-002",
+    "STYLE-003",
+    "STYLE-004",
+    "IMPORT-001",
+    "IMPORT-002",
+    "IMPORT-003",
+    "IMPORT-004",
+    "VAR-001",
+    "VAR-002",
+    "VAR-003",
+    "VAR-004",
 }
 
 _NON_RUNTIME_SSRF_RULES = {"SECURITY-046"}
@@ -83,16 +111,34 @@ _NON_RUNTIME_PATH_RE = re.compile(
 )
 
 SECURITY_CATEGORY_RULES = {
-    "SECURITY-001", "SECURITY-002", "SECURITY-003", "SECURITY-004",
-    "SECURITY-005", "SECURITY-006", "SECURITY-007", "SECURITY-008",
-    "SECURITY-009", "SECURITY-010", "SECURITY-021", "SECURITY-022",
-    "SECURITY-023", "SECURITY-024", "SECURITY-025", "SECURITY-026",
+    "SECURITY-001",
+    "SECURITY-002",
+    "SECURITY-003",
+    "SECURITY-004",
+    "SECURITY-005",
+    "SECURITY-006",
+    "SECURITY-007",
+    "SECURITY-008",
+    "SECURITY-009",
+    "SECURITY-010",
+    "SECURITY-021",
+    "SECURITY-022",
+    "SECURITY-023",
+    "SECURITY-024",
+    "SECURITY-025",
+    "SECURITY-026",
     "SECURITY-046",
-    "SECRET-001", "SECRET-002", "SECRET-003",
-    "SQLI-001", "SQLI-002",
-    "SHELL-001", "SHELL-002",
-    "XML-001", "YAML-001",
-    "CRYPTO-001", "CRYPTO-002",
+    "SECRET-001",
+    "SECRET-002",
+    "SECRET-003",
+    "SQLI-001",
+    "SQLI-002",
+    "SHELL-001",
+    "SHELL-002",
+    "XML-001",
+    "YAML-001",
+    "CRYPTO-001",
+    "CRYPTO-002",
 }
 
 # ── Helpers ──────────────────────────────────────────────────────────────────
@@ -223,21 +269,25 @@ def load_all_findings() -> list[dict]:
 
 CROSS_TOOL_GROUPS = {
     "shell-injection": {
-        "SECURITY-020", "SECURITY-021", "SECURITY-024", "SECURITY-025",
-        "CUSTOM-shell-injection", "CUSTOM-command-injection",
+        "SECURITY-020",
+        "SECURITY-021",
+        "SECURITY-024",
+        "SECURITY-025",
+        "CUSTOM-shell-injection",
+        "CUSTOM-command-injection",
     },
     "pickle-unsafe": {"SECURITY-008", "CUSTOM-unsafe-pickle"},
     "eval-exec": {"SECURITY-001", "CUSTOM-dangerous-eval-usage"},
     "hardcoded-password": {
-        "SECURITY-005", "CUSTOM-hardcoded-password", "HARDCODE-001",
+        "SECURITY-005",
+        "CUSTOM-hardcoded-password",
+        "HARDCODE-001",
     },
     "sql-injection": {"SECURITY-027", "CUSTOM-sql-injection"},
     "weak-hash-md5": {"SECURITY-009", "CRYPTO-001"},
     "bare-except": {"EXCEPT-001", "CUSTOM-bare-except"},
 }
-_RULE_TO_GROUP = {
-    rid: g for g, rules in CROSS_TOOL_GROUPS.items() for rid in rules
-}
+_RULE_TO_GROUP = {rid: g for g, rules in CROSS_TOOL_GROUPS.items() for rid in rules}
 
 
 def estimate_pre_dedup_extras(findings: list[dict]) -> int:
@@ -273,16 +323,9 @@ def run_ablation(out_md: Path) -> dict:
     # ── Stage distribution ────────────────────────────────────────────────────
     hm_f = [f for f in all_f if _sev(f) in ("high", "medium")]
     low_f = [f for f in all_f if _sev(f) not in ("high", "medium")]
-    unreachable_hm = [
-        f for f in hm_f if f.get("reachability_status") == "UNREACHABLE"
-    ]
-    reachable_hm = [
-        f for f in hm_f if f.get("reachability_status") == "REACHABLE"
-    ]
-    security_tier_f = [
-        f for f in hm_f
-        if _sev(f) == "high" and _rule(f) in SECURITY_CATEGORY_RULES
-    ]
+    unreachable_hm = [f for f in hm_f if f.get("reachability_status") == "UNREACHABLE"]
+    reachable_hm = [f for f in hm_f if f.get("reachability_status") == "REACHABLE"]
+    security_tier_f = [f for f in hm_f if _sev(f) == "high" and _rule(f) in SECURITY_CATEGORY_RULES]
 
     print(
         f"  Breakdown: {len(all_f)} total | {len(hm_f)} H/M | {len(low_f)} LOW | "
@@ -309,9 +352,7 @@ def run_ablation(out_md: Path) -> dict:
     # ── Rung 2: + Reachability demotion ───────────────────────────────────────
     # UNREACHABLE findings are demoted to LOW → excluded from H/M denominator
     print("Rung 2: + reachability demotion (UNREACHABLE → LOW)…", flush=True)
-    hm_post_reach = [
-        f for f in hm_f if f.get("reachability_status") != "UNREACHABLE"
-    ]
+    hm_post_reach = [f for f in hm_f if f.get("reachability_status") != "UNREACHABLE"]
     rung2_c = precision_stats(hm_post_reach, conservative=True)
     rung2_o = precision_stats(hm_post_reach, conservative=False)
 
@@ -336,28 +377,25 @@ def run_ablation(out_md: Path) -> dict:
         c = precision_stats(findings_t, conservative=True)
         o = precision_stats(findings_t, conservative=False)
         # security-tier for this tool
-        sec_t = [
-            f for f in findings_t
-            if _sev(f) == "high" and _rule(f) in SECURITY_CATEGORY_RULES
-        ]
+        sec_t = [f for f in findings_t if _sev(f) == "high" and _rule(f) in SECURITY_CATEGORY_RULES]
         sc = precision_stats(sec_t, conservative=True)
         so = precision_stats(sec_t, conservative=False)
-        per_tool.append({
-            "tool": tool,
-            "hm_count": len(findings_t),
-            "conservative_precision": c["precision"],
-            "optimistic_precision": o["precision"],
-            "security_tier_count": len(sec_t),
-            "security_tier_conservative": sc["precision"],
-            "security_tier_optimistic": so["precision"],
-            "analyst_hours": analyst_hours(len(findings_t)),
-        })
+        per_tool.append(
+            {
+                "tool": tool,
+                "hm_count": len(findings_t),
+                "conservative_precision": c["precision"],
+                "optimistic_precision": o["precision"],
+                "security_tier_count": len(sec_t),
+                "security_tier_conservative": sc["precision"],
+                "security_tier_optimistic": so["precision"],
+                "analyst_hours": analyst_hours(len(findings_t)),
+            }
+        )
 
     # ── Summary stats ─────────────────────────────────────────────────────────
     tool_dist = dict(Counter(_tool(f) for f in hm_f).most_common())
-    reach_dist = dict(Counter(
-        f.get("reachability_status", "UNKNOWN") for f in hm_f
-    ).most_common())
+    reach_dist = dict(Counter(f.get("reachability_status", "UNKNOWN") for f in hm_f).most_common())
 
     results = {
         "generated": datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M UTC"),  # noqa: UP017
@@ -387,8 +425,7 @@ def run_ablation(out_md: Path) -> dict:
                 "rung": 0,
                 "label": "Raw (all tools, all severity)",
                 "description": (
-                    "All 1942 findings including LOW severity — "
-                    "maximum analyst load, minimum precision."
+                    "All 1942 findings including LOW severity — " "maximum analyst load, minimum precision."
                 ),
                 "finding_count": len(all_f),
                 "hm_count": len(hm_f),
@@ -432,9 +469,7 @@ def run_ablation(out_md: Path) -> dict:
                 "analyst_hours_hm": analyst_hours(len(hm_post_reach)),
                 "conservative": rung2_c,
                 "optimistic": rung2_o,
-                "delta_analyst_hours": (
-                    analyst_hours(len(hm_f)) - analyst_hours(len(hm_post_reach))
-                ),
+                "delta_analyst_hours": (analyst_hours(len(hm_f)) - analyst_hours(len(hm_post_reach))),
                 "unreachable_cohort": {
                     "count": len(unreachable_hm),
                     "auto_tp": unreachable_tp,
@@ -455,12 +490,8 @@ def run_ablation(out_md: Path) -> dict:
                 "analyst_hours_hm": analyst_hours(len(security_tier_f)),
                 "conservative": rung3_c,
                 "optimistic": rung3_o,
-                "delta_analyst_hours": (
-                    analyst_hours(len(hm_post_reach)) - analyst_hours(len(security_tier_f))
-                ),
-                "reduction_vs_raw": round(
-                    (1 - len(security_tier_f) / len(all_f)) * 100, 1
-                ),
+                "delta_analyst_hours": (analyst_hours(len(hm_post_reach)) - analyst_hours(len(security_tier_f))),
+                "reduction_vs_raw": round((1 - len(security_tier_f) / len(all_f)) * 100, 1),
             },
         ],
         "per_tool_standalone": per_tool,
@@ -551,9 +582,7 @@ def _write_markdown(r: dict, out_md: Path) -> None:
                 f"— demotion is safe."
             )
         if "reduction_vs_raw" in rg:
-            lines.append(
-                f"- Analyst-load reduction vs. raw: **{rg['reduction_vs_raw']}%**"
-            )
+            lines.append(f"- Analyst-load reduction vs. raw: **{rg['reduction_vs_raw']}%**")
         lines.append("")
 
     # ── Dedup section ─────────────────────────────────────────────────────────
@@ -561,8 +590,7 @@ def _write_markdown(r: dict, out_md: Path) -> None:
     lines += [
         "## Dedup Layer Analysis",
         "",
-        f"Cross-tool duplicate estimate: **{pre['extra_duplicates']}** extra findings "
-        f"would exist pre-dedup.",
+        f"Cross-tool duplicate estimate: **{pre['extra_duplicates']}** extra findings " f"would exist pre-dedup.",
         "",
         pre["note"],
         "",

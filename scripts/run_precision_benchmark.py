@@ -62,33 +62,63 @@ _TRIVIAL_PASSWORD_RE = re.compile(r"Possible hardcoded password: '([^']{0,6})'",
 # a very high FP rate on string comparisons (e.g. operator tokens, config keys).
 HIGH_CONFIDENCE_RULES = {
     # Python injection / dangerous eval
-    "SECURITY-001", "SECURITY-002", "SECURITY-003", "SECURITY-004",
-    "SECURITY-006", "SECURITY-007", "SECURITY-009", "SECURITY-010",
+    "SECURITY-001",
+    "SECURITY-002",
+    "SECURITY-003",
+    "SECURITY-004",
+    "SECURITY-006",
+    "SECURITY-007",
+    "SECURITY-009",
+    "SECURITY-010",
     # Pickle/marshal deserialization (context-sensitive; only high when no test path)
     "SECURITY-008",
     # subprocess with shell=True (injection risk)
-    "SECURITY-021", "SECURITY-024",
+    "SECURITY-021",
+    "SECURITY-024",
     # Hardcoded secrets (only when not SECURITY-005 variant)
-    "SECRET-001", "SECRET-002", "SECRET-003",
+    "SECRET-001",
+    "SECRET-002",
+    "SECRET-003",
     # SQL injection
-    "SQLI-001", "SQLI-002",
+    "SQLI-001",
+    "SQLI-002",
     # Shell injection
-    "SHELL-001", "SHELL-002",
+    "SHELL-001",
+    "SHELL-002",
     # XML / YAML unsafe load
-    "XML-001", "YAML-001",
+    "XML-001",
+    "YAML-001",
     # Crypto weak
-    "CRYPTO-001", "CRYPTO-002",
+    "CRYPTO-001",
+    "CRYPTO-002",
 }
 
 # Rules that are almost always noise in mature production code
 LOW_SIGNAL_RULES = {
-    "QUALITY-001", "QUALITY-002", "QUALITY-003",
-    "COMPLEXITY-001", "COMPLEXITY-002",  # cyclomatic complexity
-    "DEAD-001", "DEAD-002", "DEAD-003", "DEAD-004",  # dead code / unreachable
-    "SOLID-001", "SOLID-002", "SOLID-003",  # SOLID principle metrics
-    "STYLE-001", "STYLE-002", "STYLE-003", "STYLE-004",  # code style
-    "IMPORT-001", "IMPORT-002", "IMPORT-003", "IMPORT-004",  # import ordering / issues
-    "VAR-001", "VAR-002", "VAR-003", "VAR-004",  # variable usage
+    "QUALITY-001",
+    "QUALITY-002",
+    "QUALITY-003",
+    "COMPLEXITY-001",
+    "COMPLEXITY-002",  # cyclomatic complexity
+    "DEAD-001",
+    "DEAD-002",
+    "DEAD-003",
+    "DEAD-004",  # dead code / unreachable
+    "SOLID-001",
+    "SOLID-002",
+    "SOLID-003",  # SOLID principle metrics
+    "STYLE-001",
+    "STYLE-002",
+    "STYLE-003",
+    "STYLE-004",  # code style
+    "IMPORT-001",
+    "IMPORT-002",
+    "IMPORT-003",
+    "IMPORT-004",  # import ordering / issues
+    "VAR-001",
+    "VAR-002",
+    "VAR-003",
+    "VAR-004",  # variable usage
 }
 
 # Rules that only fire as FP when the file is non-runtime developer tooling
@@ -109,16 +139,34 @@ _NON_RUNTIME_PATH_RE = re.compile(
 
 # Rules whose category is unambiguously "security" — used for tier-stratified precision.
 SECURITY_CATEGORY_RULES = {
-    "SECURITY-001", "SECURITY-002", "SECURITY-003", "SECURITY-004",
-    "SECURITY-005", "SECURITY-006", "SECURITY-007", "SECURITY-008",
-    "SECURITY-009", "SECURITY-010", "SECURITY-021", "SECURITY-022",
-    "SECURITY-023", "SECURITY-024", "SECURITY-025", "SECURITY-026",
+    "SECURITY-001",
+    "SECURITY-002",
+    "SECURITY-003",
+    "SECURITY-004",
+    "SECURITY-005",
+    "SECURITY-006",
+    "SECURITY-007",
+    "SECURITY-008",
+    "SECURITY-009",
+    "SECURITY-010",
+    "SECURITY-021",
+    "SECURITY-022",
+    "SECURITY-023",
+    "SECURITY-024",
+    "SECURITY-025",
+    "SECURITY-026",
     "SECURITY-046",
-    "SECRET-001", "SECRET-002", "SECRET-003",
-    "SQLI-001", "SQLI-002",
-    "SHELL-001", "SHELL-002",
-    "XML-001", "YAML-001",
-    "CRYPTO-001", "CRYPTO-002",
+    "SECRET-001",
+    "SECRET-002",
+    "SECRET-003",
+    "SQLI-001",
+    "SQLI-002",
+    "SHELL-001",
+    "SHELL-002",
+    "XML-001",
+    "YAML-001",
+    "CRYPTO-001",
+    "CRYPTO-002",
 }
 
 
@@ -181,13 +229,18 @@ def run_scan(repo: dict, repo_path: Path, timeout: int = 600) -> list[dict]:
     env["PYTHONPATH"] = str(ROOT)
 
     cmd = [
-        sys.executable, "-m", "CORE",
-        "--target-dir", str(repo_path),
-        "--repo-name", repo["name"],
+        sys.executable,
+        "-m",
+        "CORE",
+        "--target-dir",
+        str(repo_path),
+        "--repo-name",
+        repo["name"],
         "--no-ai",
         "--json",
         "--quiet",
-        "--lang", lang,
+        "--lang",
+        lang,
     ]
 
     try:
@@ -221,6 +274,7 @@ def run_scan(repo: dict, repo_path: Path, timeout: int = 600) -> list[dict]:
         except json.JSONDecodeError:
             # stdout wasn't JSON — fall back to per-pid findings file written by the scan
             import os as _os
+
             pid_file = ROOT / f"DATA/outputs/findings_pid{result.returncode}.json"
             # Try to find the most recently written pid file
             data_dir = ROOT / "DATA/outputs"
@@ -327,7 +381,10 @@ def triage_finding(f: dict, repo_name: str) -> dict:
                     "verdict": "AUTO_FP",
                     "reason": f"B105 trivial-token FP: flagged '{token}' as password",
                 }
-        return {"verdict": "NEEDS_REVIEW", "reason": f"SECURITY-005 hardcoded-password in production code — token: {msg_raw[:80]}"}
+        return {
+            "verdict": "NEEDS_REVIEW",
+            "reason": f"SECURITY-005 hardcoded-password in production code — token: {msg_raw[:80]}",
+        }
 
     # HIGH severity + high-confidence security rule in production code → TP candidate
     if sev == "high" and rule in HIGH_CONFIDENCE_RULES:
@@ -335,7 +392,10 @@ def triage_finding(f: dict, repo_name: str) -> dict:
         msg = msg_raw.lower()
         # yaml.load flagged in pyyaml itself is intentional but still a detectable risk
         safe_patterns = [
-            "# nosec", "# noqa", "safe=true", "safe_load",
+            "# nosec",
+            "# noqa",
+            "safe=true",
+            "safe_load",
         ]
         if any(p in msg for p in safe_patterns):
             return {"verdict": "AUTO_FP", "reason": f"message indicates intentional safe use: {msg[:80]}"}
@@ -393,20 +453,15 @@ def compute_security_tier_precision(triaged: list[dict], mode: str = "conservati
     This is the standard SAST industry reporting tier — most tools report by
     severity/category stratum rather than a single blended number.
     """
+
     # Triage items store rule under "rule" (the key written by run_benchmark).
     # _rule() reads canonical_rule_id/rule_id which are raw finding fields — use
     # explicit key access here so we work on the triage worksheet format.
     def _t_rule(t: dict) -> str:
         return (t.get("rule") or _rule(t)).upper()
 
-    security_high = [
-        t for t in triaged
-        if _sev(t) == "high" and _t_rule(t) in SECURITY_CATEGORY_RULES
-    ]
-    verdicts = [
-        conservative_verdict(t) if mode == "conservative" else optimistic_verdict(t)
-        for t in security_high
-    ]
+    security_high = [t for t in triaged if _sev(t) == "high" and _t_rule(t) in SECURITY_CATEGORY_RULES]
+    verdicts = [conservative_verdict(t) if mode == "conservative" else optimistic_verdict(t) for t in security_high]
     tp = sum(1 for v in verdicts if v == "AUTO_TP")
     fp = sum(1 for v in verdicts if v == "AUTO_FP")
     nr = sum(1 for t in security_high if t["triage"]["verdict"] == "NEEDS_REVIEW")
@@ -415,7 +470,11 @@ def compute_security_tier_precision(triaged: list[dict], mode: str = "conservati
     return {
         "mode": mode,
         "scope": "high-severity security rules only",
-        "tp": tp, "fp": fp, "needs_review": nr, "total": total, "precision": precision,
+        "tp": tp,
+        "fp": fp,
+        "needs_review": nr,
+        "total": total,
+        "precision": precision,
     }
 
 
@@ -461,31 +520,35 @@ def run_benchmark(
         repo_triaged = []
         for f in high_med:
             t = triage_finding(f, repo["name"])
-            repo_triaged.append({
-                "repo": repo["name"],
-                "language": repo.get("language", "?"),
-                "severity": _sev(f),
-                "rule": _rule(f),
-                "file": _path(f),
-                "line": f.get("line_number") or f.get("line") or 0,
-                "message": (f.get("message") or "")[:120],
-                "triage": t,
-            })
+            repo_triaged.append(
+                {
+                    "repo": repo["name"],
+                    "language": repo.get("language", "?"),
+                    "severity": _sev(f),
+                    "rule": _rule(f),
+                    "file": _path(f),
+                    "line": f.get("line_number") or f.get("line") or 0,
+                    "message": (f.get("message") or "")[:120],
+                    "triage": t,
+                }
+            )
         all_triaged.extend(repo_triaged)
 
         tp_auto = sum(1 for t in repo_triaged if t["triage"]["verdict"] == "AUTO_TP")
         fp_auto = sum(1 for t in repo_triaged if t["triage"]["verdict"] == "AUTO_FP")
         nr = sum(1 for t in repo_triaged if t["triage"]["verdict"] == "NEEDS_REVIEW")
         total_hm = len(repo_triaged)
-        per_repo_stats.append({
-            "repo": repo["name"],
-            "language": repo.get("language", "?"),
-            "total_findings": len(findings),
-            "high_med_findings": total_hm,
-            "auto_tp": tp_auto,
-            "auto_fp": fp_auto,
-            "needs_review": nr,
-        })
+        per_repo_stats.append(
+            {
+                "repo": repo["name"],
+                "language": repo.get("language", "?"),
+                "total_findings": len(findings),
+                "high_med_findings": total_hm,
+                "auto_tp": tp_auto,
+                "auto_fp": fp_auto,
+                "needs_review": nr,
+            }
+        )
         print(
             f"  Triage: {total_hm} H/M → {tp_auto} AUTO_TP, {fp_auto} AUTO_FP, {nr} NEEDS_REVIEW",
             flush=True,
@@ -746,8 +809,16 @@ def main() -> None:
     cp = summary["conservative_precision"]
     op = summary["optimistic_precision"]
     print("\n" + "=" * 70)
-    print(f"  Conservative precision : {cp['precision'] * 100:.1f}%" if cp["precision"] else "  Conservative precision : N/A")
-    print(f"  Optimistic  precision  : {op['precision'] * 100:.1f}%" if op["precision"] else "  Optimistic  precision  : N/A")
+    print(
+        f"  Conservative precision : {cp['precision'] * 100:.1f}%"
+        if cp["precision"]
+        else "  Conservative precision : N/A"
+    )
+    print(
+        f"  Optimistic  precision  : {op['precision'] * 100:.1f}%"
+        if op["precision"]
+        else "  Optimistic  precision  : N/A"
+    )
     print(f"  Needs review           : {cp['needs_review']} findings")
     print(f"  Repos scanned          : {summary['corpus_size']}")
     print("=" * 70)

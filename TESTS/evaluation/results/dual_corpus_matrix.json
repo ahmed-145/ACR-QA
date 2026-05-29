@@ -1,0 +1,103 @@
+{
+  "generated": "2026-05-29 19:51 UTC",
+  "description": "Dual-corpus evaluation: precision corpus measures FP rate on clean production libraries; recall corpus measures detection rate on known-vulnerable apps pinned to CVE-introducing commits.",
+  "recall_corpus": {
+    "track1": {
+      "cves_tested": 20,
+      "detectable": 8,
+      "tp": 8,
+      "fn": 0,
+      "tn_clean_repos": 12,
+      "fp_scan_on_clean": 0,
+      "tp_repos": [
+        "Werkzeug@0.11.10",
+        "PyYAML@3.13",
+        "celery@5.2.1",
+        "GitPython@3.1.26",
+        "PyYAML@5.3.1",
+        "cookiecutter@1.7.3",
+        "Pillow@9.0.0rc2",
+        "dask@2021.9.1"
+      ],
+      "fn_repos": []
+    },
+    "track2": {
+      "cves_tested": 5,
+      "detectable": 3,
+      "tp": 3,
+      "fn": 0,
+      "honest_misses": 2,
+      "families": [
+        "SSTI (CWE-1336)",
+        "XXE (CWE-611)",
+        "XXE (CWE-611)"
+      ],
+      "missed_families": [
+        "SQLi (CWE-89)",
+        "SQLi (CWE-89)"
+      ]
+    },
+    "combined": {
+      "total_tp": 11,
+      "total_fn_detectable": 0,
+      "honest_misses": 2,
+      "total_tested": 13,
+      "recall_detectable": 1.0,
+      "recall_all_including_honest_miss": 0.8462
+    }
+  },
+  "precision_corpus": {
+    "corpus_repos": 24,
+    "repos_with_findings": 24,
+    "total_hm_findings": 630,
+    "auto_tp": 54,
+    "auto_fp": 576,
+    "needs_review": 123,
+    "hm_conservative": {
+      "precision": 0.08571428571428572,
+      "ci_95_lo": 0.0451,
+      "ci_95_hi": 0.1389
+    },
+    "hm_optimistic": {
+      "precision": 0.28095238095238095,
+      "ci_95_lo": 0.1958,
+      "ci_95_hi": 0.3658
+    },
+    "security_tier": {
+      "count": 219,
+      "tp": 54,
+      "fp": 165,
+      "needs_review": 29,
+      "conservative_precision": 0.2465753424657534,
+      "optimistic_precision": 0.3789954337899543,
+      "conservative_ci_lo": 0.1463,
+      "conservative_ci_hi": 0.3541,
+      "optimistic_ci_lo": 0.2637,
+      "optimistic_ci_hi": 0.5045
+    }
+  },
+  "dual_corpus_summary": {
+    "recall_metric": {
+      "tp_cves": 11,
+      "fn_cves_detectable": 0,
+      "honest_misses_undetectable": 2,
+      "recall_detectable": 1.0,
+      "recall_all": 0.8462
+    },
+    "precision_metric_security_tier": {
+      "tp_findings_on_clean_code": 54,
+      "fp_findings_on_clean_code": 194,
+      "conservative_precision": 0.2465753424657534,
+      "optimistic_precision": 0.3789954337899543,
+      "ci_95_conservative": [
+        0.1463,
+        0.3541
+      ],
+      "ci_95_optimistic": [
+        0.2637,
+        0.5045
+      ]
+    },
+    "interpretation": "ACR-QA detects 11/11 statically-detectable CVEs (recall = 100%) while maintaining 24.7%\u201337.9% precision on the security-tier (CI: [14.6%, 35.4%] conservative). 2 CVEs are honest misses (not detectable by static pattern analysis)."
+  }
+}

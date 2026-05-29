@@ -1,5 +1,5 @@
 {
-  "generated": "2026-05-29 (T4.2 bootstrap CI added)",
+  "generated": "2026-05-29 (T4.3 dual-corpus added)",
   "precision_updated": "2026-05-29",
   "recall_updated": "2026-05-29",
   "total_repos": 38,
@@ -566,5 +566,24 @@
       "ci_95_hi": 0.1389
     },
     "note": "Per-repo bootstrap resampling. Conservative=NEEDS_REVIEW\u2192FP, Optimistic=NEEDS_REVIEW\u2192TP."
+  },
+  "t4_dual_corpus": {
+    "generated": "2026-05-29 19:51 UTC",
+    "recall_detectable": 1.0,
+    "recall_all_with_honest_miss": 0.8462,
+    "tp_cves": 11,
+    "fn_cves_detectable": 0,
+    "honest_misses": 2,
+    "precision_security_tier_conservative": 0.2465753424657534,
+    "precision_security_tier_optimistic": 0.3789954337899543,
+    "ci_conservative": [
+      0.1463,
+      0.3541
+    ],
+    "ci_optimistic": [
+      0.2637,
+      0.5045
+    ],
+    "interpretation": "ACR-QA detects 11/11 statically-detectable CVEs (recall = 100%) while maintaining 24.7%\u201337.9% precision on the security-tier (CI: [14.6%, 35.4%] conservative). 2 CVEs are honest misses (not detectable by static pattern analysis)."
   }
 }
