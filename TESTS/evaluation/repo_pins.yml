@@ -87,3 +87,42 @@ ground_truth_repos:
     sha: "b5addb64f0161ff6bfe94c124ef76f6a1fba5254"  # pinned 2026-05-28
     role: layer_b_fp_rate
     notes: "FP triage: 43 HIGH findings, 1 FP → 2.3% FP rate"
+
+  # Track 2 — CVE recall expansion (2026-05-29)
+  # New vuln families: XXE (CWE-611), SSTI (CWE-1336), SQLi honest miss (CWE-89)
+
+  - name: llama-cpp-python
+    url: https://github.com/abetlen/llama-cpp-python
+    sha: "bf66a283e899e367c82bdf13b89179fb14ed176e"  # tag v0.2.71, pinned 2026-05-29
+    ground_truth: TESTS/evaluation/ground_truth/cve-2024-34359-llama-cpp-ssti.yml
+    cve: CVE-2024-34359
+    notes: "SSTI via jinja2.Environment without autoescape in llama_chat_format.py"
+
+  - name: langchain-text-splitters
+    url: https://github.com/langchain-ai/langchain
+    sha: "0c2c8c36c162cbeb8838bc38957b82f7b96186b6"  # tag langchain-text-splitters==0.3.8, pinned 2026-05-29
+    checkout_subdir: libs/text-splitters
+    ground_truth: TESTS/evaluation/ground_truth/cve-2025-6985-langchain-xxe.yml
+    cve: CVE-2025-6985
+    notes: "XXE via lxml.etree.parse + XSLT in HTMLSectionSplitter"
+
+  - name: owslib
+    url: https://github.com/geopython/OWSLib
+    sha: "b57111843730cbea2142ee087e03730e10f26524"  # tag 0.28.0, pinned 2026-05-29
+    ground_truth: TESTS/evaluation/ground_truth/cve-2023-27476-owslib-xxe.yml
+    cve: CVE-2023-27476
+    notes: "XXE via lxml without resolve_entities=False across OWS XML parsing"
+
+  - name: pymysql
+    url: https://github.com/PyMySQL/PyMySQL
+    sha: "dbf1ff52a695278cd80e179641f67bb6e2a83326"  # tag v1.1.0, pinned 2026-05-29
+    ground_truth: TESTS/evaluation/ground_truth/cve-2024-36039-pymysql-sqli.yml
+    cve: CVE-2024-36039
+    notes: "SQLi via unescaped JSON dict keys — HONEST MISS (internal escaping bug)"
+
+  - name: django
+    url: https://github.com/django/django
+    sha: "98cf264c9cb0561e4ec305a621e9d58116e44aef"  # tag 4.2.14, pinned 2026-05-29
+    ground_truth: TESTS/evaluation/ground_truth/cve-2024-42005-django-sqli.yml
+    cve: CVE-2024-42005
+    notes: "SQLi via JSONField ORM column aliases — HONEST MISS (ORM-internal)"
