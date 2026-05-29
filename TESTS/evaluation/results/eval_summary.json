@@ -1,8 +1,9 @@
 {
-  "generated": "2026-05-21 05:25:27",
+  "generated": "2026-05-29 (Track 2 updated)",
   "precision_updated": "2026-05-29",
-  "total_repos": 33,
-  "scanned": 20,
+  "recall_updated": "2026-05-29",
+  "total_repos": 38,
+  "scanned": 25,
   "cve_skipped": 0,
   "precision_benchmark": {
     "corpus": "precision_corpus_pins.yml",
@@ -20,6 +21,59 @@
     "note": "Conservative=NEEDS_REVIEW→FP; Optimistic=NEEDS_REVIEW→TP. Security-tier restricts denominator to HIGH-severity security-category rules only (SECURITY-*/SECRET-*/SQLI-*/SHELL-*/CRYPTO-*) — the standard SAST reporting stratum. Path heuristics added 2026-05-29 for L1 (SECURITY-046 SSRF in dev-tooling paths) and L2 (SECURITY-022/026 subprocess in build-automation paths). See docs/evaluation/PRECISION_BENCHMARK.md and docs/GOD_MODE_V3_PLAN.md §14."
   },
   "average_recall": 1.0,
+  "track2_recall": {
+    "note": "Track 2 added 5 CVEs across 3 new vuln families (2026-05-29). 3 detectable, 2 honest misses.",
+    "new_families": ["CWE-611 XXE", "CWE-1336 SSTI", "CWE-89 SQLi (honest miss)"],
+    "results": [
+      {
+        "cve": "CVE-2024-34359",
+        "package": "llama-cpp-python@v0.2.71",
+        "family": "SSTI (CWE-1336)",
+        "detected": true,
+        "rule": "SECURITY-031",
+        "file": "llama_cpp/llama_chat_format.py",
+        "line": 194
+      },
+      {
+        "cve": "CVE-2023-27476",
+        "package": "OWSLib@0.28.0",
+        "family": "XXE (CWE-611)",
+        "detected": true,
+        "rule": "SECURITY-039",
+        "file": "owslib/etree.py",
+        "line": 29
+      },
+      {
+        "cve": "CVE-2025-6985",
+        "package": "langchain-text-splitters@0.3.8",
+        "family": "XXE (CWE-611)",
+        "detected": true,
+        "rule": "SECURITY-044",
+        "file": "langchain_text_splitters/html.py",
+        "line": 461
+      },
+      {
+        "cve": "CVE-2024-36039",
+        "package": "PyMySQL@v1.1.0",
+        "family": "SQLi (CWE-89)",
+        "detected": false,
+        "honest_miss": true,
+        "reason": "Internal escape_dict() omits key escaping — not visible at call site; requires taint analysis"
+      },
+      {
+        "cve": "CVE-2024-42005",
+        "package": "Django@4.2.14",
+        "family": "SQLi (CWE-89)",
+        "detected": false,
+        "honest_miss": true,
+        "reason": "ORM-internal SQL column alias construction — application call site contains no detectable pattern"
+      }
+    ],
+    "detectable_detected": 3,
+    "detectable_total": 3,
+    "honest_misses": 2,
+    "recall_detectable": 1.0
+  },
   "results": [
     {
       "yaml": "cve-2016-10516-werkzeug-eval.yml",

@@ -203,20 +203,32 @@ def run_acrqa(clone_dir: Path) -> list[dict]:
 def score_cve(cve: dict, findings: list[dict]) -> tuple[bool, str | None]:
     """
     Return (detected, matching_finding_id).
-    Detected = HIGH severity finding within ±3 lines of any affected_line.
+    Detected = finding at or above min_severity within ±3 lines of any affected_line.
+    Default min_severity is HIGH. CVEs with detection_confidence='medium' also accept MEDIUM.
+    CVEs with recall_target=0 always return (False, None) — they are documented honest misses.
     """
+    # Honest-miss CVEs have recall_target=0 — skip scoring entirely.
+    if cve.get("recall_target", 1) == 0:
+        return False, None
+
     affected_file = cve.get("affected_file", "")
     affected_lines: list[int] = cve.get("affected_lines", [])
 
     if not affected_lines:
         return False, None
 
+    # Determine accepted severity levels based on detection_confidence field.
+    confidence = cve.get("detection_confidence", "high").lower()
+    accepted_severities = {"high"}
+    if confidence in ("medium", "low"):
+        accepted_severities.add("medium")
+
     # Normalise affected_file to just the filename parts for fuzzy matching
     affected_file_parts = Path(affected_file).parts
 
     for f in findings:
         severity = (f.get("severity") or "").lower()
-        if severity != "high":
+        if severity not in accepted_severities:
             continue
 
         f_file = f.get("file_path") or f.get("file") or ""
