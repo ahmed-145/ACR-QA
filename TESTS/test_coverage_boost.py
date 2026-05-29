@@ -450,7 +450,7 @@ class TestSeverityScorerFullCoverage:
 
         assert score_severity("SECURITY-001", {}) == "high"
         assert score_severity("IMPORT-001", {}) == "low"
-        assert score_severity("SOLID-001", {}) == "medium"
+        assert score_severity("SOLID-001", {}) == "low"  # demoted 2026-05-29
 
     def test_score_severity_unknown_rule(self):
         from CORE.engines.severity_scorer import score_severity

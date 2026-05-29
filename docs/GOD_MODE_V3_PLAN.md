@@ -715,4 +715,69 @@ faster because the rails exist. Ahmed has time → all three is realistic; the c
 
 ---
 
+### Track 1 — Completion Status (2026-05-29)
+
+**✅ GATE MET.** All five tasks done. Deliverables committed at `83e6b25` (corpus + harness) and the follow-on precision-fixes commit.
+
+| Task | Status | Detail |
+|---|---|---|
+| 1.1 | ✅ | All 45 SHAs pinned in `repo_pins.yml` + `precision_corpus_pins.yml` |
+| 1.2 | ✅ | 30-repo corpus frozen (Python 20 / JS 6 / Go 4) |
+| 1.3 | ✅ | `scripts/run_precision_benchmark.py` — full scan→triage→report harness |
+| 1.4 | ✅ | 941 H/M findings triaged; conservative 5.7% → improved after fixes; see `PRECISION_BENCHMARK.md` |
+| 1.5 | ✅ | Auto-triage methodology documented; 3 FP categories identified + fixed |
+
+**Three tool deficiencies found and fixed during Track 1:**
+
+| # | Issue | Fix | Impact |
+|---|---|---|---|
+| T1F-1 | JS adapter forced all ESLint warnings to `medium`, overriding the severity scorer | Trust `RULE_SEVERITY` for mapped rules; keep ESLint-native severity only for unmapped rules | 204 STYLE-017 `no-var` findings dropped from H/M denominator |
+| T1F-2 | JS adapter scanned `examples/`, `demo/`, `docs/`, `fixtures/` etc. (non-production folders) | Added non-production dirs to `_get_js_files()` exclusion set | 288 express examples/ FPs eliminated from precision corpus |
+| T1F-3 | Go adapter staticcheck failed silently on repos requiring Go > installed version | `_run_staticcheck_with_compat()` patches go.mod temporarily; compile-error pseudo-findings filtered in `normalize_staticcheck()` | Graceful degradation instead of silent 0; gosec confirmed working (correctly returns 0 on top Go libs) |
+
+**Severity demotions (Tier 1 calibration):**
+
+| Rule | Before | After | Reason |
+|---|---|---|---|
+| `BEST-PRACTICE-005` | medium | low | `open()` without context manager is a code style issue in older codebases, not a security risk |
+| `SOLID-001` | medium | low | Too-many-parameters is a design preference; flagging production library APIs as "medium" is noise |
+
+---
+
+### Documented Limitations (Tier 3 — future work, do NOT attempt before defense)
+
+These are known weaknesses surfaced by Track 1 triage. They require research-level solutions and should be cited in the thesis as honest future work, not hidden.
+
+#### L1 — SSRF false positives on hardcoded developer-controlled URLs (SECURITY-046, 28 findings)
+
+**What happens:** Semgrep fires `SECURITY-046` (SSRF) on any `requests.get(url)` where `url` is constructed from a variable, even when that variable is set by the developer (not user input). This fires on release scripts, doc builders, and CI helpers that make API calls to known endpoints (e.g., `https://api.github.com/...`).
+
+**Why it's hard to fix:** Proper SSRF detection requires taint-path analysis from HTTP request parameters to the `requests.get()` call. The current implementation is pattern-matching only (no taint tracking on JS/Python semgrep rules). Building accurate taint-based SSRF detection is a full research task.
+
+**How to defend:** Acknowledge in the thesis. Quote the 28 findings, explain the rule fires pattern-only, state that taint-aware SSRF is on the roadmap (Track 3 of evaluation / future enhancements). This is honest and expected — commercial tools like Snyk and Semgrep Pro also struggle with this.
+
+#### L2 — subprocess/partial-executable-path FP on build automation (SECURITY-022 + SECURITY-026, 36 findings)
+
+**What happens:** Bandit `B603/B607` fires when a subprocess is called with a list (e.g., `subprocess.run(["make"])`) or with a string path that isn't absolute (e.g., `["git", "status"]`). This fires on intentional build automation in `docs/conf.py`, `setup.py`, and CI helper scripts — code that the user writes and controls entirely.
+
+**Why it's hard to fix:** The rule cannot distinguish "subprocess call initiated by a web request" (dangerous) from "subprocess call in a build script" (intentional). Context-awareness would require dataflow analysis tracing the call-site to an HTTP handler vs a main() function.
+
+**How to defend:** Document as a known FP class. The rule is correct for security contexts (web apps calling subprocess on user input) but over-fires on build tooling. Can be suppressed per-repo with `.acrqa.yml` configuration.
+
+#### L3 — Go staticcheck requires matching toolchain version
+
+**What happens:** All 4 Go repos in the corpus require Go ≥ 1.25; our installed Go is 1.18. After go.mod patching, staticcheck partially runs but generates compile errors (APIs like `testing.B.Loop` don't exist in 1.18's stdlib). Compile errors are now filtered, but genuine staticcheck findings on these repos are unreachable.
+
+**Status:** gosec works correctly (no toolchain dependency, finds 0 genuine security issues on gin/caddy/syncthing/frp — correct behavior for top-tier Go repos). staticcheck analysis is gated on Go version. **Fix before Track 2:** install Go 1.21+ via `snap install go --channel=1.21/stable`.
+
+**How to defend:** Go security analysis via gosec is functional. The limitation is the local Go version, not the ACR-QA codebase. In CI, the Go version is configurable in the action YAML.
+
+#### L4 — React and large JS monorepos fail with scan error
+
+**What happens:** `python -m CORE --lang javascript` on `react` (which has 100+ packages under `packages/`) fails to produce valid JSON. The ESLint flat-config approach doesn't handle multi-root monorepos where each sub-package has its own `package.json` and config.
+
+**Fix path:** Before scanning, detect `packages/*/package.json` pattern → spawn one ESLint pass per sub-package → merge results. Estimated effort: ~2 hours. Deferred as non-critical (react is an unusual repo structure; normal single-package JS projects work fine).
+
+---
+
 *Plan v3 supersedes v2 (which is complete). Update this doc at the end of each week — do not let it rot.*

@@ -153,11 +153,24 @@ class TestESLintNormalization:
         assert f.tool_raw["tool_name"] == "eslint"
 
     def test_normalize_warning_is_medium(self, adapter: JavaScriptAdapter) -> None:
-        """ESLint severity 1 (warning) maps to medium."""
+        """ESLint severity 1 (warning) keeps medium for unmapped rules.
+        Mapped rules respect RULE_SEVERITY (e.g. no-console → STYLE-007 → low).
+        Unmapped rules fall back to ESLint-native severity so unknown warnings
+        stay medium rather than being silently downgraded.
+        """
         eslint_output = [
             {
                 "filePath": "/project/app.js",
-                "messages": [{"ruleId": "no-console", "message": "No console", "severity": 1, "line": 5, "column": 1}],
+                "messages": [
+                    # unmapped rule: no RULE_SEVERITY entry → keep ESLint medium
+                    {
+                        "ruleId": "some-project-specific-warning",
+                        "message": "warn",
+                        "severity": 1,
+                        "line": 5,
+                        "column": 1,
+                    }
+                ],
             }
         ]
         findings = adapter.normalize_eslint(eslint_output)

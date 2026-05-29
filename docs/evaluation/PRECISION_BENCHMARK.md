@@ -1,6 +1,6 @@
 # Precision Benchmark — ACR-QA v5.0
 
-*Generated: 2026-05-28 20:04 UTC*
+*Generated: 2026-05-29 04:57 UTC*
 *Corpus: [`precision_corpus_pins.yml`](../../TESTS/evaluation/precision_corpus_pins.yml)*
 
 ---
@@ -9,11 +9,11 @@
 
 | Metric | Conservative | Optimistic |
 |--------|-------------|-----------|
-| **Precision** | **5.7%** | **20.5%** |
-| TP | 54 | 193 |
-| FP | 887 | 748 |
-| Needs Review | 139 | 139 |
-| Total H/M findings | 941 | 941 |
+| **Precision** | **8.6%** | **31.0%** |
+| TP | 54 | 195 |
+| FP | 576 | 435 |
+| Needs Review | 141 | 141 |
+| Total H/M findings | 630 | 630 |
 | Repos scanned | 24 | — |
 
 > **Conservative**: `NEEDS_REVIEW` items counted as FP (worst-case precision).
@@ -58,8 +58,8 @@ The FP rate here represents the tool's noise floor on clean, well-maintained pro
 
 | Language       | H/M   |  TP  |  FP  |  NR | Conservative | Optimistic |
 |----------------|-------|------|------|-----|-------------|-----------|
-| Python         |   573 |   29 |  430 | 114 |     5.1% |     25.0% |
-| Javascript     |   368 |   25 |  318 |  25 |     6.8% |     13.6% |
+| Python         |   495 |   29 |  369 |  97 |     5.9% |     25.5% |
+| Javascript     |   135 |   25 |   66 |  44 |    18.5% |     51.1% |
 
 ---
 
@@ -73,22 +73,22 @@ The FP rate here represents the tool's noise floor on clean, well-maintained pro
 | charset-normalizer       | python       |     60 |   10 |  0 | 10 |  0 |
 | setuptools               | python       |     32 |   32 |  7 | 16 |  9 |
 | cryptography             | python       |      0 |    0 |  0 |  0 |  0 |
-| python-dateutil          | python       |    114 |   36 |  0 | 26 | 10 |
+| python-dateutil          | python       |    104 |   28 |  0 | 20 |  8 |
 | pyyaml                   | python       |     55 |   35 |  0 | 34 |  1 |
 | pydantic                 | python       |     51 |   51 |  3 | 42 |  6 |
-| pygments                 | python       |     71 |   50 |  2 | 26 | 22 |
-| click                    | python       |     63 |   21 |  1 | 11 |  9 |
+| pygments                 | python       |     63 |   37 |  2 | 16 | 19 |
+| click                    | python       |     53 |   13 |  1 |  5 |  7 |
 | numpy                    | python       |     24 |   24 |  2 | 20 |  2 |
 | pycparser                | python       |     60 |    9 |  0 |  8 |  1 |
-| anyio                    | python       |     58 |   24 |  4 | 16 |  4 |
+| anyio                    | python       |     47 |   16 |  4 | 10 |  2 |
 | attrs                    | python       |     69 |   24 |  1 | 23 |  0 |
-| h11                      | python       |     75 |   25 |  0 | 19 |  6 |
-| fsspec                   | python       |     96 |   65 |  0 | 49 | 16 |
-| pytest                   | python       |     65 |   48 |  4 | 30 | 14 |
-| pandas                   | python       |     34 |   34 |  2 | 21 | 11 |
+| h11                      | python       |     65 |   19 |  0 | 13 |  6 |
+| fsspec                   | python       |     85 |   50 |  0 | 39 | 11 |
+| pytest                   | python       |     57 |   33 |  4 | 18 | 11 |
+| pandas                   | python       |     29 |   29 |  2 | 16 | 11 |
 | httpx                    | python       |     81 |   26 |  0 | 25 |  1 |
 | axios                    | javascript   |    300 |   14 |  7 |  1 |  6 |
-| express                  | javascript   |    298 |  298 |  0 | 288 | 10 |
+| express                  | javascript   |    294 |   65 |  0 | 36 | 29 |
 | nextjs                   | javascript   |     23 |   18 |  6 | 10 |  2 |
 | react                    | javascript   |      0 |    0 |  0 |  0 |  0 |
 | webpack                  | javascript   |    238 |   28 | 10 | 16 |  2 |

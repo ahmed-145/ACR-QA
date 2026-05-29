@@ -24,6 +24,7 @@ from typing import Any
 
 from CORE.adapters.base import LanguageAdapter
 from CORE.engines.normalizer import CanonicalFinding
+from CORE.engines.severity_scorer import SeverityScorer
 
 # ──────────────────────────────────────────────────────────────────────────────
 # ESLint rule → canonical rule ID mapping
@@ -179,6 +180,10 @@ class JavaScriptAdapter(LanguageAdapter):
         for ext in self.file_extensions:
             files.extend(self.target_dir.rglob(f"*{ext}"))
         # Exclude node_modules, dist, build, vendor etc
+        # Also exclude non-production folders (examples/demos/docs/benchmarks):
+        # these ship intentionally-loose sample code that floods security
+        # precision with noise (e.g. express examples/ produced 288 FPs).
+        # This mirrors default behaviour of Semgrep/CodeQL.
         exclude = {
             "node_modules",
             "dist",
@@ -191,6 +196,18 @@ class JavaScriptAdapter(LanguageAdapter):
             "bower_components",
             "min",
             "minified",
+            "example",
+            "examples",
+            "demo",
+            "demos",
+            "sample",
+            "samples",
+            "fixture",
+            "fixtures",
+            "docs",
+            "doc",
+            "benchmark",
+            "benchmarks",
         }
 
         filtered_files: list[Path] = []
@@ -543,8 +560,8 @@ export default [
                 rule_id = msg.get("ruleId") or "eslint-unknown"
                 canonical_rule_id = JS_RULE_MAPPING.get(rule_id, f"CUSTOM-{rule_id}")
                 severity_raw = msg.get("severity", 1)
-                # ESLint severity: 2=error→high, 1=warn→medium
-                severity = "high" if severity_raw == 2 else "medium"
+                # ESLint severity: 2=error, 1=warning
+                eslint_severity = "high" if severity_raw == 2 else "medium"
                 finding = CanonicalFinding.create(
                     canonical_rule_id=canonical_rule_id,
                     rule_id=rule_id,
@@ -552,14 +569,19 @@ export default [
                     file=file_path,
                     line=msg.get("line", 0),
                     column=msg.get("column", 0),
-                    severity=severity,
+                    severity=eslint_severity,
                     category=self._infer_category(canonical_rule_id),
                     tool_name="eslint",
                     tool_output=msg,
                 )
-                # Preserve ESLint-computed severity — RULE_SEVERITY may downgrade
-                # style rules (e.g. no-console → low) but ESLint warnings are medium.
-                finding = finding.model_copy(update={"severity": severity})
+                # Trust the severity scorer's RULE_SEVERITY classification for rules
+                # we have explicitly mapped — it correctly demotes style rules like
+                # no-var (STYLE-017) to low. Without this, every ESLint warning was
+                # forced to medium, flooding precision with style noise (e.g. 204
+                # no-var findings in express examples/). For UNmapped rules we keep
+                # the ESLint-derived severity so genuine unknown errors aren't lost.
+                if canonical_rule_id not in SeverityScorer.RULE_SEVERITY:
+                    finding = finding.model_copy(update={"severity": eslint_severity})
                 findings.append(finding)
         return findings
 

@@ -15,6 +15,7 @@ from __future__ import annotations
 import json
 import logging
 import os
+import re
 import shutil
 import subprocess
 from pathlib import Path
@@ -187,16 +188,9 @@ class GoAdapter(LanguageAdapter):
         # ── staticcheck ────────────────────────────────────────────────
         if os.path.isfile(self.STATICCHECK_PATH):
             try:
-                proc = subprocess.run(
-                    [self.STATICCHECK_PATH, "./..."],
-                    cwd=str(self.target_dir),
-                    capture_output=True,
-                    text=True,
-                    timeout=120,
-                )
-                lines = (proc.stdout + proc.stderr).strip().splitlines()
-                results["staticcheck"] = [l for l in lines if l.strip()]
-                logger.info("staticcheck: %d findings", len(results["staticcheck"]))
+                sc_lines = self._run_staticcheck_with_compat()
+                results["staticcheck"] = sc_lines
+                logger.info("staticcheck: %d raw lines", len(sc_lines))
             except subprocess.TimeoutExpired:
                 results["errors"].append("staticcheck timed out after 120s")
             except Exception as e:
@@ -273,16 +267,79 @@ class GoAdapter(LanguageAdapter):
             findings.append(finding)
         return findings
 
+    # Maximum go directive version staticcheck can handle with our installed Go.
+    # Anything higher triggers "invalid go version" from the toolchain.
+    _STATICCHECK_MAX_GO = "1.21"
+
+    def _run_staticcheck_with_compat(self) -> list[str]:
+        """
+        Run staticcheck, transparently patching go.mod when the declared go
+        version exceeds what our local toolchain supports.  The patch is applied
+        to a *copy* of go.mod; the original is always restored.
+        """
+        go_mod = self.target_dir / "go.mod"
+        original_content: str | None = None
+        patched = False
+
+        if go_mod.exists():
+            original_content = go_mod.read_text()
+            # Detect "go X.Y[.Z]" directives that exceed what our toolchain supports
+            m = re.search(r"^go\s+(\d+\.\d+(?:\.\d+)?)", original_content, re.MULTILINE)
+            if m:
+                declared = m.group(1)
+
+                def _ver(v: str) -> tuple[int, int]:
+                    parts = v.split(".")
+                    return int(parts[0]), int(parts[1])
+
+                if _ver(declared) > _ver(self._STATICCHECK_MAX_GO):
+                    patched_content = re.sub(
+                        r"^(go\s+)\S+",
+                        rf"\g<1>{self._STATICCHECK_MAX_GO}",
+                        original_content,
+                        flags=re.MULTILINE,
+                    )
+                    go_mod.write_text(patched_content)
+                    patched = True
+                    logger.info(
+                        "staticcheck: patched go.mod %s → %s for compat (restored after scan)",
+                        declared,
+                        self._STATICCHECK_MAX_GO,
+                    )
+
+        try:
+            proc = subprocess.run(
+                [self.STATICCHECK_PATH, "./..."],
+                cwd=str(self.target_dir),
+                capture_output=True,
+                text=True,
+                timeout=120,
+            )
+            lines = (proc.stdout + proc.stderr).strip().splitlines()
+            return [ln for ln in lines if ln.strip()]
+        finally:
+            if patched and original_content is not None:
+                go_mod.write_text(original_content)
+
     def normalize_staticcheck(self, lines: list[str]) -> list[CanonicalFinding]:
         """
         Convert staticcheck text output to CanonicalFindings.
         Format: file.go:line:col: SA1006 message
         """
         findings: list[CanonicalFinding] = []
-        import re
-
+        compile_errors = sum(1 for ln in lines if "(compile)" in ln)
+        if compile_errors:
+            logger.warning(
+                "staticcheck: %d compile-error lines skipped (Go toolchain version mismatch — "
+                "module requires newer Go than installed). Install a matching Go version to enable "
+                "full staticcheck analysis.",
+                compile_errors,
+            )
         pattern = re.compile(r"^(.+?):(\d+):(\d+):\s+(.+?)\s+\((\w+)\)$")
         for line in lines:
+            # Skip compile pseudo-errors from toolchain version mismatch
+            if "(compile)" in line:
+                continue
             m = pattern.match(line.strip())
             if not m:
                 continue

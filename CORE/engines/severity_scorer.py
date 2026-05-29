@@ -90,7 +90,7 @@ class SeverityScorer:
         "SECURITY-026": "medium",  # start_process_with_partial_path
         "SECURITY-028": "medium",  # linux_commands_wildcard_injection
         "SECURITY-032": "medium",  # use_of_mako_templates
-        "SOLID-001": "medium",  # Too many parameters
+        "SOLID-001": "low",  # Too many parameters — design preference, not a security issue
         "COMPLEXITY-001": "medium",  # High cyclomatic complexity
         "DUP-001": "medium",  # Code duplication
         "PATTERN-001": "medium",  # Mutable default arguments
@@ -136,7 +136,7 @@ class SeverityScorer:
         "STYLE-016": "low",  # B018: Useless expression / statement
         "BEST-PRACTICE-003": "low",  # B027: Empty method in abstract class
         "BEST-PRACTICE-004": "low",  # global statement usage
-        "BEST-PRACTICE-005": "medium",  # open() without context manager (resource leak)
+        "BEST-PRACTICE-005": "low",  # open() without context manager — style issue in older codebases
         "ASSERT-002": "low",  # B011: assert False — raise AssertionError() instead
         "SECURITY-049": "high",  # path-traversal (user-controlled path = file read/write risk)
         "SECURITY-050": "medium",  # B023: function defined in loop uses closure variable (logic bug)

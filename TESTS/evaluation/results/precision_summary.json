@@ -1,37 +1,37 @@
 {
-  "generated": "2026-05-28 20:04 UTC",
+  "generated": "2026-05-29 04:57 UTC",
   "corpus": "precision_corpus_pins.yml",
   "corpus_size": 24,
-  "total_high_med_findings": 941,
+  "total_high_med_findings": 630,
   "conservative_precision": {
     "mode": "conservative",
     "tp": 54,
-    "fp": 887,
-    "needs_review": 139,
-    "total": 941,
-    "precision": 0.057385759829968117
+    "fp": 576,
+    "needs_review": 141,
+    "total": 630,
+    "precision": 0.08571428571428572
   },
   "optimistic_precision": {
     "mode": "optimistic",
-    "tp": 193,
-    "fp": 748,
-    "needs_review": 139,
-    "total": 941,
-    "precision": 0.2051009564293305
+    "tp": 195,
+    "fp": 435,
+    "needs_review": 141,
+    "total": 630,
+    "precision": 0.30952380952380953
   },
-  "needs_review_count": 139,
+  "needs_review_count": 141,
   "language_breakdown": {
     "python": {
-      "high_med": 573,
+      "high_med": 495,
       "auto_tp": 29,
-      "auto_fp": 430,
-      "needs_review": 114
+      "auto_fp": 369,
+      "needs_review": 97
     },
     "javascript": {
-      "high_med": 368,
+      "high_med": 135,
       "auto_tp": 25,
-      "auto_fp": 318,
-      "needs_review": 25
+      "auto_fp": 66,
+      "needs_review": 44
     }
   },
   "per_repo": [
@@ -92,11 +92,11 @@
     {
       "repo": "python-dateutil",
       "language": "python",
-      "total_findings": 114,
-      "high_med_findings": 36,
+      "total_findings": 104,
+      "high_med_findings": 28,
       "auto_tp": 0,
-      "auto_fp": 26,
-      "needs_review": 10
+      "auto_fp": 20,
+      "needs_review": 8
     },
     {
       "repo": "pyyaml",
@@ -119,20 +119,20 @@
     {
       "repo": "pygments",
       "language": "python",
-      "total_findings": 71,
-      "high_med_findings": 50,
+      "total_findings": 63,
+      "high_med_findings": 37,
       "auto_tp": 2,
-      "auto_fp": 26,
-      "needs_review": 22
+      "auto_fp": 16,
+      "needs_review": 19
     },
     {
       "repo": "click",
       "language": "python",
-      "total_findings": 63,
-      "high_med_findings": 21,
+      "total_findings": 53,
+      "high_med_findings": 13,
       "auto_tp": 1,
-      "auto_fp": 11,
-      "needs_review": 9
+      "auto_fp": 5,
+      "needs_review": 7
     },
     {
       "repo": "numpy",
@@ -155,11 +155,11 @@
     {
       "repo": "anyio",
       "language": "python",
-      "total_findings": 58,
-      "high_med_findings": 24,
+      "total_findings": 47,
+      "high_med_findings": 16,
       "auto_tp": 4,
-      "auto_fp": 16,
-      "needs_review": 4
+      "auto_fp": 10,
+      "needs_review": 2
     },
     {
       "repo": "attrs",
@@ -173,37 +173,37 @@
     {
       "repo": "h11",
       "language": "python",
-      "total_findings": 75,
-      "high_med_findings": 25,
+      "total_findings": 65,
+      "high_med_findings": 19,
       "auto_tp": 0,
-      "auto_fp": 19,
+      "auto_fp": 13,
       "needs_review": 6
     },
     {
       "repo": "fsspec",
       "language": "python",
-      "total_findings": 96,
-      "high_med_findings": 65,
+      "total_findings": 85,
+      "high_med_findings": 50,
       "auto_tp": 0,
-      "auto_fp": 49,
-      "needs_review": 16
+      "auto_fp": 39,
+      "needs_review": 11
     },
     {
       "repo": "pytest",
       "language": "python",
-      "total_findings": 65,
-      "high_med_findings": 48,
+      "total_findings": 57,
+      "high_med_findings": 33,
       "auto_tp": 4,
-      "auto_fp": 30,
-      "needs_review": 14
+      "auto_fp": 18,
+      "needs_review": 11
     },
     {
       "repo": "pandas",
       "language": "python",
-      "total_findings": 34,
-      "high_med_findings": 34,
+      "total_findings": 29,
+      "high_med_findings": 29,
       "auto_tp": 2,
-      "auto_fp": 21,
+      "auto_fp": 16,
       "needs_review": 11
     },
     {
@@ -227,11 +227,11 @@
     {
       "repo": "express",
       "language": "javascript",
-      "total_findings": 298,
-      "high_med_findings": 298,
+      "total_findings": 294,
+      "high_med_findings": 65,
       "auto_tp": 0,
-      "auto_fp": 288,
-      "needs_review": 10
+      "auto_fp": 36,
+      "needs_review": 29
     },
     {
       "repo": "nextjs",

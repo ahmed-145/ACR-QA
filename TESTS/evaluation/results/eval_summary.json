@@ -8,13 +8,13 @@
     "corpus": "precision_corpus_pins.yml",
     "corpus_size": 30,
     "repos_with_findings": 24,
-    "total_high_med_findings": 941,
+    "total_high_med_findings": 630,
     "auto_tp": 54,
-    "auto_fp": 748,
-    "needs_review": 139,
-    "conservative_precision": 0.0574,
-    "optimistic_precision": 0.2051,
-    "note": "Conservative=NEEDS_REVIEW→FP; Optimistic=NEEDS_REVIEW→TP. True precision lies between bounds. Low score driven by quality/style rules over-firing on mature codebases and Go adapter returning 0 findings (staticcheck normalization gap). See docs/evaluation/PRECISION_BENCHMARK.md"
+    "auto_fp": 435,
+    "needs_review": 141,
+    "conservative_precision": 0.0857,
+    "optimistic_precision": 0.3095,
+    "note": "Conservative=NEEDS_REVIEW→FP; Optimistic=NEEDS_REVIEW→TP. Three fixes applied 2026-05-29: JS severity scorer respected for mapped rules (−204 style FPs), non-production dirs excluded from JS scan (−288 examples FPs), BEST-PRACTICE-005+SOLID-001 demoted to low. Go adapter now gracefully handles toolchain version mismatch. See docs/evaluation/PRECISION_BENCHMARK.md and docs/GOD_MODE_V3_PLAN.md §14."
   },
   "average_recall": 1.0,
   "results": [

@@ -781,10 +781,17 @@ class TestSeverityScorerScore:
         assert self.scorer.score("SECURITY-001", {}) == "high"
 
     def test_known_medium_rule(self):
-        assert self.scorer.score("SOLID-001", {}) == "medium"
+        # EXCEPT-001 (bare except) is a genuine quality+safety concern → medium
+        assert self.scorer.score("EXCEPT-001", {}) == "medium"
 
     def test_known_low_rule(self):
         assert self.scorer.score("STYLE-001", {}) == "low"
+
+    def test_quality_rules_demoted_to_low(self):
+        # SOLID-001 and BEST-PRACTICE-005 were demoted from medium in 2026-05-29
+        # precision audit: these rules add noise when scanning mature codebases.
+        assert self.scorer.score("SOLID-001", {}) == "low"
+        assert self.scorer.score("BEST-PRACTICE-005", {}) == "low"
 
     def test_unmapped_security_rule_defaults_medium(self):
         assert self.scorer.score("SECURITY-999", {}) == "medium"
