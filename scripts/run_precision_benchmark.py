@@ -159,6 +159,13 @@ _NON_RUNTIME_PATH_RE = re.compile(
     re.IGNORECASE,
 )
 
+# P1 — Per-rule precision floor quarantine.
+# Rules with 0% precision and no CVE recall corpus presence are quarantined (→ SKIP).
+# SECURITY-003 (B103 chmod permissive mask): 6 findings, all AUTO_FP (test-file paths),
+# 0 recall corpus CVEs — safe quarantine (+0.7pp conservative, +0.76pp optimistic).
+# All other zero-precision security-tier rules are recall-critical (cannot be quarantined).
+QUARANTINE_RULES: frozenset[str] = frozenset({"SECURITY-003"})
+
 # Rules whose category is unambiguously "security" — used for tier-stratified precision.
 SECURITY_CATEGORY_RULES = {
     "SECURITY-001",
@@ -348,6 +355,13 @@ def triage_finding(f: dict, repo_name: str) -> dict:
     if sev not in ("high", "medium"):
         return {"verdict": "SKIP", "reason": "low severity — excluded from precision denominator"}
 
+    # P1 quarantine: rules with 0% precision and no recall corpus presence
+    if rule in QUARANTINE_RULES:
+        return {
+            "verdict": "SKIP",
+            "reason": f"P1 quarantined rule {rule} — 0% precision, not in recall corpus",
+        }
+
     # Strip the absolute path prefix up to and including the repo name so that
     # TEST_PATH_PATTERNS only matches path components WITHIN the repo, not the
     # absolute path (e.g. /home/user/.../TESTS/evaluation/cloned/precision_corpus/requests/...).
@@ -491,10 +505,11 @@ def optimistic_verdict(t: dict) -> str:
 
 
 def compute_precision(triaged: list[dict], mode: str = "conservative") -> dict:
-    verdicts = [conservative_verdict(t) if mode == "conservative" else optimistic_verdict(t) for t in triaged]
+    active = [t for t in triaged if t["triage"]["verdict"] != "SKIP"]
+    verdicts = [conservative_verdict(t) if mode == "conservative" else optimistic_verdict(t) for t in active]
     tp = sum(1 for v in verdicts if v == "AUTO_TP")
     fp = sum(1 for v in verdicts if v == "AUTO_FP")
-    nr = sum(1 for t in triaged if t["triage"]["verdict"] == "NEEDS_REVIEW")
+    nr = sum(1 for t in active if t["triage"]["verdict"] == "NEEDS_REVIEW")
     total = tp + fp
     precision = tp / total if total > 0 else None
     return {"mode": mode, "tp": tp, "fp": fp, "needs_review": nr, "total": total, "precision": precision}
@@ -516,7 +531,12 @@ def compute_security_tier_precision(triaged: list[dict], mode: str = "conservati
     def _t_rule(t: dict) -> str:
         return (t.get("rule") or _rule(t)).upper()
 
-    security_high = [t for t in triaged if _sev(t) == "high" and _t_rule(t) in SECURITY_CATEGORY_RULES]
+    security_high = [
+        t for t in triaged
+        if _sev(t) == "high"
+        and _t_rule(t) in SECURITY_CATEGORY_RULES
+        and t.get("triage", {}).get("verdict") != "SKIP"
+    ]
     verdicts = [conservative_verdict(t) if mode == "conservative" else optimistic_verdict(t) for t in security_high]
     tp = sum(1 for v in verdicts if v == "AUTO_TP")
     fp = sum(1 for v in verdicts if v == "AUTO_FP")

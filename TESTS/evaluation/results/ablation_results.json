@@ -1,5 +1,5 @@
 {
-  "generated": "2026-05-30 10:57 UTC",
+  "generated": "2026-05-30 12:07 UTC",
   "corpus": "precision_corpus_pins.yml",
   "corpus_repos": 24,
   "pipeline_description": "Analytical ablation over 1942 cached precision-corpus findings (24 production repos, post-dedup). Pre-dedup cross-tool duplicates estimated from CROSS_TOOL_GROUPS overlap analysis.",
@@ -35,17 +35,17 @@
       "analyst_hours_hm": 485.5,
       "conservative": {
         "tp": 54,
-        "fp": 576,
+        "fp": 570,
         "needs_review": 83,
-        "total": 630,
-        "precision": 0.0857
+        "total": 624,
+        "precision": 0.0865
       },
       "optimistic": {
         "tp": 137,
-        "fp": 493,
+        "fp": 487,
         "needs_review": 83,
-        "total": 630,
-        "precision": 0.2175
+        "total": 624,
+        "precision": 0.2196
       }
     },
     {
@@ -57,17 +57,17 @@
       "analyst_hours_hm": 157.5,
       "conservative": {
         "tp": 54,
-        "fp": 576,
+        "fp": 570,
         "needs_review": 83,
-        "total": 630,
-        "precision": 0.0857
+        "total": 624,
+        "precision": 0.0865
       },
       "optimistic": {
         "tp": 137,
-        "fp": 493,
+        "fp": 487,
         "needs_review": 83,
-        "total": 630,
-        "precision": 0.2175
+        "total": 624,
+        "precision": 0.2196
       },
       "delta_analyst_hours": 328.0
     },
@@ -80,17 +80,17 @@
       "analyst_hours_hm": 155.8,
       "conservative": {
         "tp": 53,
-        "fp": 570,
+        "fp": 564,
         "needs_review": 83,
-        "total": 623,
-        "precision": 0.0851
+        "total": 617,
+        "precision": 0.0859
       },
       "optimistic": {
         "tp": 136,
-        "fp": 487,
+        "fp": 481,
         "needs_review": 83,
-        "total": 623,
-        "precision": 0.2183
+        "total": 617,
+        "precision": 0.2204
       },
       "delta_analyst_hours": 1.6999999999999886,
       "unreachable_cohort": {
@@ -104,54 +104,56 @@
         "preserved_auto_tp": 1,
         "conservative": {
           "tp": 54,
-          "fp": 570,
+          "fp": 564,
           "needs_review": 83,
-          "total": 624,
-          "precision": 0.0865
+          "total": 618,
+          "precision": 0.0874
         },
         "optimistic": {
           "tp": 137,
-          "fp": 487,
+          "fp": 481,
           "needs_review": 83,
-          "total": 624,
-          "precision": 0.2196
+          "total": 618,
+          "precision": 0.2217
         }
       }
     },
     {
       "rung": 3,
       "label": "Security-tier only (H-sev SECURITY-*/SECRET-*/etc.)",
-      "description": "Restrict to HIGH-severity findings whose rule ID belongs to the security category (injection, secrets, crypto, XML/YAML). This is the standard SAST industry reporting stratum \u2014 precision peaks here because quality/style noise is excluded.",
-      "finding_count": 219,
-      "hm_count": 219,
-      "analyst_hours_hm": 54.8,
+      "description": "Restrict to HIGH-severity findings whose rule ID belongs to the security category (injection, secrets, crypto, XML/YAML). This is the standard SAST industry reporting stratum \u2014 precision peaks here because quality/style noise is excluded. P1 quarantine: 6 SECURITY-003 finding(s) excluded (0% precision, not in recall corpus) \u2192 213 active findings.",
+      "finding_count": 213,
+      "scope_count": 219,
+      "quarantined_p1": 6,
+      "hm_count": 213,
+      "analyst_hours_hm": 53.2,
       "conservative": {
         "tp": 54,
-        "fp": 165,
+        "fp": 159,
         "needs_review": 10,
-        "total": 219,
-        "precision": 0.2466
+        "total": 213,
+        "precision": 0.2535
       },
       "optimistic": {
         "tp": 64,
-        "fp": 155,
+        "fp": 149,
         "needs_review": 10,
-        "total": 219,
-        "precision": 0.2922
+        "total": 213,
+        "precision": 0.3005
       },
-      "delta_analyst_hours": 101.00000000000001,
-      "reduction_vs_raw": 88.7
+      "delta_analyst_hours": 102.60000000000001,
+      "reduction_vs_raw": 89.0
     }
   ],
   "per_tool_standalone": [
     {
       "tool": "bandit",
       "hm_count": 255,
-      "conservative_precision": 0.0706,
-      "optimistic_precision": 0.1686,
+      "conservative_precision": 0.0723,
+      "optimistic_precision": 0.1727,
       "security_tier_count": 129,
-      "security_tier_conservative": 0.1395,
-      "security_tier_optimistic": 0.1395,
+      "security_tier_conservative": 0.1463,
+      "security_tier_optimistic": 0.1463,
       "analyst_hours": 63.8
     },
     {

@@ -23,19 +23,19 @@
     "mode": "conservative",
     "scope": "high-severity security rules only",
     "tp": 54,
-    "fp": 160,
+    "fp": 154,
     "needs_review": 5,
-    "total": 219,
-    "precision": 0.246575
+    "total": 213,
+    "precision": 0.253521
   },
   "security_tier_optimistic": {
     "mode": "optimistic",
     "scope": "high-severity security rules only",
     "tp": 59,
-    "fp": 160,
+    "fp": 154,
     "needs_review": 5,
-    "total": 219,
-    "precision": 0.269406
+    "total": 213,
+    "precision": 0.276995
   },
   "needs_review_count": 83,
   "language_breakdown": {
@@ -325,5 +325,13 @@
     }
   ],
   "security_tier_denominator": 219,
-  "note": " T4 Precision Enhancement (2026-05-30): L1 heuristics (SECURITY-005 regex tokens, SECURITY-046 literal-URL/ALL_CAPS, extended subprocess paths), L2 corroboration, L3 AI triage (2 Groq calls, unanimous consensus). 0 NR\u2192TP, 5 NR\u2192FP."
+  "note": " T4 Precision Enhancement (2026-05-30): L1 heuristics (SECURITY-005 regex tokens, SECURITY-046 literal-URL/ALL_CAPS, extended subprocess paths), L2 corroboration, L3 AI triage (2 Groq calls, unanimous consensus). 0 NR\u2192TP, 5 NR\u2192FP.",
+  "p1_quarantine": {
+    "quarantined_rules": [
+      "SECURITY-003"
+    ],
+    "quarantined_count": 6,
+    "reason": "SECURITY-003 (B103 chmod): 0% precision, all AUTO_FP (test paths), 0 CVE recall corpus hits",
+    "effect": "+0.69pp conservative (+0.76pp optimistic) on security-tier precision"
+  }
 }

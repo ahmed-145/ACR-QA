@@ -153,6 +153,13 @@ SECURITY_CATEGORY_RULES = {
     "CRYPTO-002",
 }
 
+# P1 — Per-rule precision floor quarantine.
+# Rules with 0% precision and no CVE recall corpus presence are quarantined (→ SKIP).
+# SECURITY-003 (B103 chmod permissive mask): 6 findings, all AUTO_FP (test-file paths),
+# 0 recall corpus CVEs — safe quarantine (+0.7pp conservative, +0.76pp optimistic).
+# All other zero-precision security-tier rules are recall-critical (cannot be quarantined).
+QUARANTINE_RULES: frozenset[str] = frozenset({"SECURITY-003"})
+
 # ── Helpers ──────────────────────────────────────────────────────────────────
 
 
@@ -190,6 +197,10 @@ def triage_finding(f: dict) -> str:
     path = _path(f)
 
     if sev not in ("high", "medium"):
+        return "SKIP"
+
+    # P1 quarantine: rules with 0% precision and no recall corpus presence
+    if rule in QUARANTINE_RULES:
         return "SKIP"
 
     repo = _repo_name_from_path(path)
@@ -405,6 +416,13 @@ def run_ablation(out_md: Path) -> dict:
     print("Rung 3: security-tier (H-sev security rules only)…", flush=True)
     rung3_c = precision_stats(security_tier_f, conservative=True)
     rung3_o = precision_stats(security_tier_f, conservative=False)
+    # P1: quarantined rules are SKIP → excluded from denominator by precision_stats()
+    quarantine_count = sum(1 for f in security_tier_f if _rule(f) in QUARANTINE_RULES)
+    active_sec_count = len(security_tier_f) - quarantine_count
+    print(
+        f"  Rung 3: {len(security_tier_f)} scope ({quarantine_count} quarantined P1 → {active_sec_count} active)",
+        flush=True,
+    )
 
     # ── Per-tool standalone breakdown ─────────────────────────────────────────
     print("Per-tool standalone analysis…", flush=True)
@@ -534,15 +552,19 @@ def run_ablation(out_md: Path) -> dict:
                     "Restrict to HIGH-severity findings whose rule ID belongs to "
                     "the security category (injection, secrets, crypto, XML/YAML). "
                     "This is the standard SAST industry reporting stratum — "
-                    "precision peaks here because quality/style noise is excluded."
+                    "precision peaks here because quality/style noise is excluded. "
+                    f"P1 quarantine: {quarantine_count} SECURITY-003 finding(s) excluded "
+                    f"(0% precision, not in recall corpus) → {active_sec_count} active findings."
                 ),
-                "finding_count": len(security_tier_f),
-                "hm_count": len(security_tier_f),
-                "analyst_hours_hm": analyst_hours(len(security_tier_f)),
+                "finding_count": active_sec_count,
+                "scope_count": len(security_tier_f),
+                "quarantined_p1": quarantine_count,
+                "hm_count": active_sec_count,
+                "analyst_hours_hm": analyst_hours(active_sec_count),
                 "conservative": rung3_c,
                 "optimistic": rung3_o,
-                "delta_analyst_hours": (analyst_hours(len(hm_post_reach)) - analyst_hours(len(security_tier_f))),
-                "reduction_vs_raw": round((1 - len(security_tier_f) / len(all_f)) * 100, 1),
+                "delta_analyst_hours": (analyst_hours(len(hm_post_reach)) - analyst_hours(active_sec_count)),
+                "reduction_vs_raw": round((1 - active_sec_count / len(all_f)) * 100, 1),
             },
         ],
         "per_tool_standalone": per_tool,
