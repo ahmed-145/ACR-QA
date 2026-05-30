@@ -294,21 +294,48 @@ selective benchmarking.
 
 ---
 
-## Execution Order (strict)
+## Execution Order — Merged (optimal parallelism)
 
 ```
-P1 (rule curation)          ← START HERE — 1 day, immediate precision win
-  └─ gate: conservative ≥ 30%, recall 11/11
-P2 (corroboration sub-tier) ← additive, 1–2 days
-  └─ gate: ≥5 corroborated findings at ≥50% precision
-P3 (semantic gating)        ← money shot, 3–5 days
-  └─ gate: conservative ≥ 40%, recall 11/11
+Step 1 ── P1 alone (1 day)
+           Per-rule precision floor. Must come first — sets the baseline
+           everything else builds on. Gate: conservative ≥ 30%, recall 11/11.
 
-X1 (live-CVE blind holdout) ← start in parallel with P2 (no regression risk)
-X2 (exploit verification)   ← start after P3 committed
-X3 (AI-code vuln study)     ← can run anytime, independent
-X4 (time-travel backtest)   ← after X2 (longest effort, most novel)
-X5 (head-to-head benchmark) ← last; needs P3 numbers to be final
+Step 2 ── P2 ∥ X1 (1–3 days, run simultaneously)
+           P2: corroboration sub-tier (additive, no regression risk)
+           X1: live-CVE blind holdout (pure recall analysis, zero pipeline touch)
+           Gate for P2: ≥5 corroborated findings at ≥50% precision.
+           X1 finishes independently — no gate needed.
+
+Step 3 ── P3 ∥ X3 (3–5 days, run simultaneously)
+           P3: semantic taint+path gating (the money shot)
+           X3: AI-generated code vuln study (only needs Groq API, fully independent)
+           Gate for P3: conservative ≥ 40%, recall 11/11.
+           X3 finishes independently.
+
+Step 4 ── X2 alone (3–5 days)
+           Exploit verification eval. Needs P3 stable (final findings pipeline)
+           and Docker. Most intensive — deserves its own focused slot.
+
+Step 5 ── X4 alone (5–7 days)
+           Time-travel predictive backtest. Longest, most novel. Runs after
+           exploit work — shares the "prove findings are real" narrative arc.
+
+Step 6 ── X5 alone (2–3 days)
+           Head-to-head benchmark. Must come last — needs P3 final numbers
+           to make the comparison table honest and publishable.
+```
+
+**Calendar sketch (assuming sequential days, no parallel execution):**
+```
+Day  1      → P1
+Day  2–3    → P2 + X1 (parallel)
+Day  4–8    → P3 + X3 (parallel)
+Day  9–13   → X2
+Day 14–20   → X4
+Day 21–23   → X5
+────────────────
+~23 days total (down from ~28 if run strictly sequentially)
 ```
 
 ---
@@ -344,14 +371,14 @@ These are estimates. After each gate, recompute from data.
 
 ## Invocation
 
-- `go god mode P1` → implement per-rule precision floor
-- `go god mode P2` → corroboration sub-tier
-- `go god mode P3` → semantic gating (taint + path feasibility)
-- `go god mode X1` → live-CVE blind holdout
-- `go god mode X2` → exploit verification eval
-- `go god mode X3` → AI-generated code vuln study
-- `go god mode X4` → time-travel predictive risk backtest
-- `go god mode X5` → head-to-head benchmark
+Run in merged step order:
+
+- `go god mode P1`      → Step 1: per-rule precision floor (START HERE)
+- `go god mode P2 X1`   → Step 2: corroboration sub-tier + live-CVE holdout (parallel)
+- `go god mode P3 X3`   → Step 3: semantic gating + AI-code study (parallel)
+- `go god mode X2`      → Step 4: exploit verification eval
+- `go god mode X4`      → Step 5: time-travel backtest
+- `go god mode X5`      → Step 6: head-to-head benchmark (last — needs final P3 numbers)
 
 ---
 
