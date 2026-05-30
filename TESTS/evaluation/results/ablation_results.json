@@ -1,5 +1,5 @@
 {
-  "generated": "2026-05-30 01:52 UTC",
+  "generated": "2026-05-30 10:57 UTC",
   "corpus": "precision_corpus_pins.yml",
   "corpus_repos": 24,
   "pipeline_description": "Analytical ablation over 1942 cached precision-corpus findings (24 production repos, post-dedup). Pre-dedup cross-tool duplicates estimated from CROSS_TOOL_GROUPS overlap analysis.",
@@ -97,6 +97,25 @@
         "count": 7,
         "auto_tp": 1,
         "auto_fp_or_nr": 6
+      },
+      "gated_variant": {
+        "description": "T4.4 gated demotion: preserve UNREACHABLE findings that are AUTO_TP. Eliminates the precision dip caused by demoting confirmed TPs in dead-code paths.",
+        "finding_count": 624,
+        "preserved_auto_tp": 1,
+        "conservative": {
+          "tp": 54,
+          "fp": 570,
+          "needs_review": 83,
+          "total": 624,
+          "precision": 0.0865
+        },
+        "optimistic": {
+          "tp": 137,
+          "fp": 487,
+          "needs_review": 83,
+          "total": 624,
+          "precision": 0.2196
+        }
       }
     },
     {

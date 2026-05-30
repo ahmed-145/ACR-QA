@@ -1,0 +1,317 @@
+{
+  "generated": "2026-05-30T10:53:14Z",
+  "method": "Semantic entropy (3\u00d7 llama-3.3-70b runs, trigram Jaccard consistency) + CVE fabrication check. Flagged when consistency < 0.5 OR LLM introduces CVE IDs absent from the finding.",
+  "threshold": 0.5,
+  "n_probes": 10,
+  "n_grounded": 5,
+  "n_hallucination": 5,
+  "metrics": {
+    "true_positive_rate": 0.8,
+    "true_negative_rate": 0.0,
+    "balanced_accuracy": 0.4,
+    "tp": 4,
+    "fp": 5,
+    "tn": 0,
+    "fn": 1
+  },
+  "avg_consistency_grounded": 0.259,
+  "avg_consistency_hallucination": 0.343,
+  "probes": [
+    {
+      "id": "G1",
+      "label": 0,
+      "label_name": "GROUNDED",
+      "description": "pickle.loads with concrete code snippet",
+      "rule": "SECURITY-008",
+      "consistency_score": 0.23,
+      "pairwise_scores": [
+        0.183,
+        0.146,
+        0.36
+      ],
+      "is_flagged_entropy": true,
+      "is_flagged_cve": false,
+      "is_flagged_combined": true,
+      "correct": false,
+      "fabricated_cves": [
+        [],
+        [],
+        []
+      ],
+      "responses": [
+        "The vulnerability is a deserialization of untrusted data using `pickle.loads`, which can execute arbitrary Python code. This could be exploited if an attacker can manipulate the `result_bytes` received from the `process_pipe`, allowing them to inject malicious code that would be executed when `pickle.loads` is called. To fix this, the code should use a safer deserialization method, such as using a library like `json` or `msgpack`, which do not execute arbitrary code, or ensure that the `result_bytes` come from a trusted source and are properly validated before deserialization. Additionally, the use of `pickle` should be restricted to trusted data only.",
+        "The vulnerability is a deserialization of untrusted data using `pickle.loads`, which can execute arbitrary Python code. An attacker could exploit this by sending maliciously crafted data through the `process_pipe` that, when deserialized, executes harmful code, potentially leading to code injection or data tampering. To fix this, the code should validate and sanitize the data received from `process_pipe` before deserialization, or use a safer deserialization method, such as using a library like `json` or `msgpack` that does not execute arbitrary code. Additionally, ensuring that the `process_pipe` is secure and only receives data from trusted sources is crucial to preventing exploitation.",
+        "The vulnerability is a deserialization of untrusted data using `pickle.loads`, which can execute arbitrary Python code embedded in the deserialized data. An attacker could exploit this by sending maliciously crafted data through the `process_pipe` that, when deserialized, executes harmful code, potentially leading to code injection or data tampering. To fix this, the code should use a safer deserialization method, such as using a serialization format like JSON, which does not support code execution, or validate and sanitize the data before deserializing it. Specifically, in the `run_sync_in_worker_thread` function, `pickle.loads` should be replaced with a safer alternative, such as `json.loads`, if the data is expected to be in a JSON format."
+      ]
+    },
+    {
+      "id": "G2",
+      "label": 0,
+      "label_name": "GROUNDED",
+      "description": "subprocess shell=True with concrete path",
+      "rule": "SECURITY-021",
+      "consistency_score": 0.356,
+      "pairwise_scores": [
+        0.358,
+        0.469,
+        0.241
+      ],
+      "is_flagged_entropy": true,
+      "is_flagged_cve": false,
+      "is_flagged_combined": true,
+      "correct": false,
+      "fabricated_cves": [
+        [],
+        [],
+        []
+      ],
+      "responses": [
+        "The vulnerability is a command injection risk due to the use of `shell=True` in the `subprocess.run` call, which allows an attacker to inject arbitrary shell commands. This could be exploited if an attacker can manipulate the `hook_path` variable to contain malicious shell commands, potentially leading to code execution or data tampering. To fix this, the `shell=True` argument should be removed and the `hook_path` should be passed as a list of arguments to `subprocess.run`, ensuring that the command is executed directly without shell interpretation. For example, `subprocess.run([hook_path], cwd=project_dir)` would mitigate this vulnerability.",
+        "The vulnerability is a command injection risk due to the use of `shell=True` in the `subprocess.run` call, which allows an attacker to inject arbitrary shell commands. This could be exploited if an attacker can control the `hook_path` variable, as they could inject malicious commands that would be executed with the same privileges as the current process. To fix this, the `shell=True` argument should be removed and the `hook_path` should be passed as a list of arguments, ensuring that only the intended command is executed, for example: `subprocess.run([hook_path], cwd=project_dir)`. This change would prevent an attacker from injecting malicious shell commands.",
+        "The vulnerability is a command injection risk due to the use of `shell=True` in the `subprocess.run` call, which allows an attacker to inject arbitrary shell commands. An attacker could exploit this by manipulating the `hook_path` variable to contain malicious shell syntax, potentially leading to unauthorized system access or data tampering. To fix this, the `shell=True` parameter should be removed and the `hook_path` should be passed as a list of arguments to `subprocess.run`, ensuring that the command is executed directly without shell interpretation. This can be achieved by modifying the code to `subprocess.run([hook_path], cwd=project_dir)`, assuming `hook_path` is the executable to be run."
+      ]
+    },
+    {
+      "id": "G3",
+      "label": 0,
+      "label_name": "GROUNDED",
+      "description": "eval() with concrete argument",
+      "rule": "SECURITY-001",
+      "consistency_score": 0.235,
+      "pairwise_scores": [
+        0.181,
+        0.149,
+        0.377
+      ],
+      "is_flagged_entropy": true,
+      "is_flagged_cve": false,
+      "is_flagged_combined": true,
+      "correct": false,
+      "fabricated_cves": [
+        [],
+        [],
+        []
+      ],
+      "responses": [
+        "The vulnerability is the use of the `eval()` function, which can pose a security risk as it allows for the execution of arbitrary code. This could be exploited if an attacker is able to provide malicious input to the `execute()` function, potentially leading to code execution and unauthorized access. To fix this, the code should be modified to use a safer evaluation method, such as `ast.literal_eval()` for simple expressions or a sandboxed execution environment, to prevent the execution of arbitrary code. In this specific case, since the `execute()` function appears to be part of a debug console, it may be possible to restrict input to only trusted sources or implement additional validation and sanitization on the input code.",
+        "The vulnerability is the use of the `eval()` function, which can pose a security risk as it allows for the execution of arbitrary code. In this specific case, an attacker could exploit this by injecting malicious code into the `code` variable, potentially leading to code execution and unauthorized access to the system. To fix this, the `eval()` function should be replaced with a safer alternative, such as using the `ast` module to parse and validate the input code before execution, or by using a whitelisting approach to only allow execution of trusted code. Additionally, input validation and sanitization should be implemented to prevent malicious code from being injected into the `code` variable.",
+        "The vulnerability is the use of the `eval()` function, which can pose a significant security risk as it allows for the execution of arbitrary code. An attacker could exploit this by injecting malicious code into the `code` variable, potentially leading to code execution and unauthorized access to the system. To fix this, the `eval()` function should be replaced with a safer alternative, such as `ast.literal_eval()` or a custom parsing and execution mechanism, to ensure that only intended and validated code is executed. In the context of the debug console, a whitelist-based approach or a restricted execution environment could also be implemented to mitigate the risk."
+      ]
+    },
+    {
+      "id": "G4",
+      "label": 0,
+      "label_name": "GROUNDED",
+      "description": "yaml.load without Loader argument",
+      "rule": "SECURITY-018",
+      "consistency_score": 0.201,
+      "pairwise_scores": [
+        0.262,
+        0.19,
+        0.151
+      ],
+      "is_flagged_entropy": true,
+      "is_flagged_cve": false,
+      "is_flagged_combined": true,
+      "correct": false,
+      "fabricated_cves": [
+        [],
+        [],
+        []
+      ],
+      "responses": [
+        "The vulnerability is an unsafe deserialization issue, where the `yaml.load()` function is called without specifying a safe loader, allowing arbitrary Python code to be executed. This could be exploited by an attacker who can manipulate the input stream to inject malicious YAML code, potentially leading to code execution or data tampering. To fix this, the `load_config` function should be modified to use the `yaml.safe_load()` function instead, which only loads standard YAML tags and prevents the execution of arbitrary code. By making this change, the code would become `data = yaml.safe_load(stream)`, ensuring a safer deserialization process.",
+        "The vulnerability is an unsafe deserialization issue, where the `yaml.load()` function is called without specifying a safe loader, allowing arbitrary Python code execution. This could be exploited by an attacker who can control the input to the `load_config` function, potentially leading to code injection and unauthorized access. To fix this, the code should be modified to use a safe loader, such as `yaml.safe_load()`, which only constructs standard YAML tags and prevents arbitrary code execution. By changing the line to `data = yaml.safe_load(stream)`, the deserialization process can be made safer and the vulnerability mitigated.",
+        "The vulnerability is an unsafe deserialization issue, where the `yaml.load()` function is called without specifying a Loader, allowing an attacker to potentially execute arbitrary code by crafting a malicious YAML input. This could be exploited by an attacker providing a specially crafted YAML stream that, when loaded, executes malicious code, potentially leading to code injection or other security breaches. To fix this, the `yaml.load()` function should be called with an explicit Loader, such as `yaml.safe_load()` or `yaml.load(stream, Loader=yaml.SafeLoader)`, which will safely deserialize the YAML input without executing arbitrary code. By making this change, the `load_config` function can be secured against this type of attack."
+      ]
+    },
+    {
+      "id": "G5",
+      "label": 0,
+      "label_name": "GROUNDED",
+      "description": "SQL string concatenation \u2014 injection sink",
+      "rule": "SQLI-001",
+      "consistency_score": 0.272,
+      "pairwise_scores": [
+        0.265,
+        0.244,
+        0.307
+      ],
+      "is_flagged_entropy": true,
+      "is_flagged_cve": false,
+      "is_flagged_combined": true,
+      "correct": false,
+      "fabricated_cves": [
+        [],
+        [],
+        []
+      ],
+      "responses": [
+        "The vulnerability is a SQL injection vulnerability, where user input (`username`) is directly concatenated into a SQL query string. This allows an attacker to inject malicious SQL code by crafting a specially designed `username` input, potentially leading to unauthorized data access or modification. To exploit this, an attacker could enter a `username` like `' OR 1=1 --`, which would alter the query to select all users. To fix this, the code should use parameterized queries instead, passing the `username` as a parameter to the `cursor.execute()` method, such as `cursor.execute('SELECT * FROM users WHERE username = %s', (username,))`.",
+        "The vulnerability is a SQL injection vulnerability, where user input (`username`) is directly concatenated into a SQL query string. This could be exploited by an attacker providing a malicious `username` value, such as `' OR 1=1 --`, which would alter the query to return all users, potentially allowing unauthorized access to sensitive data. To fix this, the code should use parameterized queries instead of string concatenation, such as `query = 'SELECT * FROM users WHERE username = %s'` and then pass the `username` as a parameter to `cursor.execute(query, (username,))`. This would prevent the input from being interpreted as part of the SQL query.",
+        "The vulnerability is a SQL injection vulnerability, where user input (`username`) is directly concatenated into a SQL query string. This could be exploited by an attacker providing a specially crafted `username` that includes malicious SQL code, allowing them to manipulate the query and potentially extract or modify sensitive data. To fix this, the code should use parameterized queries instead, where the `username` is passed as a parameter to the query, rather than being concatenated into the query string, such as `cursor.execute('SELECT * FROM users WHERE username = %s', (username,))`. This would prevent the attacker's input from being interpreted as SQL code."
+      ]
+    },
+    {
+      "id": "H1",
+      "label": 1,
+      "label_name": "HALLUCINATION",
+      "description": "Fabricated CVE reference with no code snippet",
+      "rule": "SECURITY-001",
+      "consistency_score": 0.233,
+      "pairwise_scores": [
+        0.139,
+        0.288,
+        0.272
+      ],
+      "is_flagged_entropy": true,
+      "is_flagged_cve": false,
+      "is_flagged_combined": true,
+      "correct": true,
+      "fabricated_cves": [
+        [],
+        [],
+        []
+      ],
+      "responses": [
+        "The vulnerability detected is a remote code execution issue due to the use of the `eval()` function in the authentication pathway. This allows an attacker to inject and execute arbitrary code, potentially leading to unauthorized access and control of the system. An attacker could exploit this by crafting a malicious input that, when passed through the authentication pathway, would be evaluated as code, enabling them to execute malicious commands. To fix this, the `eval()` function should be replaced with a safer alternative, such as using a parsing library or validating user input to prevent code injection. By doing so, the system can prevent unauthorized code execution and mitigate the risk of remote code execution attacks.",
+        "The vulnerability is a remote code execution (RCE) issue, which allows an attacker to execute arbitrary code on the server. This is possible because the `eval()` function is used in the authentication pathway, allowing an attacker to inject malicious code that can be executed by the server. To exploit this, an attacker would need to craft a malicious input that is passed to the `eval()` function, potentially through a login or authentication request. To fix this, the `eval()` function should be replaced with a safer alternative, such as using a dictionary to map input to allowed actions or using a parsing library to handle user input.",
+        "The vulnerability is a remote code execution issue caused by the use of the `eval()` function in the authentication pathway, allowing an attacker to execute arbitrary code on the server. An attacker could exploit this by crafting a malicious input that is passed to the `eval()` function, potentially leading to unauthorized access or control of the system. To fix this, the `eval()` function should be replaced with a safer alternative, such as using a parsing library or validating user input to ensure it conforms to expected formats. Additionally, input validation and sanitization should be implemented to prevent malicious data from being executed."
+      ]
+    },
+    {
+      "id": "H2",
+      "label": 1,
+      "label_name": "HALLUCINATION",
+      "description": "Generic rule ID with completely empty snippet",
+      "rule": "SECURITY-005",
+      "consistency_score": 0.456,
+      "pairwise_scores": [
+        0.409,
+        0.447,
+        0.512
+      ],
+      "is_flagged_entropy": true,
+      "is_flagged_cve": false,
+      "is_flagged_combined": true,
+      "correct": true,
+      "fabricated_cves": [
+        [],
+        [],
+        []
+      ],
+      "responses": [
+        "The vulnerability is a hardcoded secret, specifically an API key, which is present in the source code of the `config/settings.py` file. This could be exploited by an attacker who gains access to the code, as they could then use the API key to authenticate and perform unauthorized actions. To fix this, the API key should be stored securely, such as in an environment variable, and then referenced in the code, rather than being hardcoded directly. By doing so, the sensitive information is kept separate from the codebase, reducing the risk of exposure.",
+        "The vulnerability is a hardcoded secret, specifically an API key, which is present in the source code of the `config/settings.py` file. This could be exploited by an attacker who gains access to the code, allowing them to use the API key to authenticate and potentially access sensitive data or systems. To fix this, the API key should be stored securely, such as in an environment variable or a secrets management system, and then referenced in the code rather than being hardcoded. By doing so, even if an attacker gains access to the code, they will not be able to obtain the API key.",
+        "The vulnerability is a hardcoded secret, specifically an API key, which has been directly embedded in the source code of the `config/settings.py` file. This could be exploited by an attacker who gains access to the code, allowing them to use the API key to authenticate and potentially access sensitive data or systems. To fix this, the API key should be stored securely, such as in an environment variable, and then referenced in the code, rather than being hardcoded. This would prevent unauthorized access to the API key, even if the code is compromised."
+      ]
+    },
+    {
+      "id": "H3",
+      "label": 1,
+      "label_name": "HALLUCINATION",
+      "description": "Non-existent CVE chain claim with vague snippet",
+      "rule": "SHELL-001",
+      "consistency_score": 0.523,
+      "pairwise_scores": [
+        0.563,
+        0.481,
+        0.523
+      ],
+      "is_flagged_entropy": false,
+      "is_flagged_cve": false,
+      "is_flagged_combined": false,
+      "correct": false,
+      "fabricated_cves": [
+        [],
+        [],
+        []
+      ],
+      "responses": [
+        "The vulnerability is a shell injection vulnerability in the `run` function, which allows an attacker to inject malicious shell commands. This could be exploited by passing a crafted command string to the `run` function, potentially allowing an attacker to execute arbitrary shell code. To fix this, the `run` function should be modified to properly escape and sanitize any user-provided input before executing it as a shell command, or better yet, use a safer alternative to shell execution, such as the `subprocess` module with a list of arguments instead of a string command. This would prevent an attacker from injecting malicious shell syntax.",
+        "The vulnerability is a shell injection vulnerability in the `run` function, which allows an attacker to inject malicious shell commands. This could be exploited by passing a crafted command string to the `run` function, potentially allowing an attacker to execute arbitrary shell commands. To fix this, the `run` function should be modified to properly sanitize and validate any user-provided input before executing it as a shell command, such as using a whitelist of allowed commands or escaping special characters. Additionally, considering using a safer alternative to shell execution, such as using Python's `subprocess` module with a list of arguments instead of a string command.",
+        "The vulnerability is a shell injection flaw in the `run` function, which allows an attacker to inject malicious shell commands. This could be exploited by passing a crafted command string to the `run` function, potentially allowing an attacker to execute arbitrary shell code. To fix this, the `run` function should be modified to properly sanitize and validate any user-provided input before executing it as a shell command, or alternatively, use a safer approach such as using Python's `subprocess` module with a list of arguments instead of a single string command. By doing so, the risk of shell injection can be mitigated, preventing potential privilege escalation attacks."
+      ]
+    },
+    {
+      "id": "H4",
+      "label": 1,
+      "label_name": "HALLUCINATION",
+      "description": "Extremely vague finding \u2014 LLM must hallucinate exploit path",
+      "rule": "SECURITY-003",
+      "consistency_score": 0.242,
+      "pairwise_scores": [
+        0.438,
+        0.143,
+        0.145
+      ],
+      "is_flagged_entropy": true,
+      "is_flagged_cve": false,
+      "is_flagged_combined": true,
+      "correct": true,
+      "fabricated_cves": [
+        [],
+        [],
+        []
+      ],
+      "responses": [
+        "The vulnerability is a potential security issue in the `handle_request` function, which is currently empty and does not perform any validation or sanitization on the incoming request. This could be exploited by an attacker sending a malicious request, potentially leading to unintended behavior or errors, as the function does not handle any exceptions or edge cases. To fix this, the `handle_request` function should be implemented to validate and sanitize the request data, and handle potential exceptions or errors. Additionally, the function should be reviewed to ensure it follows secure coding practices and handles sensitive data securely.",
+        "The vulnerability is a potential security issue in the `handle_request` function, which is currently empty and does not perform any validation or sanitization on the incoming request. This could be exploited by an attacker sending a malicious request, potentially leading to unintended behavior or errors in the application. To fix this, the `handle_request` function should be implemented to properly validate and sanitize the request data, such as checking for expected parameters and handling potential exceptions. Additionally, the function should also consider implementing authentication and authorization checks to ensure only authorized requests are processed.",
+        "The vulnerability is a potential security issue in the `handle_request` function, which is currently a placeholder with no implementation, allowing any request to be handled without validation or sanitization. This could be exploited by an attacker sending malicious requests to the application, potentially leading to unauthorized access or data manipulation. To fix this, a concrete implementation of the `handle_request` function should be provided, including proper validation and sanitization of the incoming request data. This could involve checking the request method, validating user input, and ensuring that the request is properly authenticated and authorized."
+      ]
+    },
+    {
+      "id": "H5",
+      "label": 1,
+      "label_name": "HALLUCINATION",
+      "description": "Fabricated CVSS score + wrong file reference in message",
+      "rule": "CRYPTO-001",
+      "consistency_score": 0.262,
+      "pairwise_scores": [
+        0.2,
+        0.199,
+        0.386
+      ],
+      "is_flagged_entropy": true,
+      "is_flagged_cve": false,
+      "is_flagged_combined": true,
+      "correct": true,
+      "fabricated_cves": [
+        [],
+        [],
+        []
+      ],
+      "responses": [
+        "The vulnerability is a weak MD5 hash in password storage, but the provided code snippet uses SHA-256, which is not directly related to the finding. However, the finding mentions a separate file (auth/password_manager.py) that likely contains the vulnerable MD5 hash. This weak hash could be exploited through a rainbow table attack, where an attacker uses precomputed tables of hashes to quickly crack the password. To fix this, the MD5 hash in the password_manager.py file should be replaced with a stronger hashing algorithm, such as bcrypt or PBKDF2, which are more resistant to rainbow table attacks and provide better password storage security.",
+        "The vulnerability is a weak MD5 hash in password storage, but the provided code snippet uses SHA-256, which is not the problematic code. However, the finding suggests that MD5 is used elsewhere in the `auth/password_manager.py` file, specifically on line 99. An attacker could exploit this by using a rainbow table attack, which involves precomputing hashes for common passwords and comparing them to the stored hash. To fix this, the MD5 hash should be replaced with a stronger hashing algorithm, such as the SHA-256 used in the provided code snippet, along with a salt and appropriate work factor to slow down the hashing process.",
+        "The vulnerability is a weak MD5 hash in password storage, but the provided code snippet uses SHA-256, which is not the vulnerable code. However, the finding suggests that the issue lies in the `auth/password_manager.py` file, line 99, where MD5 is presumably used. An attacker could exploit this by using a rainbow table attack, which involves precomputing hash values for common passwords and comparing them to the stored hash. To fix this, the MD5 hash in `auth/password_manager.py` should be replaced with a more secure hashing algorithm, such as bcrypt or PBKDF2, and the code should be updated to use a sufficient work factor and salt."
+      ]
+    }
+  ],
+  "calibration_analysis": {
+    "finding": "The 0.5 threshold is miscalibrated for llama-3.3-70b's natural response variability. All 5 grounded probes scored below 0.5 (range 0.201\u20130.356), causing TNR=0% at the default threshold. Hallucination probes scored in an overlapping range (0.233\u20130.523).",
+    "grounded_score_range": {
+      "min": 0.201,
+      "max": 0.356,
+      "mean": 0.259
+    },
+    "hallucination_score_range": {
+      "min": 0.233,
+      "max": 0.523,
+      "mean": 0.343
+    },
+    "overlap": true,
+    "optimal_threshold_youden_j": 0.263,
+    "at_optimal_threshold": {
+      "tpr": 0.6,
+      "tnr": 0.4,
+      "balanced_accuracy": 0.5
+    },
+    "interpretation": "At the optimal threshold (Youden J=0.263), TPR=60% and TNR=40% giving BAC=50% \u2014 essentially random classification. The distributions overlap because n-gram self-consistency measures explanation specificity, not groundedness: detailed grounded explanations generate varied specific vocabulary (low consistency) while generic hallucinations generate consistent boilerplate (higher consistency). The mechanism is a necessary-but-insufficient condition for hallucination detection.",
+    "recommendations": [
+      "Calibrate threshold empirically on a larger labeled set (\u2265 50 probes per class)",
+      "Use contrastive probing: compare consistency with vs without snippet \u2014 grounded explanations should diverge more when snippet is removed",
+      "Add factual claim extraction: verify mentioned function names and line numbers appear in the actual code snippet"
+    ]
+  }
+}

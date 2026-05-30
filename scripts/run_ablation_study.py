@@ -27,7 +27,6 @@ from __future__ import annotations
 import json
 import os
 import re
-import sys
 from collections import Counter, defaultdict
 from datetime import datetime, timezone  # noqa: UP017
 from pathlib import Path
@@ -352,7 +351,6 @@ def run_ablation(out_md: Path) -> dict:
     hm_f = [f for f in all_f if _sev(f) in ("high", "medium")]
     low_f = [f for f in all_f if _sev(f) not in ("high", "medium")]
     unreachable_hm = [f for f in hm_f if f.get("reachability_status") == "UNREACHABLE"]
-    reachable_hm = [f for f in hm_f if f.get("reachability_status") == "REACHABLE"]
     security_tier_f = [f for f in hm_f if _sev(f) == "high" and _rule(f) in SECURITY_CATEGORY_RULES]
 
     print(
@@ -380,14 +378,28 @@ def run_ablation(out_md: Path) -> dict:
     # ── Rung 2: + Reachability demotion ───────────────────────────────────────
     # UNREACHABLE findings are demoted to LOW → excluded from H/M denominator
     print("Rung 2: + reachability demotion (UNREACHABLE → LOW)…", flush=True)
+    reach_verdicts = [triage_finding(f) for f in unreachable_hm]
+    unreachable_tp = sum(1 for v in reach_verdicts if v == "AUTO_TP")
+    unreachable_fp = sum(1 for v in reach_verdicts if v in ("AUTO_FP", "NEEDS_REVIEW"))
+
+    # Ungated: demote ALL UNREACHABLE (original behaviour — documents the trade-off)
     hm_post_reach = [f for f in hm_f if f.get("reachability_status") != "UNREACHABLE"]
     rung2_c = precision_stats(hm_post_reach, conservative=True)
     rung2_o = precision_stats(hm_post_reach, conservative=False)
 
-    # Separate stats for the UNREACHABLE cohort
-    reach_verdicts = [triage_finding(f) for f in unreachable_hm]
-    unreachable_tp = sum(1 for v in reach_verdicts if v == "AUTO_TP")
-    unreachable_fp = sum(1 for v in reach_verdicts if v in ("AUTO_FP", "NEEDS_REVIEW"))
+    # T4.4 Gated variant: preserve UNREACHABLE findings that are AUTO_TP
+    # Rationale: confirmed TPs are genuine vulnerabilities even in dead-code paths;
+    # demoting them silently degrades precision without any analyst benefit.
+    hm_post_reach_gated = [
+        f for f in hm_f if f.get("reachability_status") != "UNREACHABLE" or triage_finding(f) == "AUTO_TP"
+    ]
+    rung2_gated_c = precision_stats(hm_post_reach_gated, conservative=True)
+    rung2_gated_o = precision_stats(hm_post_reach_gated, conservative=False)
+    print(
+        f"  Rung 2 gated: {len(hm_post_reach_gated)} findings "
+        f"(preserved {len(hm_post_reach_gated) - len(hm_post_reach)} AUTO_TP UNREACHABLE)",
+        flush=True,
+    )
 
     # ── Rung 3: Security-tier (H-sev SECURITY-*/SECRET-*/etc.) ───────────────
     print("Rung 3: security-tier (H-sev security rules only)…", flush=True)
@@ -503,6 +515,17 @@ def run_ablation(out_md: Path) -> dict:
                     "auto_tp": unreachable_tp,
                     "auto_fp_or_nr": unreachable_fp,
                 },
+                "gated_variant": {
+                    "description": (
+                        "T4.4 gated demotion: preserve UNREACHABLE findings that are "
+                        "AUTO_TP. Eliminates the precision dip caused by demoting "
+                        "confirmed TPs in dead-code paths."
+                    ),
+                    "finding_count": len(hm_post_reach_gated),
+                    "preserved_auto_tp": len(hm_post_reach_gated) - len(hm_post_reach),
+                    "conservative": rung2_gated_c,
+                    "optimistic": rung2_gated_o,
+                },
             },
             {
                 "rung": 3,
@@ -536,7 +559,7 @@ def run_ablation(out_md: Path) -> dict:
 
     # ── Update eval_summary.json ──────────────────────────────────────────────
     _update_eval_summary(results)
-    print(f"  → eval_summary.json updated", flush=True)
+    print("  → eval_summary.json updated", flush=True)
 
     return results
 
@@ -762,7 +785,7 @@ def _update_eval_summary(r: dict) -> None:
             f"each pipeline layer validated as beneficial."
         ),
     }
-    summary["generated"] = f"2026-05-29 (T4.1 ablation added)"
+    summary["generated"] = "2026-05-29 (T4.1 ablation added)"
 
     with open(SUMMARY_FILE, "w") as fh:
         json.dump(summary, fh, indent=2)

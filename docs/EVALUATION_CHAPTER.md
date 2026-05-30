@@ -303,9 +303,18 @@ ACR-QA is a pattern-based static analysis aggregator. Three categories of vulner
 
 These are scope boundaries of the static analysis technique, not deficiencies of ACR-QA's implementation. Full taxonomy: `docs/THREAT_MODEL.md`.
 
-### 5.8.2 Internal Validity — Reachability Demotion Edge Case
+### 5.8.2 Internal Validity — Reachability Demotion (T4.4 Gated Variant)
 
-The reachability layer demotes UNREACHABLE findings to LOW severity. One `AUTO_TP` finding (SECURITY-008 `pickle.loads` in `anyio/to_process.py`) is UNREACHABLE in the scanned version. This causes a marginal precision decrease at Rung 2 (8.6% → 8.5% conservative), which is the documented T4.4 trade-off. A **gated demotion** variant — demoting UNREACHABLE findings only when they are not `AUTO_TP` — would eliminate this case. The current implementation is conservative (it prioritises analyst noise reduction over guaranteed TP preservation); the gated variant is left as future work.
+The reachability layer demotes UNREACHABLE findings to LOW severity. One `AUTO_TP` finding (SECURITY-008 `pickle.loads` in `anyio/to_process.py`) is UNREACHABLE in the scanned version, causing a marginal precision decrease at Rung 2 (8.6% → 8.5% conservative).
+
+**T4.4 implementation:** A gated demotion variant has been implemented and evaluated in `scripts/run_ablation_study.py`. The gated variant preserves UNREACHABLE findings that are confirmed `AUTO_TP`, demoting only non-TP UNREACHABLE findings:
+
+| Rung 2 variant | Findings | Conservative | Optimistic |
+|----------------|:--------:|:------------:|:----------:|
+| Ungated (original) | 623 | 8.51% | 21.8% |
+| **Gated (T4.4)** | **624** | **8.65%** | **21.8%** |
+
+The gated variant recovers the 1 preserved `AUTO_TP` (+0.14pp conservative) without changing analyst load (624 vs 623 findings, +0.2%). The Rung 2→3 transition remains the dominant precision improvement (8.65% → 24.7%). The gated variant is recommended for production deployments where missing confirmed TPs is unacceptable. Results available in `ablation_results.json` under `rungs[2].gated_variant`.
 
 ### 5.8.3 External Validity — Corpus Selection
 
@@ -317,7 +326,68 @@ The `conservative` estimate treats all 5 remaining `NEEDS_REVIEW` findings in th
 
 ---
 
-## 5.9 Comparison with Baseline Tools
+## 5.9 T4.9 — Hallucination-Detection Evaluation (N1 Semantic Entropy)
+
+### 5.9.1 Background
+
+ACR-QA includes a semantic-entropy hallucination-detection mechanism (N1, `CORE/engines/explainer.py`) that runs the AI explanation prompt three times at temperature=0.5 and computes pairwise trigram Jaccard consistency across the responses. A consistency score below 0.5 flags the explanation as likely hallucinated. This section evaluates whether the mechanism reliably separates grounded explanations from hallucinated ones.
+
+### 5.9.2 Probe Design
+
+Ten labeled probes were constructed in two classes:
+
+**Grounded (label=0, n=5):** Real findings with their actual code snippet (pickle.loads, subprocess shell=True, eval(), yaml.load, SQL concatenation). The LLM has concrete code evidence to ground its explanation.
+
+**Hallucination-prone (label=1, n=5):** Findings designed to induce hallucination — fabricated CVE references with no code snippet, generic rule IDs with empty snippets, contradictory message/code pairs. The LLM must invent details to explain them.
+
+Full probe set and all LLM responses: `TESTS/evaluation/results/hallucination_eval.json`. Script: `scripts/run_hallucination_eval.py`. Model: `llama-3.3-70b-versatile` (3 calls per probe, temperature=0.5).
+
+### 5.9.3 Results
+
+| Probe | Class | Consistency | Flagged | Correct |
+|-------|-------|:-----------:|:-------:|:-------:|
+| G1 — pickle.loads (concrete snippet) | GROUNDED | 0.230 | ✓ | ✗ |
+| G2 — subprocess shell=True | GROUNDED | 0.356 | ✓ | ✗ |
+| G3 — eval() debug console | GROUNDED | 0.235 | ✓ | ✗ |
+| G4 — yaml.load no Loader | GROUNDED | 0.201 | ✓ | ✗ |
+| G5 — SQL string concatenation | GROUNDED | 0.272 | ✓ | ✗ |
+| H1 — fabricated CVE, empty snippet | HALLUCINATION | 0.233 | ✓ | ✓ |
+| H2 — generic rule, empty snippet | HALLUCINATION | 0.456 | ✓ | ✓ |
+| H3 — fabricated CVE chain, vague snippet | HALLUCINATION | 0.523 | — | ✗ |
+| H4 — extremely vague finding | HALLUCINATION | 0.242 | ✓ | ✓ |
+| H5 — contradictory message/code | HALLUCINATION | 0.262 | ✓ | ✓ |
+
+At the default threshold (0.5):
+
+| Metric | Value |
+|--------|------:|
+| True-positive rate (hallucination detected) | **80%** (4/5) |
+| True-negative rate (grounded not flagged) | **0%** (0/5) |
+| Balanced accuracy | **40%** |
+| Avg consistency — grounded | 0.259 |
+| Avg consistency — hallucination | 0.343 |
+
+### 5.9.4 Calibration Analysis
+
+The 0.5 threshold is **miscalibrated** for `llama-3.3-70b-versatile`'s natural response variability. All 5 grounded probes scored below 0.5 (range 0.201–0.356), causing all to be falsely flagged. Score distributions overlap substantially (grounded 0.201–0.356; hallucination 0.233–0.523). The optimal Youden-J threshold is 0.263, yielding TPR=60%, TNR=40%, BAC=50% — statistically indistinguishable from random classification.
+
+**Key finding:** Trigram Jaccard self-consistency measures _explanation specificity_, not hallucination per se. Grounded findings generate detailed explanations with varied domain-specific vocabulary across runs (low n-gram overlap), while generic hallucinated explanations repeat common security boilerplate (higher n-gram overlap). The mechanism is a necessary-but-insufficient condition for hallucination detection with this model.
+
+### 5.9.5 Implications and Recommendations
+
+The semantic entropy mechanism (N1) provides a novel research contribution: it identifies the regime where LLM explanations become unreliable (empty/adversarial snippets cause low consistency). However, its current implementation cannot reliably separate grounded from hallucinated explanations as a binary classifier.
+
+Three improvements are recommended for production use:
+
+1. **Empirical threshold calibration** on a larger labeled set (≥ 50 probes per class). The current 0.5 was chosen heuristically; the empirical grounded mean (0.259) suggests a calibrated threshold of ~0.20.
+2. **Contrastive probing** — run the prompt both with and without the code snippet; if consistency drops substantially when the snippet is removed, the snippet was providing genuine grounding (causal signal). If consistency is unchanged, the explanation was generic/hallucinated regardless.
+3. **Factual claim extraction** — extract specific factual claims from the explanation (function names, line numbers, CVE IDs, variable names) and verify each against the code snippet. Claims about entities absent from the snippet are strong hallucination signals.
+
+Full results: `docs/evaluation/HALLUCINATION_EVAL.md`.
+
+---
+
+## 5.10 Comparison with Baseline Tools
 
 | Metric | ACR-QA | Bandit standalone | Semgrep standalone | CodeQL |
 |--------|:------:|:-----------------:|:------------------:|:------:|
@@ -333,7 +403,7 @@ The comparison illustrates the coverage-precision trade-off. Semgrep standalone 
 
 ---
 
-## 5.10 Summary
+## 5.11 Summary
 
 | RQ | Answer | Metric |
 |----|--------|--------|
@@ -342,6 +412,7 @@ The comparison illustrates the coverage-precision trade-off. Semgrep standalone 
 | RQ3 — Statistical reliability | Bootstrap CIs exclude zero at lower bound | 95% CI: **[14.6%, 35.4%]** conservative |
 | RQ4 — Aggregation value | Multi-tool achieves 219-finding coverage at 24.7% precision; no single tool matches both | **3× coverage** of Semgrep at 1.7× its analyst load |
 | RQ5 — Determinism | Fingerprints and attestation payloads are provably identical across independent runs | **48/48** fingerprints match; ECDSA verifiable |
+| N1 — Hallucination detection | Semantic-entropy mechanism flags hallucination probes at 80% TPR; miscalibrated threshold limits TNR to 0% | BAC=40% at default threshold; calibration and contrastive probing recommended for production |
 
 These results confirm the core thesis claim: **a provenance-aware, multi-tool aggregation pipeline significantly improves analyst utility over any single-tool baseline**, as measured by security-tier finding coverage, triage efficiency, and cryptographically-verifiable scan reproducibility.
 

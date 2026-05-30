@@ -1,6 +1,6 @@
 # T4.1 Ablation Study — Layered Pipeline Precision
 
-_Generated: 2026-05-30 01:52 UTC_
+_Generated: 2026-05-30 10:57 UTC_
 _Corpus: precision_corpus_pins.yml (24 repos, 1942 cached findings post-dedup)_
 
 ## Summary

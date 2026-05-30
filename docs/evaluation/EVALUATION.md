@@ -344,4 +344,27 @@ No single tool reaches both 219 findings AND 24.7% precision. Aggregation is the
 
 ---
 
-*Updated: 2026-05-30 — ACR-QA v5.0.0b3. Track 4 complete: ablation, bootstrap CIs, dual-corpus, determinism proof, threat model, regression guard, evaluation chapter, T4 precision enhancement (3 levers → 5 NR, 2.2pp band). See `docs/EVALUATION_CHAPTER.md` §5.4.4 for enhancement methodology.*
+### 8.7 T4.4 — Gated Reachability Demotion
+
+| Rung 2 variant | Findings | Conservative |
+|----------------|:--------:|:------------:|
+| Ungated (original) | 623 | 8.51% |
+| **Gated (T4.4)** | **624** | **8.65%** |
+
+Gated variant preserves UNREACHABLE findings that are AUTO_TP. Eliminates the 0.14pp precision dip caused by demoting the confirmed pickle.loads AUTO_TP in anyio/to_process.py. See `ablation_results.json` `rungs[2].gated_variant`.
+
+### 8.8 T4.9 — Hallucination-Detection Evaluation (N1)
+
+| Metric | Value |
+|--------|------:|
+| Probe set | 10 (5 grounded, 5 hallucination-prone) |
+| True-positive rate (at threshold=0.5) | **80%** (4/5) |
+| True-negative rate (at threshold=0.5) | **0%** (0/5) |
+| Balanced accuracy | **40%** |
+| Optimal Youden-J threshold | 0.263 → BAC=50% |
+
+Key finding: n-gram trigram self-consistency measures explanation specificity, not hallucination. Distributions overlap (grounded 0.20–0.36, hallucination 0.23–0.52). Threshold 0.5 is miscalibrated for llama-3.3-70b's natural response variability. Recommendations: empirical calibration, contrastive probing, factual claim extraction. Full results: `docs/evaluation/HALLUCINATION_EVAL.md`.
+
+---
+
+*Updated: 2026-05-30 — ACR-QA v5.0.0b3. Track 4 **fully complete** (T4.1–T4.9 all done): ablation + gated T4.4, bootstrap CIs, dual-corpus, per-tool comparison, determinism proof, threat model, regression guard, evaluation chapter, T4 precision enhancement (3 levers → 5 NR, 2.2pp band), T4.9 hallucination eval. See `docs/EVALUATION_CHAPTER.md` for full thesis chapter.*

@@ -808,7 +808,7 @@ These weaknesses were surfaced by Track 1 triage. L1 and L2 have been partially 
 
 ## 15. Evaluation Rigor Track — Track 4 (added 2026-05-29)
 
-**Status:** ✅ T4.1–T4.8 COMPLETE (2026-05-29/30) · T4.4 pending (gated demotion impl) · T4.9 pending (hallucination eval) · **Builds on:** §14 Tracks 1–3 (all ✅ GATE MET)
+**Status:** ✅ ALL T4 TASKS COMPLETE (2026-05-30) · **Builds on:** §14 Tracks 1–3 (all ✅ GATE MET)
 
 ### North star
 
@@ -839,7 +839,7 @@ optimize for **rigor**, not speed. Each track ships and commits independently.
 
 #### Phase 2 — Bold technical move (recall-gated)
 
-- **T4.4 — Reachability-gated severity demotion + re-measure** ⏳ PENDING — Gate met (T4.1 confirmed reachability layer near-flat on clean code: 7 UNREACHABLE findings, 1 AUTO_TP). Implementation: only demote UNREACHABLE when NOT AUTO_TP. The 1 AUTO_TP case (SECURITY-008 pickle in anyio/to_process.py) would be preserved. Risk: MEDIUM (only track that can regress recall). Effort: M–L.
+- **T4.4 — Reachability-gated severity demotion + re-measure** ✅ DONE (2026-05-30) — Gated variant implemented in `scripts/run_ablation_study.py`. Gated Rung 2 preserves 1 AUTO_TP UNREACHABLE finding (SECURITY-008 pickle.loads in anyio), raising conservative precision from 8.51% → 8.65% (+0.14pp). Results in `ablation_results.json` under `rungs[2].gated_variant`. EVALUATION_CHAPTER.md §5.8.2 updated. Recall unchanged (100%).
 
 #### Phase 3 — Distinctive proofs
 
@@ -853,11 +853,7 @@ optimize for **rigor**, not speed. Each track ships and commits independently.
 
 #### Phase 5 — Novelty proof (in scope, sequenced last)
 
-- **T4.9 — Hallucination-detection evaluation** — does the semantic-entropy mechanism (3× LLM runs)
-  actually flag hallucinated explanations? Build a small labeled set, measure detection rate.
-  Most novel differentiator → worth doing with the long runway, but **sequenced last** so its
-  difficulty (LLM runs + hallucination ground-truth labeling) can't block the defensible core.
-  Effort: L.
+- **T4.9 — Hallucination-detection evaluation** ✅ DONE (2026-05-30) — `scripts/run_hallucination_eval.py`, `TESTS/evaluation/results/hallucination_eval.json`, `docs/evaluation/HALLUCINATION_EVAL.md`. Result: at default threshold (0.5) — TPR=80% (4/5 hallucination probes correctly flagged), TNR=0% (threshold miscalibrated for llama-3.3-70b). Score distributions overlap (grounded 0.20–0.36, hallucination 0.23–0.52). Optimal Youden-J threshold=0.263 gives BAC=50%. Key finding: n-gram trigram self-consistency measures explanation specificity rather than groundedness — a necessary-but-insufficient hallucination signal. Three calibration recommendations documented in §5.9.5.
 
 ### Cross-cutting principles
 

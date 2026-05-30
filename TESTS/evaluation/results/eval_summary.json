@@ -1,5 +1,5 @@
 {
-  "generated": "2026-05-29 (T4.2 bootstrap CI added)",
+  "generated": "2026-05-29 (T4.1 ablation added)",
   "precision_updated": "2026-05-29",
   "recall_updated": "2026-05-29",
   "total_repos": 38,
@@ -436,7 +436,7 @@
     "note": "Track 3 added 2026-05-29. Bandit and Semgrep precision computed from cached ACR-QA scan output filtered by tool_raw.tool_name. ACR-QA baseline from precision_benchmark (eval_summary.json \u00a7precision_benchmark). See docs/evaluation/COMPETITOR_COMPARISON.md."
   },
   "t4_ablation_study": {
-    "generated": "2026-05-30 01:52 UTC",
+    "generated": "2026-05-30 10:57 UTC",
     "corpus_repos": 24,
     "total_findings_post_dedup": 1942,
     "rungs": {
