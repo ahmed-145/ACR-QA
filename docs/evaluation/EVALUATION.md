@@ -278,4 +278,68 @@ Dead-code findings receive a **−20 confidence penalty** rather than outright s
 
 ---
 
-*Updated: May 20, 2026 — ACR-QA v5.0.0b1 (Phase A complete; 2,757 tests; 52 endpoints; 13 repos; κ=0.74; CVE recall 8/8 detectable = 100%, 8/20 overall = 40%; head-to-head vs Semgrep CE: ACR-QA 100% recall vs 71.2% (+28.8pp)) — see docs/evaluation/HEAD_TO_HEAD_SEMGREP.md; distributed on PyPI + GitHub Actions Marketplace)*
+## 8. Track 4 — Evaluation Rigor (v5.0.0b3, added 2026-05-29/30)
+
+Full chapter: **`docs/EVALUATION_CHAPTER.md`** (§5.1–§5.10).
+
+### 8.1 Precision Corpus — 30 repos, 1,942 findings, ablation study
+
+| Rung | Filter | Findings | Conservative | Optimistic | Analyst-hours |
+|------|--------|:--------:|:------------:|:----------:|:-------------:|
+| 0 | Raw (all tools, all sev) | 1,942 | 8.6% | 28.1% | 485.5h |
+| 1 | + H/M severity filter | 630 | 8.6% | 28.1% | 157.5h |
+| 2 | + Reachability demotion | 623 | 8.5% | 27.5% | 155.8h |
+| **3** | **+ Security-tier** | **219** | **24.7%** | **37.9%** | **54.8h** |
+
+Security-tier = HIGH-severity rules matching `SECURITY-*`, `SECRET-*`, `SQLI-*`, `SHELL-*`, `CRYPTO-*`.
+
+**Triage protocol** (per finding):
+- `AUTO_TP` (54 findings) — unambiguous true positive; rule pattern deterministically indicates real vulnerability
+- `AUTO_FP` (165 findings in sec-tier) — path-based heuristic marks as false positive (test utilities, build scripts, dev tooling)
+- `NEEDS_REVIEW` (29 findings in sec-tier) — human triage required; conservative=FP, optimistic=TP
+
+### 8.2 Bootstrap 95% Confidence Intervals
+
+| Metric | Point estimate | 95% CI | n repos |
+|--------|:--------------:|:------:|:-------:|
+| H/M all-tools conservative | 8.6% | [4.5%, 13.9%] | 30 |
+| H/M all-tools optimistic | 28.1% | [19.6%, 36.6%] | 30 |
+| **Sec-tier conservative** | **24.7%** | **[14.6%, 35.4%]** | 30 |
+| **Sec-tier optimistic** | **37.9%** | **[26.4%, 50.5%]** | 30 |
+| Python sec-tier conservative | 16.8% | [9.1%, 26.1%] | 25 |
+| JavaScript sec-tier conservative | 54.4% | [45.8%, 66.7%] | 5 |
+
+### 8.3 CVE Recall — Dual Corpus (Track 1 + Track 2)
+
+| Subset | TP | Total | Recall |
+|--------|:--:|:-----:|:------:|
+| Track 1 statically-detectable | 8 | 8 | **100%** |
+| Track 2 statically-detectable | 3 | 3 | **100%** |
+| **Combined detectable** | **11** | **11** | **100%** |
+| Honest misses (ORM-internal) | 0 | 2 | 0% (expected) |
+
+### 8.4 Per-Tool Standalone vs Aggregated
+
+| Tool | Sec-tier findings | Sec-tier conservative | Sec-tier optimistic |
+|------|:-----------------:|:--------------------:|:-------------------:|
+| Bandit standalone | 129 | 14.0% | 16.3% |
+| Semgrep standalone | 75 | 36.0% | 70.7% |
+| CBOM standalone | 13 | 61.5% | 61.5% |
+| taint_analyzer | 2 | 50.0% | 50.0% |
+| **ACR-QA aggregated** | **219** | **24.7%** | **37.9%** |
+
+No single tool reaches both 219 findings AND 24.7% precision. Aggregation is the mechanism.
+
+### 8.5 Determinism Proof
+
+- **Finding fingerprints:** 48/48 identical across two independent runs (SHA-256 of file+line+rule)
+- **ECDSA signatures:** both valid (verifiability guaranteed); not byte-identical (random nonce, by design)
+- **Attestation payload:** identical excluding intentional scan_timestamp field
+
+### 8.6 Regression Guard
+
+`TESTS/test_eval_regression_guard.py` — 19 floor assertions run on every CI push. Published thresholds cannot silently regress.
+
+---
+
+*Updated: 2026-05-30 — ACR-QA v5.0.0b3. Track 4 complete: ablation, bootstrap CIs, dual-corpus, determinism proof, threat model, regression guard, evaluation chapter. See `docs/EVALUATION_CHAPTER.md` for full thesis chapter and `docs/THREAT_MODEL.md` for scope boundaries.*

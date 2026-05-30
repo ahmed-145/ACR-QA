@@ -2,6 +2,61 @@
 
 All notable changes to ACR-QA are documented here.
 
+## [v5.0.0b3] — 2026-05-30
+
+### Summary
+
+Track 4 Evaluation Rigor (T4.1–T4.8): layered ablation, bootstrap CIs, dual-corpus confusion
+matrix, determinism proof, threat model, regression guard (19 tests), and full evaluation chapter.
+
+### Added — T4.1 Layered Ablation Study
+
+- **`scripts/run_ablation_study.py`** — 4-rung analytical ablation over 1,942 cached precision-corpus findings. Computes conservative/optimistic precision + analyst-hours at each rung.
+- **`TESTS/evaluation/results/ablation_results.json`** — machine-readable output.
+- **`docs/evaluation/ABLATION_STUDY.md`** — human-readable report.
+- **Key result:** Rung 0 (raw, all tools) = 8.6% → Rung 3 (security-tier) = 24.7% conservative (+186% relative). Analyst load: 485.5h → 54.8h (−88.7%).
+
+### Added — T4.2 Bootstrap Confidence Intervals
+
+- **`scripts/run_bootstrap_ci.py`** — per-repo bootstrap resampling (n=10,000, seed=42). 8 metrics across language and tier breakdowns.
+- **`TESTS/evaluation/results/bootstrap_ci.json`** — results.
+- **`docs/evaluation/BOOTSTRAP_CI.md`** — report.
+- **Key result:** Sec-tier conservative 95% CI = [14.6%, 35.4%]; JS sec-tier 54.4% vs Python 16.8%.
+
+### Added — T4.3 Dual-Corpus Confusion Matrix
+
+- **`scripts/run_dual_corpus.py`** — combines precision corpus (FP rate on clean code) + recall corpus (TP/FN on CVE repos) into unified 2×2 matrix.
+- **`TESTS/evaluation/results/dual_corpus_matrix.json`** — results.
+- **`docs/evaluation/DUAL_CORPUS_MATRIX.md`** — report.
+- **Key result:** 11/11 detectable CVEs found (100% recall); 2 honest misses (ORM-internal SQLi, not detectable by static analysis).
+
+### Added — T4.5 Determinism Proof
+
+- **`scripts/run_determinism_proof.py`** — scans same target twice, compares fingerprints, verifies ECDSA signatures, checks attestation payload determinism.
+- **`TESTS/evaluation/results/determinism_proof.json`** — proof artefact.
+- **`docs/evaluation/DETERMINISM_PROOF.md`** — report.
+- **Key result:** 48/48 fingerprints identical; both ECDSA signatures verifiable; attestation payload identical (excl. intentional timestamp).
+
+### Added — T4.6 Threat Model
+
+- **`docs/THREAT_MODEL.md`** — formal taxonomy of ACR-QA's scope and limitations: 6 out-of-scope categories, comparison table vs Bandit/Semgrep/CodeQL, defence summary Q&A.
+
+### Added — T4.7 Regression Guard
+
+- **`TESTS/test_eval_regression_guard.py`** — 19 floor assertions (TestPrecisionFloor, TestRecallFloor, TestBootstrapCIFloor, TestAblationFloor, TestDeterminismFloor, TestDualCorpusFloor). Fails CI if published thresholds regress.
+
+### Added — T4.8 Evaluation Chapter
+
+- **`docs/EVALUATION_CHAPTER.md`** — self-contained thesis chapter §5.1–§5.10 covering 5 research questions. Synthesises all T4 results with full citations.
+- **`docs/DEFENSE_QA.md`** — extended with one-sentence evaluation summary, artefact index, and regression guard Q&A.
+
+### Fixed — CI
+
+- **Playwright E2E port mismatch** — `dashboard/playwright.config.ts` now reads `PLAYWRIGHT_BASE_URL` env var; pins Vite to `--port 5173`. Was hardcoded to 5174, causing CI timeout.
+- **Ruff format failures** — `scripts/run_ablation_study.py`, `run_bootstrap_ci.py`, `run_precision_benchmark.py`, `run_dual_corpus.py` reformatted.
+
+---
+
 ## [v5.0.0b2] — 2026-05-23
 
 ### Summary

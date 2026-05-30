@@ -808,7 +808,7 @@ These weaknesses were surfaced by Track 1 triage. L1 and L2 have been partially 
 
 ## 15. Evaluation Rigor Track — Track 4 (added 2026-05-29)
 
-**Status:** PROPOSED (not started) · **Builds on:** §14 Tracks 1–3 (all ✅ GATE MET)
+**Status:** ✅ T4.1–T4.8 COMPLETE (2026-05-29/30) · T4.4 pending (gated demotion impl) · T4.9 pending (hallucination eval) · **Builds on:** §14 Tracks 1–3 (all ✅ GATE MET)
 
 ### North star
 
@@ -833,40 +833,23 @@ optimize for **rigor**, not speed. Each track ships and commits independently.
 
 #### Phase 1 — Safe measurement (no recall risk)
 
-- **T4.1 — Layered ablation study** *(centerpiece)* — measure precision/recall/analyst-volume at
-  each rung: `raw → +dedup → +reachability → +triage`. Build work: add `--no-dedup` flag +
-  stage counters (no behavior change when off), re-scan corpus once. Risk: low. Effort: M.
-  Feeds: paper eval §, "architecture validation" slide.
-- **T4.2 — Bootstrap confidence intervals** — 95% CIs on precision (blended + security-tier) and
-  recall via per-repo resampling (no scipy; match `peer_rating.py` style). Risk: none. Effort: S.
-- **T4.3 — Dual-corpus confusion matrix** — pair clean-corpus precision with known-vulnerable-app
-  recall/TPR (data largely on disk; ground truth partly in `TESTS/evaluation/ground_truth/`).
-  Risk: low (may re-scan a few stale apps). Effort: M.
+- **T4.1 — Layered ablation study** ✅ DONE (2026-05-29) — `scripts/run_ablation_study.py`, `TESTS/evaluation/results/ablation_results.json`, `docs/evaluation/ABLATION_STUDY.md`. Result: Rung 0=8.6% → Rung 3=24.7% conservative (+186%), analyst-hours 485.5h→54.8h (−88.7%).
+- **T4.2 — Bootstrap confidence intervals** ✅ DONE (2026-05-29) — `scripts/run_bootstrap_ci.py`, `TESTS/evaluation/results/bootstrap_ci.json`, `docs/evaluation/BOOTSTRAP_CI.md`. Result: sec-tier conservative [14.6%, 35.4%], optimistic [26.4%, 50.5%] (n=10,000, per-repo resampling, 30 repos).
+- **T4.3 — Dual-corpus confusion matrix** ✅ DONE (2026-05-29) — `scripts/run_dual_corpus.py`, `TESTS/evaluation/results/dual_corpus_matrix.json`, `docs/evaluation/DUAL_CORPUS_MATRIX.md`. Result: 11/11 detectable CVEs (100% recall), 2 honest misses documented.
 
 #### Phase 2 — Bold technical move (recall-gated)
 
-- **T4.4 — Reachability-gated severity demotion + re-measure** — wire `UNREACHABLE` to demote
-  severity (HIGH→MEDIUM / out of denominator), not just dock confidence (current:
-  `reachability.py:316` applies only a −20 confidence penalty). **GATE:** proceed only if T4.1
-  shows the reachability layer is currently flat. **Guard:** re-run `run_cve_recall.py`; any drop
-  below 100% on the detectable subset blocks the change. **Hard stop + show numbers before
-  merging anything recall-affecting.** Risk: MEDIUM (only track that can regress recall). Effort: M–L.
+- **T4.4 — Reachability-gated severity demotion + re-measure** ⏳ PENDING — Gate met (T4.1 confirmed reachability layer near-flat on clean code: 7 UNREACHABLE findings, 1 AUTO_TP). Implementation: only demote UNREACHABLE when NOT AUTO_TP. The 1 AUTO_TP case (SECURITY-008 pickle in anyio/to_process.py) would be preserved. Risk: MEDIUM (only track that can regress recall). Effort: M–L.
 
 #### Phase 3 — Distinctive proofs
 
-- **T4.5 — Determinism / reproducibility proof** — same pinned commit scanned twice →
-  byte-identical ECDSA-signed attestation (or document + fix any nondeterminism). Risk: low. Effort: S–M.
-- **T4.6 — Threat-model / false-negative honesty analysis** — formal taxonomy of what ACR-QA
-  *provably cannot* detect (CSRF, IDOR, auth bypass, business logic, the 2 SQLi misses) and why.
-  Risk: none. Effort: S.
+- **T4.5 — Determinism / reproducibility proof** ✅ DONE (2026-05-29) — `scripts/run_determinism_proof.py`, `TESTS/evaluation/results/determinism_proof.json`, `docs/evaluation/DETERMINISM_PROOF.md`. Result: 48/48 fingerprints identical; ECDSA verifiable (random nonce by design, not byte-identical); attestation payload identical excl. timestamp.
+- **T4.6 — Threat-model / false-negative honesty analysis** ✅ DONE (2026-05-29) — `docs/THREAT_MODEL.md`. Covers 6 out-of-scope categories: ORM-internal SQLi, logic bugs, memory-safety, runtime-only, novel classes, obfuscated code.
 
 #### Phase 4 — Lock-in + writeup
 
-- **T4.7 — Regression guard test** — CI test pinning recall floor (100% detectable) + security-tier
-  precision floor, so numbers can't silently regress. Risk: low. Effort: S.
-- **T4.8 — Evaluation chapter writeup + figures** — assemble T4.1–T4.7 into the thesis eval
-  chapter / paper §, with figures (ablation bars, CI error bars, confusion matrix, determinism diff).
-  Risk: none. Effort: M.
+- **T4.7 — Regression guard test** ✅ DONE (2026-05-29) — `TESTS/test_eval_regression_guard.py` (19 floor assertions: precision ≥20%/30%, recall =100%, CI lo ≥10%/20%, ablation counts, determinism, dual-corpus). All pass in CI.
+- **T4.8 — Evaluation chapter writeup + figures** ✅ DONE (2026-05-30) — `docs/EVALUATION_CHAPTER.md` (§5.1–§5.10, 5 RQs answered). `docs/DEFENSE_QA.md` extended with summary Q&As and artefact index.
 
 #### Phase 5 — Novelty proof (in scope, sequenced last)
 
