@@ -536,6 +536,7 @@ The comparison illustrates the coverage-precision trade-off. Semgrep standalone 
 
 | P3 — Semantic taint gate | Rung 4 demotes 68 taint-absent Python findings; 213→151 scope; +1.6pp conservative | See §5.4.7; full gain requires application-code corpus (libraries have no HTTP handlers) |
 | X1 — Blind holdout | 33% recall@detectable (1/3) on unseen 2024–2025 CVEs; 100% correct negatives on 7 honest-miss classes | Two identified rule gaps (SSRF pattern scope, Bandit B301 wrapped patterns); 7/7 TN confirms no over-firing on undetectable classes |
+| X2 — Exploit verification | 3/3 scenarios: detected at HIGH, confirmed exploitable via Docker PoC, confirmed fixed | SQLi (leaked rows via OR 1=1), cmdinj (shell echo EXPLOITED), SSTI ({{7*7}}=49); fix verification confirmed for all 3; see §5.14 |
 | X3 — AI-code study | 400 AI-generated Python samples (4 models × 100) yield **60–82 findings/KLOC** — 8–12× human baseline; ordering: llama4-scout > llama3-70b > qwen3-32b > llama3-8b | Model size does not predict vulnerability density; ACR-QA effective as AI-code quality instrument; see §5.13 |
 
 These results confirm the core thesis claim: **a provenance-aware, multi-tool aggregation pipeline significantly improves analyst utility over any single-tool baseline**, as measured by security-tier finding coverage, triage efficiency, and cryptographically-verifiable scan reproducibility.
@@ -682,6 +683,69 @@ Generated samples: `TESTS/evaluation/ai_code_samples/` (gitignored)
 
 ---
 
+## §5.14 X2 — Exploit Verification: Detect → Prove → Fix Cycle
+
+### 5.14.1 Motivation
+
+Sections 5.3–5.10 establish that ACR-QA detects vulnerability patterns. Detecting a finding is necessary but not sufficient — it does not prove the finding is exploitable, nor does it prove that the recommended fix closes the vulnerability. The X2 experiment closes this gap by demonstrating the full **detect → prove exploitable → verify fix** cycle for three vulnerability classes confirmed in the primary recall corpus.
+
+This is the "DAST-augmented SAST" mode: static analysis finds the candidate; dynamic verification in a Docker sandbox proves (or disproves) exploitability. ACR-QA's `ExploitVerifier` engine (`CORE/engines/exploit_verifier.py`) automates this cycle.
+
+### 5.14.2 Scenarios
+
+Three minimal Flask applications (~25–35 LOC each) were constructed, each isolating one vulnerability class from the recall corpus:
+
+| Scenario | CWE | CVSS | Related CVEs | ACR-QA Rule |
+|---|---|---|---|---|
+| SQL Injection | CWE-89 | 9.8 | CVE-2024-36039 (PyMySQL), CVE-2024-42005 (Django) | `SECURITY-027` (B608) |
+| OS Command Injection | CWE-78 | 9.0 | CVE-2022-24439 (GitPython), CVE-2024-22190 (GitPython) | `SECURITY-021` (B602) |
+| SSTI | CWE-1336 | 9.7 | CVE-2024-34359 (llama-cpp-python) | `SECURITY-031` (B701) |
+
+Each scenario has a **vulnerable version** (using the insecure pattern: f-string SQL, `shell=True`, `jinja2.Environment` without autoescape) and a **fixed version** (parameterized query, `shell=False` + list args, static template whitelist).
+
+### 5.14.3 Protocol
+
+For each scenario:
+
+1. **Scan vulnerable app** — ACR-QA (Bandit + Semgrep) scans `app.py` and identifies the target finding at HIGH severity.
+2. **Build Docker container** — `ExploitVerifier` builds an image from the scenario directory using a minimal `python:3.11-slim` + Flask Dockerfile. Container runs with 128 MB memory cap, 0.5 CPU cap, and a random localhost port.
+3. **Send PoC payloads** — HTTP GET requests with category-specific payloads (e.g., `id=1 OR 1=1--` for SQLi, `host=localhost; echo EXPLOITED` for command injection, `template={{7*7}}` for SSTI).
+4. **Detect exploitation signal** — Response is checked against category-specific regex patterns (leaked rows, "EXPLOITED" string, evaluated `49`).
+5. **Patch app** — `app.py` is replaced with the fixed version. ACR-QA re-scans (confirms finding absent). `ExploitVerifier` repeats the attempt.
+
+### 5.14.4 Results
+
+| Scenario | Detection | Exploit (vulnerable) | Fix verification |
+|---|---|---|---|
+| SQL Injection | ✓ PASS | ✓ EXPLOITED | ✓ CONFIRMED FIXED |
+| Command Injection | ✓ PASS | ✓ EXPLOITED | ✓ CONFIRMED FIXED |
+| SSTI | ✓ PASS | ✓ EXPLOITED | ✓ CONFIRMED FIXED |
+
+**3/3 scenarios: detected, exploited, and confirmed fixed.**
+
+Exploit details:
+
+- **SQL Injection** — payload `1 OR 1=1--`; response leaked both rows: `[(1, 'admin', 'topsecret123'), (2, 'alice', 'alicepa...`. Fixed with parameterized query → no leak.
+- **Command Injection** — payload `localhost; echo EXPLOITED`; response included `EXPLOITED\n/bin/sh: 1: ping: not found`. Fixed with `shell=False` + list args → no injection.
+- **SSTI** — payload `{{7*7}}`; response was `49` (template evaluated). Fixed with static template whitelist → `{{7*7}}` treated as literal string.
+
+All three fixed apps were also confirmed clean by static scan (target finding absent in fixed version).
+
+### 5.14.5 Significance
+
+This evaluation provides three claims that go beyond static detection:
+
+1. **The detected findings were genuinely exploitable**, not theoretical. The `1 OR 1=1--` payload leaked all rows from a simulated user database; the semicolon-injected command executed on the container's shell; the `{{7*7}}` payload executed Python code in the server process.
+
+2. **The recommended fixes are sufficient.** Switching to parameterized queries, `shell=False`, and a static template whitelist each eliminated exploitability, as confirmed by a failed re-attempt with the same payloads.
+
+3. **The detection → exploit link is tight.** Every finding detected at HIGH severity by ACR-QA in these scenarios corresponded to an actively exploitable vulnerability. This directly supports the precision claim: ACR-QA HIGH findings in these categories are not over-approximations.
+
+Results file: `TESTS/evaluation/results/exploit_verification.json`
+Supporting script: `scripts/run_exploit_verification.py`
+
+---
+
 ## References
 
 [1] OWASP Benchmark v1.2 — https://owasp.org/www-project-benchmark/
@@ -696,5 +760,5 @@ Generated samples: `TESTS/evaluation/ai_code_samples/` (gitignored)
 ---
 
 _Machine-readable results: `TESTS/evaluation/results/`_
-_Supporting scripts: `scripts/run_ablation_study.py`, `scripts/run_bootstrap_ci.py`, `scripts/run_dual_corpus.py`, `scripts/run_determinism_proof.py`, `scripts/run_live_cve_recall.py`, `scripts/run_ai_code_study.py`_
+_Supporting scripts: `scripts/run_ablation_study.py`, `scripts/run_bootstrap_ci.py`, `scripts/run_dual_corpus.py`, `scripts/run_determinism_proof.py`, `scripts/run_live_cve_recall.py`, `scripts/run_ai_code_study.py`, `scripts/run_exploit_verification.py`_
 _Regression guard: `TESTS/test_eval_regression_guard.py` (19 floor assertions)_
