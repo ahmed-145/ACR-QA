@@ -68,6 +68,7 @@ line-length = 120
 exclude = [
     "TESTS/evaluation/cloned/",
     "TESTS/evaluation/fixtures/",
+    "TESTS/evaluation/ai_code_samples/",
     "mutants/",
 ]
 
