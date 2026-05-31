@@ -1,6 +1,6 @@
 %% ============================================================
 %%  CHAPTER 4 — IMPLEMENTATION
-%%  v5.0.0b1 — Updated May 2026
+%%  v5.0.0rc1 — Updated May 2026
 %% ============================================================
 \chapter{Implementation}
 \label{ch:implementation}
@@ -17,7 +17,7 @@ This chapter documents the implementation of the \ACRQA{} system, translating th
 \ACRQA{} is implemented primarily in Python 3.11 for the backend and TypeScript \cite{typescript_docs}/React \cite{react_docs} for the frontend. Table~\ref{tab:tech_stack} lists the principal dependencies.
 
 \begin{table}[H]
-\caption{Core Technology Stack (v5.0.0b1)}
+\caption{Core Technology Stack (v5.0.0rc1)}
 \label{tab:tech_stack}
 \centering
 \renewcommand{\arraystretch}{1.3}
@@ -48,7 +48,7 @@ Testing (TS)        & Vitest + Playwright       & 65 unit + 14 a11y + 15 e2e tes
 
 The repository follows a clear separation between the backend engine, API layer, and frontend:
 
-\begin{lstlisting}[language={}, basicstyle=\footnotesize\ttfamily, caption={Repository Directory Structure (v5.0.0b1)}]
+\begin{lstlisting}[language={}, basicstyle=\footnotesize\ttfamily, caption={Repository Directory Structure (v5.0.0rc1)}]
 acr-qa/
 ├── CORE/
 │   ├── main.py              # Pipeline orchestrator
@@ -285,6 +285,6 @@ The IaC engine detects four resource types via extension matching: \texttt{.tf} 
 \needspace{8\baselineskip}
 \section{Summary}
 
-This chapter has documented the implementation of \ACRQA{} v5.0.0b1, covering the FastAPI REST layer (52 endpoints), Celery asynchronous workers, language adapters, taint analyser, call-graph reachability engine, confidence scorer, RAG knowledge base, entropy filter, CBoM scanner, React dashboard, Docker Compose deployment, GitHub PR integration, authentication layer, and the four new v5.0.0 engines (Heuristic Risk Predictor, Time-Travel Analyzer, IaC Scanner, PR Risk Score). Chapter~\ref{ch:testing} presents the testing strategy and quantitative evaluation results.
+This chapter has documented the implementation of \ACRQA{} v5.0.0rc1, covering the FastAPI REST layer (52 endpoints), Celery asynchronous workers, language adapters, taint analyser, call-graph reachability engine, confidence scorer, RAG knowledge base, entropy filter, CBoM scanner, React dashboard, Docker Compose deployment, GitHub PR integration, authentication layer, and the four new v5.0.0 engines (Heuristic Risk Predictor, Time-Travel Analyzer, IaC Scanner, PR Risk Score). Chapter~\ref{ch:testing} presents the testing strategy and quantitative evaluation results.
 
 \clearpage

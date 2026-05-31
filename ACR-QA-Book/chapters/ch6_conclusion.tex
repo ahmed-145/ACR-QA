@@ -1,26 +1,24 @@
 %% ============================================================
 %%  CHAPTER 6 — CONCLUSION & FUTURE WORK
-%%  v5.0.0b1 — Updated May 2026
+%%  v5.0.0rc1 — Updated May 2026
 %% ============================================================
 \chapter{Conclusion and Future Work}
 \label{ch:conclusion}
 
 \section{Summary of the Project}
 
-This project presented \ACRQA{} v5.0.0b1 (Automated Code Review \& Quality Assurance), a self-hosted, AI-augmented static application security testing platform designed to address three persistent deficiencies in the SAST tooling landscape: fragmentation of tool outputs, high false-positive noise, and absence of contextual AI reasoning over findings.
+This project presented \ACRQA{} v5.0.0rc1 (Automated Code Review \& Quality Assurance), a self-hosted, AI-augmented SAST platform that addresses three persistent deficiencies in the tooling landscape: fragmented tool outputs, high false-positive noise, and absent contextual AI reasoning. A twelve-stage pipeline orchestrates nineteen analysis engines across Python, JavaScript/TypeScript, Go, and IaC. Raw outputs are normalised into a single \texttt{CanonicalFinding} schema, filtered by a five-signal label-free confidence scorer, enriched via RAG-backed LLM with N-gram entropy validation, gated by AST call-graph reachability and intra-procedural taint, and delivered through a 52-endpoint FastAPI service and a React~18 + TypeScript dashboard. v5.0.0 adds a Heuristic Risk Predictor, Time-Travel Analyzer, IaC Scanner, PR Risk Score, and Second Opinion dual-LLM verifier. A CBoM module classifies 62 algorithms against NIST PQC guidance, and every scan artefact is anchored by ECDSA-P256 + CRYSTALS-Dilithium3 attestation.
 
-The system is built around a twelve-stage processing pipeline that orchestrates nineteen open-source analysis engines across three language adapters (Python, JavaScript/TypeScript, Go) plus an IaC scanner for Terraform, Kubernetes, and Dockerfile assets. Raw tool outputs are normalised into a single canonical schema (\texttt{CanonicalFinding}), filtered by a five-signal label-free confidence scorer, enriched through a RAG-backed LLM pipeline with N-gram entropy consistency validation, subjected to AST-based call-graph reachability and intra-procedural taint analysis, and delivered via a 52-endpoint FastAPI REST service and a React 18 + TypeScript dashboard. Version 5.0.0 further introduces a Heuristic Risk Predictor, Time-Travel Vulnerability Analyzer, IaC Security Scanner, PR Risk Score, and Second Opinion dual-LLM verification engine. A Cryptographic Bill of Materials module provides NIST PQC-aware analysis of 62 cryptographic algorithms, and ECDSA-P256 + CRYSTALS-Dilithium3 attestation anchors every scan artefact to a post-quantum cryptographic chain of custody.
-
-The implementation was validated through a suite of \textbf{2,757 automated test cases} (84.89\% CORE code coverage), achieving \textbf{97.1\% overall precision} and \textbf{100\% security-class precision} across four core benchmark repositories (DVPWA, Pygoat, VulPy, DSVW), and \textbf{100\% recall vs.\ Semgrep CE 71.2\% (+28.8 pp)) on the 13-repository extended evaluation corpus across Python, JavaScript, and Go. The system covers \textbf{9 of 10 OWASP Top~10 (2021) categories}, achieves \textbf{33\% noise reduction} via cross-tool deduplication, and maintains a \textbf{100\% AI enrichment rate}. The complete platform is distributed as \texttt{acrqa==5.0.0b1} on PyPI (OIDC trusted publishing) and operates at zero recurring licensing cost on commodity hardware via an 8-service Docker Compose stack, with Kubernetes Helm chart and Terraform IaC modules provided for production cloud deployment.
+Validation spans four corpora: (i) Layer~A ground truth (DVPWA, Pygoat, VulPy, DSVW) — \textbf{97.1\% overall / 100\% security-class precision} on 836 findings; (ii) Layer~B adversarial 30-repo precision corpus — \textbf{96.4\% conservative / 100\% optimistic precision (P4 Confirmed Tier)}, 95\% CI [90.9\%, 100\%], 55 findings; (iii) 20-CVE recall battery — \textbf{8/8 detectable = 100\% recall}; (iv) head-to-head — \textbf{F\textsubscript{1} 98.2\%} vs.\ Bandit 21.8\% and Semgrep 45.7\%. Four novel evaluations (X1 live-CVE blind holdout, X2 detect $\to$ exploit $\to$ fix verification, X3 AI-generated code study, X4 time-travel predictive backtest) round out the empirical contribution. The \textbf{2,757-test} suite reaches 84.89\% CORE coverage, \textbf{9/10} OWASP Top~10 categories are detected, and \textbf{500\,RPS} is sustained at $<$2\,s p99. The platform ships as \texttt{acrqa==5.0.0rc1} on PyPI with Docker Compose, Helm, and Terraform deployments at zero recurring cost.
 
 % -----------------------------------------------------------------
 \section{Novel Contributions}
 \label{sec:contributions}
 
-This project makes ten novel contributions to the field of software security and AI-assisted development tooling:
+This project makes twelve novel contributions to the field of software security and AI-assisted development tooling:
 
 \begin{enumerate}
-  \item \textbf{Unified Multi-Tool Orchestration Platform:} To the author's knowledge, \ACRQA{} is the first open-source platform to combine nineteen SAST engines with a RAG-backed LLM enrichment layer, AST-based call-graph reachability, and intra-procedural taint analysis in a single self-hosted service at zero recurring cost, validated on 13 benchmark repositories across three languages with 299+ canonical rule mappings.
+  \item \textbf{Unified Multi-Tool Orchestration Platform:} The first open-source platform combining nineteen SAST engines with RAG-backed LLM enrichment, AST call-graph reachability, and intra-procedural taint in a single self-hosted service at zero cost, validated across Python, JS/TS, and Go with 327+ canonical rule mappings.
 
   \item \textbf{Label-Free Confidence Scoring:} The five-signal weighted confidence scorer enables finding prioritisation without any pre-labelled vulnerability dataset. At the $C_s = 30$ soft-suppression threshold, the scorer achieves 94.2\% false-positive suppression accuracy while misclassifying only 1.0\% of genuine vulnerabilities — all in dead-code paths correctly identified by the reachability engine.
 
@@ -39,6 +37,10 @@ This project makes ten novel contributions to the field of software security and
   \item \textbf{IaC Security Scanner:} Pure-Python analysis of Terraform, Kubernetes, Dockerfile, and GitHub Actions assets producing 28 canonical \texttt{IAC-*} findings, normalised into the same \texttt{CanonicalFinding} schema as source-code findings.
 
   \item \textbf{PR Risk Score:} A single 0--100 mergeable-or-not signal for pull requests, combining reachability ratio, taint coverage, exploit verification, file risk, PR size, and new HIGH findings into one CI-consumable gate metric.
+
+  \item \textbf{Confirmed Tier (P4) --- $\geq$80\% Precision Stratum:} A 4-criterion stratum (HIGH severity + 22-rule \textsc{ConfirmedRuleSet} + production-code path + Bandit-internal \texttt{issue\_confidence == HIGH}) that achieves \textbf{96.4\% conservative precision} (95\% CI [90.9\%, 100\%]) with 100\% CVE recall on the 30-repo adversarial corpus --- the first open-source SAST stratum to clear the commercial $\geq$80\% threshold for autonomous PR-blocking. The Bandit confidence signal is an \emph{external} judgement, making the stratum non-tautological with \ACRQA{}'s own labels.
+
+  \item \textbf{Novel Empirical Battery (X1--X4):} Four publishable evaluations: a live-CVE blind holdout (2024--2025 CVEs not in the original recall set); detect $\to$ Docker-sandbox exploit $\to$ patch verification across SQLi, command injection, and SSTI; an AI-generated code vulnerability study (400 samples, 4 LLMs) finding 8--12$\times$ the human baseline of 7.1 findings/KLOC; and a time-aware predictive backtest on 10 Django checkpoints. Together they directly answer the committee questions ``did you overfit?'', ``are the findings exploitable?'', and ``does the tool generalise to AI-written code?''
 \end{enumerate}
 
 % -----------------------------------------------------------------
@@ -61,7 +63,7 @@ The development of \ACRQA{} across twelve phases yielded five practical lessons 
 \section{Limitations}
 \label{sec:limitations}
 
-The current release of \ACRQA{} v5.0.0b1 has the following acknowledged limitations:
+The current release of \ACRQA{} v5.0.0rc1 has the following acknowledged limitations:
 
 \begin{enumerate}
   \item \textbf{OWASP A09 (Security Logging) coverage gap:} Static analysis cannot determine whether an application logs security events correctly without knowing the runtime logging configuration. A09 remains the single uncovered OWASP Top~10 category; detection would require runtime instrumentation or log-schema analysis, both outside project scope.
@@ -92,7 +94,7 @@ The current release of \ACRQA{} v5.0.0b1 has the following acknowledged limitati
 \subsection{Research Directions (v6.0 --- 2027)}
 
 \begin{itemize}
-  \item \textbf{Proof-of-Exploit verification:} Develop a sandboxed Docker-based exploit execution engine for SQL injection and command injection patterns, elevating confirmed-exploitable findings above statically detected patterns and distinguishing \ACRQA{} from every existing open-source SAST platform.
+  \item \textbf{Proof-of-Exploit at scale:} The X2 evaluation confirmed detect $\to$ exploit $\to$ fix on three categories (SQLi, command injection, SSTI). Future work expands coverage to deserialisation, SSRF, and XXE, with parallel Docker sandboxes and automatic PoC generation from canonical rule metadata.
 
   \item \textbf{User study completion and publication:} Complete the pre-registered A/B study ($n \geq 10$ engineers) comparing raw tool output to \ACRQA{} AI-enriched output across time-to-understand, remediation accuracy, and developer trust, targeting an IEEE or ACM software engineering venue.
 
@@ -104,6 +106,6 @@ The current release of \ACRQA{} v5.0.0b1 has the following acknowledged limitati
 
 Software security is not a destination but a continuous process. Every codebase evolves, every threat landscape shifts, and every developer makes mistakes. The contribution of \ACRQA{} is to lower the barrier to high-quality, multi-tool security analysis: to make the combination of comprehensive detection, intelligent prioritisation, contextual AI guidance, and full audit provenance accessible to any team, on any machine, at zero cost.
 
-The results --- \textbf{97.1\% overall precision}, \textbf{100\% security-class precision}, \textbf{9/10 OWASP Top~10 coverage}, \textbf{2,757 passing tests at 84.89\% code coverage}, \textbf{100\% recall vs.\ Semgrep CE 71.2\%} on 13 benchmark repositories, \textbf{0\% reachability classification error rate}, and \textbf{ten novel contributions} to the open-source SAST landscape --- validate that this goal has been achieved. With the inter-procedural taint engine, automatic pull-request generation, and proof-of-exploit verification on the active roadmap, the trajectory of the project points strongly toward production-grade deployment readiness. The open-source nature of the platform ensures that its value can be extended, adapted, and improved by the community it is designed to serve.
+The results --- \textbf{96.4\% Confirmed-Tier precision} with \textbf{100\% CVE recall} (F\textsubscript{1}~98.2\%) on a 30-repo adversarial corpus, \textbf{97.1\% / 100\% security-class} precision on Layer~A, \textbf{9/10 OWASP Top~10} coverage, \textbf{2,757 tests at 84.89\% CORE coverage}, and \textbf{twelve novel contributions} including the P4 Confirmed Tier and the X1--X4 empirical battery --- validate that the original goal has been achieved. With inter-procedural taint, automatic pull-request generation, and a five-rater reliability study on the active roadmap, the trajectory of the project points strongly toward production deployment. The open-source nature of the platform ensures its value can be extended, adapted, and improved by the community it serves.
 
 \clearpage
