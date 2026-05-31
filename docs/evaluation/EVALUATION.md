@@ -280,7 +280,7 @@ Dead-code findings receive a **−20 confidence penalty** rather than outright s
 
 ## 8. Track 4 — Evaluation Rigor (v5.0.0b3, added 2026-05-29/30)
 
-Full chapter: **`docs/EVALUATION_CHAPTER.md`** (§5.1–§5.10).
+Full chapter: **`docs/EVALUATION_CHAPTER.md`** (§5.1–§5.17).
 
 ### 8.1 Precision Corpus — 30 repos, 1,942 findings, ablation study
 

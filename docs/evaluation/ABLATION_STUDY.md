@@ -18,6 +18,7 @@ genuine security risk present in real production code; everything else is FP.
 | 3 | Security-tier only (H-sev SECURITY-*/SECRET-*/etc.) | 213 | 53.2h | 25.4% (54 TP / 213 H/M) | 30.0% |
 | 3.5 | P2 — Two-tool corroborated (≥2 different tools, ±3 lines) | 0 | 0.0h | N/A (0 TP / 0 H/M) | N/A |
 | 4 | P3 — Semantic taint gate (taint-applicable Python, HTTP-source confirmation) | 151 | 37.8h | 26.9% (39 TP / 145 H/M) | 31.7% |
+| **P4** | **Confirmed Tier (22 rules + HIGH sev + production + Bandit-HIGH)** | **55** | **13.8h** | **96.4% (53 TP / 55 total, 2 NR)** | **100%** |
 
 > **Conservative**: NEEDS_REVIEW → FP (worst case).
 > **Optimistic**: NEEDS_REVIEW → TP (best case).
