@@ -1,0 +1,104 @@
+{
+  "generated_at": "2026-05-31T03:22:23.602181+00:00",
+  "precision_corpus": "30-repo precision corpus (PyPI/npm popular libraries)",
+  "recall_corpus": "8 statically-detectable in-corpus CVEs (Track 1 + Track 2)",
+  "tools": {
+    "bandit": {
+      "coverage_sec_tier": 129,
+      "sec_tier_conservative": 0.1395,
+      "sec_tier_optimistic": 0.1628,
+      "recall_at_cve": 0.5,
+      "cve_hits": 4,
+      "f1_conservative": 0.2181
+    },
+    "semgrep": {
+      "coverage_sec_tier": 75,
+      "sec_tier_conservative": 0.36,
+      "sec_tier_optimistic": 0.7067,
+      "recall_at_cve": 0.625,
+      "cve_hits": 5,
+      "f1_conservative": 0.4569
+    },
+    "acrqa": {
+      "coverage_sec_tier": 151,
+      "sec_tier_conservative": 0.2695,
+      "sec_tier_optimistic": 0.3174,
+      "recall_at_cve": 1.0,
+      "cve_hits": 8,
+      "f1_conservative": 0.4246
+    }
+  },
+  "recall_detail": {
+    "total_detectable": 8,
+    "bandit_recall": 0.5,
+    "semgrep_recall": 0.625,
+    "acrqa_recall": 1.0,
+    "bandit_hits": 4,
+    "semgrep_hits": 5,
+    "acrqa_hits": 8,
+    "per_cve": [
+      {
+        "gt_file": "cve-2016-10516-werkzeug-eval.yml",
+        "expected_rule": "SECURITY-001",
+        "bandit": true,
+        "semgrep": false,
+        "acrqa": true
+      },
+      {
+        "gt_file": "cve-2017-18342-pyyaml.yml",
+        "expected_rule": "SECURITY-018",
+        "bandit": false,
+        "semgrep": true,
+        "acrqa": true
+      },
+      {
+        "gt_file": "cve-2021-23727-celery-pickle.yml",
+        "expected_rule": "SECURITY-008",
+        "bandit": false,
+        "semgrep": true,
+        "acrqa": true
+      },
+      {
+        "gt_file": "cve-2022-24439-gitpython-shell.yml",
+        "expected_rule": "SECURITY-021",
+        "bandit": true,
+        "semgrep": true,
+        "acrqa": true
+      },
+      {
+        "gt_file": "cve-2023-45805-poetry-yaml-unsafe.yml",
+        "expected_rule": "SECURITY-018",
+        "bandit": true,
+        "semgrep": false,
+        "acrqa": true
+      },
+      {
+        "gt_file": "cve-2024-1135-gunicorn.yml",
+        "expected_rule": "SECURITY-021",
+        "bandit": true,
+        "semgrep": false,
+        "acrqa": true
+      },
+      {
+        "gt_file": "cve-2024-3219-pillow.yml",
+        "expected_rule": "SECURITY-001",
+        "bandit": false,
+        "semgrep": true,
+        "acrqa": true
+      },
+      {
+        "gt_file": "cve-2024-45411-twig-eval.yml",
+        "expected_rule": "SECURITY-008",
+        "bandit": false,
+        "semgrep": true,
+        "acrqa": true
+      }
+    ]
+  },
+  "notes": [
+    "Precision measured on 30-repo clean-code corpus (precision_corpus_pins.yml); denominator = sec-tier HIGH findings in SECURITY-/SECRET-/SQLI-/SHELL-/CRYPTO- rules.",
+    "Recall measured on 8 in-corpus detectable CVEs; standalone tool recall = fraction of CVEs where that tool independently fired the expected canonical rule in the expected file.",
+    "ACR-QA post-P1+P3 numbers: rule quarantine (P1) and taint gate (P3) reduce scope from 219 to 151 findings at +2.2pp conservative precision.",
+    "Snyk: commercial license required; excluded from this benchmark."
+  ]
+}

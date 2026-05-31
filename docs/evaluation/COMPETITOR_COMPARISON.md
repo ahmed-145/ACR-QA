@@ -1,6 +1,6 @@
 # Competitor Comparison — Bandit vs Semgrep vs ACR-QA
 
-Generated: 2026-05-29
+Generated: 2026-05-31
 Corpus: 30-repo precision corpus (`precision_corpus_pins.yml`)
 Methodology: same `triage_finding()` heuristics applied to all three tool sets.
 Bandit and Semgrep numbers are extracted from ACR-QA's cached scan output
