@@ -2,6 +2,50 @@
 
 All notable changes to ACR-QA are documented here.
 
+## [v5.0.0rc1] — 2026-05-31
+
+### Summary
+
+God Mode v4 — All precision tracks (P1–P4) and expansion tracks (X1–X5) complete. Final thesis state.
+
+### Added — P4 Confirmed Tier (≥80% precision autopilot stratum)
+
+- **`scripts/run_confirmed_tier.py`** — 4-criterion gate: HIGH severity + 22-rule ConfirmedRuleSet + production code path + Bandit `issue_confidence == HIGH`. Bootstrap 95% CI (10,000 resamples). CVE recall check on 8 in-corpus detectable CVEs.
+- **`TESTS/evaluation/results/confirmed_tier.json`** — results artefact.
+- **`docs/evaluation/CONFIRMED_TIER.md`** — per-rule breakdown, per-tool breakdown, trade-off table, anti-tautology defense.
+- **`docs/EVALUATION_CHAPTER.md` §5.17** — Confirmed Tier section. RQ2 row updated.
+- **Key result:** 55 findings · **96.4% conservative** (95% CI [90.9%, 100%]) · **100% optimistic** · **8/8 CVE recall** · **F1 = 98.2%** — clears ≥80% industry threshold for automated PR blocking.
+
+### Added — X5 Head-to-Head Benchmark
+
+- **`scripts/run_head_to_head_benchmark.py`** — ACR-QA vs Bandit vs Semgrep on same precision + recall corpora. Per-CVE recall by inspecting `tool_raw.tool_name`.
+- **`TESTS/evaluation/results/head_to_head_benchmark.json`** — results artefact.
+- **`docs/evaluation/HEAD_TO_HEAD_BENCHMARK.md`** — per-CVE recall table, F1 comparison.
+- **`docs/EVALUATION_CHAPTER.md` §5.16** — head-to-head section.
+- **Key result:** Bandit F1=21.8% (1/8 CVE recall), Semgrep F1=45.7% (5/8), **ACR-QA F1=42.5%/48.1% (8/8 — only tool with 100% recall)**. Bandit and Semgrep catch disjoint CVE subsets.
+
+### Added — X4 Time-Travel Predictive Backtest
+
+- **`scripts/run_time_travel_backtest.py`** — 10 Django checkpoints (v2.2→v4.2), Fisher's exact test per checkpoint, pooled Mantel-Haenszel test. Time-gated git clones prevent data leakage.
+- **`TESTS/evaluation/results/time_travel_backtest.json`** — results artefact.
+- **`docs/evaluation/TIME_TRAVEL_BACKTEST.md`** — methodology, results, interpretation.
+- **`docs/EVALUATION_CHAPTER.md` §5.15** — time-travel backtest section.
+- **Key result:** pooled p=0.137, OR=1.935, lift=1.83× — honest null; predictor is analyst-triage tool, not CVE oracle. Fixes: numpy.bool_ JSON serialisation, subprocess BinOp lint.
+
+### Added — P3 Semantic Taint Gate (Rung 4)
+
+- Taint-applicable Python findings gated by `TaintAnalyzer` HTTP-source confirmation (±5 lines).
+- Result: 213 → 151 findings (−68 taint-absent demoted), **26.9% conservative** (+1.5pp), **31.7% optimistic**.
+- `docs/EVALUATION_CHAPTER.md` §5.4 Rung 4 row added.
+
+### Added — P2 High-Confidence Corroboration (Rung 3.5)
+
+- 0 corroborated findings on precision corpus — empirically confirms FPs are rule-specific, not co-located. Validates P3 as only path to higher precision.
+
+### Added — P1 Per-Rule Precision Floor
+
+- Only SECURITY-003 safely quarantinable (+0.7pp). 83% of FPs are recall-critical — quarantine would break recall.
+
 ## [v5.0.0b3] — 2026-05-30
 
 ### Summary

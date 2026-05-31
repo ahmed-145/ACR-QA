@@ -289,9 +289,12 @@ Full chapter: **`docs/EVALUATION_CHAPTER.md`** (§5.1–§5.10).
 | 0 | Raw (all tools, all sev) | 1,942 | 8.6% | 28.1% | 485.5h |
 | 1 | + H/M severity filter | 630 | 8.6% | 28.1% | 157.5h |
 | 2 | + Reachability demotion | 623 | 8.5% | 27.5% | 155.8h |
-| **3** | **+ Security-tier** | **219** | **24.7%** | **26.9%** | **54.8h** |
+| **3** | **+ Security-tier** | **219** | **24.7%** | **37.9%** | **54.8h** |
+| 4 (P3) | + Semantic taint gate | 151 | 26.9% | 31.7% | 37.8h |
+| **P4** | **Confirmed Tier** | **55** | **96.4%** | **100%** | **13.8h** |
 
 Security-tier = HIGH-severity rules matching `SECURITY-*`, `SECRET-*`, `SQLI-*`, `SHELL-*`, `CRYPTO-*`.
+Rung 4 (P3): taint gate demotes taint-absent Python findings. P4 Confirmed Tier: 4-criterion gate (22 curated rules + production path + Bandit-HIGH confidence). All three CVE recall = 100%.
 
 **Triage protocol** (per finding, after T4 precision enhancement):
 - `AUTO_TP` (54 findings) — unambiguous true positive; rule pattern deterministically indicates real vulnerability
@@ -367,4 +370,4 @@ Key finding: n-gram trigram self-consistency measures explanation specificity, n
 
 ---
 
-*Updated: 2026-05-30 — ACR-QA v5.0.0b3. Track 4 **fully complete** (T4.1–T4.9 all done): ablation + gated T4.4, bootstrap CIs, dual-corpus, per-tool comparison, determinism proof, threat model, regression guard, evaluation chapter, T4 precision enhancement (3 levers → 5 NR, 2.2pp band), T4.9 hallucination eval. See `docs/EVALUATION_CHAPTER.md` for full thesis chapter.*
+*Updated: 2026-05-31 — ACR-QA v5.0.0b3. All tracks complete (T4.1–T4.9 + P1–P4 + X1–X5). Key new results: P3 taint gate (26.9% / 31.7%), P4 Confirmed Tier (96.4% / 100%, F1=98.2%), X4 time-travel backtest (OR=1.935, p=0.137), X5 head-to-head (ACR-QA only tool with 100% CVE recall, F1=48.1% optimistic). See `docs/EVALUATION_CHAPTER.md` §5.12–§5.17 for full thesis chapter.*
