@@ -101,7 +101,7 @@ Migration `0015` creates `file_risk_scores`:
 - **No cross-file impact propagation.** A high-risk file does not lift its neighbours'
   scores. Future work (Phase B): graph-aware propagation.
 - **No author-trust adjustment.** Tracking per-author commit fault rates is a Phase B item
-  ([plan v3 §A4 deferral](../GOD_MODE_V3_PLAN.md#3-phase-b--public-launch)).
+  (future work (Phase B — public launch)).
 
 ## Performance
 

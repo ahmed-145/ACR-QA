@@ -40,7 +40,7 @@ and async idioms that frequently trip up static analyzers.
 | httpx | 14k | ~25,000 | 43 | 1 | **2.3%** |
 
 Methodology: every HIGH-severity finding was manually triaged by the author. False-positive
-classifications are documented in `docs/evaluation/PHASE_0_BASELINE.md`. Both repos pinned to
+classifications are documented in the evaluation chapter (`docs/EVALUATION_CHAPTER.md`). Both repos pinned to
 specific commit SHAs for reproducibility.
 
 ### Defendable claim
@@ -48,7 +48,7 @@ specific commit SHAs for reproducibility.
 > *"ACR-QA achieves 97.1% precision on a 4-repo ground-truth corpus (Layer A) and a < 2.5%
 > false-positive rate on real-world Python codebases totalling ~35k LOC (Layer B). The two-layer
 > methodology mirrors the SAST research standard and is documented end-to-end in
-> `docs/evaluation/EVALUATION.md` and `docs/evaluation/PHASE_0_BASELINE.md`."*
+> `docs/evaluation/EVALUATION.md` and the evaluation chapter (`docs/EVALUATION_CHAPTER.md`)."*
 
 ---
 

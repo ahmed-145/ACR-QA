@@ -20,11 +20,11 @@
 - `scripts/peer_rating.py` — Cohen's + Fleiss' κ harness
 - `scripts/run_benchmarks.py` — corpus harness skeleton
 - `paper/acrqa_thesis.tex` + `references.bib` — IEEE paper, sections 1–3
-- `docs/evaluation/HEAD_TO_HEAD_SEMGREP.md` — pre-registered methodology
+- `docs/evaluation/HEAD_TO_HEAD_BENCHMARK.md` — pre-registered methodology
 
 
-> 📋 **For the strategic testing plan** (6-layer pyramid, ground-truth-as-evidence approach, why coverage is a tripwire not a target), see [`GOD_MODE_PLAN.md` §9](GOD_MODE_PLAN.md#9-testing-strategy--read-this-before-writing-any-code).
-> 📊 **For honest current numbers** on 6 real repos, see [`evaluation/PHASE_0_BASELINE.md`](evaluation/PHASE_0_BASELINE.md).
+> 📋 **For the strategic testing plan** (6-layer pyramid, ground-truth-as-evidence approach, why coverage is a tripwire not a target), see [`GOD_MODE_V4_PLAN.md`](GOD_MODE_V4_PLAN.md).
+> 📊 **For honest current numbers, see [`evaluation/EVALUATION.md`](evaluation/EVALUATION.md).
 
 ### CI Static Analysis Status (v3.3.0)
 

@@ -46,7 +46,7 @@ No. Pre-registration means the CVE list was committed to version control (ground
 
 ### Q7. "How do you know Semgrep CE got 71.2% and not something higher?"
 
-Both tools ran on the same 13 ground-truth repositories with the same expected-finding YAMLs. Semgrep CE used the `p/default` + `p/python` + `p/javascript` + `p/go` community rulesets — the same rulesets any user would apply. The methodology is described in `docs/evaluation/HEAD_TO_HEAD_SEMGREP.md` and the eval code is in `scripts/run_eval.py`. It's reproducible.
+Both tools ran on the same 13 ground-truth repositories with the same expected-finding YAMLs. Semgrep CE used the `p/default` + `p/python` + `p/javascript` + `p/go` community rulesets — the same rulesets any user would apply. The methodology is described in `docs/evaluation/HEAD_TO_HEAD_BENCHMARK.md` and the eval code is in `scripts/run_eval.py`. It's reproducible.
 
 ---
 

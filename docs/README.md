@@ -1,20 +1,23 @@
 # ACR-QA Documentation Index
 
-> **As of v5.0.0b1 (May 20, 2026):** Phase A Weeks 1–5 of the [God Mode v3 Plan](GOD_MODE_V3_PLAN.md)
-> are shipped on `main`. Tests: **2,757** (2,653 Python + 104 TS). Migrations: **18**. Endpoints: **52**.
+> **As of v5.0.0rc1 (May 31, 2026):** All God-Mode v3 (T4.1–T4.9) and v4 (P1–P4 + X1–X5) tracks complete.
+> Tests: **2,757** (2,653 Python + 104 TS). Migrations: **18**. Endpoints: **52**.
 > Ground-truth YAMLs: **23** (CVE recall battery: 20 pre-registered).
+> Headline result: **P4 Confirmed Tier — 96.4% conservative precision** (95% CI [90.9%, 100%]),
+> 100% CVE recall, F1=98.2%. See [evaluation chapter](EVALUATION_CHAPTER.md).
 > Engines documented under [engines/](engines/).
 
 ## 🆕 v5.0.0 Engines + Eval Infrastructure
 
 | Document | Description |
 |----------|-------------|
-| [Active Plan — God Mode v3](GOD_MODE_V3_PLAN.md) | **Active plan.** 3 phases · 6 calendar weeks Phase A + 12 wk B + 24 wk C. Supersedes v2. |
+| [God Mode v4 Plan (completed)](GOD_MODE_V4_PLAN.md) | All P1–P4 + X1–X5 tracks complete (2026-05-31). Headline: P4 Confirmed Tier 96.4% / 100%. |
 | [IaC Scanner](engines/iac_scanner.md) | 28 canonical rules across Terraform / Kubernetes / Dockerfile · `POST /v1/scans/iac` · A.2 |
 | [Time-Travel Analyzer](engines/time_travel.md) | Bounded `git log -L` history for any finding · `GET /v1/findings/{fid}/history` · A.2 |
 | [Heuristic Risk Predictor](engines/risk_predictor.md) | 0–100 per-file score from 6 transparent features (NOT ML) · `GET /v1/runs/{rid}/risk-map` · A.3 |
-| [Head-to-Head Semgrep CE](evaluation/HEAD_TO_HEAD_SEMGREP.md) | **Pre-registered** methodology committed before results · A.4 |
-| [Benchmark v5](evaluation/BENCHMARK_v5.md) | Auto-generated: 23 ground-truth YAMLs · 46 expected findings · 10 pending verification · A.3/A.4 |
+| [Head-to-Head Benchmark (X5)](evaluation/HEAD_TO_HEAD_BENCHMARK.md) | 3-way: ACR-QA vs Bandit vs Semgrep — same corpus, same triage. |
+| [Confirmed Tier (P4)](evaluation/CONFIRMED_TIER.md) | 4-criterion stratum: 96.4% conservative / 100% optimistic / F1=98.2%. |
+| [Benchmark v5](evaluation/BENCHMARK_v5.md) | Auto-generated: 23 ground-truth YAMLs · 46 expected findings · A.3/A.4 |
 | [Thesis paper LaTeX](../paper/acrqa_thesis.tex) | IEEE template; sections 1–3 drafted; bib has 11 citations · A.4 |
 
 ## 📐 Architecture
@@ -56,8 +59,6 @@
 
 | Document | Description |
 |----------|-------------|
-| [**God Mode Plan v2 — §9 Testing Strategy**](GOD_MODE_PLAN.md#9-testing-strategy--read-this-before-writing-any-code) | **6-layer testing pyramid for a security tool. Why coverage % is a tripwire, not a target. The plan to move thesis claims from hand-typed to test-generated.** |
-| [Phase 0 Baseline — Reality Check](evaluation/PHASE_0_BASELINE.md) | **May 6, 2026.** Real numbers from running ACR-QA on DVPWA, Pygoat, VulPy, DSVW, Flask, httpx. DVPWA "50% recall" is a tooling limit not a bug; 35 CUSTOM-* rules leaking; parallel-scan DB collision bug. |
 | **`TESTS/evaluation/ground_truth/*.yml`** | Ground truth lives in YAML — auditable. Each entry declares `expected_findings`, `out_of_scope` reasons, `recall_target`. Runs nightly via `pytest -m slow`. |
 | [Testing & Calibration](TESTING_AND_CALIBRATION.md) | Full test suite breakdown, code audit bugs, mass repo testing across 9 repos, god-mode end-to-end validation (v2.9), all calibration fixes |
 
@@ -76,11 +77,10 @@
 
 | Document | Description |
 |----------|-------------|
-| [Presentation Script](PRESENTATION_SCRIPT.md) | 7-min presentation script, Q&A cheat sheet, demo commands (all in one) |
+| [Defense Q&A](DEFENSE_QA.md) | Full defense-day Q&A — precision tables, Confirmed Tier, head-to-head numbers, anti-tautology defense |
+| [Defense Deck](DEFENSE_DECK.tex) | 25-slide Beamer metropolis defense slide deck |
 | [Demo Video Script](DEMO_VIDEO_SCRIPT.md) | 5-minute structured demo video script with timestamps and voiceover narration |
-| [LaTeX Slides](acr_qa_presentation.tex) | Formal presentation slide source |
-| [Blog Post Draft](BLOG_POST_DRAFT.md) | 1500-word technical post — taint+autofix combo, competitive moats, engineering discipline |
-| [Phase 1 Extras](thesis/Phase1-extras.md) | Additional Phase 1 implementation details |
+| [LaTeX Slides (legacy)](acr_qa_presentation.tex) | Earlier presentation source |
 
 ## 🚨 SRE & Operations
 
@@ -104,17 +104,8 @@
 
 | Document | Description |
 |----------|-------------|
-| [**Master Schedule**](MASTER_SCHEDULE.md) | **⭐ The contract.** 5-week schedule across all plans (W1: risk-first eval → W5: distribution + demo video). Defense runway: 4+ weeks. Single source of truth for sequencing. ~55h total. |
-| [UI Phase 3 Plan](UI_PHASE_3_PLAN.md) | W3–W4 of master schedule. "One killer flow, zero fluff" — marketing landing + auth UX + killer finding-detail page + public demo mode + smart polish. Target: v4.6.0. |
-| [UI Testing Plan](UI_TESTING_PLAN.md) | W4. 5 unit + 5 E2E + 5 a11y tests + 20-item manual smoke checklist. ~3h. |
-| [Eval Bulletproofing Plan](EVAL_EXPANSION_PLAN.md) | W1–W4. Closes the "toy benchmarks" defense critique. **4 tiers:** Tier 0 — Integrity infrastructure (3h, audit script + reproduce target + charter); Tier 1 — CVE Recall Test (15h, 15–20 disclosed Python CVEs as external ground truth); Tier 2 — Peer Validation (3h, inter-rater κ on 20-finding Flask sample); Tier 3 — Corpus Expansion (8h, 4 repos: **govwa Go + Django + TS app + FastAPI**). ~29h total. |
-| [Evaluation Integrity Charter](evaluation/INTEGRITY.md) | Tier 0 deliverable. Pre-registration commitment, scoring rules, skipped-CVE log, adversarial review checklist. |
-| [Distribution Plan](DISTRIBUTION_PLAN.md) | W5. PyPI release (`pip install acrqa`, 4h) + GitHub Actions Marketplace listing (3h). Converts thesis project into shipped open-source tool. |
-| [Phase 12 Plan (archived)](archive/PHASE_12_PLAN.md) | Closed May 15 2026 — 37/39 done; only human tasks (demo video + YouTube) remain. |
-| [**God Mode Plan v2**](GOD_MODE_PLAN.md) | **v4.0.0 plan (May 5 2026 → May 15 2026).** Three competitive moats + blue-ocean wedge. Completed: 120/128 tasks. Superseded by Phase 12 Plan for next push. |
-| [Phase 0 Baseline](evaluation/PHASE_0_BASELINE.md) | Reality check on 6 real repos (May 6 2026); honest current numbers + bugs surfaced + Phase 1 fix log. |
-| [ROADMAP (archived)](archive/ROADMAP.md) | Pre-v2 plan. Phase 2 TS rewrite section is explicitly killed by the v2 plan; kept for historical context. |
-| [God Mode Plan v1 (archived)](archive/GOD_MODE_PLAN_V1.md) | Original plan — pre-FastAPI/Celery/Auth. Superseded by v2. |
+| [God Mode v4 Plan](GOD_MODE_V4_PLAN.md) | All P1–P4 + X1–X5 tracks complete (2026-05-31). Final empirical battery for the defense. |
+| [Evaluation Integrity Charter](evaluation/INTEGRITY.md) | Pre-registration commitment, scoring rules, skipped-CVE log, adversarial review checklist. |
 
 ## Static UI Dashboard (v5.0.0-beta)
 
