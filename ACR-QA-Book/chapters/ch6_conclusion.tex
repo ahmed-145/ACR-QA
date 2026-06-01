@@ -74,7 +74,7 @@ The current release of \ACRQA{} v5.0.0rc1 has the following acknowledged limitat
 
   \item \textbf{Language and artefact scope:} PHP, Java, Rust, and C/C++ codebases can be partially scanned via Semgrep's generic rules, but dedicated adapters do not yet exist. The system also requires source code; compiled binaries and packaged NPM/PyPI artefacts cannot be analysed directly.
 
-  \item \textbf{Ground truth annotation scope:} The primary evaluation used four intentionally vulnerable Python applications. Recall figures for the six extended JavaScript/TypeScript repositories are measured only at the category level; evaluation on larger real-world codebases with independent expert annotation is needed to strengthen generalisability.
+  \item \textbf{Ground truth annotation scope:} The two-corpus evaluation (Layer~A: 13 intentionally vulnerable repos; Layer~B: 30 production libraries confirming 96.4\% precision) covers both extremes, but neither layer measures \emph{recall} on production codebases with genuine undisclosed vulnerabilities. No external ground truth exists for real-world true negatives; independent expert annotation would close this gap.
 \end{enumerate}
 
 % -----------------------------------------------------------------

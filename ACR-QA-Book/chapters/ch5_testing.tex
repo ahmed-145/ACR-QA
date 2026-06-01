@@ -73,10 +73,10 @@ The slight reduction from the v3.2.4 figure of 87.03\% reflects seven new engine
 
 \subsection{Evaluation Corpus}
 
-\ACRQA{} was evaluated against thirteen intentionally vulnerable open-source repositories covering Python, JavaScript/TypeScript, and Go. The four core repositories (DVPWA, Pygoat, VulPy, DSVW) were used in the primary evaluation with full ground-truth annotation; six additional repositories were added in Phase~8 to validate cross-language detection capabilities. Table~\ref{tab:benchmark_repos} summarises all ten repositories.
+\ACRQA{} was evaluated against thirteen intentionally vulnerable open-source repositories (Layer~A: Python, JS/TS, Go) with full ground-truth annotation; a separate 30-repo adversarial production corpus (Layer~B, Section~\ref{sec:adversarial}) tests precision in the hardest realistic regime. The four core repositories (DVPWA, Pygoat, VulPy, DSVW) were annotated exhaustively; nine additional repositories validated cross-language detection. Table~\ref{tab:benchmark_repos} lists all thirteen Layer~A repositories.
 
 \begin{table}[H]
-\caption{Evaluation Benchmark Corpus --- Ten Repositories}
+\caption{Evaluation Benchmark Corpus --- Thirteen Repositories (Layer~A)}
 \label{tab:benchmark_repos}
 \centering
 \small
@@ -327,6 +327,6 @@ Pipeline timings on an 11-file ($\approx$800 LoC) Python repository: tool execut
 \section{Summary}
 \label{sec:ch5_summary}
 
-\ACRQA{} v5.0.0rc1 reports five precision strata on the 30-repo adversarial corpus (8.6\% raw $\to$ 26.9\% security-tier with taint gate $\to$ \textbf{96.4\% Confirmed Tier}, 95\% CI [90.9\%, 100\%]), with \textbf{100\% CVE recall (8/8)} preserved across all strata. Head-to-head: Bandit F\textsubscript{1}~21.8\%, Semgrep~45.7\%, \ACRQA{} Confirmed Tier \textbf{98.2\%}. Layer~A retains \textbf{97.1\%} overall precision and \textbf{100\%} security-class precision on 836 findings; \textbf{100\%} AI enrichment rate with PostgreSQL provenance (RQ1--RQ2); \textbf{9/10} OWASP Top~10 categories; 0\% reachability false-positive; 100\% taint recall on 22 fixtures; 500\,RPS at $<$2\,s p99; \textbf{2,757-test} suite at 84.89\% CORE coverage. Four novel evaluations (X1 live-CVE, X2 exploit verification, X3 AI-generated code, X4 time-travel backtest) round out the empirical contribution, answering RQ3--RQ4 and substantially exceeding any single open-source SAST baseline. Chapter~\ref{ch:conclusion} summarises contributions, limitations, and future directions.
+\ACRQA{} v5.0.0rc1 achieves \textbf{96.4\% Confirmed Tier precision} (95\% CI [90.9\%, 100\%]) on the 30-repo adversarial corpus with \textbf{100\% CVE recall (8/8)} across all strata; head-to-head: Bandit F\textsubscript{1}~21.8\%, Semgrep~45.7\%, \ACRQA{} \textbf{98.2\%}. Layer~A: \textbf{97.1\%} overall / \textbf{100\%} security-class precision on 836 findings; \textbf{100\%} AI enrichment; \textbf{9/10} OWASP categories; 0\% reachability FP; 500\,RPS at $<$2\,s p99; \textbf{2,757 tests} at 84.89\% CORE coverage. Four novel evaluations (X1--X4) answer RQ3--RQ4, exceeding any single open-source SAST baseline. Chapter~\ref{ch:conclusion} summarises contributions and future directions.
 
 \clearpage
