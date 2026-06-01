@@ -10,7 +10,7 @@
 
 ---
 
-## The 12 Items I'm Actually Doing
+## The 15 Items I'm Actually Doing
 
 | # | Item | Time | Status | Why this one |
 |---|------|------|--------|--------------|
@@ -26,8 +26,11 @@
 | 10 | **Cosign + SLSA L3 + Sigstore Rekor** | 2 days | 📋 | Senior DevOps story via copy-paste GitHub Action |
 | 11 | **Self-scan badge** on README | 1 hour | 📋 | Public dogfooding signal |
 | 12 | **Hacker News post + LinkedIn article + blog** | 1 day | 📋 | External validation that lasts a lifetime |
+| 13 | **Differential SAST** — new-only findings vs. last scan (§11.2) | 3–5 days | 📋 | `fingerprint NOT IN (prev_run)` query; instant CI value, easy to demo |
+| 14 | **Counterfactual explanations** — "what would fix this?" per finding (§11.4) | 3–5 days | 📋 | Free with an LLM prompt; makes AI enrichment feel frontier-level |
+| 15 | **Kubernetes operator with CRDs** — `ACRQAScan` custom resource (§4.8) | 2–3 weeks | 📋 | The DevOps showpiece; "runs natively in k8s" line on resume |
 
-**Total work:** ~5–6 weeks of focused effort
+**Total work:** ~8–9 weeks of focused effort
 **Total ongoing cost:** $0
 **Total setup cost:** $0 (no card required for any of the above)
 
@@ -37,15 +40,17 @@
 
 | Weeks | Focus | Why this order |
 |-------|-------|----------------|
-| **1** | #1 funnel slide + #11 self-scan badge + #10 Cosign/SLSA | Quick wins to build momentum. Start recruiting κ raters in parallel |
-| **2–3** | #2 GHCR Docker image + #3 demo video + #4 README polish | The "installable demo" story is now complete |
+| **1** | #1 funnel slide + #11 self-scan badge + #10 Cosign/SLSA | Quick wins. Start recruiting κ raters in parallel |
+| **2–3** | #2 GHCR Docker image + #3 demo video + #4 README polish | "Installable demo" story complete |
 | **4** | #5 Cloudflare Pages static dashboard | One URL to point at |
 | **5–6** | #7 GitHub webhook receiver | The backend showpiece |
-| **7** | #9 Multi-LLM jury (Groq + Gemini) | Quick frontier flex |
-| **8–9** | #8 VS Code extension | The IDE marketplace listing |
+| **6–7** | #13 Differential SAST | Natural follow-on to webhook; "only show NEW findings" |
+| **7** | #9 Multi-LLM jury + #14 Counterfactual explanations | Both are LLM prompt additions; ship together in one week |
+| **8–9** | #8 VS Code extension | IDE marketplace listing |
 | **10** | #6 5-rater κ analysis (raters submit by week 9) | Closes the eval gap |
 | **11+** | Defense + #12 HN/LinkedIn/blog the day after | External validation |
-| **12–25** | **Buffer.** Slack for life, finals, illness, and serendipity (CVE discovery, paper acceptance, HN front page) | Real life never goes to plan |
+| **12–14** | #15 Kubernetes operator with CRDs | DevOps showpiece; do after defense pressure is off |
+| **15–25** | **Buffer.** Finals, job hunting, illness, serendipity (CVE discovery, paper acceptance, HN front page) | Real life never goes to plan |
 
 ---
 
@@ -60,7 +65,6 @@ These are great items but wrong-level for fresh-grad scope. They live in [`GOD_M
 - §3.10 CQRS split
 
 ### Deferred — "platform / staff-engineer level DevOps"
-- §4.8 Kubernetes operator with CRDs
 - §4.9 OPA Gatekeeper integration
 - §4.10 Service mesh + Vault mTLS PKI
 - §4.13 PostgreSQL streaming replication + PITR
@@ -93,7 +97,8 @@ These are great items but wrong-level for fresh-grad scope. They live in [`GOD_M
 - §4.2 ArtifactHub/Terraform Registry publishing (do once #2 GHCR works)
 - §7.x Product/business docs (need real users first)
 - §8.x OSS community building (empty Discord is worse than no Discord)
-- §11.2–11.4 Differential SAST, active learning, counterfactual explanations
+- §11.3 Active learning (needs labelled dataset + model training pipeline — months of work)
+- §11.4 Counterfactual explanations → moved to active list (#14)
 - §12.2 JetBrains plugin (do after VS Code if I have time)
 - §12.3 Browser extension (do after VS Code if I have time)
 
@@ -101,7 +106,7 @@ These are great items but wrong-level for fresh-grad scope. They live in [`GOD_M
 
 ## Free Service Account Setup Checklist (Week 1)
 
-To execute the 12 items, I need accounts on these services. All free, all no-card-required unless noted:
+To execute the 15 items, I need accounts on these services. All free, all no-card-required unless noted:
 
 - [ ] **GitHub Container Registry** (`ghcr.io`) — uses existing GitHub account, free for public images
 - [ ] **YouTube** — free, uses Google account
@@ -128,12 +133,13 @@ The plan succeeds if, **by the end of week 11 (defense day)**:
 | Floor (passing) | Target | Stretch |
 |-----------------|--------|---------|
 | Defense graded A | Defense A+ | A+ with commendation |
-| All 12 items shipped at least once | All 12 + 3 from deferred list | All 12 + HN front page |
+| #1–#12 shipped | #1–#14 shipped | All 15 + HN front page |
 | Public GHCR image | + Cloudflare static demo URL | + VS Code Marketplace listing |
 | 5-rater κ ≥ 0.78 | κ ≥ 0.85 | κ ≥ 0.90 |
 | Demo video uploaded | + ≥ 100 views | + ≥ 1,000 views |
 | HN post submitted | + reached front page | + top 10 |
 | Resume updated with project | + 3 hiring conversations | + 1 written offer |
+| — | K8s operator (#15) live | K8s operator + published blog post |
 
 **Anything past defense day = bonus, not required.**
 
@@ -142,7 +148,7 @@ The plan succeeds if, **by the end of week 11 (defense day)**:
 ## Cadence
 
 - **Weekly check-in:** Sunday evening — mark items 📋 → 🚧 → ✅. Move blocked items to ❓ with one-line "why blocked."
-- **Mid-cycle review (week 6):** Re-read this doc. Is the 12-item list still right? Anything to add or drop?
+- **Mid-cycle review (week 6):** Re-read this doc. Is the 15-item list still right? Anything to add or drop?
 - **Post-defense retro:** what worked, what didn't, what to revisit from `GOD_MODE_V5_PLAN.md` in the coming year.
 
 ---
@@ -150,8 +156,8 @@ The plan succeeds if, **by the end of week 11 (defense day)**:
 ## Important Rules I'm Setting for Myself
 
 1. **No money out.** If something requires a card or threatens to bill me, I find a free alternative or skip it.
-2. **No "while I'm at it" scope creep.** Each of the 12 items has a defined "done" criterion. I ship and move on.
-3. **No item from "Deferred" without writing it down here first.** If something deferred starts looking tempting, I update this doc and move it into the active list, *and* move something out. The list of 12 active items stays at 12 or fewer.
+2. **No "while I'm at it" scope creep.** Each of the 15 items has a defined "done" criterion. I ship and move on.
+3. **No item from "Deferred" without writing it down here first.** If something deferred starts looking tempting, I update this doc and move it into the active list, *and* move something out. The list stays at 15 or fewer.
 4. **Defense day is a milestone, not a deadline.** If something slips, I have 14 weeks of buffer. I will not panic-ship anything for defense.
 5. **External validation comes after technical work.** No HN post until #2–#11 are at least partially shipped. No HN post on a half-built demo.
 
@@ -161,9 +167,9 @@ The plan succeeds if, **by the end of week 11 (defense day)**:
 
 - The thesis is already done. The numbers (96.4% / 100% / F1=98.2%) are real. This roadmap is about polish, validation, and adoption — not new features.
 - Do the single highest-leverage thing on this list today. Don't read more plans. Don't browse more options. Do #1, then #2, then #3.
-- The full ambition lives in [`GOD_MODE_V5_PLAN.md`](GOD_MODE_V5_PLAN.md). When this 12-item list is fully ✅ in 2027, come back, pick another lane, and repeat.
+- The full ambition lives in [`GOD_MODE_V5_PLAN.md`](GOD_MODE_V5_PLAN.md). When this 15-item list is fully ✅, come back, pick another lane, and repeat.
 
 ---
 
-*Active roadmap committed 2026-05-31. Updated weekly until all 12 items are ✅.*
+*Active roadmap updated 2026-06-01. Updated weekly until all 15 items are ✅.*
 *See [`GOD_MODE_V5_PLAN.md`](GOD_MODE_V5_PLAN.md) for the full strategic menu.*
