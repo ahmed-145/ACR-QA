@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-ACR-QA v4.6.0 - Main Analysis Pipeline
+ACR-QA v5.0.0rc1 - Main Analysis Pipeline
 Orchestrates: Detection → Normalization → Config Filtering → Quality Gate → Explanation → Storage
 """
 
@@ -101,7 +101,7 @@ class AnalysisPipeline:
         json_output=False,
     ):
         """Run full analysis pipeline."""
-        logger.info("🚀 ACR-QA v3.6.0 Analysis Pipeline")
+        logger.info("🚀 ACR-QA v5.0.0rc1 Analysis Pipeline")
         logger.info("=" * 50)
 
         # Step 0: Check rate limit
@@ -1208,7 +1208,7 @@ def get_diff_files(base_branch: str = "main") -> list:
 
 def main():
     parser = argparse.ArgumentParser(
-        description="ACR-QA v3.2.5 Analysis Pipeline",
+        description="ACR-QA v5.0.0rc1 Analysis Pipeline",
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""examples:
   python -m CORE --target-dir ./myproject
@@ -1249,7 +1249,7 @@ def main():
     parser.add_argument(
         "--version",
         action="version",
-        version="ACR-QA v3.2.5",
+        version="ACR-QA v5.0.0rc1",
         help="Show program's version number and exit.",
     )
     parser.add_argument(

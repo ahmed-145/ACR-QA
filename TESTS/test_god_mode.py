@@ -849,6 +849,32 @@ class TestVersionConsistency:
                 assert '"2.4' not in content, f"{script_name} has hardcoded '2.4'"
                 assert '"2.5' not in content, f"{script_name} has hardcoded '2.5'"
 
+    def test_all_version_sources_agree(self):
+        """pyproject.toml, CORE/__init__.py, and CORE/main.py --version must all match."""
+        import re
+        import subprocess
+        from pathlib import Path
+
+        repo = Path(__file__).parent.parent
+
+        # pyproject.toml
+        pyproject = (repo / "pyproject.toml").read_text()
+        pyproject_ver = re.search(r'^version\s*=\s*"([^"]+)"', pyproject, re.M).group(1)
+
+        # CORE/__init__.py
+        from CORE import __version__ as init_ver
+
+        # CORE/main.py --version
+        venv_python = repo / ".venv" / "bin" / "python"
+        python_exe = str(venv_python) if venv_python.exists() else sys.executable
+        result = subprocess.run([python_exe, "-m", "CORE", "--version"], capture_output=True, text=True, cwd=repo)
+        cli_ver_line = (result.stdout + result.stderr).strip()
+        # output is like "ACR-QA 5.0.0rc1"
+        cli_ver = cli_ver_line.split()[-1] if cli_ver_line else "UNKNOWN"
+
+        assert pyproject_ver == init_ver, f"pyproject.toml ({pyproject_ver}) ≠ CORE/__init__.py ({init_ver})"
+        assert init_ver in cli_ver_line, f"CORE/main.py --version printed '{cli_ver_line}', expected '{init_ver}'"
+
     def test_jwt_secret_uses_env_var(self):
         """FastAPI JWT secret should come from env var, not be hardcoded."""
         jwt_path = Path(__file__).parent.parent / "FRONTEND" / "auth" / "jwt_utils.py"
@@ -1615,7 +1641,7 @@ class TestExploitVerifierGodMode:
     def test_version_is_350(self):
         from CORE import __version__
 
-        assert __version__ == "5.0.0b1"
+        assert __version__ == "5.0.0rc1"
 
 
 class TestAttestationGodMode:
@@ -1698,7 +1724,7 @@ class TestAttestationGodMode:
     def test_version_is_360(self):
         from CORE import __version__
 
-        assert __version__ == "5.0.0b1"
+        assert __version__ == "5.0.0rc1"
 
 
 if __name__ == "__main__":

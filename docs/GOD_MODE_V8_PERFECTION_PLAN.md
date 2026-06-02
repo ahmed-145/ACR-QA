@@ -17,21 +17,79 @@
 
 ---
 
-## 0. Ground Truth — what the repo actually looks like today (verified 2026-06-02)
+## 0. THE 11/10 CUT — read this section if you read nothing else
 
-Before planning, I audited the live tree. The plan is built on these *facts*, not the docs' claims:
+> **Added 2026-06-03.** If §1–§6 below are the *menu* (20 perspectives, 6 tracks, ~35 items), this
+> section is the *order*. It exists because the rest of this plan is maximalist, and the project's own
+> diagnosed weakness is **sprawl** (perspectives #7, #15, #17 all flag it). Executing all 35 items at
+> 70% quality produces an 8/10 spread thin. **11/10 is the opposite discipline.**
+
+### What 11/10 actually means
+
+A 10/10 is "every box checked." **An 11/10 is "two or three things so good they're undeniable,
+wrapped in zero embarrassing gaps."** Nobody remembers the project with a green uptime badge. They
+remember the one that did something *no competitor can do* and proved it on *neutral ground*. So:
+
+> **11/10 = (a memorable, uncontestable capability) × (a number the skeptic can't dismiss) ÷ (zero
+> stupid gaps).** Maximize the numerator with depth; drive the denominator to zero with hygiene;
+> ignore everything that doesn't move either.
+
+### The 3 pillars (the entire numerator)
+
+| Pillar | The move | Why it's an **11**, not a 10 | The *exceptional* bar (what makes it memorable, not just "done") |
+|---|---|---|---|
+| **P1 — Verified Remediation** | Detect → exploit-fires → AI fix → **re-run the exact exploit** → confirm it now fails → sign `(vuln_proof, fix_diff, fix_proof)` to Rekor (Track C1–C2) | The entire industry retests fixes *statically* (Snyk "80% accuracy"). **Nobody re-runs the actual exploit.** This is the one sentence that makes a security researcher stop scrolling. | A live demo: exploit working on screen → AI patch applied → same exploit now failing → "verify this chain on Rekor" button resolves. End-to-end, one command, in the defense room. |
+| **P2 — OWASP Benchmark score** | Run OWASP Benchmark for Python; publish the official scorecard with MCC + CIs (Track A1, A2) | Every number so far is on *our* corpus (SecurityEval). OWASP is **neutral ground the field already cites.** It converts "they benchmarked themselves" into "they beat the standard." | Published `OWASP_BENCHMARK.md` with the official Youden-index scorecard, pre-registered methodology, and an honest line if any category loses. Reproducible in 2 commands. |
+| **P3 — The 91% recall, on the record, honestly** | Already shipped: 91.0% detectable-CWE recall, P-1 retracted, RECONCILIATION.md (Tracks done today) | A *win on detection* with a *public retraction of our own flawed benchmark* is the rarest thing in this space: a number that goes up **and** integrity that can't be impeached. | ✅ DONE. The 11-move remaining is to *say it out loud in defense*: "we found our own benchmark was wrong, fixed it, published both." |
+
+### The denominator — zero embarrassing gaps (hygiene, do first, cheap)
+
+These don't win anything; leaving them broken *loses* everything. An examiner who runs `--version` and
+sees `v3.2.5` on a "v5" thesis discounts every other claim.
+
+- **Version sync** (5 strings disagree; `--version` prints v3.2.5) → one source of truth + regression test.
+- **Docs all say one number** (✅ done today — synced to 91.0%).
+- **Green gate** (ruff + mypy + full pytest) on every commit (✅ holding).
+
+### What 11/10 is explicitly NOT (defer all of this to post-defense)
+
+The following are real and in §2 below, but they are **denominator-polish with diminishing returns** —
+each moves one perspective 8→10 and changes neither the grade nor the differentiation:
+
+> UptimeRobot/status page (G1) · VPAT-lite a11y (G3) · load-test refresh (G4) · Zenodo DOI (E3) ·
+> hosted live-scan demo (E2) · engine-consolidation refactor (R1–R3) · multi-language exploit (B2) ·
+> LLM-jury (B4).
+
+Pulling these forward is how you turn a focused 11 back into a sprawling 8. **Resist it.**
+
+### The sequence (and nothing else until each is at the exceptional bar)
+
+1. **Version sync** — hours. Removes the one gap that taxes every other claim.
+2. **OWASP Benchmark (P2)** — days. The neutral-ground number that silences the skeptic.
+3. **Verified Remediation (P1)** — ~1–2 weeks. The uncontestable moat; the demo that wins the room.
+4. **Rehearse the honesty narrative (P3)** — the reconciliation + retraction, memorized cold.
+
+When these four are done *to the exceptional bar above*, the project is an 11/10 — and not one minute
+was spent on a status badge. Everything in §1–§6 that isn't one of these is a post-defense backlog.
+
+---
+
+## 0.1 Ground Truth — what the repo actually looks like today (refreshed 2026-06-03)
+
+Audited the live tree. Plan is built on these *facts*, not the docs' claims:
 
 | Finding | State | Severity |
 |---|---|---|
-| **Version strings disagree 3 ways** | `pyproject.toml=5.0.0rc1`, `CORE/__init__.py=5.0.0b1`, `CORE/main.py="ACR-QA v3.2.5"` | 🔴 Credibility ding — `--version` prints v3.2.5 |
-| **Uncommitted WIP lifts recall 58.4% → 78.7%** | 7 new Semgrep rules (open-redirect, log-inj, LDAP-inj, ReDoS, reflective-XSS, JWT-bypass) in working tree; P-2 re-run to 70/89 but **not committed**; every doc still says 58.4% | 🟠 Best result is unpublished + inconsistent |
-| **Exploit verifier covers 4 categories** | `sql-injection`, `command-injection`, `ssti`, `path-traversal` only | 🟡 Track B1 wants ≥10 |
-| **OWASP Benchmark never run** | `scripts/run_owasp_benchmark.py` exists; corpus not cloned; zero results | 🟡 The single biggest rigor gap (Track A1) |
-| **Verified Remediation (Track C) absent** | No `fix_verified`, no re-exploit loop anywhere in `CORE/` | 🟡 The frontier feature, not started |
-| **Tests green** | 113/113 in audited subset pass with WIP applied | 🟢 |
+| **Version strings disagree 5 ways** | `pyproject=5.0.0rc1`, `CORE/__init__=5.0.0b1`, `main.py` has `v4.6.0`, `v3.6.0`, AND `v3.2.5`; `--version` prints **v3.2.5** | 🔴 The one remaining hygiene gap — fix first |
+| **Recall 91.0% — committed & published** | 23 taint/gap-closing Semgrep rules shipped (86 total); P-2 = 81/89 detectable; all docs synced | ✅ Was the 🟠 risk; now resolved (commits f13aab6, 74cae8c, 91c6b52) |
+| **P-1 retracted, RECONCILIATION.md published** | Honest methodology write-up; pre-registration committed before runs | ✅ The integrity 11-move, banked |
+| **Exploit verifier covers 4 categories** | `sql-injection`, `command-injection`, `ssti`, `path-traversal` | 🟡 Pillar P1 will extend the *fix-loop*, not necessarily the category count |
+| **OWASP Benchmark never run** | corpus not cloned; zero results | 🟡 **Pillar P2 — the single biggest rigor gap** |
+| **Verified Remediation absent** | no `fix_verified`, no re-exploit loop in `CORE/` | 🟡 **Pillar P1 — the frontier, not started** |
+| **Tests green** | 2,725 passing, mypy clean | 🟢 |
 
-**Implication:** three of the cheapest, highest-leverage 10-moves (version sync, publish the 78.7%
-number everywhere, run OWASP) are *sitting right here* and cost hours, not weeks.
+**Implication:** the denominator is one fix away from zero (version sync). The numerator is two builds
+(OWASP score + Verified Remediation). That is the whole 11/10 — three moves, not thirty-five.
 
 ---
 
@@ -80,20 +138,16 @@ number everywhere, run OWASP) are *sitting right here* and cost hours, not weeks
 
 Each item has a **Definition of Done (DoD)**. No item is "done" without its DoD met and tests green.
 
-### TRACK 0 — Credibility Fixes (do TODAY, hours not days) 🔴
+### TRACK 0 — Credibility Fixes (the denominator → zero embarrassing gaps) 🔴
 
-These are sitting in the working tree right now. Highest leverage per minute on the whole plan.
-
-- **0.1 — Version sync.** Make `pyproject.toml`, `CORE/__init__.py`, `CORE/main.py` all read the same
-  string. Pick `5.0.0rc1`. Add a test asserting all three match (prevents regression).
-  **DoD:** `python CORE/main.py --version` prints `5.0.0rc1`; `test_version_sync.py` passes.
-- **0.2 — Commit & publish the 78.7% recall.** The new Semgrep rules are real detection gains. Commit
-  them, re-run P-2 cleanly, then sweep **every** doc/badge/landing page that says 58.4% → 78.7%
-  (`RECONCILIATION.md`, `README.md`, `cloudflare-pages/*`, `GOD_MODE_V7`, `EVALUATION_CHAPTER.md`).
-  **DoD:** `grep -rn "58.4" docs/ README.md cloudflare-pages/` returns only historical/changelog
-  mentions; P-2 json regenerated; new rules have RULE_MAPPING + RULE_SEVERITY + tests (critical-rule #1).
-- **0.3 — Re-run pre-commit gate clean.** ruff format → ruff check → mypy CORE/ → full pytest.
-  **DoD:** 0 mypy errors, full suite green (target 2,760+ passing).
+- **0.1 — Version sync.** ⬅️ **ONLY ITEM LEFT — do first.** Make `pyproject.toml`, `CORE/__init__.py`,
+  and all of `CORE/main.py` (currently `v4.6.0`/`v3.6.0`/`v3.2.5`) read one string from a single source
+  (`CORE.__version__`). Add `test_version_sync.py` asserting they match.
+  **DoD:** `python CORE/main.py --version` prints `5.0.0rc1`; regression test passes.
+- **0.2 — Commit & publish the recall win.** ✅ **DONE (2026-06-03).** Not 78.7% — pushed to **91.0%**.
+  23 new Semgrep rules shipped (86 total), P-2 = 81/89 detectable, every doc synced, RULE_MAPPING +
+  RULE_SEVERITY + tests added. Commits f13aab6, 74cae8c, 91c6b52.
+- **0.3 — Green gate.** ✅ **HOLDING.** 2,725 passing, mypy clean, ruff clean on every commit.
 
 ### TRACK A — Benchmark Credibility → silences external examiner, researcher, statistician
 
