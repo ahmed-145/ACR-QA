@@ -1,0 +1,120 @@
+apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata:
+  name: acrqascans.acrqa.io
+  labels:
+    app.kubernetes.io/name: acrqa-operator
+    app.kubernetes.io/version: "0.1.0"
+spec:
+  group: acrqa.io
+  names:
+    kind: ACRQAScan
+    listKind: ACRQAScanList
+    plural: acrqascans
+    singular: acrqascan
+    shortNames: ["aqscan"]
+  scope: Namespaced
+  versions:
+    - name: v1alpha1
+      served: true
+      storage: true
+      schema:
+        openAPIV3Schema:
+          type: object
+          required: ["spec"]
+          properties:
+            spec:
+              type: object
+              required: ["repoUrl"]
+              properties:
+                repoUrl:
+                  type: string
+                  description: "Git repository URL to scan (HTTPS or SSH)"
+                  example: "https://github.com/org/my-service.git"
+                branch:
+                  type: string
+                  default: "main"
+                  description: "Branch to scan"
+                language:
+                  type: string
+                  enum: ["auto", "python", "javascript", "go"]
+                  default: "auto"
+                confirmedTierOnly:
+                  type: boolean
+                  default: false
+                  description: "Show only P4 Confirmed Tier findings (96.4% precision)"
+                noAI:
+                  type: boolean
+                  default: false
+                  description: "Skip AI enrichment (faster, no Groq key needed)"
+                schedule:
+                  type: string
+                  description: "Cron expression for recurring scans (e.g. '0 3 * * 1')"
+                notificationWebhook:
+                  type: string
+                  description: "Slack/Teams/generic webhook URL for scan completion"
+                qualityGate:
+                  type: object
+                  properties:
+                    maxCritical:
+                      type: integer
+                      default: 0
+                      description: "Max critical findings before scan fails"
+                    maxHigh:
+                      type: integer
+                      default: -1
+                      description: "Max high findings before scan fails (-1 = unlimited)"
+                    mode:
+                      type: string
+                      enum: ["block", "warn", "off"]
+                      default: "warn"
+            status:
+              type: object
+              properties:
+                phase:
+                  type: string
+                  enum: ["Pending", "Running", "Complete", "Failed"]
+                runId:
+                  type: integer
+                startedAt:
+                  type: string
+                  format: date-time
+                completedAt:
+                  type: string
+                  format: date-time
+                findings:
+                  type: object
+                  properties:
+                    total:
+                      type: integer
+                    critical:
+                      type: integer
+                    high:
+                      type: integer
+                    medium:
+                      type: integer
+                    confirmedTier:
+                      type: integer
+                gateResult:
+                  type: string
+                  enum: ["pass", "fail", "warn", ""]
+                message:
+                  type: string
+      additionalPrinterColumns:
+        - name: Repo
+          type: string
+          jsonPath: .spec.repoUrl
+        - name: Phase
+          type: string
+          jsonPath: .status.phase
+        - name: Findings
+          type: integer
+          jsonPath: .status.findings.total
+        - name: Gate
+          type: string
+          jsonPath: .status.gateResult
+        - name: Age
+          type: date
+          jsonPath: .metadata.creationTimestamp
+      subresources:
+        status: {}

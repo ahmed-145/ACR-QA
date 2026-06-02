@@ -1,0 +1,46 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: acrqa-operator
+  namespace: acrqa-system
+  labels:
+    app: acrqa-operator
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: acrqa-operator
+  template:
+    metadata:
+      labels:
+        app: acrqa-operator
+    spec:
+      serviceAccountName: acrqa-operator
+      containers:
+        - name: operator
+          image: ghcr.io/ahmed-145/acrqa:latest
+          command:
+            - kopf
+            - run
+            - --liveness=http://0.0.0.0:8080/healthz
+            - /app/deploy/operator/controllers/acrqascan_controller.py
+          env:
+            - name: GROQ_API_KEY_1
+              valueFrom:
+                secretKeyRef:
+                  name: acrqa-secrets
+                  key: groq-api-key
+                  optional: true
+          resources:
+            requests:
+              cpu: "100m"
+              memory: "256Mi"
+            limits:
+              cpu: "500m"
+              memory: "512Mi"
+          livenessProbe:
+            httpGet:
+              path: /healthz
+              port: 8080
+            initialDelaySeconds: 30
+            periodSeconds: 30

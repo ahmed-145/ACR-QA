@@ -1,0 +1,17 @@
+apiVersion: acrqa.io/v1alpha1
+kind: ACRQAScan
+metadata:
+  name: my-service-scan
+  namespace: default
+spec:
+  repoUrl: "https://github.com/my-org/my-service.git"
+  branch: main
+  language: python
+  confirmedTierOnly: false   # set true for zero-noise P4-only mode
+  noAI: false
+  schedule: "0 3 * * 1"      # every Monday 03:00 UTC; omit for one-shot
+  qualityGate:
+    maxCritical: 0
+    maxHigh: 5
+    mode: warn               # block | warn | off
+  notificationWebhook: ""    # optional: Slack/Teams/generic webhook URL
