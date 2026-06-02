@@ -63,41 +63,49 @@ RESET = "\033[0m"
 # ---------------------------------------------------------------------------
 
 DJANGO_CVES: list[tuple[str, str, list[str]]] = [
-    ("CVE-2019-6975",   "2019-02-11", ["django/utils/numberformat.py"]),
-    ("CVE-2019-12308",  "2019-06-03", ["django/contrib/admin/options.py"]),
-    ("CVE-2019-14232",  "2019-08-01", ["django/utils/text.py"]),
-    ("CVE-2019-14233",  "2019-08-01", ["django/utils/html.py"]),
-    ("CVE-2019-14234",  "2019-08-01", ["django/db/models/sql/query.py"]),
-    ("CVE-2019-14235",  "2019-08-01", ["django/utils/encoding.py"]),
-    ("CVE-2019-19844",  "2019-12-18", ["django/contrib/auth/forms.py"]),
-    ("CVE-2020-7471",   "2020-02-03", ["django/contrib/postgres/aggregates/mixins.py"]),
-    ("CVE-2020-9402",   "2020-03-04", ["django/contrib/gis/db/models/sql/conversion.py"]),
-    ("CVE-2020-13254",  "2020-06-03", ["django/core/cache/backends/memcached.py"]),
-    ("CVE-2020-13596",  "2020-06-03", ["django/contrib/admin/options.py"]),
-    ("CVE-2021-3281",   "2021-02-01", ["django/utils/archive.py"]),
-    ("CVE-2021-28658",  "2021-04-06", ["django/core/files/uploadhandler.py"]),
-    ("CVE-2021-31542",  "2021-05-06", [
-        "django/core/files/storage.py",
-        "django/http/multipartparser.py",
-    ]),
-    ("CVE-2021-33203",  "2021-06-02", ["django/contrib/admindocs/views.py"]),
-    ("CVE-2021-33571",  "2021-06-02", ["django/core/validators.py"]),
-    ("CVE-2021-35042",  "2021-07-01", ["django/db/models/sql/compiler.py"]),
-    ("CVE-2022-22818",  "2022-02-01", ["django/template/defaulttags.py"]),
-    ("CVE-2022-23833",  "2022-02-01", ["django/utils/http.py"]),
-    ("CVE-2022-28346",  "2022-04-11", ["django/db/models/sql/compiler.py"]),
-    ("CVE-2022-28347",  "2022-04-11", ["django/db/models/sql/compiler.py"]),
-    ("CVE-2022-34265",  "2022-07-04", ["django/db/models/functions/datetime.py"]),
-    ("CVE-2022-36359",  "2022-08-03", ["django/views/static.py"]),
-    ("CVE-2022-41323",  "2022-10-04", ["django/utils/translation/__init__.py"]),
-    ("CVE-2023-23969",  "2023-02-01", ["django/http/multipartparser.py"]),
-    ("CVE-2023-24580",  "2023-02-01", ["django/http/multipartparser.py"]),
-    ("CVE-2023-31047",  "2023-05-03", ["django/core/validators.py"]),
-    ("CVE-2023-36053",  "2023-07-03", ["django/utils/regex_helper.py"]),
-    ("CVE-2023-41164",  "2023-09-04", ["django/utils/encoding.py"]),
-    ("CVE-2023-43665",  "2023-10-04", [
-        "django/contrib/admin/templatetags/admin_list.py",
-    ]),
+    ("CVE-2019-6975", "2019-02-11", ["django/utils/numberformat.py"]),
+    ("CVE-2019-12308", "2019-06-03", ["django/contrib/admin/options.py"]),
+    ("CVE-2019-14232", "2019-08-01", ["django/utils/text.py"]),
+    ("CVE-2019-14233", "2019-08-01", ["django/utils/html.py"]),
+    ("CVE-2019-14234", "2019-08-01", ["django/db/models/sql/query.py"]),
+    ("CVE-2019-14235", "2019-08-01", ["django/utils/encoding.py"]),
+    ("CVE-2019-19844", "2019-12-18", ["django/contrib/auth/forms.py"]),
+    ("CVE-2020-7471", "2020-02-03", ["django/contrib/postgres/aggregates/mixins.py"]),
+    ("CVE-2020-9402", "2020-03-04", ["django/contrib/gis/db/models/sql/conversion.py"]),
+    ("CVE-2020-13254", "2020-06-03", ["django/core/cache/backends/memcached.py"]),
+    ("CVE-2020-13596", "2020-06-03", ["django/contrib/admin/options.py"]),
+    ("CVE-2021-3281", "2021-02-01", ["django/utils/archive.py"]),
+    ("CVE-2021-28658", "2021-04-06", ["django/core/files/uploadhandler.py"]),
+    (
+        "CVE-2021-31542",
+        "2021-05-06",
+        [
+            "django/core/files/storage.py",
+            "django/http/multipartparser.py",
+        ],
+    ),
+    ("CVE-2021-33203", "2021-06-02", ["django/contrib/admindocs/views.py"]),
+    ("CVE-2021-33571", "2021-06-02", ["django/core/validators.py"]),
+    ("CVE-2021-35042", "2021-07-01", ["django/db/models/sql/compiler.py"]),
+    ("CVE-2022-22818", "2022-02-01", ["django/template/defaulttags.py"]),
+    ("CVE-2022-23833", "2022-02-01", ["django/utils/http.py"]),
+    ("CVE-2022-28346", "2022-04-11", ["django/db/models/sql/compiler.py"]),
+    ("CVE-2022-28347", "2022-04-11", ["django/db/models/sql/compiler.py"]),
+    ("CVE-2022-34265", "2022-07-04", ["django/db/models/functions/datetime.py"]),
+    ("CVE-2022-36359", "2022-08-03", ["django/views/static.py"]),
+    ("CVE-2022-41323", "2022-10-04", ["django/utils/translation/__init__.py"]),
+    ("CVE-2023-23969", "2023-02-01", ["django/http/multipartparser.py"]),
+    ("CVE-2023-24580", "2023-02-01", ["django/http/multipartparser.py"]),
+    ("CVE-2023-31047", "2023-05-03", ["django/core/validators.py"]),
+    ("CVE-2023-36053", "2023-07-03", ["django/utils/regex_helper.py"]),
+    ("CVE-2023-41164", "2023-09-04", ["django/utils/encoding.py"]),
+    (
+        "CVE-2023-43665",
+        "2023-10-04",
+        [
+            "django/contrib/admin/templatetags/admin_list.py",
+        ],
+    ),
 ]
 
 # Directories to scan (security-relevant; keeps scan fast)
@@ -117,15 +125,15 @@ SCAN_DIRS = [
 # ---------------------------------------------------------------------------
 
 CHECKPOINTS: list[dict[str, str]] = [
-    {"tag": "2.2",    "release_date": "2019-04-01"},  # LTS
-    {"tag": "3.0",    "release_date": "2019-12-02"},
-    {"tag": "3.1",    "release_date": "2020-08-04"},
-    {"tag": "3.2",    "release_date": "2021-04-06"},  # LTS
-    {"tag": "4.0",    "release_date": "2021-12-07"},
-    {"tag": "4.1",    "release_date": "2022-08-03"},
-    {"tag": "4.2",    "release_date": "2023-04-03"},  # LTS
-    {"tag": "3.0.4",  "release_date": "2020-03-04"},
-    {"tag": "3.1.5",  "release_date": "2021-01-05"},
+    {"tag": "2.2", "release_date": "2019-04-01"},  # LTS
+    {"tag": "3.0", "release_date": "2019-12-02"},
+    {"tag": "3.1", "release_date": "2020-08-04"},
+    {"tag": "3.2", "release_date": "2021-04-06"},  # LTS
+    {"tag": "4.0", "release_date": "2021-12-07"},
+    {"tag": "4.1", "release_date": "2022-08-03"},
+    {"tag": "4.2", "release_date": "2023-04-03"},  # LTS
+    {"tag": "3.0.4", "release_date": "2020-03-04"},
+    {"tag": "3.1.5", "release_date": "2021-01-05"},
     {"tag": "3.2.10", "release_date": "2021-12-01"},
 ]
 
@@ -138,7 +146,9 @@ CHECKPOINTS: list[dict[str, str]] = [
 def git(repo: Path, *args, timeout: int = 30) -> str:
     r = subprocess.run(
         ["git", "-C", str(repo), *args],
-        capture_output=True, text=True, timeout=timeout,
+        capture_output=True,
+        text=True,
+        timeout=timeout,
     )
     return r.stdout.strip() if r.returncode == 0 else ""
 
@@ -146,7 +156,9 @@ def git(repo: Path, *args, timeout: int = 30) -> str:
 def checkout_tag(repo: Path, tag: str) -> bool:
     r = subprocess.run(
         ["git", "-C", str(repo), "checkout", tag, "--force"],
-        capture_output=True, text=True, timeout=60,
+        capture_output=True,
+        text=True,
+        timeout=60,
     )
     return r.returncode == 0
 
@@ -154,22 +166,19 @@ def checkout_tag(repo: Path, tag: str) -> bool:
 def git_churn_at(repo: Path, rel_path: str, ref_date: str) -> int:
     """Commits touching rel_path in the 90 days before ref_date."""
     since = (datetime.fromisoformat(ref_date) - timedelta(days=90)).strftime("%Y-%m-%d")
-    out = git(repo, "log", f"--since={since}", f"--until={ref_date}",
-              "--oneline", "--", rel_path)
+    out = git(repo, "log", f"--since={since}", f"--until={ref_date}", "--oneline", "--", rel_path)
     return len([l for l in out.splitlines() if l.strip()])
 
 
 def git_authors_at(repo: Path, rel_path: str, ref_date: str) -> int:
     """Distinct authors committing to rel_path up to ref_date."""
-    out = git(repo, "log", f"--until={ref_date}", "--max-count=500",
-              "--format=%an", "--", rel_path)
+    out = git(repo, "log", f"--until={ref_date}", "--max-count=500", "--format=%an", "--", rel_path)
     return len({l.strip() for l in out.splitlines() if l.strip()})
 
 
 def git_age_at(repo: Path, rel_path: str, ref_date: str) -> int:
     """Days since first commit touching rel_path, measured at ref_date."""
-    out = git(repo, "log", "--reverse", f"--until={ref_date}",
-              "--format=%ct", "--max-count=1", "--", rel_path)
+    out = git(repo, "log", "--reverse", f"--until={ref_date}", "--format=%ct", "--max-count=1", "--", rel_path)
     if not out.strip():
         return 0
     try:
@@ -194,7 +203,9 @@ def run_bandit(repo: Path, scan_dirs: list[str]) -> list[dict]:
         out_path = Path(f.name)
     subprocess.run(
         [sys.executable, "-m", "bandit", "-r", *targets, "-f", "json", "-o", str(out_path)],
-        capture_output=True, text=True, timeout=120,
+        capture_output=True,
+        text=True,
+        timeout=120,
     )
     try:
         with out_path.open() as f:
@@ -227,7 +238,11 @@ def score_files_at(
     high_by_file: dict[str, int] = {}
     for f in findings:
         if f.get("issue_severity", "").upper() == "HIGH":
-            rel = Path(f.get("filename", "")).relative_to(repo) if Path(f.get("filename", "")).is_absolute() else Path(f.get("filename", ""))
+            rel = (
+                Path(f.get("filename", "")).relative_to(repo)
+                if Path(f.get("filename", "")).is_absolute()
+                else Path(f.get("filename", ""))
+            )
             high_by_file[str(rel)] = high_by_file.get(str(rel), 0) + 1
 
     # Enumerate Python files in scope
@@ -252,18 +267,20 @@ def score_files_at(
 
         # Test file detection
         stem = src.stem
-        has_test = any(
-            next(repo.rglob(f"test_{stem}.py"), None),
-            next(repo.rglob(f"{stem}_test.py"), None),
-        ) if False else bool(
-            next(repo.rglob(f"test_{stem}.py"), None) or
-            next(repo.rglob(f"{stem}_test.py"), None)
+        has_test = (
+            any(
+                next(repo.rglob(f"test_{stem}.py"), None),
+                next(repo.rglob(f"{stem}_test.py"), None),
+            )
+            if False
+            else bool(next(repo.rglob(f"test_{stem}.py"), None) or next(repo.rglob(f"{stem}_test.py"), None))
         )
 
         # Complexity (radon)
         complexity = 0.0
         try:
             from radon.complexity import cc_visit  # type: ignore[import]
+
             src_text = src.read_text(errors="replace")
             complexity = float(sum(r.complexity for r in cc_visit(src_text)))
         except Exception:
@@ -332,10 +349,10 @@ def fisher_exact_test(
     """
     from scipy.stats import fisher_exact  # type: ignore[import]
 
-    a = len(predicted_top_n & cve_files)       # predicted + CVE
-    b = len(cve_files) - a                      # missed CVEs
-    c = top_n - a                               # predicted + not CVE (FP)
-    d = total_files - top_n - b                 # not predicted + not CVE
+    a = len(predicted_top_n & cve_files)  # predicted + CVE
+    b = len(cve_files) - a  # missed CVEs
+    c = top_n - a  # predicted + not CVE (FP)
+    d = total_files - top_n - b  # not predicted + not CVE
 
     # Clamp d to >= 0 (can go negative if total_files < top_n + b)
     d = max(0, d)
@@ -429,10 +446,7 @@ def run_checkpoint(
         print(f"    {DIM}{cve_id}{RESET}")
 
     # Filter CVE files to those in scope
-    scoped_cve_files = {
-        f for f in cve_file_set
-        if any(f.startswith(d) for d in SCAN_DIRS)
-    }
+    scoped_cve_files = {f for f in cve_file_set if any(f.startswith(d) for d in SCAN_DIRS)}
 
     print(f"  CVE-affected files in scope: {len(scoped_cve_files)}")
     overlap = predicted & scoped_cve_files
@@ -443,25 +457,32 @@ def run_checkpoint(
 
     # Statistical test
     stats = fisher_exact_test(predicted, scoped_cve_files, total_files, TOP_N)
-    sig = f"{GREEN}p={stats['p_value']:.4f} (< 0.05){RESET}" if stats["significant_005"] else \
-          f"{YELLOW}p={stats['p_value']:.4f}{RESET}"
-    print(f"  Fisher's exact: {sig}, OR={stats['odds_ratio']:.2f}, "
-          f"P@{TOP_N}={stats['precision_at_n']:.3f}, R@CVE={stats['recall_at_cve']:.3f}")
+    sig = (
+        f"{GREEN}p={stats['p_value']:.4f} (< 0.05){RESET}"
+        if stats["significant_005"]
+        else f"{YELLOW}p={stats['p_value']:.4f}{RESET}"
+    )
+    print(
+        f"  Fisher's exact: {sig}, OR={stats['odds_ratio']:.2f}, "
+        f"P@{TOP_N}={stats['precision_at_n']:.3f}, R@CVE={stats['recall_at_cve']:.3f}"
+    )
 
-    result.update({
-        "total_files_scored": total_files,
-        "bandit_findings": len(bandit_raw),
-        "high_findings": high_count,
-        "cve_count_in_window": len(cves),
-        "cve_ids_in_window": [c for c, _ in cves],
-        "cve_files_in_scope": sorted(scoped_cve_files),
-        "top_n": TOP_N,
-        "predicted_top_n": sorted(predicted),
-        "overlap_files": sorted(overlap),
-        "overlap_count": len(overlap),
-        "stats": stats,
-        "top_scores": [{"file": s["file_path"], "score": s["score"]} for s in top_scores],
-    })
+    result.update(
+        {
+            "total_files_scored": total_files,
+            "bandit_findings": len(bandit_raw),
+            "high_findings": high_count,
+            "cve_count_in_window": len(cves),
+            "cve_ids_in_window": [c for c, _ in cves],
+            "cve_files_in_scope": sorted(scoped_cve_files),
+            "top_n": TOP_N,
+            "predicted_top_n": sorted(predicted),
+            "overlap_files": sorted(overlap),
+            "overlap_count": len(overlap),
+            "stats": stats,
+            "top_scores": [{"file": s["file_path"], "score": s["score"]} for s in top_scores],
+        }
+    )
     return result
 
 
@@ -697,7 +718,8 @@ def clone_django(clone_dir: Path) -> bool:
         try:
             subprocess.run(
                 ["git", "-C", str(clone_dir), "fetch", "--tags", "--quiet"],
-                capture_output=True, timeout=30,
+                capture_output=True,
+                timeout=30,
             )
         except subprocess.TimeoutExpired:
             print(f"{DIM}Tag fetch timed out — using existing tags{RESET}")
@@ -705,9 +727,10 @@ def clone_django(clone_dir: Path) -> bool:
     print(f"Cloning Django into {clone_dir} ...", end="", flush=True)
     clone_dir.parent.mkdir(parents=True, exist_ok=True)
     r = subprocess.run(
-        ["git", "clone", "--quiet",
-         "https://github.com/django/django.git", str(clone_dir)],
-        capture_output=True, text=True, timeout=300,
+        ["git", "clone", "--quiet", "https://github.com/django/django.git", str(clone_dir)],
+        capture_output=True,
+        text=True,
+        timeout=300,
     )
     if r.returncode == 0:
         print(f" {GREEN}ok{RESET}")

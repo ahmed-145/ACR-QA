@@ -35,13 +35,34 @@ SUMMARY_FILE = ROOT / "TESTS/evaluation/results/precision_summary.json"
 AI_VERDICTS_FILE = ROOT / "TESTS/evaluation/results/ai_triage_verdicts.json"
 
 SECURITY_CATEGORY_RULES = {
-    "SECURITY-001", "SECURITY-002", "SECURITY-003", "SECURITY-004", "SECURITY-005",
-    "SECURITY-006", "SECURITY-007", "SECURITY-008", "SECURITY-009", "SECURITY-010",
-    "SECURITY-021", "SECURITY-022", "SECURITY-023", "SECURITY-024", "SECURITY-025",
-    "SECURITY-026", "SECURITY-046",
-    "SECRET-001", "SECRET-002", "SECRET-003",
-    "SQLI-001", "SQLI-002", "SHELL-001", "SHELL-002",
-    "XML-001", "YAML-001", "CRYPTO-001", "CRYPTO-002",
+    "SECURITY-001",
+    "SECURITY-002",
+    "SECURITY-003",
+    "SECURITY-004",
+    "SECURITY-005",
+    "SECURITY-006",
+    "SECURITY-007",
+    "SECURITY-008",
+    "SECURITY-009",
+    "SECURITY-010",
+    "SECURITY-021",
+    "SECURITY-022",
+    "SECURITY-023",
+    "SECURITY-024",
+    "SECURITY-025",
+    "SECURITY-026",
+    "SECURITY-046",
+    "SECRET-001",
+    "SECRET-002",
+    "SECRET-003",
+    "SQLI-001",
+    "SQLI-002",
+    "SHELL-001",
+    "SHELL-002",
+    "XML-001",
+    "YAML-001",
+    "CRYPTO-001",
+    "CRYPTO-002",
 }
 
 _VERDICT_RE = re.compile(r"\b(TP|FP|NEEDS_REVIEW)\b", re.IGNORECASE)
@@ -106,10 +127,9 @@ def _groq_call(prompt: str, api_key: str, model: str = "llama-3.3-70b-versatile"
 def _parse_verdict(text: str) -> tuple[str, str]:
     m = _VERDICT_RE.search(text)
     verdict = m.group(1).upper() if m else "NEEDS_REVIEW"
-    reason = " ".join(
-        ln.strip() for ln in text.splitlines()
-        if ln.strip() and not _VERDICT_RE.fullmatch(ln.strip())
-    )[:200]
+    reason = " ".join(ln.strip() for ln in text.splitlines() if ln.strip() and not _VERDICT_RE.fullmatch(ln.strip()))[
+        :200
+    ]
     return verdict, reason
 
 
@@ -139,10 +159,9 @@ def run_ai_triage() -> None:
 
     # Select security-tier HIGH NEEDS_REVIEW findings
     candidates = [
-        t for t in triage
-        if t["triage"]["verdict"] == "NEEDS_REVIEW"
-        and t["severity"] == "high"
-        and t["rule"] in SECURITY_CATEGORY_RULES
+        t
+        for t in triage
+        if t["triage"]["verdict"] == "NEEDS_REVIEW" and t["severity"] == "high" and t["rule"] in SECURITY_CATEGORY_RULES
     ]
     print(f"AI triage targets: {len(candidates)} security-tier HIGH NEEDS_REVIEW findings")
 
@@ -161,8 +180,7 @@ def run_ai_triage() -> None:
 
         snippet = _get_snippet(repo, file_path, line)
 
-        fmt = dict(rule=rule, file=file_path.split("/")[-1], line=line,
-                   message=message[:300], snippet=snippet)
+        fmt = dict(rule=rule, file=file_path.split("/")[-1], line=line, message=message[:300], snippet=snippet)
 
         try:
             raw_a = _groq_call(PROMPT_A.format(**fmt), api_key)
@@ -176,11 +194,18 @@ def run_ai_triage() -> None:
 
         except Exception as e:
             print(f"  [error] {e} — keeping NEEDS_REVIEW")
-            results.append({
-                "rule": rule, "repo": repo, "file": file_path, "line": line,
-                "v_a": "ERROR", "v_b": "ERROR", "final": "NEEDS_REVIEW",
-                "reason": str(e),
-            })
+            results.append(
+                {
+                    "rule": rule,
+                    "repo": repo,
+                    "file": file_path,
+                    "line": line,
+                    "v_a": "ERROR",
+                    "v_b": "ERROR",
+                    "final": "NEEDS_REVIEW",
+                    "reason": str(e),
+                }
+            )
             continue
 
         # Consensus rule: both must agree to reclassify
@@ -198,17 +223,30 @@ def run_ai_triage() -> None:
 
         print(f"  → {final}")
 
-        results.append({
-            "rule": rule, "repo": repo, "file": file_path, "line": line,
-            "v_a": v_a, "r_a": r_a, "v_b": v_b, "r_b": r_b,
-            "final": final, "reason": reason,
-        })
+        results.append(
+            {
+                "rule": rule,
+                "repo": repo,
+                "file": file_path,
+                "line": line,
+                "v_a": v_a,
+                "r_a": r_a,
+                "v_b": v_b,
+                "r_b": r_b,
+                "final": final,
+                "reason": reason,
+            }
+        )
 
         # Update triage in place
         for t in triage:
-            if (t["repo"] == repo and t["file"] == file_path
-                    and t.get("line", 0) == line and t["rule"] == rule
-                    and t["triage"]["verdict"] == "NEEDS_REVIEW"):
+            if (
+                t["repo"] == repo
+                and t["file"] == file_path
+                and t.get("line", 0) == line
+                and t["rule"] == rule
+                and t["triage"]["verdict"] == "NEEDS_REVIEW"
+            ):
                 if final != "NEEDS_REVIEW":
                     t["triage"] = {"verdict": final, "reason": reason}
                 break
@@ -216,15 +254,20 @@ def run_ai_triage() -> None:
         time.sleep(0.8)
 
     # Write AI verdicts log
-    AI_VERDICTS_FILE.write_text(json.dumps({
-        "generated": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
-        "method": "Two independent Groq llama-3.3-70b calls; reclassify only on unanimous agreement",
-        "n_candidates": len(candidates),
-        "promoted_to_auto_tp": promoted_tp,
-        "promoted_to_auto_fp": promoted_fp,
-        "kept_needs_review": len(candidates) - promoted_tp - promoted_fp,
-        "verdicts": results,
-    }, indent=2))
+    AI_VERDICTS_FILE.write_text(
+        json.dumps(
+            {
+                "generated": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
+                "method": "Two independent Groq llama-3.3-70b calls; reclassify only on unanimous agreement",
+                "n_candidates": len(candidates),
+                "promoted_to_auto_tp": promoted_tp,
+                "promoted_to_auto_fp": promoted_fp,
+                "kept_needs_review": len(candidates) - promoted_tp - promoted_fp,
+                "verdicts": results,
+            },
+            indent=2,
+        )
+    )
     print(f"\n[✓] AI verdicts → {AI_VERDICTS_FILE}")
 
     # Write updated triage
@@ -234,16 +277,18 @@ def run_ai_triage() -> None:
     # Recompute precision
     _recompute_precision(triage, promoted_tp, promoted_fp)
 
-    print(f"\nSummary: {promoted_tp} → AUTO_TP | {promoted_fp} → AUTO_FP | "
-          f"{len(candidates) - promoted_tp - promoted_fp} kept NR")
+    print(
+        f"\nSummary: {promoted_tp} → AUTO_TP | {promoted_fp} → AUTO_FP | "
+        f"{len(candidates) - promoted_tp - promoted_fp} kept NR"
+    )
 
 
 def _recompute_precision(triage: list[dict], promoted_tp: int, promoted_fp: int) -> None:
     # Pull updated numbers from the triage (levers 1+2+3 applied)
     sec_rules = SECURITY_CATEGORY_RULES
-    sec_high = [t for t in triage
-                if t["severity"] == "high" and t["rule"] in sec_rules
-                and t["triage"]["verdict"] != "SKIP"]
+    sec_high = [
+        t for t in triage if t["severity"] == "high" and t["rule"] in sec_rules and t["triage"]["verdict"] != "SKIP"
+    ]
     tp = sum(1 for t in sec_high if t["triage"]["verdict"] == "AUTO_TP")
     fp = sum(1 for t in sec_high if t["triage"]["verdict"] == "AUTO_FP")
     nr = sum(1 for t in sec_high if t["triage"]["verdict"] == "NEEDS_REVIEW")
@@ -268,8 +313,7 @@ def _recompute_precision(triage: list[dict], promoted_tp: int, promoted_fp: int)
     summary["security_tier_optimistic"]["needs_review"] = nr
     summary["security_tier_denominator"] = total
     summary["note"] = (
-        summary.get("note", "") +
-        f" T4 Precision Enhancement (2026-05-30): L1 heuristics (SECURITY-005 regex tokens, "
+        summary.get("note", "") + f" T4 Precision Enhancement (2026-05-30): L1 heuristics (SECURITY-005 regex tokens, "
         f"SECURITY-046 literal-URL/ALL_CAPS, extended subprocess paths), L2 corroboration, "
         f"L3 AI triage (2 Groq calls, unanimous consensus). {promoted_tp} NR→TP, {promoted_fp} NR→FP."
     )

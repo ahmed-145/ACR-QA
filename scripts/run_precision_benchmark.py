@@ -529,10 +529,9 @@ def compute_security_tier_precision(triaged: list[dict], mode: str = "conservati
         return (t.get("rule") or _rule(t)).upper()
 
     security_high = [
-        t for t in triaged
-        if _sev(t) == "high"
-        and _t_rule(t) in SECURITY_CATEGORY_RULES
-        and t.get("triage", {}).get("verdict") != "SKIP"
+        t
+        for t in triaged
+        if _sev(t) == "high" and _t_rule(t) in SECURITY_CATEGORY_RULES and t.get("triage", {}).get("verdict") != "SKIP"
     ]
     verdicts = [conservative_verdict(t) if mode == "conservative" else optimistic_verdict(t) for t in security_high]
     tp = sum(1 for v in verdicts if v == "AUTO_TP")

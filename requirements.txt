@@ -4,15 +4,15 @@ groq==1.2.0
 python-dotenv==1.2.2
 PyYAML==6.0.1
 pydantic==2.12.5
-pydantic-settings==2.3.4
+pydantic-settings==2.14.1
 redis==5.2.1
 httpx==0.28.1
 
 # Observability
 sentry-sdk[fastapi]==2.22.0
-opentelemetry-sdk==1.27.0
+opentelemetry-sdk==1.37.0
 opentelemetry-instrumentation-fastapi==0.48b0
-opentelemetry-exporter-otlp-proto-grpc==1.27.0
+opentelemetry-exporter-otlp-proto-grpc==1.37.0
 
 # Async API (FastAPI)
 fastapi==0.115.0
