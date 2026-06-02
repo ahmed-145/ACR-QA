@@ -136,10 +136,9 @@ class TestDifferentialSAST:
             for i, fp in enumerate(fingerprints)
         ]
 
-    def test_new_findings_identified_by_fingerprint(self):
+    @pytest.mark.asyncio
+    async def test_new_findings_identified_by_fingerprint(self):
         """Findings in current run not in baseline are returned as new."""
-        import asyncio
-
         from FRONTEND.api.routers.runs import get_diff
 
         current = self._make_findings(["fp-a", "fp-b", "fp-c"])
@@ -147,22 +146,19 @@ class TestDifferentialSAST:
 
         db = MagicMock()
         db.get_run_by_id.side_effect = [
-            {"id": 2, "repo_name": "my-repo"},  # current run
-            {"id": 1, "repo_name": "my-repo"},  # baseline run
+            {"id": 2, "repo_name": "my-repo"},
+            {"id": 1, "repo_name": "my-repo"},
         ]
         db.get_findings_with_explanations.side_effect = [current, baseline]
 
-        user = {"id": 1}
-
-        result = asyncio.run(get_diff(run_id=2, baseline_run_id=1, severity=None, user=user, db=db))
+        result = await get_diff(run_id=2, baseline_run_id=1, severity=None, user={"id": 1}, db=db)
 
         assert result["summary"]["new_findings"] == 1
         assert result["new_findings"][0]["fingerprint"] == "fp-c"
 
-    def test_fixed_count_is_correct(self):
+    @pytest.mark.asyncio
+    async def test_fixed_count_is_correct(self):
         """Findings in baseline but not current are counted as fixed."""
-        import asyncio
-
         from FRONTEND.api.routers.runs import get_diff
 
         current = self._make_findings(["fp-a"])
@@ -175,15 +171,14 @@ class TestDifferentialSAST:
         ]
         db.get_findings_with_explanations.side_effect = [current, baseline]
 
-        result = asyncio.run(get_diff(run_id=2, baseline_run_id=1, severity=None, user={"id": 1}, db=db))
+        result = await get_diff(run_id=2, baseline_run_id=1, severity=None, user={"id": 1}, db=db)
 
         assert result["summary"]["fixed_since_baseline"] == 2
         assert result["summary"]["new_findings"] == 0
 
-    def test_severity_filter_applied(self):
+    @pytest.mark.asyncio
+    async def test_severity_filter_applied(self):
         """severity= param filters new findings."""
-        import asyncio
-
         from FRONTEND.api.routers.runs import get_diff
 
         current = [
@@ -196,15 +191,14 @@ class TestDifferentialSAST:
         db.get_run_by_id.side_effect = [{"id": 2, "repo_name": "r"}, {"id": 1, "repo_name": "r"}]
         db.get_findings_with_explanations.side_effect = [current, baseline]
 
-        result = asyncio.run(get_diff(run_id=2, baseline_run_id=1, severity="high", user={"id": 1}, db=db))
+        result = await get_diff(run_id=2, baseline_run_id=1, severity="high", user={"id": 1}, db=db)
 
         assert len(result["new_findings"]) == 1
         assert result["new_findings"][0]["severity"] == "high"
 
-    def test_missing_run_raises_404(self):
+    @pytest.mark.asyncio
+    async def test_missing_run_raises_404(self):
         """Non-existent run_id raises HTTPException 404."""
-        import asyncio
-
         from fastapi import HTTPException
 
         from FRONTEND.api.routers.runs import get_diff
@@ -213,13 +207,12 @@ class TestDifferentialSAST:
         db.get_run_by_id.return_value = None
 
         with pytest.raises(HTTPException) as exc_info:
-            asyncio.run(get_diff(run_id=999, baseline_run_id=None, severity=None, user={"id": 1}, db=db))
+            await get_diff(run_id=999, baseline_run_id=None, severity=None, user={"id": 1}, db=db)
         assert exc_info.value.status_code == 404
 
-    def test_no_baseline_found_raises_400(self):
+    @pytest.mark.asyncio
+    async def test_no_baseline_found_raises_400(self):
         """No prior runs for same repo raises HTTPException 400."""
-        import asyncio
-
         from fastapi import HTTPException
 
         from FRONTEND.api.routers.runs import get_diff
@@ -229,7 +222,7 @@ class TestDifferentialSAST:
         db.get_recent_runs.return_value = []
 
         with pytest.raises(HTTPException) as exc_info:
-            asyncio.run(get_diff(run_id=1, baseline_run_id=None, severity=None, user={"id": 1}, db=db))
+            await get_diff(run_id=1, baseline_run_id=None, severity=None, user={"id": 1}, db=db)
         assert exc_info.value.status_code == 400
 
 
