@@ -111,7 +111,7 @@ jobs:
 
       - name: Upload SARIF findings to Security Tab
         if: steps.changed-files.outputs.any_changed == 'true' && hashFiles('DATA/outputs/findings.sarif') != ''
-        uses: github/codeql-action/upload-sarif@v3
+        uses: github/codeql-action/upload-sarif@v4
         with:
           sarif_file: DATA/outputs/findings.sarif
 
@@ -279,7 +279,7 @@ jobs:
 
       - name: Upload SARIF findings to Security Tab
         if: hashFiles('DATA/outputs/findings.sarif') != ''
-        uses: github/codeql-action/upload-sarif@v3
+        uses: github/codeql-action/upload-sarif@v4
         with:
           sarif_file: DATA/outputs/findings.sarif
 

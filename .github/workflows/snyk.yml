@@ -45,7 +45,7 @@ jobs:
             --json-file-output=snyk-sast.json || true
 
       - name: Upload Snyk results to GitHub Code Scanning
-        uses: github/codeql-action/upload-sarif@v3
+        uses: github/codeql-action/upload-sarif@v4
         if: always()
         continue-on-error: true
         with:
