@@ -4,7 +4,11 @@
 >
 > **What this is NOT:** A wish list. The full menu lives in [`GOD_MODE_V5_PLAN.md`](GOD_MODE_V5_PLAN.md) — pick from there in future years.
 >
-> **Created:** 2026-05-31
+> **v6 Business Direction:** [`GOD_MODE_V6_BUSINESS_PLAN.md`](GOD_MODE_V6_BUSINESS_PLAN.md) — harsh product/startup plan. The one-sentence bet:
+> *"Auto-block merges you can trust — every finding is exploit-verified and cryptographically attested."*
+> Phase 0 of v6 is now executing — see items 16–20 below.
+>
+> **Created:** 2026-05-31 · **v6 Phase 0 added:** 2026-06-02
 > **Horizon:** ~25 weeks (defense day is one waypoint, not the finish line)
 > **Total cost:** $0 ongoing. Possibly $0 setup.
 
@@ -33,6 +37,25 @@
 **Total work:** ~8–9 weeks of focused effort
 **Total ongoing cost:** $0
 **Total setup cost:** $0 (no card required for any of the above)
+
+---
+
+## v6 Phase 0 — Trust-Layer Repositioning (2026-06-02)
+
+These items execute the one-sentence bet from `GOD_MODE_V6_BUSINESS_PLAN.md`. All $0.
+
+| # | Item | Status | What changed |
+|---|------|--------|--------------|
+| 16 | **README rewrite** — lead with trust/verify/attest, not "19 engines" | ✅ | New hero section, competitive table, funnel as first visual |
+| 17 | **Cloudflare Pages rewrite** — same repositioning | ✅ | Full landing page rebuild: trust pillars, exploit table, competitor grid |
+| 18 | **`CORE/engines/confirmed_tier.py`** — Confirmed Tier as a proper CORE module | ✅ | Extracted + enhanced with reachability gate; wired into both pipeline paths |
+| 19 | **Verification data loop** — `verification_log` table + `db.log_verification()` | ✅ | Schema + Database methods + exploit_verifier auto-logging (Moat #1) |
+| 20 | **Dashboard overview** — Confirmed Tier as hero tile + Trust Layer banner | ✅ | Green banner with 4 trust KPIs; Confirmed Tier is the first bento tile |
+| 21 | **Design-partner outreach template** | ✅ | `docs/DESIGN_PARTNER_OUTREACH.md` — email + LinkedIn templates + target repo list |
+
+**Phase 0 exit metric:** a stranger watches the demo and says *"I'd turn that on as a required check."*
+
+**Next (Phase 1):** independent benchmark on OWASP/Juliet/SecurityEval + 5 design partners recruited.
 
 ---
 

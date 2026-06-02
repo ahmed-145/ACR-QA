@@ -120,3 +120,25 @@ CREATE INDEX IF NOT EXISTS idx_suppression_rules_rule_id ON suppression_rules(ca
 CREATE INDEX IF NOT EXISTS idx_suppression_rules_active ON suppression_rules(is_active);
 
 COMMENT ON TABLE suppression_rules IS 'Learned suppression rules from FP feedback (Feature 6 — Triage Memory)';
+
+-- Verification data loop: every exploit-verifier verdict logged as labeled ground truth.
+-- This is Moat #1 — a proprietary dataset of (finding → did it actually exploit?) pairs.
+CREATE TABLE IF NOT EXISTS verification_log (
+    id SERIAL PRIMARY KEY,
+    finding_fingerprint VARCHAR(64),
+    canonical_rule_id VARCHAR(100),
+    category VARCHAR(100),
+    verdict VARCHAR(30) CHECK (verdict IN ('verified-exploitable', 'verified-unexploitable', 'unverified', 'error')),
+    payload TEXT,
+    response_snippet TEXT,
+    duration_seconds FLOAT,
+    target_repo VARCHAR(255),
+    error_message TEXT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE INDEX IF NOT EXISTS idx_verification_log_rule ON verification_log(canonical_rule_id);
+CREATE INDEX IF NOT EXISTS idx_verification_log_verdict ON verification_log(verdict);
+CREATE INDEX IF NOT EXISTS idx_verification_log_created ON verification_log(created_at);
+
+COMMENT ON TABLE verification_log IS 'Exploit verification data loop — labeled ground truth for (finding → exploit verdict). Moat #1: proprietary verifier training corpus.';

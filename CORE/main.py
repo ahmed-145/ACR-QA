@@ -235,12 +235,25 @@ class AnalysisPipeline:
         try:
             from CORE.engines.exploit_verifier import ExploitVerifier
 
-            findings = ExploitVerifier().enrich_findings(findings, str(self.target_dir))
+            findings = ExploitVerifier().enrich_findings(
+                findings, str(self.target_dir), db=self.db, target_repo=self.repo_name
+            )
             verified = sum(1 for f in findings if f.get("exploit_tier") == "verified-exploitable")
             if verified:
                 logger.info(f"      - Exploit Verifier: {verified} finding(s) confirmed exploitable via Docker PoC")
         except Exception as _ev_err:
             logger.warning(f"Exploit verification skipped: {_ev_err}")
+
+        # Confirmed Tier: classify each finding against the 4-criterion + reachability gate
+        try:
+            from CORE.engines.confirmed_tier import ConfirmedTierEngine
+
+            findings = ConfirmedTierEngine().enrich_findings(findings)
+            confirmed = sum(1 for f in findings if f.get("confirmed_tier"))
+            if confirmed:
+                logger.info(f"      - Confirmed Tier: {confirmed} finding(s) meet the 96.4%-precision gate")
+        except Exception as _ct_err:
+            logger.warning(f"Confirmed Tier classification skipped: {_ct_err}")
 
         # Cap findings per rule (max 5 per rule to prevent flooding)
         findings = self._cap_per_rule(findings, max_per_rule=5)
@@ -899,12 +912,25 @@ class AnalysisPipeline:
         try:
             from CORE.engines.exploit_verifier import ExploitVerifier
 
-            findings = ExploitVerifier().enrich_findings(findings, str(self.target_dir))
+            findings = ExploitVerifier().enrich_findings(
+                findings, str(self.target_dir), db=self.db, target_repo=self.repo_name
+            )
             verified = sum(1 for f in findings if f.get("exploit_tier") == "verified-exploitable")
             if verified:
                 logger.info(f"      - Exploit Verifier: {verified} finding(s) confirmed exploitable via Docker PoC")
         except Exception as _ev_err:
             logger.warning(f"Exploit verification skipped: {_ev_err}")
+
+        # Confirmed Tier: classify each finding against the 4-criterion + reachability gate
+        try:
+            from CORE.engines.confirmed_tier import ConfirmedTierEngine
+
+            findings = ConfirmedTierEngine().enrich_findings(findings)
+            confirmed = sum(1 for f in findings if f.get("confirmed_tier"))
+            if confirmed:
+                logger.info(f"      - Confirmed Tier: {confirmed} finding(s) meet the 96.4%-precision gate")
+        except Exception as _ct_err:
+            logger.warning(f"Confirmed Tier classification skipped: {_ct_err}")
 
         findings = self._sort_by_priority(findings)
         total_findings = len(findings)

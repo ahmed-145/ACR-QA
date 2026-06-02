@@ -742,6 +742,99 @@ class Database:
             (rule_id,),
         )
 
+    # ===== VERIFICATION DATA LOOP =====
+
+    def log_verification(
+        self,
+        finding_fingerprint: str | None,
+        canonical_rule_id: str | None,
+        category: str | None,
+        verdict: str,
+        payload: str | None = None,
+        response_snippet: str | None = None,
+        duration_seconds: float | None = None,
+        target_repo: str | None = None,
+        error_message: str | None = None,
+    ) -> int | None:
+        """
+        Log one exploit-verifier verdict to the verification_log table.
+        This is Moat #1: every verdict (pass/fail) becomes labeled ground truth
+        for future verifier model training.
+        """
+        query = """
+            INSERT INTO verification_log
+                (finding_fingerprint, canonical_rule_id, category, verdict,
+                 payload, response_snippet, duration_seconds, target_repo, error_message)
+            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)
+            RETURNING id
+        """
+        result = self.execute(
+            query,
+            (
+                finding_fingerprint,
+                canonical_rule_id,
+                category,
+                verdict,
+                payload,
+                response_snippet,
+                duration_seconds,
+                target_repo,
+                error_message,
+            ),
+            fetch=True,
+        )
+        return result[0]["id"] if result else None
+
+    def get_verification_log(
+        self,
+        verdict: str | None = None,
+        canonical_rule_id: str | None = None,
+        limit: int = 200,
+    ) -> list[dict]:
+        """Return verification log entries, optionally filtered by verdict or rule."""
+        conditions = []
+        params: list = []
+        if verdict:
+            conditions.append("verdict = %s")
+            params.append(verdict)
+        if canonical_rule_id:
+            conditions.append("canonical_rule_id = %s")
+            params.append(canonical_rule_id)
+        where = f"WHERE {' AND '.join(conditions)}" if conditions else ""
+        query = f"""
+            SELECT id, finding_fingerprint, canonical_rule_id, category, verdict,
+                   payload, response_snippet, duration_seconds, target_repo,
+                   error_message, created_at
+            FROM verification_log
+            {where}
+            ORDER BY created_at DESC
+            LIMIT %s
+        """
+        params.append(limit)
+        results = self.execute(query, params, fetch=True)
+        return [dict(r) for r in results] if results else []
+
+    def get_verification_stats(self) -> dict:
+        """Return aggregate stats over the verification_log (data-loop health check)."""
+        query = """
+            SELECT
+                verdict,
+                COUNT(*) AS count,
+                AVG(duration_seconds) AS avg_duration_s
+            FROM verification_log
+            GROUP BY verdict
+            ORDER BY verdict
+        """
+        rows = self.execute(query, fetch=True)
+        stats: dict = {"by_verdict": {}, "total": 0}
+        for row in rows or []:
+            stats["by_verdict"][row["verdict"]] = {
+                "count": row["count"],
+                "avg_duration_s": float(row["avg_duration_s"] or 0),
+            }
+            stats["total"] += row["count"]
+        return stats
+
     # ===== ANALYTICS =====
 
     def get_run_summary(self, run_id):
