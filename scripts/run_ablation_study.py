@@ -409,9 +409,7 @@ def semantic_taint_gate(security_findings: list[dict]) -> tuple[list[dict], list
         if _rule(f) in TAINT_APPLICABLE_RULES and _path(f).endswith(".py") and triage_finding(f) != "SKIP"
     ]
     passthrough = [
-        f
-        for f in security_findings
-        if _rule(f) not in TAINT_APPLICABLE_RULES or not _path(f).endswith(".py")
+        f for f in security_findings if _rule(f) not in TAINT_APPLICABLE_RULES or not _path(f).endswith(".py")
     ]
 
     # Group applicable findings by file to minimise TaintAnalyzer runs
@@ -558,8 +556,7 @@ def run_ablation(out_md: Path) -> dict:
     rung35_c = precision_stats(corroborated_f, conservative=True)
     rung35_o = precision_stats(corroborated_f, conservative=False)
     print(
-        f"  Rung 3.5: {len(corroborated_f)} corroborated findings "
-        f"(of {active_sec_count} active security-tier)",
+        f"  Rung 3.5: {len(corroborated_f)} corroborated findings " f"(of {active_sec_count} active security-tier)",
         flush=True,
     )
     if len(corroborated_f) < 5:
@@ -586,9 +583,11 @@ def run_ablation(out_md: Path) -> dict:
         f"{len(taint_absent_f)} demoted (taint-absent, excluded from denominator)",
         flush=True,
     )
-    pp_gain_c = round(
-        (rung4_c["precision"] or 0) - (rung3_c["precision"] or 0), 4
-    ) if rung4_c["precision"] and rung3_c["precision"] else None
+    pp_gain_c = (
+        round((rung4_c["precision"] or 0) - (rung3_c["precision"] or 0), 4)
+        if rung4_c["precision"] and rung3_c["precision"]
+        else None
+    )
     print(
         f"  Conservative: {rung4_c['precision']:.1%} "
         f"(Δ {pp_gain_c:+.1%} vs Rung 3) | Optimistic: {rung4_o['precision']:.1%}",

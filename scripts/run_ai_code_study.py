@@ -357,7 +357,9 @@ def generate_all(model_filter: str | None, dry_run: bool) -> None:
     total = len(models) * len(TASKS) * SAMPLES_PER_TASK
     done = 0
 
-    print(f"{BOLD}Phase 1 — Generation{RESET}: {len(models)} model(s) × {len(TASKS)} tasks × {SAMPLES_PER_TASK} samples = {total} files")
+    print(
+        f"{BOLD}Phase 1 — Generation{RESET}: {len(models)} model(s) × {len(TASKS)} tasks × {SAMPLES_PER_TASK} samples = {total} files"
+    )
 
     for short_name, model_id in models.items():
         model_dir = SAMPLES_DIR / short_name
@@ -496,25 +498,27 @@ def scan_all(model_filter: str | None) -> dict[str, Any]:
 
             task_info = next((t for t in TASKS if t["id"] == task_id), {})
 
-            per_file.append({
-                "file": py_file.name,
-                "task_id": task_id,
-                "task_title": task_info.get("title", ""),
-                "task_category": task_info.get("category", ""),
-                "sample_num": sample_num,
-                "loc": loc,
-                "finding_count": len(file_findings),
-                "high_count": sum(1 for f in file_findings if f.severity == "high"),
-                "security_tier": [
-                    {
-                        "rule": f.canonical_rule_id,
-                        "severity": f.severity,
-                        "line": f.line,
-                        "tool": f.tool_raw.get("tool_name", "unknown"),
-                    }
-                    for f in file_findings
-                ],
-            })
+            per_file.append(
+                {
+                    "file": py_file.name,
+                    "task_id": task_id,
+                    "task_title": task_info.get("title", ""),
+                    "task_category": task_info.get("category", ""),
+                    "sample_num": sample_num,
+                    "loc": loc,
+                    "finding_count": len(file_findings),
+                    "high_count": sum(1 for f in file_findings if f.severity == "high"),
+                    "security_tier": [
+                        {
+                            "rule": f.canonical_rule_id,
+                            "severity": f.severity,
+                            "line": f.line,
+                            "tool": f.tool_raw.get("tool_name", "unknown"),
+                        }
+                        for f in file_findings
+                    ],
+                }
+            )
             all_findings.extend(file_findings)
 
         total_findings = len(all_findings)
@@ -563,8 +567,7 @@ def category_breakdown(model_results: dict[str, Any]) -> dict[str, dict[str, flo
             cat_loc[cat] = cat_loc.get(cat, 0) + pf["loc"]
             cat_findings[cat] = cat_findings.get(cat, 0) + pf["finding_count"]
         breakdown[short_name] = {
-            cat: round(cat_findings[cat] / max(cat_loc[cat] / 1000, 0.1), 2)
-            for cat in cat_findings
+            cat: round(cat_findings[cat] / max(cat_loc[cat] / 1000, 0.1), 2) for cat in cat_findings
         }
     return breakdown
 
@@ -633,17 +636,14 @@ def write_markdown_report(model_results: dict[str, Any]) -> None:
     cat_sep = "|---|" + "---|" * len(models_list)
     cat_rows = []
     for cat in all_cats:
-        row = f"| {cat} | " + " | ".join(
-            str(cat_bd.get(m, {}).get(cat, 0.0)) for m in models_list
-        ) + " |"
+        row = f"| {cat} | " + " | ".join(str(cat_bd.get(m, {}).get(cat, 0.0)) for m in models_list) + " |"
         cat_rows.append(row)
 
     # Top rules per model
     top_rule_sections = []
     for short_name, mdata in model_results.items():
         rules_md = "\n".join(
-            f"  {i+1}. `{r['rule']}` — {r['count']} findings"
-            for i, r in enumerate(mdata["top_rules"][:5])
+            f"  {i+1}. `{r['rule']}` — {r['count']} findings" for i, r in enumerate(mdata["top_rules"][:5])
         )
         top_rule_sections.append(f"**{short_name}** ({mdata['model_id']}):\n{rules_md}")
 
