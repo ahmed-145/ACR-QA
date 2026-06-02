@@ -26,6 +26,8 @@ from CORE.engines.time_travel import (
 
 def _git(repo: Path, *args: str, env_extra: dict | None = None) -> None:
     env = os.environ.copy()
+    for key in ("GIT_DIR", "GIT_INDEX_FILE", "GIT_WORK_TREE", "GIT_OBJECT_DIRECTORY"):
+        env.pop(key, None)
     env.update(
         {
             "GIT_AUTHOR_NAME": "Test Author",

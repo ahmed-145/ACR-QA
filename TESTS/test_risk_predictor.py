@@ -227,6 +227,8 @@ class TestScoreFiles:
 
 def _git(repo: Path, *args: str) -> None:
     env = os.environ.copy()
+    for key in ("GIT_DIR", "GIT_INDEX_FILE", "GIT_WORK_TREE", "GIT_OBJECT_DIRECTORY"):
+        env.pop(key, None)
     env.update(
         {
             "GIT_AUTHOR_NAME": "Tester",
