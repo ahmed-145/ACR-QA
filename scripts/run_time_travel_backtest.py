@@ -35,7 +35,7 @@ import json
 import subprocess
 import sys
 import tempfile
-from datetime import datetime, timedelta, timezone
+from datetime import UTC, datetime, timedelta
 from pathlib import Path
 from typing import Any
 
@@ -174,7 +174,7 @@ def git_age_at(repo: Path, rel_path: str, ref_date: str) -> int:
         return 0
     try:
         first_ts = int(out.strip().splitlines()[0])
-        ref_ts = int(datetime.fromisoformat(ref_date).replace(tzinfo=timezone.utc).timestamp())
+        ref_ts = int(datetime.fromisoformat(ref_date).replace(tzinfo=UTC).timestamp())
         return max(0, (ref_ts - first_ts) // 86400)
     except Exception:
         return 0
@@ -343,7 +343,7 @@ def fisher_exact_test(
     table = [[a, b], [c, d]]
     try:
         oddsratio, pvalue = fisher_exact(table, alternative="greater")
-    except Exception as e:
+    except Exception:
         oddsratio, pvalue = 0.0, 1.0
 
     # Precision@N and recall@CVE
@@ -524,7 +524,7 @@ def write_results(all_results: list[dict], agg: dict[str, Any]) -> None:
     RESULTS_FILE.parent.mkdir(parents=True, exist_ok=True)
     output = {
         "study": "X4 — Time-Travel Predictive Risk Backtest",
-        "generated_at": datetime.now(timezone.utc).isoformat(),
+        "generated_at": datetime.now(UTC).isoformat(),
         "dataset": "Django CVE history 2019–2023",
         "checkpoints_count": len(all_results),
         "cves_total": len(DJANGO_CVES),
@@ -570,7 +570,7 @@ def print_summary(all_results: list[dict], agg: dict[str, Any]) -> None:
         print(f"\n  Lift over baseline: {agg.get('lift',0):.2f}×")
         print(f"  Checkpoints p<0.05: {agg.get('checkpoints_p005',0)}/{agg.get('checkpoints_evaluated',0)}")
         print(f"  Pooled OR: {agg.get('pooled_odds_ratio',0):.3f}")
-    print(f"\n  * p<0.05  ~ p<0.10")
+    print("\n  * p<0.05  ~ p<0.10")
     print(f"{BOLD}{'='*65}{RESET}\n")
 
 
@@ -595,7 +595,7 @@ def write_markdown_report(all_results: list[dict], agg: dict[str, Any]) -> None:
             f"{s.get('p_value',1):.4f} {sig} |"
         )
 
-    now = datetime.now(timezone.utc).strftime("%Y-%m-%d")
+    now = datetime.now(UTC).strftime("%Y-%m-%d")
     agg_p = agg.get("pooled_p_value", 1.0)
     agg_or = agg.get("pooled_odds_ratio", 0.0)
     agg_lift = agg.get("lift", 0.0)

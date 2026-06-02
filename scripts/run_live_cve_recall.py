@@ -131,7 +131,7 @@ def run_bandit(target: Path) -> list[dict]:
     with tempfile.NamedTemporaryFile(suffix=".json", delete=False) as f:
         out_path = Path(f.name)
 
-    r = subprocess.run(
+    subprocess.run(
         [sys.executable, "-m", "bandit", "-r", str(target), "-f", "json", "-o", str(out_path), "-ll"],
         capture_output=True,
         text=True,
@@ -174,12 +174,12 @@ def scan_repo(clone_dir: Path) -> list[dict]:
     """
     from CORE.engines.normalizer import normalize_bandit, normalize_semgrep
 
-    print(f"  Running bandit ...", end="", flush=True)
+    print("  Running bandit ...", end="", flush=True)
     bandit_raw = run_bandit(clone_dir)
     bandit_findings = normalize_bandit({"results": bandit_raw})
     print(f" {len(bandit_findings)} findings", flush=True)
 
-    print(f"  Running semgrep ...", end="", flush=True)
+    print("  Running semgrep ...", end="", flush=True)
     semgrep_raw = run_semgrep(clone_dir)
     semgrep_findings = normalize_semgrep({"results": semgrep_raw})
     print(f" {len(semgrep_findings)} findings", flush=True)
@@ -302,8 +302,8 @@ def main() -> None:
     print(f"\n{BOLD}ACR-QA X1 — Live-CVE Blind Holdout{RESET}")
     print("=" * 62)
     print(f"Ground-truth YAMLs : {len(specs)}")
-    print(f"Pre-registered     : 2026-05-30")
-    print(f"Scoring            : exact_rule match (canonical_id + file suffix)")
+    print("Pre-registered     : 2026-05-30")
+    print("Scoring            : exact_rule match (canonical_id + file suffix)")
     print()
 
     results: list[dict] = []

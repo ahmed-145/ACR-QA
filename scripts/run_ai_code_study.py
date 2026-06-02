@@ -38,7 +38,7 @@ import subprocess
 import sys
 import tempfile
 import time
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 
@@ -389,7 +389,7 @@ def generate_all(model_filter: str | None, dry_run: bool) -> None:
                     f"# Task: {task['id']} — {task['title']}\n"
                     f"# Sample: {s}/{SAMPLES_PER_TASK}\n"
                     f"# Category: {task['category']}\n"
-                    f"# Generated: {datetime.now(timezone.utc).strftime('%Y-%m-%dT%H:%M:%SZ')}\n\n"
+                    f"# Generated: {datetime.now(UTC).strftime('%Y-%m-%dT%H:%M:%SZ')}\n\n"
                 )
                 out_path.write_text(header + code + "\n")
                 done += 1
@@ -580,7 +580,7 @@ def write_results(model_results: dict[str, Any]) -> None:
 
     output = {
         "study": "X3 — AI-Generated Code Vulnerability Study",
-        "generated_at": datetime.now(timezone.utc).isoformat(),
+        "generated_at": datetime.now(UTC).isoformat(),
         "tasks_count": len(TASKS),
         "samples_per_task": SAMPLES_PER_TASK,
         "models": list(MODELS.keys()),
@@ -647,7 +647,7 @@ def write_markdown_report(model_results: dict[str, Any]) -> None:
         )
         top_rule_sections.append(f"**{short_name}** ({mdata['model_id']}):\n{rules_md}")
 
-    now = datetime.now(timezone.utc).strftime("%Y-%m-%d")
+    now = datetime.now(UTC).strftime("%Y-%m-%d")
     content = f"""\
 # X3 — AI-Generated Code Vulnerability Study
 

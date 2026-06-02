@@ -274,7 +274,7 @@ def _recompute_precision(triage: list[dict], promoted_tp: int, promoted_fp: int)
         f"L3 AI triage (2 Groq calls, unanimous consensus). {promoted_tp} NR→TP, {promoted_fp} NR→FP."
     )
     SUMMARY_FILE.write_text(json.dumps(summary, indent=2))
-    print(f"[✓] Updated precision_summary.json")
+    print("[✓] Updated precision_summary.json")
 
 
 if __name__ == "__main__":
