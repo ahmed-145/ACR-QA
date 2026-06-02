@@ -1,0 +1,715 @@
+{
+  "generated_at": "2026-06-02T17:21:26.561697+00:00",
+  "version": "5.0.0b1",
+  "scope": "detectable",
+  "results": {
+    "ACR-QA (full output)": {
+      "total": 89,
+      "tp": 52,
+      "fn": 37,
+      "recall": 58.4,
+      "recall_ci": "[47.2%, 67.4%]",
+      "per_cwe": {
+        "CWE-020": {
+          "total": 6,
+          "hit": 3
+        },
+        "CWE-022": {
+          "total": 4,
+          "hit": 3
+        },
+        "CWE-078": {
+          "total": 2,
+          "hit": 2
+        },
+        "CWE-079": {
+          "total": 3,
+          "hit": 1
+        },
+        "CWE-080": {
+          "total": 1,
+          "hit": 1
+        },
+        "CWE-089": {
+          "total": 2,
+          "hit": 2
+        },
+        "CWE-090": {
+          "total": 2,
+          "hit": 0
+        },
+        "CWE-094": {
+          "total": 3,
+          "hit": 2
+        },
+        "CWE-095": {
+          "total": 1,
+          "hit": 1
+        },
+        "CWE-113": {
+          "total": 2,
+          "hit": 0
+        },
+        "CWE-116": {
+          "total": 2,
+          "hit": 1
+        },
+        "CWE-117": {
+          "total": 3,
+          "hit": 0
+        },
+        "CWE-200": {
+          "total": 1,
+          "hit": 1
+        },
+        "CWE-209": {
+          "total": 1,
+          "hit": 0
+        },
+        "CWE-259": {
+          "total": 2,
+          "hit": 2
+        },
+        "CWE-295": {
+          "total": 3,
+          "hit": 1
+        },
+        "CWE-319": {
+          "total": 2,
+          "hit": 1
+        },
+        "CWE-321": {
+          "total": 2,
+          "hit": 1
+        },
+        "CWE-326": {
+          "total": 2,
+          "hit": 2
+        },
+        "CWE-327": {
+          "total": 4,
+          "hit": 3
+        },
+        "CWE-329": {
+          "total": 1,
+          "hit": 1
+        },
+        "CWE-330": {
+          "total": 1,
+          "hit": 1
+        },
+        "CWE-331": {
+          "total": 1,
+          "hit": 1
+        },
+        "CWE-347": {
+          "total": 3,
+          "hit": 1
+        },
+        "CWE-377": {
+          "total": 1,
+          "hit": 1
+        },
+        "CWE-379": {
+          "total": 1,
+          "hit": 1
+        },
+        "CWE-502": {
+          "total": 4,
+          "hit": 4
+        },
+        "CWE-521": {
+          "total": 2,
+          "hit": 0
+        },
+        "CWE-595": {
+          "total": 1,
+          "hit": 0
+        },
+        "CWE-601": {
+          "total": 5,
+          "hit": 1
+        },
+        "CWE-605": {
+          "total": 1,
+          "hit": 1
+        },
+        "CWE-611": {
+          "total": 6,
+          "hit": 6
+        },
+        "CWE-730": {
+          "total": 3,
+          "hit": 0
+        },
+        "CWE-732": {
+          "total": 1,
+          "hit": 1
+        },
+        "CWE-759": {
+          "total": 1,
+          "hit": 1
+        },
+        "CWE-760": {
+          "total": 1,
+          "hit": 0
+        },
+        "CWE-776": {
+          "total": 1,
+          "hit": 1
+        },
+        "CWE-798": {
+          "total": 2,
+          "hit": 2
+        },
+        "CWE-835": {
+          "total": 1,
+          "hit": 0
+        },
+        "CWE-918": {
+          "total": 2,
+          "hit": 2
+        },
+        "CWE-941": {
+          "total": 1,
+          "hit": 0
+        },
+        "CWE-943": {
+          "total": 1,
+          "hit": 0
+        }
+      }
+    },
+    "ACR-QA (Confirmed Tier)": {
+      "total": 89,
+      "tp": 5,
+      "fn": 84,
+      "recall": 5.6,
+      "recall_ci": "[1.1%, 11.2%]",
+      "per_cwe": {
+        "CWE-020": {
+          "total": 6,
+          "hit": 0
+        },
+        "CWE-022": {
+          "total": 4,
+          "hit": 0
+        },
+        "CWE-078": {
+          "total": 2,
+          "hit": 2
+        },
+        "CWE-079": {
+          "total": 3,
+          "hit": 0
+        },
+        "CWE-080": {
+          "total": 1,
+          "hit": 0
+        },
+        "CWE-089": {
+          "total": 2,
+          "hit": 0
+        },
+        "CWE-090": {
+          "total": 2,
+          "hit": 0
+        },
+        "CWE-094": {
+          "total": 3,
+          "hit": 0
+        },
+        "CWE-095": {
+          "total": 1,
+          "hit": 0
+        },
+        "CWE-113": {
+          "total": 2,
+          "hit": 0
+        },
+        "CWE-116": {
+          "total": 2,
+          "hit": 1
+        },
+        "CWE-117": {
+          "total": 3,
+          "hit": 0
+        },
+        "CWE-200": {
+          "total": 1,
+          "hit": 0
+        },
+        "CWE-209": {
+          "total": 1,
+          "hit": 0
+        },
+        "CWE-259": {
+          "total": 2,
+          "hit": 0
+        },
+        "CWE-295": {
+          "total": 3,
+          "hit": 0
+        },
+        "CWE-319": {
+          "total": 2,
+          "hit": 0
+        },
+        "CWE-321": {
+          "total": 2,
+          "hit": 0
+        },
+        "CWE-326": {
+          "total": 2,
+          "hit": 0
+        },
+        "CWE-327": {
+          "total": 4,
+          "hit": 1
+        },
+        "CWE-329": {
+          "total": 1,
+          "hit": 0
+        },
+        "CWE-330": {
+          "total": 1,
+          "hit": 0
+        },
+        "CWE-331": {
+          "total": 1,
+          "hit": 0
+        },
+        "CWE-347": {
+          "total": 3,
+          "hit": 0
+        },
+        "CWE-377": {
+          "total": 1,
+          "hit": 0
+        },
+        "CWE-379": {
+          "total": 1,
+          "hit": 0
+        },
+        "CWE-502": {
+          "total": 4,
+          "hit": 0
+        },
+        "CWE-521": {
+          "total": 2,
+          "hit": 0
+        },
+        "CWE-595": {
+          "total": 1,
+          "hit": 0
+        },
+        "CWE-601": {
+          "total": 5,
+          "hit": 0
+        },
+        "CWE-605": {
+          "total": 1,
+          "hit": 0
+        },
+        "CWE-611": {
+          "total": 6,
+          "hit": 0
+        },
+        "CWE-730": {
+          "total": 3,
+          "hit": 0
+        },
+        "CWE-732": {
+          "total": 1,
+          "hit": 0
+        },
+        "CWE-759": {
+          "total": 1,
+          "hit": 1
+        },
+        "CWE-760": {
+          "total": 1,
+          "hit": 0
+        },
+        "CWE-776": {
+          "total": 1,
+          "hit": 0
+        },
+        "CWE-798": {
+          "total": 2,
+          "hit": 0
+        },
+        "CWE-835": {
+          "total": 1,
+          "hit": 0
+        },
+        "CWE-918": {
+          "total": 2,
+          "hit": 0
+        },
+        "CWE-941": {
+          "total": 1,
+          "hit": 0
+        },
+        "CWE-943": {
+          "total": 1,
+          "hit": 0
+        }
+      }
+    },
+    "Bandit (standalone)": {
+      "total": 89,
+      "tp": 45,
+      "fn": 44,
+      "recall": 50.6,
+      "recall_ci": "[39.3%, 60.7%]",
+      "per_cwe": {
+        "CWE-020": {
+          "total": 6,
+          "hit": 3
+        },
+        "CWE-022": {
+          "total": 4,
+          "hit": 2
+        },
+        "CWE-078": {
+          "total": 2,
+          "hit": 2
+        },
+        "CWE-079": {
+          "total": 3,
+          "hit": 1
+        },
+        "CWE-080": {
+          "total": 1,
+          "hit": 0
+        },
+        "CWE-089": {
+          "total": 2,
+          "hit": 2
+        },
+        "CWE-090": {
+          "total": 2,
+          "hit": 0
+        },
+        "CWE-094": {
+          "total": 3,
+          "hit": 2
+        },
+        "CWE-095": {
+          "total": 1,
+          "hit": 1
+        },
+        "CWE-113": {
+          "total": 2,
+          "hit": 0
+        },
+        "CWE-116": {
+          "total": 2,
+          "hit": 1
+        },
+        "CWE-117": {
+          "total": 3,
+          "hit": 0
+        },
+        "CWE-200": {
+          "total": 1,
+          "hit": 1
+        },
+        "CWE-209": {
+          "total": 1,
+          "hit": 0
+        },
+        "CWE-259": {
+          "total": 2,
+          "hit": 2
+        },
+        "CWE-295": {
+          "total": 3,
+          "hit": 1
+        },
+        "CWE-319": {
+          "total": 2,
+          "hit": 1
+        },
+        "CWE-321": {
+          "total": 2,
+          "hit": 0
+        },
+        "CWE-326": {
+          "total": 2,
+          "hit": 2
+        },
+        "CWE-327": {
+          "total": 4,
+          "hit": 3
+        },
+        "CWE-329": {
+          "total": 1,
+          "hit": 0
+        },
+        "CWE-330": {
+          "total": 1,
+          "hit": 1
+        },
+        "CWE-331": {
+          "total": 1,
+          "hit": 1
+        },
+        "CWE-347": {
+          "total": 3,
+          "hit": 0
+        },
+        "CWE-377": {
+          "total": 1,
+          "hit": 1
+        },
+        "CWE-379": {
+          "total": 1,
+          "hit": 1
+        },
+        "CWE-502": {
+          "total": 4,
+          "hit": 3
+        },
+        "CWE-521": {
+          "total": 2,
+          "hit": 0
+        },
+        "CWE-595": {
+          "total": 1,
+          "hit": 0
+        },
+        "CWE-601": {
+          "total": 5,
+          "hit": 0
+        },
+        "CWE-605": {
+          "total": 1,
+          "hit": 1
+        },
+        "CWE-611": {
+          "total": 6,
+          "hit": 6
+        },
+        "CWE-730": {
+          "total": 3,
+          "hit": 0
+        },
+        "CWE-732": {
+          "total": 1,
+          "hit": 1
+        },
+        "CWE-759": {
+          "total": 1,
+          "hit": 1
+        },
+        "CWE-760": {
+          "total": 1,
+          "hit": 0
+        },
+        "CWE-776": {
+          "total": 1,
+          "hit": 1
+        },
+        "CWE-798": {
+          "total": 2,
+          "hit": 2
+        },
+        "CWE-835": {
+          "total": 1,
+          "hit": 0
+        },
+        "CWE-918": {
+          "total": 2,
+          "hit": 2
+        },
+        "CWE-941": {
+          "total": 1,
+          "hit": 0
+        },
+        "CWE-943": {
+          "total": 1,
+          "hit": 0
+        }
+      }
+    },
+    "Semgrep CE (standalone)": {
+      "total": 89,
+      "tp": 21,
+      "fn": 68,
+      "recall": 23.6,
+      "recall_ci": "[14.6%, 32.6%]",
+      "per_cwe": {
+        "CWE-020": {
+          "total": 6,
+          "hit": 0
+        },
+        "CWE-022": {
+          "total": 4,
+          "hit": 1
+        },
+        "CWE-078": {
+          "total": 2,
+          "hit": 2
+        },
+        "CWE-079": {
+          "total": 3,
+          "hit": 1
+        },
+        "CWE-080": {
+          "total": 1,
+          "hit": 1
+        },
+        "CWE-089": {
+          "total": 2,
+          "hit": 0
+        },
+        "CWE-090": {
+          "total": 2,
+          "hit": 0
+        },
+        "CWE-094": {
+          "total": 3,
+          "hit": 2
+        },
+        "CWE-095": {
+          "total": 1,
+          "hit": 0
+        },
+        "CWE-113": {
+          "total": 2,
+          "hit": 0
+        },
+        "CWE-116": {
+          "total": 2,
+          "hit": 1
+        },
+        "CWE-117": {
+          "total": 3,
+          "hit": 0
+        },
+        "CWE-200": {
+          "total": 1,
+          "hit": 0
+        },
+        "CWE-209": {
+          "total": 1,
+          "hit": 0
+        },
+        "CWE-259": {
+          "total": 2,
+          "hit": 0
+        },
+        "CWE-295": {
+          "total": 3,
+          "hit": 0
+        },
+        "CWE-319": {
+          "total": 2,
+          "hit": 0
+        },
+        "CWE-321": {
+          "total": 2,
+          "hit": 0
+        },
+        "CWE-326": {
+          "total": 2,
+          "hit": 2
+        },
+        "CWE-327": {
+          "total": 4,
+          "hit": 3
+        },
+        "CWE-329": {
+          "total": 1,
+          "hit": 1
+        },
+        "CWE-330": {
+          "total": 1,
+          "hit": 0
+        },
+        "CWE-331": {
+          "total": 1,
+          "hit": 0
+        },
+        "CWE-347": {
+          "total": 3,
+          "hit": 1
+        },
+        "CWE-377": {
+          "total": 1,
+          "hit": 0
+        },
+        "CWE-379": {
+          "total": 1,
+          "hit": 0
+        },
+        "CWE-502": {
+          "total": 4,
+          "hit": 0
+        },
+        "CWE-521": {
+          "total": 2,
+          "hit": 0
+        },
+        "CWE-595": {
+          "total": 1,
+          "hit": 0
+        },
+        "CWE-601": {
+          "total": 5,
+          "hit": 1
+        },
+        "CWE-605": {
+          "total": 1,
+          "hit": 1
+        },
+        "CWE-611": {
+          "total": 6,
+          "hit": 0
+        },
+        "CWE-730": {
+          "total": 3,
+          "hit": 0
+        },
+        "CWE-732": {
+          "total": 1,
+          "hit": 1
+        },
+        "CWE-759": {
+          "total": 1,
+          "hit": 1
+        },
+        "CWE-760": {
+          "total": 1,
+          "hit": 0
+        },
+        "CWE-776": {
+          "total": 1,
+          "hit": 0
+        },
+        "CWE-798": {
+          "total": 2,
+          "hit": 0
+        },
+        "CWE-835": {
+          "total": 1,
+          "hit": 0
+        },
+        "CWE-918": {
+          "total": 2,
+          "hit": 2
+        },
+        "CWE-941": {
+          "total": 1,
+          "hit": 0
+        },
+        "CWE-943": {
+          "total": 1,
+          "hit": 0
+        }
+      }
+    }
+  }
+}

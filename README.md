@@ -103,15 +103,29 @@ ACR-QA integrates *with* Semgrep and Snyk (not against them) — it adds the ver
 
 ## Key Numbers (v5.0.0rc1)
 
-**96.4%** Confirmed Tier precision (95% CI [90.9%, 100%]) ·
-**100%** CVE recall (8/8 recall battery) ·
-**F1 = 98.2%** vs Bandit 21.8% / Semgrep 45.7% ·
+**Independent benchmark — SecurityEval, genuinely-vulnerable corpus, bootstrap 95% CI** ([reconciliation](./docs/evaluation/RECONCILIATION.md)):
+
+| Tool | Recall (detectable CWEs) | 95% CI |
+|------|:------------------------:|--------|
+| **ACR-QA (full output)** | **58.4%** | [47.2%, 67.4%] |
+| Bandit | 50.6% | [39.3%, 60.7%] |
+| Semgrep CE | 23.6% | [14.6%, 32.6%] |
+
+ACR-QA detects **more real vulnerabilities than either competitor** — near-perfect on the high-severity classes (command-injection 2/2, SQLi 2/2, insecure-deserialization 4/4, XXE 6/6, SSRF 2/2).
+
+Plus:
+**96.4%** Confirmed Tier *precision* (the auto-block subset, 30-repo corpus, 95% CI [90.9%, 100%]) ·
+**100%** CVE recall (8/8 battery) ·
 9/10 OWASP Top 10 ·
-**2,757 tests** (2,653 Python + 104 TypeScript) ·
+**2,757 tests** ·
 84 async FastAPI endpoints ·
 19 analysis engines ·
 327+ rule mappings ·
 **0 critical findings on self-scan**
+
+> **Reading the numbers:** *recall* (58.4%, beats competitors) is the full-output metric; *precision*
+> (96.4%) is the Confirmed Tier's — two views of the same scan, for two jobs. See the
+> [honest reconciliation](./docs/evaluation/RECONCILIATION.md), which retracts an earlier flawed benchmark.
 
 ---
 

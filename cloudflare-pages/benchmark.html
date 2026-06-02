@@ -83,58 +83,54 @@
 
 <!-- MAIN LEADERBOARD -->
 <section class="section">
-  <div class="section-tag">SecurityEval Dataset — 130 CWE Samples</div>
-  <h2>Precision / Recall / F1</h2>
+  <div class="section-tag">SecurityEval — Recall on Genuinely-Vulnerable Code</div>
+  <h2>Detection Recall (higher = catches more real vulns)</h2>
   <div class="note">
-    <strong>Dataset:</strong> SecurityEval (Siddiq & Santos, 2022) — 130 Python CWE-labeled samples generated with GitHub Copilot.
-    Ground truth provided by dataset authors, not ACR-QA. File-level matching (Wilson CI 95%).
-    <strong>ACR-QA result = Confirmed Tier only</strong> — the auto-block stratum (96.4% precision gate).
-    Full ACR-QA output shows similar recall to Semgrep. <a href="https://github.com/ahmed-145/ACR-QA/blob/main/docs/evaluation/P1_BENCHMARK_METHODOLOGY.md">Full methodology →</a>
+    <strong>Dataset:</strong> SecurityEval (Siddiq &amp; Santos, 2022) — <code>Testcases_Insecure_Code/</code>, the
+    curated genuinely-vulnerable samples. Statically-detectable CWE subset (89 files). Every file is a
+    known true positive; recall = detected / total. Bootstrap 95% CI (1,000 resamples). All tools run on
+    the same files, same machine. <a href="https://github.com/ahmed-145/ACR-QA/blob/main/docs/evaluation/RECONCILIATION.md">Honest reconciliation →</a>
   </div>
   <table class="lb-table">
     <thead>
-      <tr><th>Tool</th><th>Findings</th><th>Precision ↓</th><th>Recall</th><th>F1</th><th>CI (95%)</th></tr>
+      <tr><th>Tool</th><th>Detected</th><th>Recall ↓</th><th>95% CI</th></tr>
     </thead>
     <tbody>
       <tr class="winner">
-        <td class="tool-name">🥇 ACR-QA Confirmed Tier</td>
-        <td>~55</td>
+        <td class="tool-name">🥇 ACR-QA (full output)</td>
+        <td>52 / 89</td>
         <td class="val-green">
-          96.4%
-          <span class="bar-wrap"><span class="bar-fill" style="width:96.4%;background:#22c55e"></span></span>
+          58.4%
+          <span class="bar-wrap"><span class="bar-fill" style="width:58.4%;background:#22c55e"></span></span>
         </td>
-        <td>~40%</td>
-        <td class="val-green">~56%</td>
-        <td><small>[90.9%, 100%]</small></td>
-      </tr>
-      <tr>
-        <td>Semgrep CE</td>
-        <td>~180</td>
-        <td class="val-orange">
-          36.0%
-          <span class="bar-wrap"><span class="bar-fill" style="width:36%;background:#f97316"></span></span>
-        </td>
-        <td>~63%</td>
-        <td class="val-orange">~46%</td>
-        <td><small>pending CI run</small></td>
+        <td><small>[47.2%, 67.4%]</small></td>
       </tr>
       <tr>
         <td>Bandit</td>
-        <td>~90</td>
-        <td class="val-red">
-          14.0%
-          <span class="bar-wrap"><span class="bar-fill" style="width:14%;background:#ef4444"></span></span>
+        <td>45 / 89</td>
+        <td class="val-orange">
+          50.6%
+          <span class="bar-wrap"><span class="bar-fill" style="width:50.6%;background:#f97316"></span></span>
         </td>
-        <td>~13%</td>
-        <td class="val-red">~14%</td>
-        <td><small>pending CI run</small></td>
+        <td><small>[39.3%, 60.7%]</small></td>
+      </tr>
+      <tr>
+        <td>Semgrep CE</td>
+        <td>21 / 89</td>
+        <td class="val-red">
+          23.6%
+          <span class="bar-wrap"><span class="bar-fill" style="width:23.6%;background:#ef4444"></span></span>
+        </td>
+        <td><small>[14.6%, 32.6%]</small></td>
       </tr>
     </tbody>
   </table>
   <p style="font-size:0.78rem;color:var(--muted);margin-top:0.75rem;">
-    * Confirmed Tier numbers from internal 30-repo study (pre-registration). SecurityEval CI run pending.
-    Semgrep/Bandit numbers from prior published benchmarks on similar corpora.
-    CI-generated results will replace these when the weekly job runs.
+    ACR-QA full output detects more real vulnerabilities than either competitor — near-perfect on the
+    high-severity classes (command-injection 2/2, SQLi 2/2, insecure-deserialization 4/4, XXE 6/6, SSRF 2/2).
+    The <strong>Confirmed Tier</strong> is a separate precision-optimized subset (96.4% precision, auto-block safe).
+    Recall and precision are two views of the same scan — see the
+    <a href="https://github.com/ahmed-145/ACR-QA/blob/main/docs/evaluation/RECONCILIATION.md">reconciliation</a>.
   </p>
 </section>
 
@@ -204,10 +200,10 @@
   <div class="section-tag">Reproduce It Yourself</div>
   <h2>Two commands, fully open</h2>
   <pre style="background:#000;border:1px solid var(--border);border-radius:8px;padding:1.25rem;font-family:monospace;font-size:0.83rem;overflow-x:auto;line-height:1.7;color:var(--green)">git clone https://github.com/s2e-lab/SecurityEval TESTS/evaluation/securityeval
-python3 scripts/run_benchmark_p1.py --dataset-dir TESTS/evaluation/securityeval</pre>
+python3 scripts/run_benchmark_p2.py --dataset-dir TESTS/evaluation/securityeval</pre>
   <p style="font-size:0.82rem;color:var(--muted);margin-top:0.75rem;">
-    Results written to <code>docs/evaluation/P1_BENCHMARK_&lt;date&gt;.md</code> and <code>.json</code>.
-    Methodology pre-registration: <a href="https://github.com/ahmed-145/ACR-QA/blob/main/docs/evaluation/P1_BENCHMARK_METHODOLOGY.md" style="color:var(--blue)">P1_BENCHMARK_METHODOLOGY.md</a>
+    Results written to <code>docs/evaluation/P2_BENCHMARK_&lt;scope&gt;_&lt;date&gt;.md</code> and <code>.json</code>.
+    Honest reconciliation (incl. retraction of the flawed P-1): <a href="https://github.com/ahmed-145/ACR-QA/blob/main/docs/evaluation/RECONCILIATION.md" style="color:var(--blue)">RECONCILIATION.md</a>
   </p>
 </section>
 

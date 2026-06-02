@@ -94,6 +94,7 @@ ignore = [
     "N999",   # invalid module name — our modules are CORE/, DATABASE/ (uppercase convention)
     "B008",   # function call in default argument
     "C901",   # too complex — we'll refactor later, not block CI
+    "UP017",  # datetime.UTC alias is py3.11+; runtime is py3.10 — keep timezone.utc
 ]
 
 [tool.ruff.lint.mccabe]
