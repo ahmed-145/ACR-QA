@@ -69,6 +69,7 @@ exclude = [
     "TESTS/evaluation/cloned/",
     "TESTS/evaluation/fixtures/",
     "TESTS/evaluation/ai_code_samples/",
+    "TESTS/evaluation/securityeval/",
     "mutants/",
 ]
 

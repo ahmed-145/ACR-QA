@@ -126,3 +126,4 @@ CLAUDE.md
 FRONTEND/static/dashboard/
 dashboard/node_modules/
 dashboard/dist/
+TESTS/evaluation/securityeval/

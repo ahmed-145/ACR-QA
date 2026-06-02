@@ -29,7 +29,7 @@ import json
 import math
 import subprocess
 import sys
-from datetime import UTC, datetime
+from datetime import datetime, timezone
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).parent.parent))
@@ -37,7 +37,7 @@ sys.path.insert(0, str(Path(__file__).parent.parent))
 from CORE import __version__
 from CORE.engines.confirmed_tier import ConfirmedTierEngine
 
-_NOW = datetime.now(UTC)
+_NOW = datetime.now(timezone.utc)
 
 
 # ---------------------------------------------------------------------------
@@ -64,11 +64,17 @@ def fmt_ci(lo: float, hi: float) -> str:
 # ---------------------------------------------------------------------------
 
 
+def _venv_bin(name: str) -> str:
+    """Return path to a tool in the project venv, falling back to PATH."""
+    venv = Path(__file__).parent.parent / ".venv" / "bin" / name
+    return str(venv) if venv.exists() else name
+
+
 def run_bandit(target_dir: str) -> list[dict]:
-    """Run Bandit on target_dir, return parsed findings."""
+    """Run Bandit on target_dir using the project venv."""
     try:
         result = subprocess.run(
-            ["bandit", "-r", target_dir, "-f", "json", "-q"],
+            [_venv_bin("bandit"), "-r", target_dir, "-f", "json", "-q"],
             capture_output=True,
             text=True,
             timeout=120,
@@ -81,13 +87,13 @@ def run_bandit(target_dir: str) -> list[dict]:
 
 
 def run_semgrep(target_dir: str) -> list[dict]:
-    """Run Semgrep CE with python security rules, return parsed findings."""
+    """Run Semgrep CE with python security rules using the project venv."""
     try:
         result = subprocess.run(
-            ["semgrep", "--config=p/python", "--json", "--quiet", target_dir],
+            [_venv_bin("semgrep"), "--config=p/python", "--json", "--quiet", target_dir],
             capture_output=True,
             text=True,
-            timeout=120,
+            timeout=180,
         )
         data = json.loads(result.stdout or "{}")
         return data.get("results", [])
@@ -97,34 +103,57 @@ def run_semgrep(target_dir: str) -> list[dict]:
 
 
 def run_acrqa_confirmed(target_dir: str) -> list[dict]:
-    """Run ACR-QA (normalizer + Confirmed Tier) on target_dir without LLM or DB."""
-    try:
-        result = subprocess.run(
-            [
-                sys.executable,
-                "CORE/main.py",
-                "--target-dir",
-                target_dir,
-                "--no-ai",
-                "--json",
-                "--repo-name",
-                "benchmark-p1",
-            ],
-            capture_output=True,
-            text=True,
-            timeout=180,
-        )
-        raw = json.loads(result.stdout or "[]")
-        engine = ConfirmedTierEngine()
-        confirmed = []
-        for f in raw:
-            f["file"] = f.get("file_path", f.get("file", ""))
-            if engine.classify(f).in_confirmed_tier:
-                confirmed.append(f)
-        return confirmed
-    except Exception as exc:
-        print(f"  ⚠ ACR-QA run failed: {exc}", file=sys.stderr)
-        return []
+    """
+    Run ACR-QA detection (Bandit + Semgrep) directly, normalize findings,
+    and apply the Confirmed Tier gate — no DB or LLM required.
+    """
+    from CORE.engines.normalizer import RULE_MAPPING
+
+    engine = ConfirmedTierEngine()
+    confirmed = []
+
+    # Strip dataset prefix so production-path filter sees relative paths
+    # (e.g. "Testcases_Copilot/CWE-078/author_1.py" not "/TESTS/evaluation/...")
+    def _rel(abs_path: str) -> str:
+        try:
+            return str(Path(abs_path).relative_to(target_dir))
+        except ValueError:
+            return abs_path
+
+    for r in run_bandit(target_dir):
+        sev_map = {"HIGH": "high", "MEDIUM": "medium", "LOW": "low"}
+        test_id = r.get("test_id", "")
+        rel_path = _rel(r.get("filename", ""))
+        f = {
+            "canonical_severity": sev_map.get(r.get("issue_severity", "LOW"), "low"),
+            "canonical_rule_id": RULE_MAPPING.get(test_id, f"BANDIT-{test_id}"),
+            "file": rel_path,
+            "file_path": r.get("filename", ""),
+            "tool_raw": {
+                "tool_name": "bandit",
+                "original_output": {"issue_confidence": r.get("issue_confidence", "")},
+            },
+        }
+        if engine.classify(f).in_confirmed_tier:
+            confirmed.append(f)
+
+    for r in run_semgrep(target_dir):
+        sev_raw = r.get("extra", {}).get("severity", "WARNING").upper()
+        sev_map = {"ERROR": "high", "WARNING": "medium", "INFO": "low"}
+        rule_id = r.get("check_id", "")
+        short_id = rule_id.split(".")[-1][:20]
+        rel_path = _rel(r.get("path", ""))
+        f = {
+            "canonical_severity": sev_map.get(sev_raw, "low"),
+            "canonical_rule_id": RULE_MAPPING.get(rule_id, f"SEMGREP-{short_id}"),
+            "file": rel_path,
+            "file_path": r.get("path", ""),
+            "tool_raw": {"tool_name": "semgrep"},
+        }
+        if engine.classify(f).in_confirmed_tier:
+            confirmed.append(f)
+
+    return confirmed
 
 
 # ---------------------------------------------------------------------------
@@ -135,21 +164,46 @@ def run_acrqa_confirmed(target_dir: str) -> list[dict]:
 def load_ground_truth(dataset_dir: Path) -> dict[str, list[str]]:
     """
     Load CWE labels from SecurityEval dataset.
-    Returns {filename_stem: [cwe_id, ...]} mapping.
+    Returns {absolute_filepath: [cwe_id, ...]} mapping.
 
-    SecurityEval stores labels in CWE-N folders with Python source files.
-    Files named CWE-N/sample_N.py.
+    SecurityEval actual structure:
+      Testcases_Copilot/CWE-NNN/*.py   ← AI-generated (primary corpus)
+      Testcases_Insecure_Code/CWE-NNN/*.py  ← human insecure samples
+      Testcases_InCoder/CWE-NNN/*.py   ← InCoder-generated
+
+    We use Testcases_Copilot as the primary corpus (AI-code focus)
+    and include Testcases_Insecure_Code for completeness.
     """
     labels: dict[str, list[str]] = {}
     if not dataset_dir.exists():
-        print(f"  ⚠ Dataset not found at {dataset_dir} — using synthetic labels", file=sys.stderr)
+        print(f"  ⚠ Dataset not found at {dataset_dir}", file=sys.stderr)
         return labels
-    for cwe_dir in dataset_dir.iterdir():
-        if not cwe_dir.is_dir():
-            continue
-        cwe_id = cwe_dir.name  # e.g. "CWE-78"
-        for py_file in cwe_dir.glob("*.py"):
-            labels[str(py_file)] = [cwe_id]
+
+    # Prefer Copilot testcases (most relevant to AI-code problem)
+    # Fall back to scanning root CWE-N folders if flat structure exists
+    target_dirs = []
+    copilot_dir = dataset_dir / "Testcases_Copilot"
+    insecure_dir = dataset_dir / "Testcases_Insecure_Code"
+
+    if copilot_dir.exists():
+        target_dirs.append(copilot_dir)
+    if insecure_dir.exists():
+        target_dirs.append(insecure_dir)
+
+    if not target_dirs:
+        # Flat structure: CWE-N/*.py directly under dataset_dir
+        target_dirs = [dataset_dir]
+
+    for base_dir in target_dirs:
+        for cwe_dir in sorted(base_dir.iterdir()):
+            if not cwe_dir.is_dir():
+                continue
+            cwe_id = cwe_dir.name  # e.g. "CWE-078"
+            if not cwe_id.startswith("CWE-"):
+                continue
+            for py_file in sorted(cwe_dir.glob("*.py")):
+                labels[str(py_file)] = [cwe_id]
+
     return labels
 
 
@@ -167,13 +221,39 @@ def score_tool(
     Returns TP, FP, FN, precision, recall for a tool against ground truth.
     For this benchmark: any finding on a file that has a CWE label = potential TP.
     We use file-level matching (conservative — same as Endor Labs methodology).
+
+    Matching strategy:
+      1. Exact path match
+      2. Suffix match (handles relative vs absolute paths)
     """
     labeled_files = set(ground_truth.keys())
-    finding_files = set(f.get(file_field, "") for f in findings)
 
-    tp = len(finding_files & labeled_files)
-    fp = len(finding_files - labeled_files)
-    fn = len(labeled_files - finding_files)
+    # Build a suffix-indexed set for robust matching
+    # e.g. ".../CWE-078/author_1.py" matches "CWE-078/author_1.py"
+    labeled_suffixes = {Path(f).as_posix() for f in labeled_files}
+    labeled_suffixes |= {"/".join(Path(f).parts[-2:]) for f in labeled_files}  # CWE-NNN/file.py
+    labeled_suffixes |= {Path(f).name for f in labeled_files}  # file.py
+
+    def _is_labeled(path: str) -> bool:
+        if not path:
+            return False
+        p = Path(path).as_posix()
+        if p in labeled_suffixes:
+            return True
+        # Try partial suffix matches
+        for labeled in labeled_files:
+            if p.endswith(Path(labeled).as_posix().lstrip("/")):
+                return True
+            if labeled.endswith(p.lstrip("/")):
+                return True
+        return False
+
+    finding_files_raw = [f.get(file_field, "") for f in findings]
+    tp = sum(1 for fp_path in set(finding_files_raw) if _is_labeled(fp_path))
+    fp = len(set(finding_files_raw)) - tp
+    fn = len(labeled_files) - tp
+    if fn < 0:
+        fn = 0
     total = tp + fp
 
     precision = tp / total if total else 0.0

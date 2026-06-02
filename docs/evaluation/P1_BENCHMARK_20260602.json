@@ -1,0 +1,43 @@
+{
+  "generated_at": "2026-06-02T13:22:59.370635+00:00",
+  "acrqa_version": "5.0.0b1",
+  "dataset": "TESTS/evaluation/securityeval",
+  "results": {
+    "ACR-QA Confirmed Tier": {
+      "tp": 9,
+      "fp": 5,
+      "fn": 242,
+      "total_findings": 14,
+      "labeled_files": 251,
+      "precision": 64.3,
+      "recall": 3.6,
+      "precision_ci": "[38.8%, 83.7%]",
+      "recall_ci": "[1.9%, 6.7%]",
+      "f1": 6.8
+    },
+    "Bandit": {
+      "tp": 98,
+      "fp": 65,
+      "fn": 153,
+      "total_findings": 246,
+      "labeled_files": 251,
+      "precision": 60.1,
+      "recall": 39.0,
+      "precision_ci": "[52.5%, 67.3%]",
+      "recall_ci": "[33.2%, 45.2%]",
+      "f1": 47.3
+    },
+    "Semgrep CE": {
+      "tp": 42,
+      "fp": 17,
+      "fn": 209,
+      "total_findings": 81,
+      "labeled_files": 251,
+      "precision": 71.2,
+      "recall": 16.7,
+      "precision_ci": "[58.6%, 81.2%]",
+      "recall_ci": "[12.6%, 21.8%]",
+      "f1": 27.1
+    }
+  }
+}
