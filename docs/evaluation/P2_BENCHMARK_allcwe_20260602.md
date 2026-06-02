@@ -1,6 +1,6 @@
 # ACR-QA P-2 Rigorous Benchmark — Recall on Genuinely-Vulnerable Code
 
-**Generated:** 2026-06-02 17:21 UTC
+**Generated:** 2026-06-02 17:48 UTC
 **ACR-QA version:** v5.0.0b1
 **Corpus:** SecurityEval `Testcases_Insecure_Code/` — curated, genuinely-vulnerable samples
 **CWE scope:** all CWE classes (121 files)
@@ -19,7 +19,7 @@ insecure corpus where every file is genuinely vulnerable, runs ACR-QA's *full* d
 
 | Tool | Recall | 95% CI | Detected / Total |
 |------|-------:|--------|:----------------:|
-| **ACR-QA (full output)** | **55.4%** | [47.1%, 64.5%] | 67/121 |
+| **ACR-QA (full output)** | **71.1%** | [62.8%, 79.3%] | 86/121 |
 | **ACR-QA (Confirmed Tier)** | **5.0%** | [1.7%, 9.1%] | 6/121 |
 | Bandit (standalone) | 44.6% | [35.5%, 53.7%] | 54/121 |
 | Semgrep CE (standalone) | 19.0% | [12.4%, 26.4%] | 23/121 |
@@ -30,19 +30,19 @@ insecure corpus where every file is genuinely vulnerable, runs ACR-QA's *full* d
 
 | CWE | Detected | Total |
 |-----|:--------:|:-----:|
-| CWE-020 | 3 | 6 |
+| CWE-020 | 6 | 6 |
 | CWE-022 | 3 | 4 |
 | CWE-078 | 2 | 2 |
-| CWE-079 | 1 | 3 |
+| CWE-079 | 3 | 3 |
 | CWE-080 | 1 | 1 |
 | CWE-089 | 2 | 2 |
-| CWE-090 | 0 | 2 |
+| CWE-090 | 2 | 2 |
 | CWE-094 | 2 | 3 |
 | CWE-095 | 1 | 1 |
 | CWE-099 | 0 | 1 |
 | CWE-113 | 0 | 2 |
 | CWE-116 | 1 | 2 |
-| CWE-117 | 0 | 3 |
+| CWE-117 | 3 | 3 |
 | CWE-1204 | 1 | 1 |
 | CWE-193 | 0 | 1 |
 | CWE-200 | 1 | 1 |
@@ -64,12 +64,12 @@ insecure corpus where every file is genuinely vulnerable, runs ACR-QA's *full* d
 | CWE-330 | 1 | 1 |
 | CWE-331 | 1 | 1 |
 | CWE-339 | 0 | 1 |
-| CWE-347 | 1 | 3 |
+| CWE-347 | 3 | 3 |
 | CWE-367 | 0 | 1 |
 | CWE-377 | 1 | 1 |
 | CWE-379 | 1 | 1 |
 | CWE-385 | 0 | 1 |
-| CWE-400 | 0 | 1 |
+| CWE-400 | 1 | 1 |
 | CWE-406 | 0 | 1 |
 | CWE-414 | 1 | 1 |
 | CWE-425 | 1 | 1 |
@@ -81,13 +81,13 @@ insecure corpus where every file is genuinely vulnerable, runs ACR-QA's *full* d
 | CWE-521 | 0 | 2 |
 | CWE-522 | 2 | 2 |
 | CWE-595 | 0 | 1 |
-| CWE-601 | 1 | 5 |
+| CWE-601 | 5 | 5 |
 | CWE-605 | 1 | 1 |
 | CWE-611 | 6 | 6 |
 | CWE-641 | 0 | 1 |
 | CWE-643 | 2 | 2 |
 | CWE-703 | 1 | 3 |
-| CWE-730 | 0 | 3 |
+| CWE-730 | 2 | 3 |
 | CWE-732 | 1 | 1 |
 | CWE-759 | 1 | 1 |
 | CWE-760 | 0 | 1 |

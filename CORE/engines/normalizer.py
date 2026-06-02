@@ -182,6 +182,14 @@ RULE_MAPPING = {
     "jwt-none-algorithm": "SECURITY-047",
     "lxml-xxe": "SECURITY-044",  # XXE via lxml (maps to existing lxml rule)
     "open-redirect": "SECURITY-048",  # Open redirect via user-controlled URL
+    # ── v7 taint rules (2026-06-02) — expands coverage of missed CWE classes ──
+    "acrqa-open-redirect": "SECURITY-048",  # CWE-601
+    "acrqa-open-redirect-header": "SECURITY-048",  # CWE-601 via Location header
+    "acrqa-log-injection": "SECURITY-066",  # CWE-117
+    "acrqa-ldap-injection": "SECURITY-067",  # CWE-090
+    "acrqa-redos-user-pattern": "SECURITY-051",  # CWE-730
+    "acrqa-reflective-xss": "SECURITY-045",  # CWE-079
+    "acrqa-jwt-signature-bypass": "SECURITY-047",  # CWE-347
     # ── Bugs found in god-mode live test (2026-03-31) ──
     "bare-except": "EXCEPT-001",  # Semgrep custom rule — bare except clause
     "too-many-parameters": "SOLID-001",  # Semgrep custom rule — too many function params

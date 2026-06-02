@@ -321,3 +321,145 @@ rules:
     metadata:
       category: design
       canonical_rule_id: GLOBAL-001
+
+  # ============================================================
+  # TAINT-BASED RULES — v7 detection expansion (2026-06-02)
+  # Targets previously-missed CWE classes: CWE-601, CWE-117,
+  # CWE-090, CWE-730, CWE-079, CWE-347
+  # ============================================================
+
+  - id: acrqa-open-redirect
+    mode: taint
+    pattern-sources:
+      - pattern: request.args
+      - pattern: request.args.get(...)
+      - pattern: request.args[...]
+      - pattern: request.GET
+      - pattern: request.GET.get(...)
+      - pattern: request.GET[...]
+    pattern-sinks:
+      - pattern: redirect(...)
+      - pattern: HttpResponseRedirect(...)
+    message: "Open redirect: user-controlled URL flows to redirect (CWE-601)."
+    severity: ERROR
+    languages: [python]
+    metadata:
+      category: security
+      canonical_rule_id: SECURITY-048
+      cwe: CWE-601
+
+  - id: acrqa-open-redirect-header
+    mode: taint
+    pattern-sources:
+      - pattern: request.args
+      - pattern: request.args.get(...)
+      - pattern: request.args[...]
+      - pattern: request.GET.get(...)
+    pattern-sinks:
+      - pattern: $RESP.headers['Location'] = ...
+      - pattern: $RESP['Location'] = ...
+    message: "Open redirect via Location header (CWE-601)."
+    severity: ERROR
+    languages: [python]
+    metadata:
+      category: security
+      canonical_rule_id: SECURITY-048
+      cwe: CWE-601
+
+  - id: acrqa-log-injection
+    mode: taint
+    pattern-sources:
+      - pattern: request.args
+      - pattern: request.args.get(...)
+      - pattern: request.args[...]
+      - pattern: request.GET.get(...)
+      - pattern: input(...)
+    pattern-sinks:
+      - pattern: logging.debug(...)
+      - pattern: logging.info(...)
+      - pattern: logging.warning(...)
+      - pattern: logging.error(...)
+      - pattern: logging.critical(...)
+      - pattern: $LOGGER.debug(...)
+      - pattern: $LOGGER.info(...)
+      - pattern: $LOGGER.warning(...)
+      - pattern: $LOGGER.error(...)
+      - pattern: $LOGGER.critical(...)
+    message: "Log injection: unsanitized user input written to logs (CWE-117)."
+    severity: WARNING
+    languages: [python]
+    metadata:
+      category: security
+      canonical_rule_id: SECURITY-066
+      cwe: CWE-117
+
+  - id: acrqa-ldap-injection
+    mode: taint
+    pattern-sources:
+      - pattern: request.args
+      - pattern: request.args.get(...)
+      - pattern: request.args[...]
+      - pattern: request.GET.get(...)
+    pattern-sinks:
+      - pattern: $CONN.search_s(...)
+      - pattern: $CONN.search(...)
+      - pattern: $CONN.search_ext_s(...)
+      - pattern: ldap.search(...)
+    message: "LDAP injection: user input flows into an LDAP query (CWE-90)."
+    severity: ERROR
+    languages: [python]
+    metadata:
+      category: security
+      canonical_rule_id: SECURITY-067
+      cwe: CWE-90
+
+  - id: acrqa-redos-user-pattern
+    mode: taint
+    pattern-sources:
+      - pattern: request.args
+      - pattern: request.args.get(...)
+      - pattern: request.args[...]
+      - pattern: request.GET.get(...)
+    pattern-sinks:
+      - pattern: re.search($PAT, ...)
+      - pattern: re.match($PAT, ...)
+      - pattern: re.compile(...)
+      - pattern: re.findall($PAT, ...)
+      - pattern: re.fullmatch($PAT, ...)
+    message: "ReDoS: user-controlled regex pattern can cause catastrophic backtracking (CWE-730)."
+    severity: ERROR
+    languages: [python]
+    metadata:
+      category: security
+      canonical_rule_id: SECURITY-051
+      cwe: CWE-730
+
+  - id: acrqa-reflective-xss
+    mode: taint
+    pattern-sources:
+      - pattern: request.args
+      - pattern: request.args.get(...)
+      - pattern: request.args[...]
+      - pattern: request.GET.get(...)
+    pattern-sinks:
+      - pattern: make_response(...)
+    message: "Reflected XSS: user input returned in response without escaping (CWE-79)."
+    severity: ERROR
+    languages: [python]
+    metadata:
+      category: security
+      canonical_rule_id: SECURITY-045
+      cwe: CWE-79
+
+  - id: acrqa-jwt-signature-bypass
+    pattern-either:
+      - pattern: jwt.decode($T, verify=False)
+      - pattern: jwt.process_jwt(...)
+      - pattern-regex: 'jwt\.decode\([^)]*verify_signature.*False'
+    message: "JWT signature verification disabled — tokens can be forged (CWE-347)."
+    severity: ERROR
+    languages: [python]
+    metadata:
+      category: security
+      canonical_rule_id: SECURITY-047
+      cwe: CWE-347

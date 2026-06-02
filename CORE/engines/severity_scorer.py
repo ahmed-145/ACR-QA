@@ -209,7 +209,9 @@ class SeverityScorer:
         "SECURITY-045": "high",  # XSS via render_template_string (CWE-79)
         "SECURITY-046": "high",  # SSRF via requests with user-controlled URL (CWE-918)
         "SECURITY-047": "high",  # JWT none algorithm — signature bypass (CWE-347)
-        "SECURITY-048": "medium",  # Open redirect via user-controlled URL (CWE-601)
+        "SECURITY-048": "high",  # Open redirect via user-controlled URL (CWE-601)
+        "SECURITY-066": "medium",  # Log injection: user input in log statements (CWE-117)
+        "SECURITY-067": "high",  # LDAP injection: user input in LDAP query (CWE-90)
         # ── Taint analysis & new JS rules ──
         "SECURITY-061": "high",  # Taint: req.* → SQL query (SQLi via taint tracking)
         "SECURITY-062": "high",  # Taint: req.* → exec/spawn (command injection)

@@ -1,18 +1,18 @@
 {
-  "generated_at": "2026-06-02T17:21:26.561697+00:00",
+  "generated_at": "2026-06-02T17:48:05.755219+00:00",
   "version": "5.0.0b1",
   "scope": "detectable",
   "results": {
     "ACR-QA (full output)": {
       "total": 89,
-      "tp": 52,
-      "fn": 37,
-      "recall": 58.4,
-      "recall_ci": "[47.2%, 67.4%]",
+      "tp": 70,
+      "fn": 19,
+      "recall": 78.7,
+      "recall_ci": "[69.7%, 86.5%]",
       "per_cwe": {
         "CWE-020": {
           "total": 6,
-          "hit": 3
+          "hit": 6
         },
         "CWE-022": {
           "total": 4,
@@ -24,7 +24,7 @@
         },
         "CWE-079": {
           "total": 3,
-          "hit": 1
+          "hit": 3
         },
         "CWE-080": {
           "total": 1,
@@ -36,7 +36,7 @@
         },
         "CWE-090": {
           "total": 2,
-          "hit": 0
+          "hit": 2
         },
         "CWE-094": {
           "total": 3,
@@ -56,7 +56,7 @@
         },
         "CWE-117": {
           "total": 3,
-          "hit": 0
+          "hit": 3
         },
         "CWE-200": {
           "total": 1,
@@ -104,7 +104,7 @@
         },
         "CWE-347": {
           "total": 3,
-          "hit": 1
+          "hit": 3
         },
         "CWE-377": {
           "total": 1,
@@ -128,7 +128,7 @@
         },
         "CWE-601": {
           "total": 5,
-          "hit": 1
+          "hit": 5
         },
         "CWE-605": {
           "total": 1,
@@ -140,7 +140,7 @@
         },
         "CWE-730": {
           "total": 3,
-          "hit": 0
+          "hit": 2
         },
         "CWE-732": {
           "total": 1,
