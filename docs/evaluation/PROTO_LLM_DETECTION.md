@@ -27,6 +27,25 @@ Rule-based baseline for reference: **25.1% full / 37.8% detectable**.
    ACR-QA's exploit-verifier is that something — but only for the ~10 exploitable categories; secrets/
    crypto/config would need the LLM-jury (`second_opinion`) instead.
 
+## Model sweep (live Groq, same 3 repos) — surprising + useful
+
+| Model | LLM-alone recall | union lift | false-alarm rate | role |
+|---|:---:|:---:|:---:|---|
+| **llama-3.3-70b-versatile** | **22.1%** | **+13.0pp** | ~76% | aggressive **detector** (best recall) |
+| meta-llama/llama-4-scout-17b | 15.6% | +9.1pp | ~73–96% | mid |
+| openai/gpt-oss-120b | 10.4% | +6.5pp | **0–50%** | conservative **judge** (best precision) |
+| qwen/qwen3-32b | 9.1% | +3.9pp | ~50–100% | conservative |
+
+**Counter-intuitive finding:** newer/bigger reasoning models detect **fewer** vulns — they're tuned to be
+cautious. The old `llama-3.3-70b` is the **best aggressive detector** on Groq. (Parsing note: gpt-oss/qwen
+are reasoning models that emit answers in `.reasoning`, not `.content` — the harness now reads both.)
+
+**The architecture this dictates:** models are a precision/recall **dial**. Use **llama-3.3-70b to DETECT**
+(broad recall) → **gpt-oss-120b to GATE** (its low false-alarm rate = a strong judge). This is the
+`second_opinion` design with empirically-chosen roles, and it **de-risks the gating step** the hybrid needs.
+
+---
+
 ## UPDATE — the union test (the decisive product number)
 
 LLM-*alone* is below rules. But the real question is **complementarity**: does the LLM catch what rules

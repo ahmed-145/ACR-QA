@@ -69,20 +69,20 @@ import pickle
 def process_data(data):
     result = eval(data)  # Security issue
     password = "admin123"  # Hardcoded secret
-    
+
     try:
         with open("file.txt") as f:
             content = f.read()
     except:  # Bare except
         pass
-    
+
     unused_var = 42
     return result
 
 class MyClass:
     def __init__(self):
         self.items = []
-    
+
     def add(self, item):
         self.items.append(item)
 `;

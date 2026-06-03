@@ -86,6 +86,19 @@ flaws a developer must fix — not style. File: {fname}
 ```"""
 
 
+def _extract_json_array(txt: str) -> list:
+    """Find the last valid JSON array of objects in text (robust to reasoning prefixes)."""
+    best: list = []
+    for m in re.finditer(r"\[(?:[^\[\]]|\[[^\[\]]*\])*\]", txt, re.DOTALL):
+        try:
+            arr = json.loads(m.group(0))
+        except (json.JSONDecodeError, ValueError):
+            continue
+        if isinstance(arr, list) and (not arr or isinstance(arr[0], dict)):
+            best = arr  # keep the last well-formed array (usually the final answer)
+    return best
+
+
 def _llm_detect_file(fname: str, code: str) -> list[dict]:
     global _key_idx
     if not _KEYS:
@@ -104,15 +117,17 @@ def _llm_detect_file(fname: str, code: str) -> list[dict]:
                 temperature=0.0,
                 max_tokens=1200,
             )
-            txt = comp.choices[0].message.content.strip()
-            m = re.search(r"\[.*\]", txt, re.DOTALL)
-            if not m:
-                return []
-            items = json.loads(m.group(0))
+            msg = comp.choices[0].message
+            # reasoning models (gpt-oss, qwen3) may put the answer in .reasoning, not .content
+            txt = (msg.content or "") + "\n" + (getattr(msg, "reasoning", None) or "")
+            items = _extract_json_array(txt)
             out = []
             for it in items:
                 if isinstance(it, dict) and "line" in it and "cwe" in it:
-                    out.append({"file": fname, "line": int(it["line"]), "cwe": str(it["cwe"]).upper().strip()})
+                    try:
+                        out.append({"file": fname, "line": int(it["line"]), "cwe": str(it["cwe"]).upper().strip()})
+                    except (ValueError, TypeError):
+                        continue
             return out
         except Exception as e:  # noqa: BLE001
             if "rate" in str(e).lower() or "429" in str(e):
@@ -170,8 +185,9 @@ def score_repo(repo: str) -> dict:
     if not src.exists() or not tp_entries:
         return {"repo": repo, "skip": True}
 
-    # gather LLM candidates across all python files (cached — iterate scoring for free)
-    cache_f = _CACHE / f"{repo}.json"
+    # gather LLM candidates across all python files (cached per-model — iterate scoring for free)
+    _safe = _MODEL.replace("/", "_")
+    cache_f = _CACHE / f"{repo}__{_safe}.json"
     if cache_f.exists():
         cands = json.loads(cache_f.read_text())
         print("    (using cached candidates)")
@@ -259,9 +275,12 @@ def score_repo(repo: str) -> dict:
 
 
 def main() -> None:
+    global _MODEL
     ap = argparse.ArgumentParser()
     ap.add_argument("--repos", nargs="+", default=["realvuln-vampi", "realvuln-dsvpwa", "realvuln-flask-xss"])
+    ap.add_argument("--model", default=_MODEL, help="Groq model id (e.g. openai/gpt-oss-120b)")
     args = ap.parse_args()
+    _MODEL = args.model
 
     print(f"LLM-detection prototype — model={_MODEL}, keys={len(_KEYS)}, line_tol=±{LINE_TOL}")
     print("=" * 72)

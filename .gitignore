@@ -130,3 +130,4 @@ TESTS/evaluation/securityeval/
 docs/evaluation/OWASP_BENCHMARK_allcwe_20260603.json
 docs/evaluation/OWASP_BENCHMARK_allcwe_20260603.md
 TESTS/evaluation/realvuln/
+DATA/proto_llm_cache/

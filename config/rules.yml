@@ -13,13 +13,13 @@ SOLID-001:
   remediation: "Extract related parameters into a dataclass or configuration object"
   example_good: |
     from dataclasses import dataclass
-    
+
     @dataclass
     class UserConfig:
         username: str
         password: str
         email: str
-    
+
     def create_user(config: UserConfig):
         print(f"Creating {config.username}")
   example_bad: |
@@ -112,7 +112,7 @@ DUP-001:
   example_good: |
     def validate_email(email):
         return "@" in email and "." in email
-    
+
     # Reuse in multiple places
     valid1 = validate_email(user1.email)
     valid2 = validate_email(user2.email)
@@ -120,7 +120,7 @@ DUP-001:
     # File 1
     if "@" in user1.email and "." in user1.email:
         print("Valid")
-    
+
     # File 2 - DUPLICATE!
     if "@" in user2.email and "." in user2.email:
         print("Valid")
@@ -137,13 +137,13 @@ DEAD-001:
   example_good: |
     def calculate_total(items):
         return sum(items)
-    
+
     # Function is actually called
     result = calculate_total([1, 2, 3])
   example_bad: |
     def calculate_total(items):
         return sum(items)
-    
+
     def unused_function():  # Never called anywhere!
         pass
 
@@ -177,10 +177,10 @@ STYLE-002:
   example_good: |
     def calculate_total(items):
         """Calculate sum of all items.
-        
+
         Args:
             items: List of numbers
-            
+
         Returns:
             Sum of all items
         """
@@ -433,10 +433,10 @@ DOC-001:
   example_good: |
     def calculate_total(items: list) -> float:
         """Calculate total price of items.
-        
+
         Args:
             items: List of item dictionaries with 'price' key
-            
+
         Returns:
             Total price as float
         """
@@ -519,7 +519,7 @@ THREAD-001:
   example_good: |
     from threading import Lock
     lock = Lock()
-    
+
     def increment():
         with lock:
             global counter

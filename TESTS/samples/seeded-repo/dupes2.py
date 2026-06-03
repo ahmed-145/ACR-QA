@@ -91,7 +91,7 @@ def fetch_customer_orders(user_id, db_connection):
     cursor = db_connection.cursor()
 
     query = """
-        SELECT 
+        SELECT
             orders.id,
             orders.order_date,
             orders.total_amount,

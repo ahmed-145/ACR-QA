@@ -69,14 +69,14 @@ analyze-mr:
     - |
       # Get changed files
       git diff --name-only $CI_MERGE_REQUEST_DIFF_BASE_SHA...$CI_COMMIT_SHA > changed_files.txt
-      
+
       # Run analysis
       python3 CORE/main.py \
         --target-dir . \
         --repo-name $CI_PROJECT_PATH \
         --pr-number $CI_MERGE_REQUEST_IID \
         --limit 10
-      
+
       # Post comments to MR
       if [ -n "$GITLAB_TOKEN" ]; then
         python3 scripts/post_gitlab_comments.py \
