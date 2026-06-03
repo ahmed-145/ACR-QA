@@ -13,7 +13,7 @@
 [![Signed](https://img.shields.io/badge/Cosign-signed-green?logo=sigstore&logoColor=white)](./.github/workflows/sign-images.yml)
 [![Self-Scan](https://img.shields.io/badge/Self--Scan-0%20critical-22c55e)](./.github/workflows/self-scan.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
-[![Tests](https://img.shields.io/badge/Tests-2741%20passing-22c55e?logo=pytest&logoColor=white)](./TESTS/)
+[![Tests](https://img.shields.io/badge/Tests-2759%20passing-22c55e?logo=pytest&logoColor=white)](./TESTS/)
 [![OWASP Youden J](https://img.shields.io/badge/OWASP%20Youden%20J-0.157%20%28leads%20all%20tools%29-22c55e)](./docs/evaluation/OWASP_BENCHMARK.md)
 [![Python 3.11+](https://img.shields.io/badge/Python-3.11+-3776ab?logo=python&logoColor=white)](https://www.python.org/)
 
@@ -128,7 +128,7 @@ ACR-QA produces two views of every scan. They are not competing claims — they 
 The Confirmed Tier's 96.4% precision mirrors what "Sifting the Noise" (arXiv:2601.22952) achieves via LLM post-processing (~92% → 6.3% FPR on OWASP). ACR-QA achieves this *statically* — 4-gate filter, zero LLM latency.
 
 **Other metrics:**
-**100%** CVE recall (8/8 pre-registered battery) · 9/10 OWASP Top 10 · **2,741 tests** · 52 FastAPI endpoints · 327+ rule mappings · **0 critical findings on self-scan** · **Verified Remediation** — fix_verified=True by live re-exploit + ECDSA signed
+**100%** CVE recall (8/8 pre-registered battery) · 9/10 OWASP Top 10 · **2,759 tests** · 52 FastAPI endpoints · 327+ rule mappings · **0 critical findings on self-scan** · **Verified Remediation** — fix_verified=True by live re-exploit + ECDSA signed
 
 ---
 

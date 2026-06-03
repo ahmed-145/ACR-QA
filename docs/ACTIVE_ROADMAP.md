@@ -105,7 +105,7 @@ These items execute the one-sentence bet from `GOD_MODE_V6_BUSINESS_PLAN.md`. Al
 | 38 | **OWASP-Methodology Benchmark** — dual corpus (89 TP + 89 TN); Youden J, FPR, MCC, CIs | ✅ | J=0.157 leads Bandit 0.090 + Semgrep 0.056; §5.18 in EVALUATION_CHAPTER; Q41-Q42 in QA_PREP |
 | 39 | **Verified Remediation Engine** — 5-step detect→exploit→patch→re-exploit→sign pipeline | ✅ | `CORE/engines/verified_remediation.py`; 15 unit tests; demo script; §5.19 in EVALUATION_CHAPTER; Q43 in QA_PREP |
 | — | **Benchmark.html + cloudflare pages** — OWASP leaderboard + Verified Remediation section added | ✅ | Public-facing pages now reflect full benchmark story |
-| — | **All test badges** synced to 2,741 | ✅ | README + cloudflare + QA_PREP |
+| — | **All test badges** synced to 2,759 | ✅ | README + cloudflare + QA_PREP |
 
 **Current best numbers (SecurityEval, genuinely-vulnerable, bootstrap 95% CI):**
 - ACR-QA full output recall: **91.0%** [82.8%, 97.8%] vs Bandit 50.6% vs Semgrep 23.6%

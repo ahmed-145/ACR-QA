@@ -148,7 +148,7 @@ Copilot review had a 22% hallucination rate in the 2024 audit. It has no recall 
 
 ## Category 5 — Test Suite
 
-### Q23. "2,757 tests — where did they come from? Did you write them all?"
+### Q23. "2,759 tests — where did they come from? Did you write them all?"
 
 Yes. Starting from Phase 1's ~30 happy-path tests, I wrote them iteratively alongside each feature. Categories: unit tests per engine, database integration tests, FastAPI endpoint tests (including auth, rate limiting, SSE), chaos engineering (Postgres/Redis failure injection), supply chain (pip-audit/npm-audit mocked), WCAG accessibility (axe-core), and property-based tests using Hypothesis. The test count is not padding — each test class is in a separate file with a specific failure scenario.
 
@@ -202,7 +202,7 @@ Shell injection. If a filename contains a semicolon or backtick and you use `she
 
 ### Q31. "How did you get it on PyPI?"
 
-GitHub Actions workflow (`pypi-publish.yml`) triggered on version tag (`v*.*.* `). Uses PyPI OIDC Trusted Publisher — no API key stored in secrets. The workflow builds a wheel via `python -m build`, uploads via `twine`. Package is at `pip install acrqa==5.0.0rc1`.
+GitHub Actions workflow (`pypi-publish.yml`) triggered on version tag (`v*.*.* `). Uses PyPI OIDC Trusted Publisher — no API key stored in secrets. The workflow builds a wheel via `python -m build`, uploads via `twine`. Package is at `pip install acrqa==5.0.0rc2`.
 
 ---
 
@@ -256,13 +256,13 @@ Two things. First, I'd add Java support earlier — Go coverage gave +28.8pp aga
 
 ### Q39. "What is CI/CD?"
 
-Continuous Integration / Continuous Deployment. Every git push triggers GitHub Actions (free for open source): linting, type checking, and all 2,757 tests run automatically. If any test fails, the push is blocked from `main`. This means every commit to `main` has passed 2,757 tests — no manual testing required. The green checkmarks in the Actions tab are the proof.
+Continuous Integration / Continuous Deployment. Every git push triggers GitHub Actions (free for open source): linting, type checking, and all 2,759 tests run automatically. If any test fails, the push is blocked from `main`. This means every commit to `main` has passed 2,759 tests — no manual testing required. The green checkmarks in the Actions tab are the proof.
 
 ---
 
 ### Q40. "What's the next step after defense?"
 
-Three things: (1) Tag v5.0.0 final (removing the beta label) after defense. (2) Film the 5-minute demo video and publish to YouTube. (3) Begin Phase B — public launch at acrqa.dev, VSCode plugin, GitHub App, targeting 100+ users. The PyPI package and GitHub Actions integration are already live — users can start today with `pip install acrqa==5.0.0rc1`.
+Three things: (1) Tag v5.0.0 final (removing the beta label) after defense. (2) Film the 5-minute demo video and publish to YouTube. (3) Begin Phase B — public launch at acrqa.dev, VSCode plugin, GitHub App, targeting 100+ users. The PyPI package and GitHub Actions integration are already live — users can start today with `pip install acrqa==5.0.0rc2`.
 
 ---
 
@@ -294,10 +294,10 @@ It's the expected behavior of a recall-first tool. The full output maximizes rec
 
 | Metric | Value |
 |--------|------:|
-| Version | v5.0.0rc1 |
-| Python tests | 2,741 |
+| Version | v5.0.0rc2 |
+| Python tests | 2,759 |
 | TypeScript tests | 104 |
-| Total tests | **2,845** |
+| Total tests | **2,863** |
 | API endpoints | **52** |
 | Alembic migrations | 18 |
 | Eval corpus | **13 repos, 4 languages** |
@@ -312,4 +312,4 @@ It's the expected behavior of a recall-first tool. The full output maximizes rec
 | OWASP Methodology Youden J | **0.157** (leads Bandit 0.090, Semgrep 0.056) |
 | P-2 recall (detectable CWEs) | **91.0%** vs Bandit 50.6%, Semgrep 23.6% |
 | Novel engines | 10 contributions |
-| Distribution | `pip install acrqa==5.0.0rc1` + GitHub Actions Marketplace |
+| Distribution | `pip install acrqa==5.0.0rc2` + GitHub Actions Marketplace |
