@@ -2,6 +2,32 @@
 
 All notable changes to ACR-QA are documented here.
 
+## [v5.0.0rc2 — God Mode v9 #4+#10/#13] — 2026-06-03
+
+### Added — RealVuln Benchmark (#4)
+
+- **`scripts/run_realvuln_benchmark.py`** — runs ACR-QA + Bandit against 22 real Python repos
+  from the RealVuln corpus (kolega-ai/Real-Vuln-Benchmark). Scoring: CWE + file + line (±10)
+  matching. Metrics: Recall, FPR, F3, MCC, Youden J.
+- **`TESTS/evaluation/realvuln/`** — 22 repos cloned (4 GitHub URLs broken in manifest).
+- **`docs/evaluation/REALVULN_BENCHMARK.md`** — permanent summary with honest analysis of the
+  91% → 23.5% drop (statically-undetectable classes, strict matching, multi-file complexity).
+- **`docs/evaluation/REALVULN_BENCHMARK_20260603.{md,json}`** — machine-readable results.
+- **`docs/EVALUATION_CHAPTER.md §5.21`** — RealVuln section.
+- **`docs/QA_PREP.md` Q45** — "Your synthetic benchmark shows 91%. What about real code?" answer.
+- **Key results:** ACR-QA 23.5% recall vs Bandit 18.3% (+5.2pp) on neutral third-party ground.
+  Both numbers published. The gap is documented and explained, not hidden.
+
+### Added — Full Chain Verification: All 10 Exploit Categories (#10/#13)
+
+- **4 new Flask fixture apps** with Dockerfiles:
+  `flask_ssrf/`, `flask_open_redirect/`, `flask_path_traversal/`, `flask_xxe/`
+  — brings total fixtures to 8 (4 original + 4 new).
+- **`TESTS/test_exploit_verifier.py::TestAllTenCategoriesWired`** — 12 unit tests verifying
+  all 10 categories are fully wired: PAYLOADS, EXPLOITATION_SIGNALS, COMMON_PARAMS,
+  DEFAULT_ROUTES, RULE_TO_CATEGORY, fixture existence, signal detection, routing, chain imports.
+- Tests: 2,771 passing (12 new wiring tests).
+
 ## [v5.0.0rc2 — God Mode v9 addendum] — 2026-06-03
 
 ### Summary

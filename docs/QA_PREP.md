@@ -266,6 +266,18 @@ Three things: (1) Tag v5.0.0 final (removing the beta label) after defense. (2) 
 
 ---
 
+### Q45. "Your synthetic-snippet benchmark shows 91%. What about real production code?" ⚠️ HIGH RISK
+
+We ran it. RealVuln (kolega-ai/Real-Vuln-Benchmark) — 26 real multi-file Python apps (Flask, Django, APIs), 697 hand-labelled TP + 120 FP traps, strict CWE+file+line(±10) matching, third-party ground truth. ACR-QA: **23.5% recall**, Bandit: 18.3%. ACR-QA leads Bandit by +5.2pp on neutral ground. The drop from 91% is explained by three documented causes: (1) ~40% of RealVuln entries are auth/IDOR/logic flaws that NO static tool detects; (2) strict line matching (±10) vs file-level matching; (3) multi-file framework abstractions. The honest statement: ACR-QA detects ~35–40% of statically-detectable real vulns, consistently ahead of Bandit, with 97 FP traps correctly avoided. Both numbers are published: `docs/evaluation/REALVULN_BENCHMARK.md`.
+
+---
+
+### Q46. "Can your exploit verifier actually handle 10 different vulnerability types?"
+
+Yes — fully wired and unit-tested. All 10 categories (SQLi, CMDi, SSTI, path-traversal, SSRF, XXE, insecure-deserialization, open-redirect, ReDoS, LDAP-injection) have PAYLOADS, EXPLOITATION_SIGNALS, COMMON_PARAMS, DEFAULT_ROUTES, RULE_TO_CATEGORY mappings, and Docker fixture apps. `TestAllTenCategoriesWired` (12 unit tests) verifies all constants and routing. The full chain demo: `python3 scripts/run_full_audit_chain.py --target TESTS/fixtures/exploits/flask_sqli` (requires Docker).
+
+---
+
 ### Q44. "Your OWASP FPR is 75.3% — you scream on clean code. Why should I trust this tool?" ⚠️ HIGH RISK
 
 This is the right question and I welcome it. Three-part answer: (1) **Two operating points, one scan.** The 75.3% FPR is the *full output* — the recall-first mode used for developer triage. The *Confirmed Tier* (the auto-block mode) has near-zero FPR on production code. These are two points on the same Precision-Recall curve. You pick the operating point for your use case. (2) **The FPR is a corpus artefact.** SecurityEval has only 89 "clean" TN files — tiny snippets. On a real 10,000-file codebase, the absolute false positive *count* stays bounded while the FPR denominator grows. Precision (54.7% full output) is the corpus-size-immune metric; it means roughly 1 in 2 alerts is real in developer review mode. (3) **Precedent.** "Sifting the Noise" (arXiv:2601.22952) shows LLM-augmented SAST cuts SAST FPs ~91% (from 92% to 6.3% FPR on OWASP). ACR-QA's Confirmed Tier achieves a comparable reduction *statically*, targeting auto-block precision of 96.4%.

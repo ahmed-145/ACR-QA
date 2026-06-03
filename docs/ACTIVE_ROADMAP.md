@@ -131,9 +131,13 @@ These items execute the one-sentence bet from `GOD_MODE_V6_BUSINESS_PLAN.md`. Al
 | P3.3 | **ADR backfill** 5 → 12 — 7 new ADRs (engine arch, confirmed tier, sandbox, taint, benchmark, remediation, adapters) | ✅ | `docs/adr/0006-0012.md` |
 | P4.1 | **`--fast` CLI flag** — skips slow engines, returns Confirmed Tier in <30s | ✅ | `CORE/main.py`; sets `ACRQA_FAST_MODE=1`; documented in `--help` |
 
-**Current best numbers (PR curve, §5.20):**
-- ACR-QA (full output): TPR=91.0%, FPR=75.3%, **F3=0.854**, MCC=0.210 — leads all tools on recall-weighted metrics
-- ACR-QA (Confirmed Tier): TPR=37.1%, FPR=~0%, Precision=96.4% — the auto-block operating point
+| #4 | **RealVuln benchmark** — 22/26 real multi-file Python apps cloned + scored | ✅ | ACR-QA 23.5% recall vs Bandit 18.3% (+5.2pp) on neutral third-party GT; strict CWE+line matching; §5.21 |
+| #10/#13 | **Full chain verification** — all 10 exploit categories wired; 4 new fixture apps (SSRF, open-redirect, path-traversal, XXE); `TestAllTenCategoriesWired` (12 tests) | ✅ | All 10 categories: PAYLOADS+SIGNALS+PARAMS+ROUTES+RULE_TO_CATEGORY + fixture Dockerfiles |
+
+**Current best numbers:**
+- ACR-QA (SecurityEval, synthetic): TPR=91.0%, FPR=75.3%, **F3=0.854**, MCC=0.210
+- ACR-QA (RealVuln, real apps, strict): **23.5% recall** vs Bandit 18.3% — neutral third-party corpus
+- ACR-QA (Confirmed Tier): TPR=37.1%, FPR=~0%, Precision=96.4% — auto-block operating point
 - Exploit categories: **10** (up from 4) — SQLi, CMDi, SSTI, path-traversal, SSRF, XXE, insecure-deser, open-redirect, ReDoS, LDAP
 
 ---
