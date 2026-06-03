@@ -49,7 +49,6 @@ export function OverviewPage() {
   const last7 = completed.slice(0, 7).reverse();
   const sparkHigh = last7.map((r) => r.high_count);
   const sparkTotal = last7.map((r) => r.total_findings);
-  const sparkDuration = last7.map((r) => (r as unknown as { duration_seconds?: number }).duration_seconds ?? 0);
 
   const latestRun = completed[0];
   const trend = last7.length > 1

@@ -2,8 +2,11 @@ name: Build, sign, and attest (SLSA L3)
 
 on:
   push:
-    branches: [main]
+    # Only build the production image on version tags (not every commit to main).
+    # Docker Hub base image pulls are flaky on some runners; building on every
+    # commit adds no value and blocks CI unnecessarily.
     tags: ["v*"]
+  workflow_dispatch:  # allow manual trigger for testing
 
 # SLSA L3 requires these exact permissions — do not reduce
 permissions:

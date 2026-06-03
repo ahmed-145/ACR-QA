@@ -14,21 +14,8 @@ jobs:
   sonarcloud:
     name: SonarCloud
     runs-on: ubuntu-latest
-
-    services:
-      postgres:
-        image: postgres:15
-        env:
-          POSTGRES_DB: acrqa_test
-          POSTGRES_USER: postgres
-          POSTGRES_PASSWORD: postgres
-        ports:
-          - 5432:5432
-        options: >-
-          --health-cmd pg_isready
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
+    # No postgres service — tests use continue-on-error; sonar only needs coverage.xml
+    # Removing the service avoids Docker Hub pulls that time out on some runners.
 
     steps:
       - uses: actions/checkout@v6
@@ -44,27 +31,12 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt pytest-cov
 
-      - name: Run database migrations
-        env:
-          DB_HOST: localhost
-          DB_PORT: 5432
-          DB_NAME: acrqa_test
-          DB_USER: postgres
-          DB_PASSWORD: postgres
-        run: alembic upgrade head || true
-
-      - name: Run tests with coverage
-        env:
-          DB_HOST: localhost
-          DB_PORT: 5432
-          DB_NAME: acrqa_test
-          DB_USER: postgres
-          DB_PASSWORD: postgres
+      - name: Run tests with coverage (DB-less; integration tests auto-skip)
         run: |
           python -m pytest TESTS/ -q \
             --cov=CORE \
             --cov-report=xml:coverage.xml \
-            -m "not slow and not exploit and not smoke" \
+            -m "not slow and not exploit and not smoke and not integration" \
             --ignore=TESTS/e2e \
             || true
         continue-on-error: true
