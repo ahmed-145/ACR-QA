@@ -23,26 +23,29 @@ logger = logging.getLogger(__name__)
 
 
 def generate_sarif(run_id=None, output_file=None, confirmed_only: bool = False):
-    """
-    Export analysis findings as a SARIF v2.1.0 JSON file.
-
-    Args:
-        run_id: Analysis run ID (None = latest)
-        output_file: Output file path (None = auto-generate)
-    """
+    """Export a DB run's findings as SARIF v2.1.0 (thin wrapper over build_sarif)."""
     db = Database()
-
-    # Get run info
     if not run_id:
         runs = db.get_analysis_runs(limit=1)
         if not runs:
             logger.error("❌ No analysis runs found.")
             return None
         run_id = runs[0]["id"]
-
     findings = db.get_findings(run_id)
     if not findings:
         logger.error(f"⚠️  No findings for run {run_id}")
+        return None
+    return build_sarif(findings, output_file=output_file, confirmed_only=confirmed_only, run_id=run_id)
+
+
+def build_sarif(findings, output_file=None, confirmed_only: bool = False, run_id="latest"):
+    """Build a SARIF v2.1.0 file from a findings list — DB-free and field-tolerant.
+
+    Accepts both DB rows (``file_path``/``line_number``) and in-memory
+    CanonicalFindings (``file``/``line``), so the CLI can emit SARIF standalone
+    without a database. Returns the written path, or None if there are no findings.
+    """
+    if not findings:
         return None
 
     # Build SARIF structure
@@ -99,7 +102,11 @@ def generate_sarif(run_id=None, output_file=None, confirmed_only: bool = False):
 
         _ct = _CTEngine()
         before = len(findings)
-        findings = [f for f in findings if _ct.classify({**f, "file": f.get("file_path", "")}).in_confirmed_tier]
+        findings = [
+            f
+            for f in findings
+            if _ct.classify({**f, "file": f.get("file_path") or f.get("file", "")}).in_confirmed_tier
+        ]
         logger.info(f"   Confirmed-only filter: {before} → {len(findings)} findings")
 
     for f in findings:
@@ -120,16 +127,17 @@ def generate_sarif(run_id=None, output_file=None, confirmed_only: bool = False):
             seen_rules[rule_id] = len(sarif["runs"][0]["tool"]["driver"]["rules"])
             sarif["runs"][0]["tool"]["driver"]["rules"].append(rule_entry)
 
-        # Build result
-        file_path = f.get("file_path", "unknown")
-        line = f.get("line_number", 1)
-        col = f.get("column_number", 1)
+        # Build result (field-tolerant: DB rows use file_path/line_number,
+        # in-memory CanonicalFindings use file/line)
+        file_path = f.get("file_path") or f.get("file") or "unknown"
+        line = f.get("line_number") or f.get("line") or 1
+        col = f.get("column_number") or f.get("column") or 1
 
         # Confirmed Tier classification
         from CORE.engines.confirmed_tier import ConfirmedTierEngine
 
         ct_finding = dict(f)
-        ct_finding["file"] = f.get("file_path", "")
+        ct_finding["file"] = file_path
         ct_result = ConfirmedTierEngine().classify(ct_finding)
 
         result = {

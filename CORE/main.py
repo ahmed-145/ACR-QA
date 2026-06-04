@@ -1356,6 +1356,16 @@ def main():
     )
 
     parser.add_argument(
+        "--sarif",
+        metavar="PATH",
+        default=None,
+        help=(
+            "Write findings as SARIF v2.1.0 to PATH (works standalone, no DB). "
+            "Upload to GitHub code-scanning: gh api .../code-scanning/sarifs --input PATH"
+        ),
+    )
+
+    parser.add_argument(
         "--fast",
         action="store_true",
         dest="fast",
@@ -1567,6 +1577,23 @@ def main():
                 _sys.stdout.flush()
         else:
             logger.info("[]")
+
+    # --sarif: write SARIF v2.1.0 from the in-memory findings (standalone, no DB)
+    if args.sarif:
+        import os as _os
+
+        per_run_path = Path(f"DATA/outputs/findings_pid{_os.getpid()}.json")
+        findings_path = per_run_path if per_run_path.exists() else Path("DATA/outputs/findings.json")
+        if findings_path.exists():
+            from scripts.export_sarif import build_sarif
+
+            with open(findings_path) as fp:
+                _sarif_findings = json.load(fp)
+            out = build_sarif(_sarif_findings, output_file=args.sarif, run_id=str(run_id))
+            if out:
+                logger.info(f"✅ SARIF written: {out} ({len(_sarif_findings)} findings)")
+        else:
+            logger.warning("⚠️  --sarif: no findings file produced; nothing to export")
 
     # Run auto-fix if requested
     if args.auto_fix and run_id:
