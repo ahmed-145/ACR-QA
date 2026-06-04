@@ -45,6 +45,13 @@ class Database:
                 logger.error(f"❌ Database connection pool failed: {e}")
                 Database._pool = None
 
+    def available(self) -> bool:
+        """True if the connection pool is live. Used by the CLI to decide
+        whether to persist results or run standalone (no Postgres required)."""
+        if Database._pool is None:
+            self._connect()
+        return Database._pool is not None
+
     def execute(self, query, params=None, fetch=False):
         """
         Execute a query with error handling
@@ -1662,6 +1669,38 @@ class Database:
         if Database._pool:
             Database._pool.closeall()
             Database._pool = None
+
+
+class NullDatabase:
+    """No-op stand-in used when PostgreSQL is unavailable.
+
+    Lets the CLI scan run standalone (like Bandit/Semgrep) — findings are
+    produced and emitted, just not persisted. Any method not listed below
+    resolves to a no-op via __getattr__, so the pipeline never crashes on a
+    DB call when there is no database.
+    """
+
+    def available(self) -> bool:
+        return False
+
+    def create_analysis_run(self, *args, **kwargs) -> int:
+        # truthy sentinel so CI gate-exit logic (`if run_id ...`) still runs
+        return -1
+
+    def get_findings(self, *args, **kwargs) -> list:
+        return []
+
+    def get_findings_with_explanations(self, *args, **kwargs) -> list:
+        return []
+
+    def insert_finding(self, *args, **kwargs):
+        return None
+
+    def __getattr__(self, _name):
+        def _noop(*_args, **_kwargs):
+            return None
+
+        return _noop
 
 
 # Test connection

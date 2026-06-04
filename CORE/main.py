@@ -62,7 +62,7 @@ from CORE.engines.explainer import ExplanationEngine  # noqa: E402
 from CORE.engines.quality_gate import QualityGate  # noqa: E402
 from CORE.utils.code_extractor import extract_code_snippet  # noqa: E402
 from CORE.utils.rate_limiter import get_rate_limiter  # noqa: E402
-from DATABASE.database import Database  # noqa: E402
+from DATABASE.database import Database, NullDatabase  # noqa: E402
 
 
 def _apply_acrqa_mode() -> None:
@@ -85,6 +85,12 @@ class AnalysisPipeline:
         _apply_acrqa_mode()
         self.target_dir = target_dir
         self.db = Database()
+        if not self.db.available():
+            logger.warning(
+                "⚠️  PostgreSQL unavailable — running standalone (results not persisted). "
+                "Start the DB to enable history, triage memory, and the dashboard."
+            )
+            self.db = NullDatabase()
         self.explainer = ExplanationEngine()
         self.files = files
         # Load per-repo config (.acrqa.yml)
