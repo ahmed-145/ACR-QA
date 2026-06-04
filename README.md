@@ -125,19 +125,20 @@ ACR-QA produces two views of every scan. They are not competing claims — they 
 | **Full output** (recall-first) | 91.0% | 75.3% | 54.7% | Developer triage; comprehensive review |
 | **Confirmed Tier** (precision-first) | ~30% | ~0% | **96.4%** | Auto-block merge gate; CI required check |
 
-The Confirmed Tier's 96.4% precision mirrors what "Sifting the Noise" (arXiv:2601.22952) achieves via LLM post-processing (~92% → 6.3% FPR on OWASP). ACR-QA achieves this *statically* — 4-gate filter, zero LLM latency.
+The Confirmed Tier's 96.4% precision mirrors what "Sifting the Noise" (arXiv:2601.22952) achieves via LLM post-processing (~92% → 6.3% FPR on OWASP). ACR-QA achieves this statically (4-gate filter) — the LLM is an optional additive booster, not the core.
 
-### LLM-Augmented Detection (`--llm`)
+### LLM-Augmented Detection (`--llm`, optional)
 
-ACR-QA adds a **gated LLM detection pass** (Groq llama-3.3-70b) as an optional additive source on top of static rules. The LLM finds what rules miss; a second-opinion gate holds precision.
+The default pipeline is fully deterministic (rules + taint + exploit-verification). The `--llm` flag adds a gated LLM pass as an *additive* source on top — LLM-alone is strictly worse than rules (16.5% recall vs 25.1%), but their union, after gating, adds recall while holding precision.
 
 | Operating Point | Recall | Precision | Lift | Split |
 |---|:---:|:---:|:---:|---|
-| Rules-only (baseline) | 25.1% | 90.3% | — | Full (22 repos) |
-| **UNION-GATED (`--llm`)** | **32.4%** | 87.4% | **+7.4pp** | Full (22 repos) |
+| Rules-only (**default**) | 25.1% | 90.3% | — | Full (22 repos) |
+| LLM-only (raw, ungated) | 16.5% | 85.2% | −8.6pp | Full — worse on both |
+| **UNION-GATED (`--llm`)** | **31.2%** | **89.2%** | **+6.1pp** | Full (22 repos) |
 | UNION-GATED (held-out) | 32.4% | **89.5%** | **+5.2pp** | Held-out (16 repos, no overfitting) |
 
-**The thesis differentiator:** every LLM finding still flows through the Confirmed Tier — the only pipeline where aggressive LLM recall meets proven precision.
+FPR rises from 15.5% → 21.6% in `--llm` mode — the honest cost of the recall gain. Every LLM finding still flows through the Confirmed Tier for exploit-verification.
 
 ```bash
 # Enable LLM-augmented detection (requires GROQ_API_KEY_* in .env)

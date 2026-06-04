@@ -280,7 +280,11 @@ Yes — fully wired and unit-tested. All 10 categories (SQLi, CMDi, SSTI, path-t
 
 ### Q47. "You added LLM detection — doesn't that make ACR-QA just another noisy LLM scanner?" ⚠️ HIGH RISK
 
-The opposite. Raw LLMs are noisy (23–65% precision, NDSS 2025). ACR-QA's LLM detection is gated through two filters: (1) a **second-opinion LLM confirm call** — a different temperature/prompt asks "is this real?" and blocks the finding if it answers NO; (2) the **Confirmed Tier** — the same 4-gate, 96.4%-precision filter used for rule-based findings. The result on RealVuln (held-out 16 repos, no overfitting): UNION-GATED **+5.2pp recall** at **89.5% precision** — precision held within 0.8pp of rules-only baseline. The lift is +7.4pp on the full 22-repo corpus (25.1% → 32.4%). Three honest points: (1) FPR increases (15.5% → 22.2% on held-out) — the gated union is the recall-first mode, not the precision mode; (2) every LLM finding can still reach the Confirmed Tier (exploit-verified); (3) `--llm` is opt-in, never the default. Rules are always the trustworthy core. See `docs/evaluation/LLM_AUGMENTED_BENCHMARK_held_out_20260603.md`.
+**One data point kills this question:** LLM-alone on RealVuln = **16.5% recall / 85.2% precision — strictly worse than our rule-based baseline on both metrics (25.1% / 90.3%).** "Just use an LLM" gives you a worse tool that creates more problems than it solves, with an ~80% false-alarm rate.
+
+What we measured is whether a *gated* LLM can **augment** a deterministic core — and the answer is a modest yes. The LLM runs only when `--llm` is passed (default OFF). It's additive: rules run first; the LLM finds what rules miss; a second-opinion gate kills the false alarms. Held-out result (16 repos, no overfitting): **+5.2pp recall, precision held at 89.5%** (vs 91.3% baseline — a 1.8pp cost). The honest trade-off is also reported: FPR rises 15.5%→22.2%. Every LLM finding still flows through the Confirmed Tier for exploit-verification.
+
+The contribution is not the LLM — it's the **machinery that makes an unreliable LLM safe**, and measuring the honest cost/benefit including the cases where it isn't worth it. That's the opposite of "noisy LLM scanner."
 
 ---
 
