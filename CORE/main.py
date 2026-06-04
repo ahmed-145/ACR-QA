@@ -1366,6 +1366,16 @@ def main():
     )
 
     parser.add_argument(
+        "--confirmed-only",
+        action="store_true",
+        dest="confirmed_only",
+        help=(
+            "With --sarif: export only Confirmed Tier findings (the high-precision gate) — "
+            "a zero-noise upload for GitHub Advanced Security / the Security tab."
+        ),
+    )
+
+    parser.add_argument(
         "--fast",
         action="store_true",
         dest="fast",
@@ -1589,9 +1599,15 @@ def main():
 
             with open(findings_path) as fp:
                 _sarif_findings = json.load(fp)
-            out = build_sarif(_sarif_findings, output_file=args.sarif, run_id=str(run_id))
+            out = build_sarif(
+                _sarif_findings,
+                output_file=args.sarif,
+                run_id=str(run_id),
+                confirmed_only=args.confirmed_only,
+            )
             if out:
-                logger.info(f"✅ SARIF written: {out} ({len(_sarif_findings)} findings)")
+                _tier = " (Confirmed Tier only)" if args.confirmed_only else ""
+                logger.info(f"✅ SARIF written: {out}{_tier}")
         else:
             logger.warning("⚠️  --sarif: no findings file produced; nothing to export")
 
