@@ -10,17 +10,17 @@
 This chapter documents the implementation of the \ACRQA{} system, translating the architecture described in Chapter~\ref{ch:design} into working code. The chapter is organised to follow the data flow through the system: starting with the project structure and technology stack, then proceeding through each major subsystem. Selected code excerpts illustrate key implementation decisions.
 
 % -----------------------------------------------------------------
-\needspace{14\baselineskip}
 \section{Technology Stack and Dependencies}
 \label{sec:tech_stack}
 
 \ACRQA{} is implemented primarily in Python 3.11 for the backend and TypeScript \cite{typescript_docs}/React \cite{react_docs} for the frontend. Table~\ref{tab:tech_stack} lists the principal dependencies.
 
 \begin{table}[H]
-\caption{Core Technology Stack (v5.0.0rc1)}
+\caption{Core Technology Stack (v5.0.0rc2)}
 \label{tab:tech_stack}
 \centering
-\renewcommand{\arraystretch}{1.3}
+\small
+\renewcommand{\arraystretch}{1.15}
 \begin{tabularx}{\textwidth}{@{} l l X @{}}
 \toprule
 \textbf{Component} & \textbf{Technology} & \textbf{Purpose} \\
@@ -30,7 +30,7 @@ Task Queue          & Celery 5 + Redis 7.2      & Async pipeline execution; 4 co
 Web Dashboard       & React 18 + TypeScript + Vite 5 & shadcn/ui SPA; WCAG 2.1 AA; EN/AR RTL \\
 Database            & PostgreSQL 15 (psycopg2)  & 10-table provenance schema \\
 Knowledge Base      & YAML (\texttt{config/rules.yml}) & 66 security rules; O(1) dict lookup \\
-LLM Inference       & Groq (LLaMA-3.3-70B + 3.1-8B) & Explanation (70B) + feasibility (8B) \\
+LLM Inference       & Groq (LLaMA-3.3-70B + 3.1-8B) & RAG enrichment (70B); feasibility (8B); LLM-augmented detection \\
 Local LLM (offline) & Ollama (Qwen2.5-Coder 1.5b) & Air-gap / offline mode \\
 Monitoring          & Prometheus + Grafana      & Real-time pipeline metrics + dashboards \\
 Containerisation    & Docker + Compose          & 7 services; Helm chart for Kubernetes \\
@@ -48,7 +48,7 @@ Testing (TS)        & Vitest + Playwright       & 92 unit + 14 a11y + 15 e2e tes
 
 The repository follows a clear separation between the backend engine, API layer, and frontend:
 
-\begin{lstlisting}[language={}, basicstyle=\footnotesize\ttfamily, caption={Repository Directory Structure (v5.0.0rc1)}]
+\begin{lstlisting}[language={}, basicstyle=\footnotesize\ttfamily, caption={Repository Directory Structure (v5.0.0rc2)}]
 acr-qa/
 ├── CORE/
 │   ├── main.py              # Pipeline orchestrator
@@ -66,6 +66,7 @@ acr-qa/
 │       ├── quality_gate.py       # Policy-as-Code gate
 │       ├── attestation.py        # ECDSA + Dilithium3
 │       ├── verified_remediation.py # detect→exploit→fix→re-exploit pipeline
+│       ├── llm_detector.py       # LLM-augmented detection (+5.2pp recall)
 │       └── cross_lang.py         # Cross-language correlator
 ├── FRONTEND/api/            # FastAPI (52 endpoints)
 │   ├── main.py              # App factory + middleware
@@ -259,7 +260,7 @@ The full stack is orchestrated via Docker Compose (7 services) as illustrated in
 \section{Key Implementation Challenges}
 \label{sec:challenges}
 
-Four principal challenges arose during development. (1)~\textbf{Incompatible tool schemas:} twelve tools produce divergent output formats and severity vocabularies; solved by per-adapter \texttt{parse()} methods that map all fields to the canonical \texttt{file}/\texttt{line} schema. (2)~\textbf{Groq API rate limiting:} addressed via exponential backoff with jitter, a 4-key rotation pool, and a \texttt{rules.yml} fallback when the API is unavailable. (3)~\textbf{Concurrent temp-path races:} parallel tool processes now each write to an isolated \texttt{/tmp/acrqa-\{pid\}-\{run\_id\}/} directory. (4)~\textbf{\texttt{CUSTOM-*} rule ID leakage:} a guard clause rejects any rule ID with the \texttt{CUSTOM-} prefix; compliance is enforced by 2,217 regression tests.
+Four principal challenges arose during development. (1)~\textbf{Incompatible tool schemas:} twelve tools produce divergent output formats and severity vocabularies; solved by per-adapter \texttt{parse()} methods that map all fields to the canonical \texttt{file}/\texttt{line} schema. (2)~\textbf{Groq API rate limiting:} addressed via exponential backoff with jitter, a 4-key rotation pool, and a \texttt{rules.yml} fallback when the API is unavailable. (3)~\textbf{Concurrent temp-path races:} parallel tool processes now each write to an isolated \texttt{/tmp/acrqa-\{pid\}-\{run\_id\}/} directory. (4)~\textbf{\texttt{CUSTOM-*} rule ID leakage:} a guard clause rejects any rule ID with the \texttt{CUSTOM-} prefix; compliance is enforced by 2,805 regression tests.
 
 % -----------------------------------------------------------------
 \needspace{8\baselineskip}

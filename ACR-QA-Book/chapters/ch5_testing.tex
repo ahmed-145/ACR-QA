@@ -7,7 +7,7 @@
 
 \section{Overview}
 
-This chapter presents the testing strategy and quantitative evaluation of \ACRQA{} v5.0.0rc1. The evaluation is organised around the four research questions of Chapter~\ref{ch:intro}: (RQ1) RAG hallucination reduction, (RQ2) AI provenance, (RQ3) label-free confidence scoring, (RQ4) precision/recall vs.\ commercial SAST. The evaluation comprises four layers: (i) a small ground-truth corpus (Layer~A: DVPWA, Pygoat, VulPy, DSVW); (ii) a 30-repo adversarial precision corpus of mature production libraries (Layer~B); (iii) a 20-CVE recall battery; and (iv) five novel evaluations (X1--X5) covering live-CVE generalisation, exploit verification, AI-generated code, time-travel prediction, and head-to-head benchmarking. The P4 \emph{Confirmed Tier} stratum achieves \textbf{96.4\% conservative} (95\% CI [90.9\%, 100\%]) and \textbf{100\% optimistic} precision with 100\% CVE recall, clearing the $\geq$80\% industry threshold for autonomous PR-blocking pipelines.
+This chapter presents the testing strategy and quantitative evaluation of \ACRQA{} v5.0.0rc2. The evaluation is organised around the four research questions of Chapter~\ref{ch:intro}: (RQ1) RAG hallucination reduction, (RQ2) AI provenance, (RQ3) label-free confidence scoring, (RQ4) precision/recall vs.\ commercial SAST. The evaluation comprises four layers: (i) a small ground-truth corpus (Layer~A: DVPWA, Pygoat, VulPy, DSVW); (ii) a 30-repo adversarial precision corpus of mature production libraries (Layer~B); (iii) a 20-CVE recall battery; and (iv) five novel evaluations (X1--X5) covering live-CVE generalisation, exploit verification, AI-generated code, time-travel prediction, and head-to-head benchmarking. The P4 \emph{Confirmed Tier} stratum achieves \textbf{96.4\% conservative} (95\% CI [90.9\%, 100\%]) and \textbf{100\% optimistic} precision with 100\% CVE recall, clearing the $\geq$80\% industry threshold for autonomous PR-blocking pipelines.
 
 % -----------------------------------------------------------------
 \section{Testing Strategy}
@@ -129,7 +129,7 @@ where $TP$ is the number of ground-truth vulnerabilities correctly identified, $
 
 \subsection{Overall Detection Performance}
 
-On the Layer~A ground-truth corpus (DVPWA, Pygoat, VulPy, DSVW), \ACRQA{} v5.0.0rc1 evaluated \textbf{836 deduplicated findings} (812 TP, 24 FP), achieving \textbf{97.1\% overall precision} and \textbf{100.0\% security-class precision}: all 24 false positives are dead-code style findings, not security vulnerabilities. Layer~A is favourable by construction (intentionally vulnerable apps). Section~\ref{sec:adversarial} reports the harder Layer~B adversarial corpus where the Confirmed Tier reaches 96.4\% on production-library code. Every finding received an AI-generated explanation (\textbf{100\% enrichment rate}), 9/10 OWASP Top~10 categories are covered, and the CI/CD pipeline (\textbf{2,757 tests, 84.89\% CORE coverage}) passes on GitHub Actions.
+On the Layer~A ground-truth corpus (DVPWA, Pygoat, VulPy, DSVW), \ACRQA{} v5.0.0rc2 evaluated \textbf{836 deduplicated findings} (812 TP, 24 FP), achieving \textbf{97.1\% overall precision} and \textbf{100.0\% security-class precision}: all 24 false positives are dead-code style findings, not security vulnerabilities. Layer~A is favourable by construction (intentionally vulnerable apps). Section~\ref{sec:adversarial} reports the harder Layer~B adversarial corpus where the Confirmed Tier reaches 96.4\% on production-library code. Every finding received an AI-generated explanation (\textbf{100\% enrichment rate}), 9/10 OWASP Top~10 categories are covered, and the CI/CD pipeline (\textbf{2,897 tests, 84.89\% CORE coverage}) passes on GitHub Actions.
 
 \subsection{Per-Repository Breakdown}
 
@@ -238,6 +238,13 @@ The Layer~A precision figure (97.1\%) is measured on intentionally vulnerable ap
 
 A 4+P stratification pipeline yields five precision strata (Table~\ref{tab:adversarial}). The headline result is \textbf{P4 Confirmed Tier (96.4\% / 100\%)}: a 4-criterion gate (HIGH severity + 22-rule \textsc{ConfirmedRuleSet} + production code path + Bandit's internal \texttt{issue\_confidence == HIGH}) clears the $\geq$80\% industry threshold for autonomous PR-blocking, while preserving \textbf{100\% CVE recall (8/8)} from the recall corpus.
 
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.90\textwidth,keepaspectratio]{FUNNEL_SLIDE}
+  \caption{The Precision Funnel: 1{,}942 raw findings refined to 55 P4 Confirmed-Tier findings with 96.4\% conservative precision and 100\% CVE recall preserved at every rung.}
+  \label{fig:precision_funnel}
+\end{figure}
+
 \begin{table}[H]
 \caption{Adversarial Precision Stratification (30-repo corpus, 1,942 raw findings)}
 \label{tab:adversarial}
@@ -267,7 +274,14 @@ Bootstrap (10{,}000 resamples, seed 42) yields a Confirmed Tier 95\% CI of [90.9
 \section{Head-to-Head Benchmark: \ACRQA{} vs.\ Bandit vs.\ Semgrep (X5)}
 \label{sec:extended_eval}
 
-Three SAST tools were run on the same 30-repo precision corpus and the same 8-CVE detectable recall battery using identical triage protocols. Table~\ref{tab:head_to_head} reports the unified result.
+Three SAST tools were run on the same 30-repo precision corpus and the same 8-CVE detectable recall battery using identical triage protocols. Figure~\ref{fig:head_to_head} and Table~\ref{tab:head_to_head} report the unified result.
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.90\textwidth,keepaspectratio]{HEAD_TO_HEAD}
+  \caption{Head-to-Head Benchmark: Precision, CVE Recall, and F\textsubscript{1} for Bandit, Semgrep CE, and \ACRQA{} (P4 Confirmed Tier) on the same 30-repo adversarial corpus and 8-CVE recall battery.}
+  \label{fig:head_to_head}
+\end{figure}
 
 \begin{table}[H]
 \caption{Head-to-Head: Precision, CVE Recall, F\textsubscript{1} (same corpus, same triage)}
@@ -296,10 +310,10 @@ A feature-level comparison against four commercial platforms (SonarQube, Snyk, C
 
 % -----------------------------------------------------------------
 \needspace{12\baselineskip}
-\section{Novel Evaluation Tracks (X1--X4)}
+\section{Novel Evaluation Tracks (X1--X5)}
 \label{sec:novel_eval}
 
-Four further evaluations were conducted to test generalisation, exploitability, AI-code coverage, and predictive capacity --- none of which appear in published academic SAST theses at this level of rigour.
+Five further evaluations were conducted to test generalisation, exploitability, AI-code coverage, predictive capacity, and LLM-augmented detection --- none of which appear in published academic SAST theses at this level of rigour.
 
 \textbf{X1 --- Live-CVE blind holdout.} Ten 2024--2025 CVEs (not in the original recall battery) were pinned to pre-fix commits and scanned without consulting the advisory. Result: 1/3 detectable (33\%), 7/7 correct true negatives (100\%). The single detected case (SECURITY-018 on moto \texttt{yaml.load}) matches the same canonical rule that anchors Layer~B's recall. Two honest misses (webob SSRF response-header redirect; celery wrapped \texttt{pickle.loads}) are documented as scope boundaries.
 
@@ -308,6 +322,8 @@ Four further evaluations were conducted to test generalisation, exploitability, 
 \textbf{X3 --- AI-generated code vulnerability study.} 400 samples (4 models $\times$ 100 across 20 standardised tasks). Security findings per KLOC: llama4-scout 82.1, llama3-70b 72.9, qwen3-32b 64.1, llama3-8b 59.9 --- \textbf{8--12$\times$ the human-written baseline of 7.1 F/KLOC} measured on the precision corpus. Consistent across models; \ACRQA{} is the instrument, not the subject.
 
 \textbf{X4 --- Time-travel predictive backtest.} 10 Django checkpoints (v2.2 $\to$ v4.2). Time-gated git clones prevent leakage; Fisher's exact test per checkpoint, pooled Mantel--Haenszel. Pooled $p = 0.137$, $OR = 1.935$, lift $1.83\times$ --- a directionally positive but statistically non-significant result, reported honestly. The risk predictor is an analyst-triage tool, not a CVE oracle.
+
+\textbf{X5 --- LLM-augmented detection.} A held-out split of 100 Python snippets (not in any training or calibration set) was scanned in two modes: (i) deterministic SAST only; (ii) SAST + \texttt{LLMDetector} (Groq LLaMA-3.3-70B, union-gated with a 0.75 confidence threshold). The \texttt{--llm} mode delivers \textbf{+5.2 pp recall} over SAST-only at \textbf{89.5\% precision}, well above the Confirmed Tier's conservative floor. On the full RealVuln 2026 corpus (1{,}000 real-world Python CVEs, third-party ground truth), the three-number result is: \textbf{91\% SecurityEval recall} (synthetic ground truth) $\to$ \textbf{37.8\% RealVuln detectable recall} (structurally detectable subset) $\to$ \textbf{25.1\% full-corpus recall} --- versus Semgrep 17.5\%, Snyk 17.4\%, and SonarQube 6.5\% on the same leaderboard (arXiv:2604.13764). The \texttt{llm\_detector.py} module is additive (step 3b in the pipeline) and gracefully degrades to SAST-only if the Groq API is unavailable.
 
 % -----------------------------------------------------------------
 \section{Performance and Scalability}
@@ -327,6 +343,6 @@ Pipeline timings on an 11-file ($\approx$800 LoC) Python repository: tool execut
 \section{Summary}
 \label{sec:ch5_summary}
 
-\ACRQA{} v5.0.0rc2 achieves \textbf{96.4\% Confirmed Tier precision} (95\% CI [90.9\%, 100\%]) on the 30-repo adversarial corpus with \textbf{100\% CVE recall (8/8)} across all strata; head-to-head: Bandit F\textsubscript{1}~21.8\%, Semgrep~45.7\%, \ACRQA{} \textbf{98.2\%}. Layer~A: \textbf{97.1\%} overall / \textbf{100\%} security-class precision on 836 findings; \textbf{100\%} AI enrichment; \textbf{9/10} OWASP categories; 0\% reachability FP; 500\,RPS at $<$2\,s p99; \textbf{2,897 tests} at 84.89\% CORE coverage. The Verified Remediation Engine closes the detect-to-verified-fix loop across 13 vulnerability categories with cryptographic attestation. Four novel evaluations (X1--X4) answer RQ3--RQ4, exceeding any single open-source SAST baseline. Chapter~\ref{ch:conclusion} summarises contributions and future directions.
+\ACRQA{} v5.0.0rc2 achieves \textbf{96.4\% Confirmed Tier precision} (95\% CI [90.9\%, 100\%]) on the 30-repo adversarial corpus with \textbf{100\% CVE recall (8/8)} across all strata; head-to-head: Bandit F\textsubscript{1}~21.8\%, Semgrep~45.7\%, \ACRQA{} \textbf{98.2\%}. Layer~A: \textbf{97.1\%} overall / \textbf{100\%} security-class precision on 836 findings; \textbf{100\%} AI enrichment; \textbf{9/10} OWASP categories; 0\% reachability FP; 500\,RPS at $<$2\,s p99; \textbf{2,897 tests} at 84.89\% CORE coverage. The Verified Remediation Engine closes the detect-to-verified-fix loop across 13 vulnerability categories with cryptographic attestation. Five novel evaluations (X1--X5) answer RQ3--RQ4, exceeding any single open-source SAST baseline. Chapter~\ref{ch:conclusion} summarises contributions and future directions.
 
 \clearpage
