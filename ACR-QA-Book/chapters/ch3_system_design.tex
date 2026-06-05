@@ -219,7 +219,7 @@ The PostgreSQL \cite{postgresql_docs} schema is organised into ten primary table
 \begin{figure}[htbp]
   \centering
   \includegraphics[width=0.95\textwidth,height=0.75\textheight,keepaspectratio]{er_diagram}
-  \caption{Database Entity-Relationship Diagram (10-Table Schema, v4.0.0)}
+  \caption{Database Entity-Relationship Diagram (10-Table Schema, v5.0.0rc2)}
   \label{fig:db_schema}
 \end{figure}
 
@@ -229,7 +229,7 @@ The \texttt{analysis\_runs} table records job status through states: \texttt{QUE
 \section{API Design}
 \label{sec:api_design}
 
-The FastAPI application exposes 32 endpoints grouped into four resource namespaces. Table~\ref{tab:api_endpoints} summarises the principal endpoints.
+The FastAPI application exposes 52 endpoints grouped into four resource namespaces. Table~\ref{tab:api_endpoints} summarises the principal endpoints.
 
 \begin{table}[H]
 \caption{Principal FastAPI REST Endpoints (v5.0.0rc1)}
@@ -268,7 +268,7 @@ The complete \ACRQA{} stack is defined as a Docker Compose application with seve
 \begin{figure}[htbp]
   \centering
   \includegraphics[width=0.94\textwidth,height=0.70\textheight,keepaspectratio]{docker_stack}
-  \caption{Docker Compose Service Topology (7 Services, v4.0.0)}
+  \caption{Docker Compose Service Topology (7 Services, v5.0.0rc2)}
   \label{fig:docker_compose}
 \end{figure}
 
@@ -312,6 +312,6 @@ The PR Risk Score (\texttt{CORE/engines/pr\_risk.py}) collapses the multi-dimens
 % -----------------------------------------------------------------
 \section{Summary}
 
-This chapter has presented the complete system design of \ACRQA{} v5.0.0rc1, including the twelve-stage processing pipeline, the canonical finding schema, the confidence scoring function, the taint analyser, the call-graph reachability engine, the RAG-and-entropy enrichment mechanism, the CBoM module, the 10-table database schema, the 52-endpoint FastAPI surface, the 7-service containerised deployment architecture, and the four new v5.0.0 engines (Heuristic Risk Predictor, Time-Travel Analyzer, IaC Scanner, PR Risk Score). Chapter~\ref{ch:implementation} details the implementation of each component.
+This chapter has presented the complete system design of \ACRQA{} v5.0.0rc2, including the twelve-stage processing pipeline, the canonical finding schema, the confidence scoring function, the taint analyser, the call-graph reachability engine, the RAG-and-entropy enrichment mechanism, the CBoM module, the 10-table database schema, the 52-endpoint FastAPI surface, the 7-service containerised deployment architecture, and the four new v5.0.0 engines (Heuristic Risk Predictor, Time-Travel Analyzer, IaC Scanner, PR Risk Score). Chapter~\ref{ch:implementation} details the implementation of each component.
 
 \clearpage

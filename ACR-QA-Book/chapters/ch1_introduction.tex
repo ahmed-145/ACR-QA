@@ -1,6 +1,6 @@
 %% ============================================================
 %%  CHAPTER 1 — INTRODUCTION
-%%  v5.0.0rc1 — Updated May 2026
+%%  v5.0.0rc2 — Updated June 2026
 %% ============================================================
 \chapter{Introduction}
 \label{ch:intro}
@@ -59,7 +59,7 @@ The primary objective is to design, implement, and validate \ACRQA{}: a self-hos
 \section{Scope and Limitations}
 \label{sec:scope}
 
-\ACRQA{} covers static analysis of Python, JavaScript/TypeScript, and Go repositories, addressing injection flaws, insecure dependencies, hardcoded secrets, cryptographic weaknesses, dead code, and code quality defects. The full stack includes a FastAPI REST API (52 endpoints), React~18 dashboard (WCAG~2.1~AA, Arabic RTL), Celery async workers, PostgreSQL provenance schema, GitHub Actions \cite{github_actions} CI/CD, and a 2,757-test suite (pytest \cite{pytest_tool} + Vitest) at 84.89\% CORE coverage.
+\ACRQA{} covers static analysis of Python, JavaScript/TypeScript, and Go repositories, addressing injection flaws, insecure dependencies, hardcoded secrets, cryptographic weaknesses, dead code, and code quality defects. The full stack includes a FastAPI REST API (52 endpoints), React~18 dashboard (WCAG~2.1~AA, Arabic RTL), Celery async workers, PostgreSQL provenance schema, GitHub Actions \cite{github_actions} CI/CD, and a 2,897-test suite (pytest \cite{pytest_tool} + Vitest) at 84.89\% CORE coverage.
 
 Explicitly outside scope: dynamic testing (DAST/fuzzing), runtime monitoring, compiled binaries without source, mobile security, CSRF detection (requires runtime analysis of form submissions), and IDOR detection (requires authorisation context).
 
@@ -108,6 +108,8 @@ This project makes ten novel contributions to software security and AI-assisted 
   \item \textbf{IaC Security Scanner:} Pure-Python analysis of Terraform, Kubernetes, Dockerfile, and GitHub Actions assets producing 28 canonical \texttt{IAC-*} findings through the same \texttt{CanonicalFinding} schema.
 
   \item \textbf{PR Risk Score:} A single 0--100 mergeable-or-not signal combining reachability, taint coverage, exploit verification, file risk, and PR size into one CI-consumable gate metric.
+
+  \item \textbf{Verified Remediation Engine:} A fully-signed detect~$\to$~exploit~$\to$~patch~$\to$~re-exploit pipeline spanning 13 vulnerability categories, producing a cryptographically attested remediation bundle (ECDSA-P256 + Dilithium3 signatures over the (vuln\_proof, fix\_diff, fix\_proof) triple) --- to the author's knowledge the first open-source SAST engine to close the detect-to-verified-fix loop.
 \end{enumerate}
 
 % -----------------------------------------------------------------
@@ -117,7 +119,7 @@ This project makes ten novel contributions to software security and AI-assisted 
 The development of \ACRQA{} followed an iterative, test-driven methodology structured in twelve phases across the academic year October 2025 -- June 2026. Table~\ref{tab:phases} summarises the phase timeline.
 
 \begin{table}[H]
-\caption{Development Phases --- \ACRQA{} v5.0.0rc1}
+\caption{Development Phases --- \ACRQA{} v5.0.0rc2}
 \label{tab:phases}
 \centering
 \renewcommand{\arraystretch}{1.25}

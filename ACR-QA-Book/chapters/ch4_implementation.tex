@@ -1,6 +1,6 @@
 %% ============================================================
 %%  CHAPTER 4 — IMPLEMENTATION
-%%  v5.0.0rc1 — Updated May 2026
+%%  v5.0.0rc2 — Updated June 2026
 %% ============================================================
 \chapter{Implementation}
 \label{ch:implementation}
@@ -36,8 +36,8 @@ Monitoring          & Prometheus + Grafana      & Real-time pipeline metrics + d
 Containerisation    & Docker + Compose          & 7 services; Helm chart for Kubernetes \\
 IaC                 & Terraform (AWS + Railway) & Production cloud deployment \\
 CI/CD               & GitHub Actions            & Lint + test on PR; scan on merge \\
-Testing (Python)    & pytest + pytest-cov       & 2,217 tests; 84.89\% coverage \\
-Testing (TS)        & Vitest + Playwright       & 65 unit + 14 a11y + 15 e2e tests \\
+Testing (Python)    & pytest + pytest-cov       & 2,805 tests; 84.89\% coverage \\
+Testing (TS)        & Vitest + Playwright       & 92 unit + 14 a11y + 15 e2e tests \\
 \bottomrule
 \end{tabularx}
 \end{table}
@@ -65,6 +65,7 @@ acr-qa/
 │       ├── secrets_detector.py   # 15+ regex patterns
 │       ├── quality_gate.py       # Policy-as-Code gate
 │       ├── attestation.py        # ECDSA + Dilithium3
+│       ├── verified_remediation.py # detect→exploit→fix→re-exploit pipeline
 │       └── cross_lang.py         # Cross-language correlator
 ├── FRONTEND/api/            # FastAPI (52 endpoints)
 │   ├── main.py              # App factory + middleware
@@ -78,7 +79,7 @@ acr-qa/
 │   └── tests/               # Vitest + Playwright
 ├── DATABASE/database.py     # psycopg2 DAO layer
 ├── config/rules.yml         # 66 rules, 422 mappings
-├── TESTS/                   # 2,217 pytest cases
+├── TESTS/                   # 2,805 pytest cases
 ├── deploy/helm/ & terraform/ # K8s Helm chart + IaC
 ├── docker-compose.yml       # 7 services
 └── .acrqa.yml               # Quality gate config
@@ -285,6 +286,6 @@ The IaC engine detects four resource types via extension matching: \texttt{.tf} 
 \needspace{8\baselineskip}
 \section{Summary}
 
-This chapter has documented the implementation of \ACRQA{} v5.0.0rc1, covering the FastAPI REST layer (52 endpoints), Celery asynchronous workers, language adapters, taint analyser, call-graph reachability engine, confidence scorer, RAG knowledge base, entropy filter, CBoM scanner, React dashboard, Docker Compose deployment, GitHub PR integration, authentication layer, and the four new v5.0.0 engines (Heuristic Risk Predictor, Time-Travel Analyzer, IaC Scanner, PR Risk Score). Chapter~\ref{ch:testing} presents the testing strategy and quantitative evaluation results.
+This chapter has documented the implementation of \ACRQA{} v5.0.0rc2, covering the FastAPI REST layer (52 endpoints), Celery asynchronous workers, language adapters, taint analyser, call-graph reachability engine, confidence scorer, RAG knowledge base, entropy filter, CBoM scanner, React dashboard, Docker Compose deployment, GitHub PR integration, authentication layer, the four new v5.0.0 engines (Heuristic Risk Predictor, Time-Travel Analyzer, IaC Scanner, PR Risk Score), and the Verified Remediation Engine (detect~$\to$~exploit~$\to$~patch~$\to$~re-exploit with dual-signature attestation). Chapter~\ref{ch:testing} presents the testing strategy and quantitative evaluation results.
 
 \clearpage

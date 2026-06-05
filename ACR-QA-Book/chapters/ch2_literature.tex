@@ -33,7 +33,7 @@ SAST tools typically operate using one or more of the following underlying techn
 Table~\ref{tab:sast_tools} summarises the major open-source SAST tools and their primary domains.
 
 \begin{table}[htbp]
-\caption{Open-Source SAST Tools Surveyed and Selected for \ACRQA{} (Tools integrated in \ACRQA{} v5.0.0rc1 shown in bold)}
+\caption{Open-Source SAST Tools Surveyed and Selected for \ACRQA{} (Tools integrated in \ACRQA{} v5.0.0rc2 shown in bold)}
 \label{tab:sast_tools}
 \centering
 \small
@@ -115,7 +115,7 @@ The application of RAG to SAST finding enrichment --- as employed by \ACRQA{} --
 
 \subsection{Knowledge Base Construction}
 
-The quality of RAG outputs is strongly dependent on the quality and structure of the knowledge base \cite{guu2020retrieval}. In \ACRQA{}, the knowledge base of 69 security rules (with 127 canonical mappings across the three supported languages) was curated from three primary sources: the OWASP Secure Coding Practices Quick Reference \cite{owasp_scp}, the NIST SP 800-53 security control catalogue \cite{nist_800_53}, and CWE descriptions from MITRE's Common Weakness Enumeration taxonomy \cite{mitre_cwe}. The OWASP Application Security Verification Standard \cite{owasp_asvs} and OWASP API Security Top~10 \cite{owasp_api_top10} additionally informed the security rule set for API-level and authentication-related findings. Each knowledge base entry is structured to include: vulnerability class, description, impact, detection patterns, and remediation guidance.
+The quality of RAG outputs is strongly dependent on the quality and structure of the knowledge base \cite{guu2020retrieval}. In \ACRQA{}, the knowledge base of 66 security rules (with 422 canonical mappings across the three supported languages) was curated from three primary sources: the OWASP Secure Coding Practices Quick Reference \cite{owasp_scp}, the NIST SP 800-53 security control catalogue \cite{nist_800_53}, and CWE descriptions from MITRE's Common Weakness Enumeration taxonomy \cite{mitre_cwe}. The OWASP Application Security Verification Standard \cite{owasp_asvs} and OWASP API Security Top~10 \cite{owasp_api_top10} additionally informed the security rule set for API-level and authentication-related findings. Each knowledge base entry is structured to include: vulnerability class, description, impact, detection patterns, and remediation guidance.
 
 % -----------------------------------------------------------------
 \section{Cryptographic Bill of Materials (CBoM)}
