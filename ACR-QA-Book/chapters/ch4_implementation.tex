@@ -43,11 +43,13 @@ Testing (TS)        & Vitest + Playwright       & 92 unit + 14 a11y + 15 e2e tes
 \end{table}
 
 % -----------------------------------------------------------------
+\needspace{42\baselineskip}
 \section{Project Structure}
 \label{sec:project_structure}
 
 The repository follows a clear separation between the backend engine, API layer, and frontend:
 
+\begin{samepage}
 \begin{lstlisting}[language={}, basicstyle=\footnotesize\ttfamily, caption={Repository Directory Structure (v5.0.0rc2)}]
 acr-qa/
 ├── CORE/
@@ -65,7 +67,7 @@ acr-qa/
 │       ├── secrets_detector.py   # 15+ regex patterns
 │       ├── quality_gate.py       # Policy-as-Code gate
 │       ├── attestation.py        # ECDSA + Dilithium3
-│       ├── verified_remediation.py # detect→exploit→fix→re-exploit pipeline
+│       ├── verified_remediation.py # detect->exploit->fix->re-exploit
 │       ├── llm_detector.py       # LLM-augmented detection (+5.2pp recall)
 │       └── cross_lang.py         # Cross-language correlator
 ├── FRONTEND/api/            # FastAPI (52 endpoints)
@@ -85,6 +87,7 @@ acr-qa/
 ├── docker-compose.yml       # 7 services
 └── .acrqa.yml               # Quality gate config
 \end{lstlisting}
+\end{samepage}
 
 
 % -----------------------------------------------------------------
@@ -95,11 +98,13 @@ acr-qa/
 The FastAPI application \cite{fastapi_framework} (\texttt{FRONTEND/api/main.py}) uses an app-factory pattern: CORS middleware, Prometheus instrumentation via \texttt{prometheus-fastapi-instrumentator}, and Pydantic v2 request validation are all registered at startup. Scan jobs are dispatched via \texttt{run\_analysis\_pipeline.delay(run\_id, target\_path)} — the endpoint returns HTTP~202 immediately while Celery \cite{celery_project} handles execution asynchronously. Workers are configured with \texttt{concurrency=4} (four scans in parallel per container) and a \texttt{max\_retries=2} policy with 30-second countdown, providing resilience against transient Groq API rate-limit errors or database connectivity issues.
 
 % -----------------------------------------------------------------
+\needspace{30\baselineskip}
 \section{Tool Adapter Framework}
 \label{sec:adapters}
 
 Each tool adapter extends an abstract base class that defines the common interface:
 
+\begin{samepage}
 \begin{lstlisting}[language=Python, basicstyle=\footnotesize\ttfamily, caption={Abstract Tool Adapter Base Class}]
 from abc import ABC, abstractmethod
 from CORE.models import CanonicalFinding
@@ -119,16 +124,18 @@ class BaseAdapter(ABC):
     def is_applicable(self, langs: List[str]) -> bool:
         return any(l in langs for l in self.languages)
 \end{lstlisting}
+\end{samepage}
 
 Twelve language-specific adapters follow this interface. Each adapter's \texttt{run()} method invokes the corresponding tool CLI and captures stdout; its \texttt{parse()} method translates the tool's unique JSON (or text) output into \texttt{CanonicalFinding} objects, mapping tool-specific severity vocabularies to the five-level canonical enum and normalising field names to the canonical \texttt{file} and \texttt{line} keys.
 
 % -----------------------------------------------------------------
-\needspace{10\baselineskip}
+\needspace{36\baselineskip}
 \section{Taint Analyser Implementation}
 \label{sec:taint_impl}
 
 The taint analyser is invoked in Stage 3 after initial normalisation. For each Python file in scope, it walks the AST and applies a \texttt{\_FunctionTaintVisitor} to each \texttt{FunctionDef} and \texttt{AsyncFunctionDef} node:
 
+\begin{samepage}
 \begin{lstlisting}[language=Python, basicstyle=\footnotesize\ttfamily, caption={Taint Analysis --- Source/Sink Detection}]
 TAINT_SOURCES = {"request.args","request.form",
                  "request.json","request.cookies","os.environ"}
@@ -153,6 +160,7 @@ class _FunctionTaintVisitor(ast.NodeVisitor):
                 self.paths.append({"sink":fn,"line":node.lineno})
         self.generic_visit(node)
 \end{lstlisting}
+\end{samepage}
 
 
 % -----------------------------------------------------------------
