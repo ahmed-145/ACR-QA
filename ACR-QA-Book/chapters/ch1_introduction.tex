@@ -116,37 +116,12 @@ This project makes ten novel contributions to software security and AI-assisted 
 \section{Methodology Overview}
 \label{sec:methodology}
 
-The development of \ACRQA{} followed an iterative, test-driven methodology structured in twelve phases across the academic year October 2025 -- June 2026. Table~\ref{tab:phases} summarises the phase timeline.
-
-\begin{table}[H]
-\caption{Development Phases --- \ACRQA{} v5.0.0rc2}
-\label{tab:phases}
-\centering
-\renewcommand{\arraystretch}{1.25}
-\begin{tabularx}{\textwidth}{@{} l l X @{}}
-\toprule
-\textbf{Phase} & \textbf{Period} & \textbf{Key Deliverables} \\
-\midrule
-1 & Oct 2025        & Tool survey; canonical schema; pipeline architecture \\
-2 & Nov 2025        & Python adapter (6 tools); normaliser; Flask prototype \\
-3 & Nov--Dec 2025   & RAG KB (66 rules); Groq LLM; confidence scorer; entropy filter \\
-4 & Jan 2026        & CBoM generator; test-gap detector; cross-language correlator \\
-5 & Jan--Feb 2026   & JS/TS adapter; Go adapter; 422 canonical rule mappings \\
-6 & Feb 2026        & Secrets detector; SCA scanner; offline OSV database \\
-7--8 & Feb--Mar 2026 & Benchmark evaluation; FP calibration; targeted refinements \\
-9 & Mar--Apr 2026   & Taint analyser; call-graph BFS; auto-fix patch generator \\
-10 & Apr 2026       & FastAPI migration (32 endpoints); React 18 + TS dashboard \\
-11 & Apr--May 2026  & Post-quantum attestation (Dilithium3); Helm chart; Terraform \\
-12 & May 2026       & WCAG 2.1 AA; Arabic RTL; 500 RPS load test; final evaluation \\
-Docs & May--Jun 2026 & Thesis book; presentation; demo video \\
-\bottomrule
-\end{tabularx}
-\end{table}
+Development followed an iterative, test-driven methodology across twelve phases (October~2025 -- June~2026): tool survey and canonical schema design (Phase 1); Python adapters and Flask prototype (Phase 2); RAG knowledge base, Groq LLM integration, and entropy filter (Phase 3); CBoM, cross-language correlator, and JS/TS adapters (Phases 4--5); secrets and SCA scanners (Phase 6); benchmark evaluation and calibration (Phases 7--8); taint analyser, call-graph BFS, and auto-fix generator (Phase 9); FastAPI migration and React~18 dashboard (Phase 10); post-quantum attestation and Helm chart (Phase 11); WCAG~2.1~AA, Arabic RTL, 500~RPS load test, and final evaluation (Phase 12); thesis write-up (May--June 2026).
 
 % -----------------------------------------------------------------
 \section{Thesis Structure}
 \label{sec:structure}
 
-Chapter~2 surveys the state of the art in static analysis, AI-assisted code review, RAG, and cryptographic inventory. Chapter~3 details the system architecture: twelve-stage pipeline, canonical schema, and database design. Chapter~4 covers the implementation. Chapter~5 presents the full evaluation across four corpora: Layer~A ground truth (97.1\% / 100\% security-class precision), Layer~B 30-repo adversarial corpus (Confirmed Tier 96.4\% conservative / 100\% optimistic, 95\% CI [90.9\%, 100\%]), 20-CVE recall battery (100\% on detectable), and five novel evaluations (X1 live-CVE, X2 exploit verification with 13 categories, X3 AI-generated code, X4 time-travel backtest, X5 LLM-augmented detection), plus a head-to-head against Bandit and Semgrep where \ACRQA{} reaches F\textsubscript{1}~98.2\%. Chapter~6 summarises contributions, lessons learned, limitations, and future directions.
+Chapter~2 surveys the state of the art in static analysis, AI-assisted code review, RAG, and cryptographic inventory. Chapter~3 details the system architecture. Chapter~4 covers the implementation. Chapter~5 presents the full evaluation. Chapter~6 summarises contributions and future directions.
 
 \clearpage
