@@ -3,7 +3,43 @@ Shared test fixtures for ACR-QA tests.
 Provides mock Redis and mock Groq clients.
 """
 
+import sys
 from unittest.mock import MagicMock, Mock, patch
+
+
+# Mock sentence_transformers globally to prevent tests from trying to download or load model weights from HF
+class MockSentenceTransformer:
+    def __init__(self, model_name):
+        pass
+
+    def encode(self, sentences, **kwargs):
+        import numpy as np
+
+        if isinstance(sentences, list):
+            return np.zeros((len(sentences), 384))
+        return np.zeros(384)
+
+
+mock_st_module = MagicMock()
+mock_st_module.SentenceTransformer = MockSentenceTransformer
+sys.modules["sentence_transformers"] = mock_st_module
+
+
+# Mock dilithium_py globally to prevent slow pure-Python PQ signing from hanging the test suite
+class MockDilithium3:
+    @staticmethod
+    def keygen():
+        return b"public_key_bytes_123", b"secret_key_bytes_123"
+
+    @staticmethod
+    def sign(sk, payload):
+        return b"signature_bytes_123"
+
+
+mock_dilithium_module = MagicMock()
+mock_dilithium_module.Dilithium3 = MockDilithium3
+sys.modules["dilithium_py"] = mock_dilithium_module
+sys.modules["dilithium_py.dilithium"] = mock_dilithium_module
 
 import pytest
 

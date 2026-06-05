@@ -1,6 +1,6 @@
 %% ============================================================
-%%  CHAPTER 4 — IMPLEMENTATION
-%%  v5.0.0rc2 — Updated June 2026
+%%  CHAPTER 4 --- IMPLEMENTATION
+%%  v5.0.0rc2 --- Updated June 2026
 %% ============================================================
 \chapter{Implementation}
 \label{ch:implementation}
@@ -48,23 +48,23 @@ The repository follows a clear separation between the backend engine, API layer,
 \begin{samepage}
 \begin{lstlisting}[language={}, basicstyle=\footnotesize\ttfamily, caption={Repository Directory Structure (v5.0.0rc2)}]
 acr-qa/
-├── CORE/
-│   ├── main.py              # Pipeline orchestrator
-│   ├── adapters/            # PythonAdapter, JSAdapter, GoAdapter
-│   └── engines/             # 14 engines: normalizer, confidence_scorer,
-│                            #   taint_analyzer, call_graph, explainer,
-│                            #   auto_fix, cbom_scanner, sca_scanner,
-│                            #   secrets_detector, quality_gate,
-│                            #   attestation, verified_remediation,
-│                            #   llm_detector, cross_lang
-├── FRONTEND/api/            # FastAPI (52 endpoints)
-├── dashboard/               # React 18 + TypeScript SPA (EN + AR RTL)
-├── DATABASE/database.py     # psycopg2 DAO layer
-├── config/rules.yml         # 66 rules, 422 mappings
-├── TESTS/                   # 2,897 pytest + Vitest cases
-├── deploy/helm/ & terraform/ # K8s Helm chart + IaC
-├── docker-compose.yml       # 7 services
-└── .acrqa.yml               # Quality gate config
+|---- CORE/
+|   |---- main.py              # Pipeline orchestrator
+|   |---- adapters/            # PythonAdapter, JSAdapter, GoAdapter
+|   `---- engines/             # 14 engines: normalizer, confidence_scorer,
+|                            #   taint_analyzer, call_graph, explainer,
+|                            #   auto_fix, cbom_scanner, sca_scanner,
+|                            #   secrets_detector, quality_gate,
+|                            #   attestation, verified_remediation,
+|                            #   llm_detector, cross_lang
+|---- FRONTEND/api/            # FastAPI (52 endpoints)
+|---- dashboard/               # React 18 + TypeScript SPA (EN + AR RTL)
+|---- DATABASE/database.py     # psycopg2 DAO layer
+|---- config/rules.yml         # 66 rules, 422 mappings
+|---- TESTS/                   # 2,897 pytest + Vitest cases
+|---- deploy/helm/ & terraform/ # K8s Helm chart + IaC
+|---- docker-compose.yml       # 7 services
+`---- .acrqa.yml               # Quality gate config
 \end{lstlisting}
 \end{samepage}
 
@@ -74,7 +74,7 @@ acr-qa/
 \section{FastAPI and Celery Layer}
 \label{sec:fastapi_impl}
 
-The FastAPI application \cite{fastapi_framework} (\texttt{FRONTEND/api/main.py}) uses an app-factory pattern: CORS middleware, Prometheus instrumentation via \texttt{prometheus-fastapi-instrumentator}, and Pydantic v2 request validation are all registered at startup. Scan jobs are dispatched via \texttt{run\_analysis\_pipeline.delay(run\_id, target\_path)} — the endpoint returns HTTP~202 immediately while Celery \cite{celery_project} handles execution asynchronously. Workers are configured with \texttt{concurrency=4} (four scans in parallel per container) and a \texttt{max\_retries=2} policy with 30-second countdown, providing resilience against transient Groq API rate-limit errors or database connectivity issues.
+The FastAPI application \cite{fastapi_framework} (\texttt{FRONTEND/api/main.py}) uses an app-factory pattern: CORS middleware, Prometheus instrumentation via \texttt{prometheus-fastapi-instrumentator}, and Pydantic v2 request validation are all registered at startup. Scan jobs are dispatched via \texttt{run\_analysis\_pipeline.delay(run\_id, target\_path)} --- the endpoint returns HTTP~202 immediately while Celery \cite{celery_project} handles execution asynchronously. Workers are configured with \texttt{concurrency=4} (four scans in parallel per container) and a \texttt{max\_retries=2} policy with 30-second countdown, providing resilience against transient Groq API rate-limit errors or database connectivity issues.
 
 % -----------------------------------------------------------------
 \needspace{30\baselineskip}
@@ -179,7 +179,7 @@ def score_confidence(findings, reachable_funcs):
 
 \subsection{Knowledge Base Structure}
 
-Each of the 66 security rules in \texttt{config/rules.yml} contains a canonical rule ID, CWE and OWASP mapping, severity, description, detection patterns, remediation guidance, and reference URLs. At startup, all rules are loaded into an in-memory Python dict keyed on \texttt{canonical\_rule\_id}, providing O(1) retrieval. This approach was selected over pgvector semantic search: dict lookup achieves 800\,ms mean enrichment latency versus 1,400\,ms for the embedding path — a 43\% improvement with no quality loss.
+Each of the 66 security rules in \texttt{config/rules.yml} contains a canonical rule ID, CWE and OWASP mapping, severity, description, detection patterns, remediation guidance, and reference URLs. At startup, all rules are loaded into an in-memory Python dict keyed on \texttt{canonical\_rule\_id}, providing O(1) retrieval. This approach was selected over pgvector semantic search: dict lookup achieves 800\,ms mean enrichment latency versus 1,400\,ms for the embedding path --- a 43\% improvement with no quality loss.
 
 \needspace{16\baselineskip}
 \subsection{Entropy Validation Implementation}
@@ -203,7 +203,7 @@ def select_best_response(responses: List[str]) -> Optional[str]:
 \section{React Dashboard}
 \label{sec:dashboard_impl}
 
-The React~18 + TypeScript \cite{typescript_docs} dashboard is built with Vite~5, shadcn/ui components, and TanStack Query for server-state management. Five pages are implemented: \textbf{ScansPage} (paginated run list with severity badges), \textbf{RunDetailPage} (findings with AI explanation panels), \textbf{RunComparePage} (side-by-side delta view), \textbf{SupplyChainPage} (CVE findings by package), and \textbf{SettingsPage} (API keys, quality gate overrides). WCAG~2.1~AA compliance \cite{wcag21} is validated by 14 axe-core Playwright tests across all pages in English and Arabic RTL. Internationalisation uses react-i18next with full EN/AR bundles. The dashboard test suite totals 65 Vitest unit tests and 15 Playwright end-to-end tests — all 80 pass.
+The React~18 + TypeScript \cite{typescript_docs} dashboard is built with Vite~5, shadcn/ui components, and TanStack Query for server-state management. Five pages are implemented: \textbf{ScansPage} (paginated run list with severity badges), \textbf{RunDetailPage} (findings with AI explanation panels), \textbf{RunComparePage} (side-by-side delta view), \textbf{SupplyChainPage} (CVE findings by package), and \textbf{SettingsPage} (API keys, quality gate overrides). WCAG~2.1~AA compliance \cite{wcag21} is validated by 14 axe-core Playwright tests across all pages in English and Arabic RTL. Internationalisation uses react-i18next with full EN/AR bundles. The dashboard test suite totals 65 Vitest unit tests and 15 Playwright end-to-end tests --- all 80 pass.
 
 % -----------------------------------------------------------------
 \clearpage
@@ -268,7 +268,7 @@ The IaC engine detects four resource types via extension matching: \texttt{.tf} 
 
 \subsection{PR Risk Score Implementation}
 
-\texttt{PRRiskEngine.score(run\_id)} fetches all findings for a run from PostgreSQL, computes the six sub-scores (see Section~\ref{sec:pr_risk_design}), and persists the result to the \texttt{pr\_risk\_scores} table (migration 0016). The \texttt{post\_pr\_risk\_comment.py} script formats the score into a GitHub pull-request comment using the GitHub REST API (\texttt{GITHUB\_TOKEN} env var), including a colour-coded emoji badge ($\leq$30: \textcolor{green}{✅ SAFE}, 31--69: \textcolor{yellow}{⚠ REVIEW}, 70--84: \textcolor{orange}{🟠 CAUTION}, $\geq$85: \textcolor{red}{🔴 BLOCK}), a breakdown table of sub-scores, and a direct link to the ACR-QA dashboard run. A companion \texttt{SecondOpinionEngine} queries a secondary LLM (Ollama \texttt{qwen2.5-coder:1.5b} as local fallback) for an independent opinion on each HIGH finding, adding $+15$ to confidence when both models agree and $-10$ when they disagree.
+\texttt{PRRiskEngine.score(run\_id)} fetches all findings for a run from PostgreSQL, computes the six sub-scores (see Section~\ref{sec:pr_risk_design}), and persists the result to the \texttt{pr\_risk\_scores} table (migration 0016). The \texttt{post\_pr\_risk\_comment.py} script formats the score into a GitHub pull-request comment using the GitHub REST API (\texttt{GITHUB\_TOKEN} env var), including a colour-coded badge ($\leq$30: \textcolor{green}{[SAFE]}, 31--69: \textcolor{orange}{[REVIEW]}, 70--84: \textcolor{orange}{[CAUTION]}, $\geq$85: \textcolor{red}{[BLOCK]}), a breakdown table of sub-scores, and a direct link to the ACR-QA dashboard run. A companion \texttt{SecondOpinionEngine} queries a secondary LLM (Ollama \texttt{qwen2.5-coder:1.5b} as local fallback) for an independent opinion on each HIGH finding, adding $+15$ to confidence when both models agree and $-10$ when they disagree.
 
 % -----------------------------------------------------------------
 \needspace{8\baselineskip}

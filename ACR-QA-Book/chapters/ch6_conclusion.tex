@@ -1,6 +1,6 @@
 %% ============================================================
-%%  CHAPTER 6 — CONCLUSION & FUTURE WORK
-%%  v5.0.0rc2 — Updated June 2026
+%%  CHAPTER 6 --- CONCLUSION & FUTURE WORK
+%%  v5.0.0rc2 --- Updated June 2026
 %% ============================================================
 \chapter{Conclusion and Future Work}
 \label{ch:conclusion}
@@ -20,15 +20,15 @@ This project makes thirteen novel contributions to the field of software securit
 \begin{enumerate}
   \item \textbf{Unified Multi-Tool Orchestration Platform:} The first open-source platform combining nineteen SAST engines with RAG-backed LLM enrichment, AST call-graph reachability, and intra-procedural taint in a single self-hosted service at zero cost, validated across Python, JS/TS, and Go with 327+ canonical rule mappings.
 
-  \item \textbf{Label-Free Confidence Scoring:} The five-signal weighted confidence scorer enables finding prioritisation without any pre-labelled vulnerability dataset. At the $C_s = 30$ soft-suppression threshold, the scorer achieves 94.2\% false-positive suppression accuracy while misclassifying only 1.0\% of genuine vulnerabilities — all in dead-code paths correctly identified by the reachability engine.
+  \item \textbf{Label-Free Confidence Scoring:} The five-signal weighted confidence scorer enables finding prioritisation without any pre-labelled vulnerability dataset. At the $C_s = 30$ soft-suppression threshold, the scorer achieves 94.2\% false-positive suppression accuracy while misclassifying only 1.0\% of genuine vulnerabilities --- all in dead-code paths correctly identified by the reachability engine.
 
-  \item \textbf{Entropy-Based AI Consistency Filtering:} The N-gram entropy filter ($\tau = 3.2$ bits) across three independent LLM runs rejects 96\% of hallucinated or repetitive responses while maintaining 100\% finding enrichment coverage. The underlying principle — variance as a free confidence signal — is broadly applicable to AI-assisted developer tooling.
+  \item \textbf{Entropy-Based AI Consistency Filtering:} The N-gram entropy filter ($\tau = 3.2$ bits) across three independent LLM runs rejects 96\% of hallucinated or repetitive responses while maintaining 100\% finding enrichment coverage. The underlying principle --- variance as a free confidence signal --- is broadly applicable to AI-assisted developer tooling.
 
-  \item \textbf{PQC-Aware Cryptographic Bill of Materials:} The CBoM module classifies 62 cryptographic algorithms against NIST's 2024 post-quantum migration guidance \cite{nist_fips_203,nist_fips_204,nist_fips_197}, and attests scan artefacts using both ECDSA-P256 (classical) and CRYSTALS-Dilithium3 (post-quantum) signatures — to the author's knowledge the first SAST-integrated tool to do so.
+  \item \textbf{PQC-Aware Cryptographic Bill of Materials:} The CBoM module classifies 62 cryptographic algorithms against NIST's 2024 post-quantum migration guidance \cite{nist_fips_203,nist_fips_204,nist_fips_197}, and attests scan artefacts using both ECDSA-P256 (classical) and CRYSTALS-Dilithium3 (post-quantum) signatures --- to the author's knowledge the first SAST-integrated tool to do so.
 
   \item \textbf{Call-Graph Reachability Gating:} The AST-based BFS engine penalises findings in code unreachable from Flask/FastAPI routes, Celery tasks, and \texttt{\_\_main\_\_} blocks, achieving a 0\% reachability false-positive rate across all three fixture repositories.
 
-  \item \textbf{Cross-Language Vulnerability Correlation:} The cross-language correlator detects vulnerability chains spanning multiple stack layers — for example, a Python backend passing user input to a Jinja2 template that renders without escaping, compounding a reflected XSS risk invisible to single-language tools.
+  \item \textbf{Cross-Language Vulnerability Correlation:} The cross-language correlator detects vulnerability chains spanning multiple stack layers --- for example, a Python backend passing user input to a Jinja2 template that renders without escaping, compounding a reflected XSS risk invisible to single-language tools.
 
   \item \textbf{Heuristic Risk Predictor:} An explainable, label-free file-risk scorer combining churn, cyclomatic complexity, age, author count, and test gap into a single $[0,100]$ score using a documented linear model. Defensible at committee level; requires no training data.
 
@@ -51,15 +51,15 @@ This project makes thirteen novel contributions to the field of software securit
 
 The development of \ACRQA{} across twelve phases yielded five practical lessons with broader applicability to AI-assisted developer tooling.
 
-\textbf{Retrieval outperforms parametric memory.} Grounding LLM enrichment in retrieved security rules (RAG) produced more accurate and contextually specific explanations than parametric knowledge alone, particularly for obscure CWE categories. Provenance tracing — anchoring each claim to a specific retrieved rule — was essential for developer trust in AI-generated explanations \cite{bass2012software}.
+\textbf{Retrieval outperforms parametric memory.} Grounding LLM enrichment in retrieved security rules (RAG) produced more accurate and contextually specific explanations than parametric knowledge alone, particularly for obscure CWE categories. Provenance tracing --- anchoring each claim to a specific retrieved rule --- was essential for developer trust in AI-generated explanations \cite{bass2012software}.
 
 \textbf{A single canonical schema eliminates downstream complexity.} Normalising all tool outputs to \texttt{CanonicalFinding} at Stage~3 made every downstream engine completely tool-agnostic. Adding a new adapter required zero modification to downstream logic.
 
 \textbf{Variance is a free confidence signal.} High-quality LLM responses exhibit higher N-gram entropy than vague or repetitive ones. This observation, exploitable at negligible overhead, underpins the entropy filter.
 
-\textbf{Structural filters reduce noise more than scoring alone.} Scope exclusion rules (filtering test directories and vendored libraries) eliminated $\sim$15\% of raw false positives before scoring; the call-graph reachability engine penalised a further 8\%. Together these filters contributed more to the 94.8\% → 97.1\% precision improvement than any single scoring signal.
+\textbf{Structural filters reduce noise more than scoring alone.} Scope exclusion rules (filtering test directories and vendored libraries) eliminated $\sim$15\% of raw false positives before scoring; the call-graph reachability engine penalised a further 8\%. Together these filters contributed more to the 94.8\% $\rightarrow$ 97.1\% precision improvement than any single scoring signal.
 
-\textbf{Asynchronous processing is essential for production usability.} Migrating from synchronous Flask to async FastAPI~+~Celery allowed developers to submit a scan, monitor live progress, and inspect high-priority findings while AI enrichment continued in the background — impossible in the blocking single-process v3.2.4 architecture.
+\textbf{Asynchronous processing is essential for production usability.} Migrating from synchronous Flask to async FastAPI~+~Celery allowed developers to submit a scan, monitor live progress, and inspect high-priority findings while AI enrichment continued in the background --- impossible in the blocking single-process v3.2.4 architecture.
 
 % -----------------------------------------------------------------
 \section{Limitations}
@@ -70,7 +70,7 @@ The current release of \ACRQA{} v5.0.0rc2 has the following acknowledged limitat
 \begin{enumerate}
   \item \textbf{OWASP A09 (Security Logging) coverage gap:} Static analysis cannot determine whether an application logs security events correctly without knowing the runtime logging configuration. A09 remains the single uncovered OWASP Top~10 category; detection would require runtime instrumentation or log-schema analysis, both outside project scope.
 
-  \item \textbf{Intra-procedural taint analysis only:} The taint engine traces data flow within a single function body. Inter-procedural propagation — tracking user input across function boundaries and module imports — is not yet implemented, missing a class of cross-file injection vulnerabilities.
+  \item \textbf{Intra-procedural taint analysis only:} The taint engine traces data flow within a single function body. Inter-procedural propagation --- tracking user input across function boundaries and module imports --- is not yet implemented, missing a class of cross-file injection vulnerabilities.
 
   \item \textbf{Entropy threshold per-model calibration:} The threshold $\tau = 3.2$ was calibrated for Groq LLaMA-3.3-70B at temperature 0.3. Switching to a different LLM provider or model version requires recalibration, as entropy distributions are model-dependent.
 

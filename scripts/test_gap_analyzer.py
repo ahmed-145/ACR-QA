@@ -150,6 +150,9 @@ def discover_test_symbols(test_dir: str) -> dict[str, set[str]]:
         return test_map
 
     for test_file in test_path.rglob("test_*.py"):
+        # Skip third-party cloned repositories used in evaluations
+        if "cloned" in test_file.parts or "cloned" in str(test_file.as_posix()):
+            continue
         try:
             with open(test_file, encoding="utf-8", errors="ignore") as f:
                 source = f.read()

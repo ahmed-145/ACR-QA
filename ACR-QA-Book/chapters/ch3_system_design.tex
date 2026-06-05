@@ -1,6 +1,6 @@
 %% ============================================================
-%%  CHAPTER 3 — SYSTEM DESIGN & ARCHITECTURE
-%%  v5.0.0rc2 — Updated June 2026
+%%  CHAPTER 3 --- SYSTEM DESIGN & ARCHITECTURE
+%%  v5.0.0rc2 --- Updated June 2026
 %% ============================================================
 \chapter{System Design and Architecture}
 \label{ch:design}
@@ -11,7 +11,7 @@ This chapter presents the complete design and architecture of the \ACRQA{} syste
 \section{Architectural Goals and Design Principles}
 \label{sec:arch_goals}
 
-Six design principles guided the architecture: (1) \textbf{Single-schema normalisation} — all tool outputs are mapped to \texttt{CanonicalFinding} before any downstream processing, making every component tool-agnostic; (2) \textbf{Adapter isolation} — each tool integration is a self-contained module, so adding or removing a tool requires changes only to the adapter layer; (3) \textbf{Async-first processing} — scans execute on Celery workers so the API returns a job ID (HTTP~202) immediately; (4) \textbf{Fail-soft AI} — if Groq enrichment fails, findings are returned with raw tool data, so AI is an enhancement, not a dependency; (5) \textbf{Zero external runtime dependency} — the rule database and all tool binaries are bundled in container images; (6) \textbf{Horizontal scalability} — each worker is stateless; scaling requires only adding worker containers.
+Six design principles guided the architecture: (1) \textbf{Single-schema normalisation} --- all tool outputs are mapped to \texttt{CanonicalFinding} before any downstream processing, making every component tool-agnostic; (2) \textbf{Adapter isolation} --- each tool integration is a self-contained module, so adding or removing a tool requires changes only to the adapter layer; (3) \textbf{Async-first processing} --- scans execute on Celery workers so the API returns a job ID (HTTP~202) immediately; (4) \textbf{Fail-soft AI} --- if Groq enrichment fails, findings are returned with raw tool data, so AI is an enhancement, not a dependency; (5) \textbf{Zero external runtime dependency} --- the rule database and all tool binaries are bundled in container images; (6) \textbf{Horizontal scalability} --- each worker is stateless; scaling requires only adding worker containers.
 
 % -----------------------------------------------------------------
 \section{High-Level Architecture}
@@ -41,15 +41,15 @@ The core of \ACRQA{} is a twelve-stage sequential processing pipeline. Each stag
   \label{fig:pipeline}
 \end{figure}
 
-\subsection{Stage 0 — Rate Limit and Job Initialisation}
+\subsection{Stage 0 --- Rate Limit and Job Initialisation}
 
 Before tool execution begins, the API tier checks a Redis token-bucket rate limiter. If the request is within quota, a new analysis run record is created in PostgreSQL with status \texttt{QUEUED} and the job is published to the Celery task queue. The API returns the run ID immediately (HTTP 202 Accepted).
 
-\subsection{Stage 1 — Input \& Repository Ingestion}
+\subsection{Stage 1 --- Input \& Repository Ingestion}
 
 The Celery worker receives the job and validates the target path. Language detection is performed by scanning file extensions (e.g., \texttt{.py}, \texttt{.ts}, \texttt{go.mod}) to determine which adapters to activate. The run status is updated to \texttt{RUNNING}.
 
-\subsection{Stage 2 — Multi-Tool Execution}
+\subsection{Stage 2 --- Multi-Tool Execution}
 
 Stage 2 invokes all applicable tool adapters concurrently using Python's thread pool. Table~\ref{tab:tool_execution} shows the tool-to-language mapping and typical execution times.
 
@@ -78,9 +78,9 @@ SCA Scanner      & Python / Node   & pip-audit / npm CVE lookup         & 3--8 s
 \end{tabularx}
 \end{table}
 
-Each adapter constructs the tool-specific command line, executes it as a managed subprocess with a 300-second timeout, and returns raw output. Tool failures are logged and silently skipped — a failed tool does not abort the pipeline.
+Each adapter constructs the tool-specific command line, executes it as a managed subprocess with a 300-second timeout, and returns raw output. Tool failures are logged and silently skipped --- a failed tool does not abort the pipeline.
 
-\subsection{Stage 3 — Normalisation, Filtering, and Deduplication}
+\subsection{Stage 3 --- Normalisation, Filtering, and Deduplication}
 
 Stage 3 is the architectural heart of the system. Raw tool outputs are parsed by each adapter's \texttt{parse()} method and mapped to \texttt{CanonicalFinding} instances (Section~\ref{subsec:schema}). Seven sub-stages then execute in sequence: glob-based config filtering removes excluded paths; the \texttt{suppression\_rules} table suppresses known false positives; findings sharing a \texttt{(file, line, canonical\_rule\_id)} fingerprint are deduplicated and their confirming tools merged; the taint engine traces HTTP sources to dangerous sinks (Section~\ref{subsec:taint}); call-graph BFS penalises unreachable code (Section~\ref{subsec:callgraph}); a per-rule cap of five findings prevents noisy rules from dominating; and finally findings are sorted by confidence score descending.
 
@@ -105,7 +105,7 @@ class CanonicalFinding(BaseModel):
     is_suppressed:  bool = False
 \end{lstlisting}
 
-\subsection{Stage 4 — AI Explanation, Confidence Scoring, and Attestation}
+\subsection{Stage 4 --- AI Explanation, Confidence Scoring, and Attestation}
 \label{subsec:stage4}
 
 Stage 4 runs three parallel enrichment processes for each non-suppressed finding:
@@ -136,8 +136,8 @@ $s_3$: Tool Reliability & Known precision profile of originating tool & 0.15 & 1
 $s_4$: Rule Specificity & CWE-mapped rules score higher              & 0.10 & 10 \\
 $s_5$: Fix Validation   & Auto-fix patch successfully generated      & 0.10 & 10 \\
 \midrule
-Multi-tool bonus $B_{\text{multi}}$ & $\geq$2 tools at same location & — & +5 \\
-Unreachable penalty  & Call graph: finding in dead code            & — & $-20$ \\
+Multi-tool bonus $B_{\text{multi}}$ & $\geq$2 tools at same location & --- & +5 \\
+Unreachable penalty  & Call graph: finding in dead code            & --- & $-20$ \\
 \midrule
 \textbf{Total max} & & \textbf{1.00} & \textbf{100} \\
 \bottomrule
@@ -167,7 +167,7 @@ Figure~\ref{fig:rag_process} illustrates the complete enrichment process.
 
 Each completed scan produces a SLSA-compliant \cite{slsa_framework} cryptographic attestation document signed with both ECDSA-P256 (classical) and CRYSTALS-Dilithium3 (NIST FIPS 204, post-quantum resistant). The attestation captures the pipeline's input hash, findings count, tool versions, and timestamp, providing a tamper-evident audit trail for compliance workflows.
 
-\subsection{Stages 5--7 — Supply Chain, Quality Gate, and Output Delivery}
+\subsection{Stages 5--7 --- Supply Chain, Quality Gate, and Output Delivery}
 
 Stage~5 runs two parallel sub-analyses: the SCA scanner queries an offline OSV snapshot \cite{osv_database} ($\sim$1.5\,GB) for Python and Node.js dependency CVEs, and the CBoM scanner performs AST-based detection of 62 cryptographic algorithms, outputting a CycloneDX CBoM JSON document. Stage~6 evaluates findings against configurable quality gate rules in \texttt{.acrqa.yml}, producing a binary pass/fail verdict (fail condition: any CRITICAL finding with $C_s \geq 70$, or $>$5 HIGH findings at that threshold, or any hardcoded secret above $C_s = 50$). Stage~7 serialises the complete result in four formats --- JSON, SARIF~2.1 \cite{sarif_standard}, HTML, and PDF --- and, when a \texttt{GITHUB\_TOKEN} is configured, posts findings as inline PR review comments.
 
@@ -197,7 +197,7 @@ The call-graph engine performs a pure-AST breadth-first search from identified a
   \item \texttt{if \_\_name\_\_ == "\_\_main\_\_"} blocks.
 \end{itemize}
 
-All functions reachable within five call-graph hops from an entry point are marked as \textit{reachable}. Findings in functions never reachable from any entry point receive a $-20$ confidence penalty and are labelled \texttt{triage\_verdict = UNREACHABLE}. On benchmark repositories, this engine achieves a 0\% false-positive rate — it never penalises a truly reachable finding.
+All functions reachable within five call-graph hops from an entry point are marked as \textit{reachable}. Findings in functions never reachable from any entry point receive a $-20$ confidence penalty and are labelled \texttt{triage\_verdict = UNREACHABLE}. On benchmark repositories, this engine achieves a 0\% false-positive rate --- it never penalises a truly reachable finding.
 
 % -----------------------------------------------------------------
 \section{Database Schema Design}
@@ -212,7 +212,7 @@ The PostgreSQL \cite{postgresql_docs} schema is organised into ten primary table
   \label{fig:db_schema}
 \end{figure}
 
-The \texttt{analysis\_runs} table records job status through states: \texttt{QUEUED}, \texttt{RUNNING}, \texttt{COMPLETED}, \texttt{FAILED}, and \texttt{CANCELLED}. The \texttt{findings} table stores all normalised findings with their confidence scores and AI enrichment fields. Soft-suppressed findings are retained with \texttt{is\_suppressed = TRUE}, supporting audit requirements. The \texttt{llm\_explanations} table stores the full LLM prompt, raw response, entropy score, and self-evaluation score for every AI-enriched finding, providing complete provenance for every AI-generated artefact — directly addressing Research Question 2 (Section~\ref{sec:rqs}).
+The \texttt{analysis\_runs} table records job status through states: \texttt{QUEUED}, \texttt{RUNNING}, \texttt{COMPLETED}, \texttt{FAILED}, and \texttt{CANCELLED}. The \texttt{findings} table stores all normalised findings with their confidence scores and AI enrichment fields. Soft-suppressed findings are retained with \texttt{is\_suppressed = TRUE}, supporting audit requirements. The \texttt{llm\_explanations} table stores the full LLM prompt, raw response, entropy score, and self-evaluation score for every AI-enriched finding, providing complete provenance for every AI-generated artefact --- directly addressing Research Question 2 (Section~\ref{sec:rqs}).
 
 % -----------------------------------------------------------------
 \section{API Design}
@@ -259,6 +259,7 @@ The complete \ACRQA{} stack is defined as a Docker Compose application with seve
   \includegraphics[width=0.94\textwidth,height=0.70\textheight,keepaspectratio]{docker_stack}
   \caption{Docker Compose Service Topology (7 Services, v5.0.0rc2)}
   \label{fig:docker_compose}
+  \label{fig:docker_stack}
 \end{figure}
 
 The seven services are: \texttt{api} (FastAPI), \texttt{worker} (Celery, 4 concurrency), \texttt{dashboard} (React Vite dev server or Nginx), \texttt{postgres} (PostgreSQL 15), \texttt{redis} (Redis 7, message broker + cache), \texttt{prometheus} (metrics scraping), and \texttt{grafana} (dashboards). All services communicate over a private Docker bridge network (\texttt{acrqa-network}), exposing only the API port (8000) and dashboard port (3000) externally.

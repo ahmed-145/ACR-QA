@@ -9,6 +9,41 @@ Target: boost main.py coverage from ~31% to ~50%.
 
 from unittest.mock import MagicMock, patch
 
+import pytest
+
+
+@pytest.fixture(autouse=True)
+def mock_pipeline_engines():
+    """Mock all heavy/dangerous pipeline engines globally for orchestrator tests."""
+    mock_ta = MagicMock()
+    mock_ta.enrich_findings.side_effect = lambda f, td: f
+
+    mock_reach = MagicMock()
+    mock_reach.enrich_findings.side_effect = lambda f, td: f
+
+    mock_ev = MagicMock()
+    mock_ev.enrich_findings.side_effect = lambda f, td, db=None, target_repo=None: f
+
+    mock_ct = MagicMock()
+    mock_ct.enrich_findings.side_effect = lambda f: f
+
+    mock_ls = MagicMock()
+    mock_ls.suppress.side_effect = lambda f, db: (f, 0)
+
+    mock_dep_reach = MagicMock()
+    mock_dep_reach.enrich_findings.side_effect = lambda f: f
+
+    with (
+        patch("CORE.engines.taint_analyzer.TaintAnalyzer", return_value=mock_ta),
+        patch("CORE.engines.reachability.CallGraphReachability", return_value=mock_reach),
+        patch("CORE.engines.exploit_verifier.ExploitVerifier", return_value=mock_ev),
+        patch("CORE.engines.confirmed_tier.ConfirmedTierEngine", return_value=mock_ct),
+        patch("CORE.engines.learned_suppression.LearnedSuppressionEngine", return_value=mock_ls),
+        patch("CORE.engines.dependency_reachability.DependencyReachabilityChecker", return_value=mock_dep_reach),
+    ):
+        yield
+
+
 # ─────────────────────────────────────────────────────────────
 #  Shared helpers
 # ─────────────────────────────────────────────────────────────
