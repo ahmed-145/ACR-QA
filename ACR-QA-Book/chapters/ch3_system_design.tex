@@ -28,7 +28,7 @@ Figure~\ref{fig:architecture_overview} illustrates the high-level component arch
   \label{fig:architecture_overview}
 \end{figure}
 
-The six service layers — FastAPI API \cite{fastapi_framework}, React dashboard, Celery workers \cite{celery_project}, CORE engine, PostgreSQL \cite{postgresql_docs}, and the \texttt{config/rules.yml} knowledge base — communicate via a private Docker bridge network. Authentication \cite{fielding2000rest}, Prometheus \cite{prometheus_docs} instrumentation, and Pydantic v2 validation are applied at the API layer; all analysis executes asynchronously on Celery workers.
+The six service layers --- FastAPI API \cite{fastapi_framework}, React dashboard, Celery workers \cite{celery_project}, CORE engine, PostgreSQL \cite{postgresql_docs}, and the \texttt{config/rules.yml} knowledge base --- communicate via a private Docker bridge network. Authentication, Prometheus \cite{prometheus_docs} instrumentation, and Pydantic v2 validation are applied at the API layer; all analysis executes asynchronously on Celery workers.
 
 % -----------------------------------------------------------------
 \section{The Twelve-Stage Processing Pipeline}

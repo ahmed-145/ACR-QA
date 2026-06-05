@@ -53,7 +53,7 @@ The development of \ACRQA{} across twelve phases yielded five practical lessons 
 
 \textbf{Retrieval outperforms parametric memory.} Grounding LLM enrichment in retrieved security rules (RAG) produced more accurate and contextually specific explanations than parametric knowledge alone, particularly for obscure CWE categories. Provenance tracing — anchoring each claim to a specific retrieved rule — was essential for developer trust in AI-generated explanations \cite{bass2012software}.
 
-\textbf{A single canonical schema eliminates downstream complexity.} Normalising all tool outputs to \texttt{CanonicalFinding} at Stage~3 made every downstream engine completely tool-agnostic \cite{fowler1999refactoring}. Adding a new adapter required zero modification to downstream logic.
+\textbf{A single canonical schema eliminates downstream complexity.} Normalising all tool outputs to \texttt{CanonicalFinding} at Stage~3 made every downstream engine completely tool-agnostic. Adding a new adapter required zero modification to downstream logic.
 
 \textbf{Variance is a free confidence signal.} High-quality LLM responses exhibit higher N-gram entropy than vague or repetitive ones. This observation, exploitable at negligible overhead, underpins the entropy filter.
 
