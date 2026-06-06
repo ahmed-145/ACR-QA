@@ -18,7 +18,7 @@ jobs:
   test:
     name: Run Test Suite
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 20
 
     services:
       postgres:
@@ -73,7 +73,7 @@ jobs:
           DB_PASSWORD: postgres
         run: |
           pytest TESTS/ -v --override-ini="addopts=" --tb=short \
-            --cov=CORE --cov=DATABASE --cov-report=xml:coverage.xml \
+            --cov=CORE --cov=DATABASE --cov=acrqa-mcp --cov-report=xml:coverage.xml \
             --cov-fail-under=82 \
             --cov-report=term-missing \
             --ignore=TESTS/e2e \

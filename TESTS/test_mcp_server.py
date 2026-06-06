@@ -106,6 +106,25 @@ class TestConfig:
                 if old is not None:
                     os.environ["ACRQA_TOKEN"] = old
 
+    def test_load_config_valid(self, tmp_path):
+        import server
+
+        cfg_file = tmp_path / "config.json"
+        cfg_file.write_text('{"url": "http://cfg-url:8080", "token": "cfg-token"}')
+        with patch.object(server, "_CONFIG_PATH", cfg_file):
+            cfg = server._load_config()
+            assert cfg["url"] == "http://cfg-url:8080"
+            assert cfg["token"] == "cfg-token"
+
+    def test_load_config_invalid(self, tmp_path):
+        import server
+
+        cfg_file = tmp_path / "config.json"
+        cfg_file.write_text("invalid json")
+        with patch.object(server, "_CONFIG_PATH", cfg_file):
+            cfg = server._load_config()
+            assert cfg == {}
+
 
 class TestToolScan:
     def _mock_post(self, job_id="test-job-123"):
@@ -184,6 +203,26 @@ class TestToolScan:
             result = server._tool_scan("/tmp/test", poll_timeout=10)
         assert result["findings_count"] == 0
         assert result["top_findings"] == []
+
+    @patch("server.time.sleep")
+    def test_scan_polling_handles_http_error(self, mock_sleep):
+        import httpx
+        import server
+
+        findings = []
+        mock_poll = {
+            "job_id": "test-job-123",
+            "status": "completed",
+            "result": {"run_id": 1, "findings": findings},
+        }
+
+        with (
+            patch.object(server, "_post", return_value={"job_id": "test-job-123"}),
+            patch.object(server, "_get", side_effect=[httpx.HTTPError("error"), mock_poll]),
+        ):
+            result = server._tool_scan("/tmp/test", poll_timeout=10)
+
+        assert result["status"] == "completed"
 
 
 class TestToolExplain:
@@ -306,6 +345,31 @@ class TestCreateServer:
         except ImportError:
             pytest.skip("mcp package not installed")
 
+    def test_invoke_tools_success(self):
+        import server
+
+        try:
+            mcp = server.create_server()
+            with (
+                patch.object(server, "_tool_scan", return_value={"status": "completed"}) as mock_scan,
+                patch.object(server, "_tool_explain", return_value={"text": "ex"}) as mock_explain,
+                patch.object(server, "_tool_fix", return_value={"diff": "df"}) as mock_fix,
+            ):
+                tools = self._get_tools(mcp)
+                scan_tool = tools["acrqa_scan"]
+                explain_tool = tools["acrqa_explain"]
+                fix_tool = tools["acrqa_fix"]
+
+                assert "completed" in scan_tool.fn("/tmp/test", repo_name="test")
+                assert "ex" in explain_tool.fn(42)
+                assert "df" in fix_tool.fn(42)
+
+                mock_scan.assert_called_once_with("/tmp/test", repo_name="test")
+                mock_explain.assert_called_once_with(42)
+                mock_fix.assert_called_once_with(42)
+        except ImportError:
+            pytest.skip("mcp package not installed")
+
 
 class TestMCPPackageStructure:
     def test_pyproject_toml_exists(self):
@@ -406,3 +470,43 @@ class TestGodModeMCP:
         spec.loader.exec_module(mod)
         assert hasattr(mod, "__version__")
         assert mod.__version__ == "1.0.0"
+
+
+class TestHTTPHelpers:
+    @patch("server.httpx.Client")
+    def test_post_success(self, MockClient):
+        import server
+
+        mock_client = MockClient.return_value.__enter__.return_value
+        mock_response = MagicMock()
+        mock_response.json.return_value = {"status": "ok"}
+        mock_client.post.return_value = mock_response
+
+        res = server._post("/test-path", {"key": "val"})
+        assert res == {"status": "ok"}
+        mock_client.post.assert_called_once()
+
+    @patch("server.httpx.Client")
+    def test_get_success(self, MockClient):
+        import server
+
+        mock_client = MockClient.return_value.__enter__.return_value
+        mock_response = MagicMock()
+        mock_response.json.return_value = {"data": "ok"}
+        mock_client.get.return_value = mock_response
+
+        res = server._get("/test-path")
+        assert res == {"data": "ok"}
+        mock_client.get.assert_called_once()
+
+
+class TestMCPServerMain:
+    @patch("server.create_server")
+    def test_main_runs_server(self, mock_create_server):
+        import server
+
+        mock_mcp = MagicMock()
+        mock_create_server.return_value = mock_mcp
+
+        server.main()
+        mock_mcp.run.assert_called_once_with(transport="stdio")

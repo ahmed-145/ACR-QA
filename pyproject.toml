@@ -138,6 +138,7 @@ testpaths = ["TESTS"]
 norecursedirs = ["TESTS/evaluation/cloned", "TESTS/evaluation/realvuln", "mutants", ".venv", "node_modules"]
 addopts = [
     "--cov=CORE",
+    "--cov=acrqa-mcp",
     "--cov-report=html",
     "--cov-report=term-missing",
     "--cov-fail-under=40",
