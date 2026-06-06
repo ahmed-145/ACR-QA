@@ -43,6 +43,11 @@ jobs:
             -q || true
         continue-on-error: true
 
+      - name: Translate coverage paths for SonarCloud
+        run: |
+          sed -i "s|$GITHUB_WORKSPACE|/github/workspace|g" coverage.xml
+        continue-on-error: true
+
       - name: SonarCloud Scan
         uses: SonarSource/sonarcloud-github-action@v3
         continue-on-error: true

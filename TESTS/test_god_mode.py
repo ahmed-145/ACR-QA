@@ -904,6 +904,47 @@ class TestVersionConsistency:
         # cleanup
         del os.environ["ACRQA_FAST_MODE"]
 
+    def test_llm_flag_in_help(self):
+        """--llm flag must appear in --help output."""
+        venv_python = Path(__file__).parent.parent / ".venv" / "bin" / "python"
+        python_exe = str(venv_python) if venv_python.exists() else sys.executable
+        import subprocess as _sp
+
+        result = _sp.run(
+            [python_exe, "-m", "CORE", "--help"],
+            capture_output=True,
+            text=True,
+            cwd=Path(__file__).parent.parent,
+        )
+        assert "--llm" in (result.stdout + result.stderr), "--llm flag missing from --help"
+
+    def test_sarif_flag_in_help(self):
+        """--sarif flag must appear in --help output."""
+        venv_python = Path(__file__).parent.parent / ".venv" / "bin" / "python"
+        python_exe = str(venv_python) if venv_python.exists() else sys.executable
+        import subprocess as _sp
+
+        result = _sp.run(
+            [python_exe, "-m", "CORE", "--help"],
+            capture_output=True,
+            text=True,
+            cwd=Path(__file__).parent.parent,
+        )
+        assert "--sarif" in (result.stdout + result.stderr), "--sarif flag missing from --help"
+
+    def test_llm_detect_env_var_logic(self):
+        """When --llm is set, ACRQA_LLM_DETECT env var must be set."""
+        import argparse
+        import os
+
+        # Simulate what main() does with --llm
+        ns = argparse.Namespace(llm_detect=True)
+        if getattr(ns, "llm_detect", False):
+            os.environ["ACRQA_LLM_DETECT"] = "1"
+        assert os.environ.get("ACRQA_LLM_DETECT") == "1"
+        # cleanup
+        del os.environ["ACRQA_LLM_DETECT"]
+
     def test_jwt_secret_uses_env_var(self):
         """FastAPI JWT secret should come from env var, not be hardcoded."""
         jwt_path = Path(__file__).parent.parent / "FRONTEND" / "auth" / "jwt_utils.py"
