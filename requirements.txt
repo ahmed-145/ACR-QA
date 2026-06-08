@@ -40,7 +40,7 @@ prometheus-client==0.21.1
 
 # Static Analysis Tools (pinned to prevent rule ID drift)
 ruff==0.6.0
-semgrep==1.164.0
+semgrep==1.165.0
 vulture==2.10
 radon==6.0.1
 bandit==1.9.4
