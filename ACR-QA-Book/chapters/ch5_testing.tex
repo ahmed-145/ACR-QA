@@ -7,7 +7,14 @@
 
 \section{Overview}
 
-This chapter presents the testing strategy and quantitative evaluation of \ACRQA{} v5.0.0rc2. The evaluation is organised around the four research questions of Chapter~\ref{ch:intro}: (RQ1) RAG hallucination reduction, (RQ2) AI provenance, (RQ3) label-free confidence scoring, (RQ4) precision/recall vs.\ commercial SAST. The evaluation comprises four layers: (i) a small ground-truth corpus (Layer~A: DVPWA, Pygoat, VulPy, DSVW); (ii) a 30-repo adversarial precision corpus of mature production libraries (Layer~B); (iii) a 20-CVE recall battery; and (iv) five novel evaluations (X1--X5) covering live-CVE generalisation, exploit verification, AI-generated code, time-travel prediction, and head-to-head benchmarking. The P4 \emph{Confirmed Tier} stratum achieves \textbf{96.4\% conservative} (95\% CI [90.9\%, 100\%]) and \textbf{100\% optimistic} precision with 100\% CVE recall, clearing the $\geq$80\% industry threshold for autonomous PR-blocking pipelines.
+This chapter presents the testing strategy and quantitative evaluation of \ACRQA{} v5.0.0rc2. The evaluation is organised around the four research questions of Chapter~\ref{ch:intro}: (RQ1) RAG hallucination reduction, (RQ2) AI provenance, (RQ3) label-free confidence scoring, (RQ4) precision/recall vs.\ commercial SAST. The evaluation comprises four layers: (i) a small ground-truth corpus (Layer~A: DVPWA, Pygoat, VulPy, DSVW); (ii) a 30-repo adversarial precision corpus of mature production libraries (Layer~B); (iii) a 20-CVE recall battery; and (iv) five novel evaluations (X1--X5) covering live-CVE generalisation, exploit verification, AI-generated code, time-travel prediction, and head-to-head benchmarking. The P4 \emph{Confirmed Tier} stratum achieves \textbf{96.4\% conservative} (95\% CI [90.9\%, 100\%]) and \textbf{100\% optimistic} precision with 100\% CVE recall, clearing the $\geq$80\% industry threshold for autonomous PR-blocking pipelines. Figure~\ref{fig:eval_methodology} illustrates the flowchart of the evaluation methodology.
+
+\begin{figure}[p]
+  \centering
+  \includegraphics[width=\textwidth,height=0.85\textheight,keepaspectratio]{eval_methodology}
+  \caption{ACR-QA Evaluation Methodology Flowchart}
+  \label{fig:eval_methodology}
+\end{figure}
 
 % -----------------------------------------------------------------
 % -----------------------------------------------------------------
@@ -16,7 +23,7 @@ This chapter presents the testing strategy and quantitative evaluation of \ACRQA
 
 The test suite is structured in four layers following the testing pyramid principle \cite{mcconnell2004code,kim2016devops}, runnable in a single CI pipeline execution \cite{shahin2017continuous,github_actions}. All tests executed in the full Docker Compose stack (Python 3.11.8, Node.js 20.11 LTS, PostgreSQL 15.5, Redis 7.2, four Celery workers, Prometheus 2.49, Grafana 10.3) on an Intel Core i7-12700H workstation (32 GB DDR5 RAM, Ubuntu 22.04 LTS / WSL2). The suite achieves \textbf{84.89\%} line coverage over the CORE module and \textbf{82.66\%} combined CORE + DATABASE (CI gate: 82\%); all safety-critical paths (authentication, confidence scoring, deduplication, quality gate) remain above 93\%.
 
-\begin{table}[H]
+\begin{table}[htbp]
 \caption{Test Suite Layer Summary --- \ACRQA{} v5.0.0rc2}
 \label{tab:test_layers}
 \centering
@@ -37,9 +44,9 @@ TypeScript (Vitest) & 63 & Component, hook, and API client tests; FindingHistory
 \end{tabularx}
 \end{table}
 
-\begin{figure}[H]
+\begin{figure}[htbp]
   \centering
-  \includegraphics[width=0.90\textwidth,keepaspectratio]{TEST_PYRAMID.pdf}
+  \includegraphics[width=0.88\textwidth,height=0.50\textheight,keepaspectratio]{TEST_PYRAMID.pdf}
   \caption{ACR-QA Testing Pyramid: Four-layer verification suite (unit, integration, accessibility, and end-to-end) running in CI.}
   \label{fig:test_pyramid}
 \end{figure}
@@ -53,7 +60,7 @@ TypeScript (Vitest) & 63 & Component, hook, and API client tests; FindingHistory
 
 \ACRQA{} was evaluated against thirteen intentionally vulnerable open-source repositories (Layer~A: Python, JS/TS, Go) with full ground-truth annotation; a separate 30-repo adversarial production corpus (Layer~B, Section~\ref{sec:adversarial}) tests precision in the hardest realistic regime. The four core repositories (DVPWA, Pygoat, VulPy, DSVW) were annotated exhaustively; nine additional repositories validated cross-language detection. Table~\ref{tab:benchmark_repos} lists all thirteen Layer~A repositories.
 
-\begin{table}[H]
+\begin{table}[htbp]
 \caption{Evaluation Benchmark Corpus --- Thirteen Repositories (Layer~A)}
 \label{tab:benchmark_repos}
 \centering
@@ -98,7 +105,7 @@ Standard information-retrieval metrics are used: Precision $= TP / (TP+FP)$, Rec
 
 On the Layer~A ground-truth corpus (DVPWA, Pygoat, VulPy, DSVW), \ACRQA{} v5.0.0rc2 evaluated \textbf{836 deduplicated findings}, achieving \textbf{97.1\% overall precision} and \textbf{100.0\% security-class precision}: all 24 FPs are dead-code style findings. Section~\ref{sec:adversarial} reports the harder Layer~B corpus where the Confirmed Tier reaches 96.4\%. Table~\ref{tab:per_repo_results} breaks results down per repository.
 
-\begin{table}[H]
+\begin{table}[htbp]
 \caption{Detection Performance Per Core Benchmark Repository}
 \label{tab:per_repo_results}
 \centering
@@ -128,7 +135,7 @@ Security precision is \textbf{100.0\%} across all four repositories: every secur
 
 Table~\ref{tab:owasp_coverage} details \ACRQA{}'s coverage of the OWASP Top 10 (2021) vulnerability classification.
 
-\begin{table}[H]
+\begin{table}[htbp]
 \caption{OWASP Top 10 (2021) Coverage Detail}
 \label{tab:owasp_coverage}
 \centering
@@ -158,16 +165,9 @@ Nine of ten OWASP Top 10 categories \cite{owasp_top10_2021} are fully covered. A
 
 \subsection{Confidence Scoring Effectiveness --- Confusion Matrix}
 
-\begin{figure}[H]
-  \centering
-  \includegraphics[width=0.90\textwidth,keepaspectratio]{CONFIDENCE_SCORING.pdf}
-  \caption{ACR-QA Label-Free Confidence Scoring: Five-signal weighted pipeline with soft suppression and confidence tiers.}
-  \label{fig:confidence_scoring}
-\end{figure}
-
 Table~\ref{tab:confusion_matrix} presents the confusion matrix for the confidence scorer applied at the soft-suppression threshold of $C_s = 30$. At this threshold, findings scoring below 30 are deprioritised (not eliminated) in dashboard ranking.
 
-\begin{table}[H]
+\begin{table}[htbp]
 \caption{Confidence Scorer Confusion Matrix at $C_s = 30$ Soft-Suppression Threshold}
 \label{tab:confusion_matrix}
 \centering
@@ -186,9 +186,9 @@ Table~\ref{tab:confusion_matrix} presents the confusion matrix for the confidenc
 
 At the $C_s = 30$ threshold (Table~\ref{tab:confusion_matrix}), 94.2\% of below-threshold findings are genuine false positives (174 of 198 below-threshold items). Only 8 genuine vulnerabilities (1.0\% of all real findings) are scored below the threshold --- all 8 are dead-code findings in Vulture output, flagged as unreachable by the call-graph engine and correctly penalised by the $-20$ reachability adjustment. No CRITICAL or HIGH severity vulnerability is suppressed by the scorer.
 
-\begin{figure}[H]
+\begin{figure}[p]
   \centering
-  \includegraphics[width=0.90\textwidth,keepaspectratio]{CONFUSION_MATRIX.pdf}
+  \includegraphics[width=\textwidth,height=0.85\textheight,keepaspectratio]{CONFUSION_MATRIX.pdf}
   \caption{SecurityEval Confusion Matrix and Derived Classification Metrics at Default Operating Point.}
   \label{fig:confusion_matrix_plot}
 \end{figure}
@@ -211,14 +211,14 @@ The Layer~A precision figure (97.1\%) is measured on intentionally vulnerable ap
 
 A 4+P stratification pipeline yields five precision strata (Table~\ref{tab:adversarial}). The headline result is \textbf{P4 Confirmed Tier (96.4\% / 100\%)}: a 4-criterion gate (HIGH severity + 22-rule \textsc{ConfirmedRuleSet} + production code path + Bandit's internal \texttt{issue\_confidence == HIGH}) clears the $\geq$80\% industry threshold for autonomous PR-blocking, while preserving \textbf{100\% CVE recall (8/8)} from the recall corpus.
 
-\begin{figure}[H]
+\begin{figure}[htbp]
   \centering
-  \includegraphics[width=0.90\textwidth,keepaspectratio]{FUNNEL_SLIDE.pdf}
+  \includegraphics[width=0.95\textwidth,height=0.62\textheight,keepaspectratio]{FUNNEL_SLIDE.pdf}
   \caption{The Precision Funnel: 1{,}942 raw findings refined to 55 P4 Confirmed-Tier findings with 96.4\% conservative precision and 100\% CVE recall preserved at every rung.}
   \label{fig:precision_funnel}
 \end{figure}
 
-\begin{table}[H]
+\begin{table}[htbp]
 \caption{Adversarial Precision Stratification (30-repo corpus, 1,942 raw findings)}
 \label{tab:adversarial}
 \centering
@@ -249,48 +249,42 @@ Bootstrap (10{,}000 resamples, seed 42) yields a Confirmed Tier 95\% CI of [90.9
 
 Three SAST tools were run on the same 30-repo precision corpus and the same 8-CVE detectable recall battery using identical triage protocols. Figure~\ref{fig:head_to_head} and Table~\ref{tab:head_to_head} report the unified result.
 
-\begin{figure}[H]
+\begin{figure}[htbp]
   \centering
-  \includegraphics[width=0.90\textwidth,keepaspectratio]{HEAD_TO_HEAD.pdf}
+  \includegraphics[width=\textwidth,height=0.60\textheight,keepaspectratio]{HEAD_TO_HEAD.pdf}
   \caption{Head-to-Head Benchmark: Precision, CVE Recall, and F\textsubscript{1} for Bandit, Semgrep CE, and \ACRQA{} (P4 Confirmed Tier) on the same 30-repo adversarial corpus and 8-CVE recall battery.}
   \label{fig:head_to_head}
 \end{figure}
 
-\begin{table}[H]
-\caption{Head-to-Head: Precision, CVE Recall, F\textsubscript{1} (same corpus, same triage)}
+\begin{table}[htbp]
+\caption{Head-to-Head: Precision, CVE Recall, Exploit Verification, F\textsubscript{1} (same corpus, same triage)}
 \label{tab:head_to_head}
 \centering
 \small
 \renewcommand{\arraystretch}{1.3}
-\begin{tabular}{@{} l r r r r @{}}
+\begin{tabularx}{\textwidth}{@{} X r r r c r @{}}
 \toprule
-\textbf{Tool} & \textbf{Sec.\ Find.} & \textbf{Cons.\ Prec.} & \textbf{CVE Recall} & \textbf{F\textsubscript{1}} \\
+\textbf{Tool} & \textbf{Sec.\ Fnds.} & \textbf{Cons.\ Prec.} & \textbf{CVE Rec.} & \textbf{Exploit} & \textbf{F\textsubscript{1}} \\
 \midrule
-Bandit (standalone)               & 129 & 14.0\% & 1/8 (12.5\%) & 21.8\% \\
-Semgrep CE (standalone)           & 75  & 36.0\% & 5/8 (62.5\%) & 45.7\% \\
-\ACRQA{} (Rung 3, sec-tier)         & 219 & 24.7\% & 8/8 (100\%)  & 39.6\% \\
-\ACRQA{} (Rung 4 / P3)              & 151 & 26.9\% & 8/8 (100\%)  & 42.5\% / 48.1\%\textsuperscript{*} \\
-\textbf{\ACRQA{} (P4 Confirmed)}    & \textbf{55}  & \textbf{96.4\%} & \textbf{8/8 (100\%)} & \textbf{98.2\%} \\
+Bandit (standalone)               & 129 & 14.0\% & 1/8 (12.5\%) & No & 21.8\% \\
+Semgrep CE (standalone)           & 75  & 36.0\% & 5/8 (62.5\%) & No & 45.7\% \\
+\ACRQA{} (Rung~3, sec-tier)        & 219 & 24.7\% & 8/8 (100\%)  & No & 39.6\% \\
+\ACRQA{} (Rung~4 / P3)             & 151 & 26.9\% & 8/8 (100\%)  & Partial\textsuperscript{†} & 42.5\% / 48.1\%\textsuperscript{*} \\
+\textbf{\ACRQA{} (P4 Confirmed)}   & \textbf{55}  & \textbf{96.4\%} & \textbf{8/8 (100\%)} & \textbf{Yes} & \textbf{98.2\%} \\
 \bottomrule
-\end{tabular}
+\end{tabularx}
 \end{table}
 
-\noindent\textsuperscript{*} Conservative / optimistic. Bandit and Semgrep precision use conservative triage; their optimistic bounds are documented in \texttt{HEAD\_TO\_HEAD\_BENCHMARK.md}.
+\noindent\textsuperscript{*} Conservative / optimistic bounds. Bandit and Semgrep use conservative triage; optimistic bounds in \texttt{HEAD\_TO\_HEAD\_BENCHMARK.md}.\\
+\noindent\textsuperscript{†} Partial: exploit verification on synthetic fixtures; excludes live Docker sandbox.
 
 \textbf{Key findings.} (i) Bandit and Semgrep catch \emph{disjoint} CVE subsets --- only 1 of 8 CVEs is caught by both --- making single-tool deployment structurally insufficient. (ii) \ACRQA{} is the only tool with 100\% CVE recall; multi-tool aggregation is the mechanism. (iii) The Confirmed Tier achieves higher F\textsubscript{1} than any single tool by a $>$50pp margin while preserving full CVE coverage. (iv) Snyk Code (commercial, OAuth-gated) was excluded; published Snyk results on OWASP corpora (~38--45\%) align with \ACRQA{}'s optimistic Rung 4 (31.7\%) but are not directly comparable without identical triage. (v) SonarQube Community Edition was excluded: its free tier focuses on code quality rather than security-tier SAST; the security-grade Developer Edition requires a commercial licence unavailable for this evaluation. The free CE baseline would constitute a weaker opponent than Semgrep CE and would not strengthen the comparison. (vi) On the SecurityEval dual corpus (89 vulnerable + 89 clean files), the OWASP-standard Youden J statistic is \textbf{J~=~0.157} for \ACRQA{} versus Bandit~0.090 and Semgrep~0.056 --- \ACRQA{} achieves the best precision-recall trade-off of all evaluated tools on this benchmark; F\textsubscript{3}~=~0.854, MCC~=~0.210. On the harder all-CWE corpus (121~TP + 130~TN), \ACRQA{} achieves 80.2\% TPR at J~=~0.148 --- still leading Bandit (J~=~0.108) and Semgrep~CE (J~=~0.044).
 
-\begin{figure}[H]
+\begin{figure}[p]
   \centering
-  \includegraphics[width=0.90\textwidth,keepaspectratio]{PR_OPERATING_POINTS.pdf}
+  \includegraphics[width=\textwidth,height=0.75\textheight,keepaspectratio]{PR_OPERATING_POINTS.pdf}
   \caption{Precision-Recall Operating Points comparing ACR-QA operating modes against Bandit and Semgrep CE baselines.}
   \label{fig:pr_operating_points}
-\end{figure}
-
-\begin{figure}[H]
-  \centering
-  \includegraphics[width=1.0\textwidth,keepaspectratio]{METRICS_TABLE.pdf}
-  \caption{Comprehensive Evaluation Metrics across multiple benchmarks and tool configurations.}
-  \label{fig:metrics_comparison_table}
 \end{figure}
 
 % -----------------------------------------------------------------
@@ -310,9 +304,9 @@ Five further evaluations were conducted to test generalisation, exploitability, 
 
 \textbf{X5 --- LLM-augmented detection.} A held-out split of 100 Python snippets (not in any training or calibration set) was scanned in two modes: (i) deterministic SAST only; (ii) SAST + \texttt{LLMDetector} (Groq LLaMA-3.3-70B, union-gated with a 0.75 confidence threshold). As a critical baseline: \emph{LLM alone} on the RealVuln 2026 corpus scores \textbf{16.5\% recall / 85.2\% precision} --- strictly worse than the deterministic rule baseline (25.1\% / 90.3\%) on both metrics, confirming that an unaugmented LLM is an inferior SAST replacement. The \emph{gated} \texttt{--llm} mode is different: the LLM finds only what rules miss, subject to a second-opinion confidence gate. Held-out result: \textbf{+5.2~pp recall} over SAST-only at \textbf{89.5\% precision} (vs 91.3\% baseline --- a documented 1.8~pp cost accepted for coverage gain). Full-corpus augmented result: \textbf{25.1\%~$\to$~32.4\% recall} (+7.4~pp) at 87.4\% precision. On the full RealVuln 2026 corpus (third-party ground truth), the three-number result is: \textbf{91\% SecurityEval recall} (synthetic ground truth) $\to$ \textbf{37.8\% RealVuln detectable recall} (structurally detectable subset) $\to$ \textbf{25.1\% full-corpus recall} --- versus Semgrep 17.5\%, Snyk 17.4\%, and SonarQube 6.5\% on the same leaderboard (arXiv:2604.13764). The \texttt{llm\_detector.py} module is additive (step 3b in the pipeline) and gracefully degrades to SAST-only if the Groq API is unavailable.
 
-\begin{figure}[H]
+\begin{figure}[htbp]
   \centering
-  \includegraphics[width=0.90\textwidth,keepaspectratio]{REALVULN_LEADERBOARD.pdf}
+  \includegraphics[width=0.90\textwidth,height=0.45\textheight,keepaspectratio]{REALVULN_LEADERBOARD.pdf}
   \caption{RealVuln 2026 Recall Leaderboard comparing ACR-QA against Bandit, Semgrep CE, Snyk Code, and SonarQube CE.}
   \label{fig:realvuln_leaderboard}
 \end{figure}

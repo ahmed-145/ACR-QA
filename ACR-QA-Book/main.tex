@@ -23,9 +23,11 @@
 %% ── Geometry ────────────────────────────────────────────────
 \usepackage[
   a4paper,
-  top=2.54cm, bottom=2.54cm,
+  top=3.30cm, bottom=2.54cm,
   left=3.00cm, right=2.54cm,
-  headheight=15pt
+  headheight=48pt,
+  headsep=18pt,
+  footskip=28pt
 ]{geometry}
 
 %% ── Colours ─────────────────────────────────────────────────
@@ -87,33 +89,44 @@
 \renewcommand{\headrulewidth}{0pt}
 \renewcommand{\footrulewidth}{0pt}
 
-%  Right header: coloured box with chapter/section name + page number
-\fancyhead[R]{%
-  \colorbox{KSIUNavy}{%
-    \parbox[c][14pt][c]{0.5\textwidth}{%
-      \raggedleft\small\color{white}\leftmark\quad|\quad\thepage
-    }%
-  }%
-}
-%  Left header: project title (small, navy)
-\fancyhead[L]{%
-  \small\color{KSIUNavy}\textbf{ACR-QA: Automated Code Review \& Quality Assurance}
+% Helper for header contents
+\newcommand{\myheader}{%
+  \begin{minipage}[b]{\textwidth}
+    \setstretch{1.0}%
+    \footnotesize\color{black}\textbf{\ACRQA{}}%
+    \quad
+    {\color{KSIUGold}\leaders\hrule height 1.2pt\hfill}%
+    \quad
+    \raisebox{-4pt}{%
+      \ifnum\value{chapter}>0
+        \colorbox{KSIUNavy}{\parbox[c][18pt][c]{18pt}{\centering\color{white}\bfseries\small\thechapter}}%
+      \else
+        \colorbox{KSIUNavy}{\parbox[c][18pt][c]{18pt}{\centering\color{white}\bfseries\small--}}%
+      \fi
+    }\\[-4pt]
+    \hspace*{\fill}\footnotesize\color{black}\nouppercase{\leftmark}\hspace*{30pt}%
+  \end{minipage}%
 }
 
-%  Footer: gold rule + KSIU text watermark
-\fancyfoot[C]{%
-  \vspace*{-6pt}%
-  {\color{KSIUGold}\rule{\textwidth}{0.6pt}}\\[2pt]
-  {\tiny\color{KSIUNavy!40}King Salman International University — Faculty of Computer Science and Engineering}
+% Helper for footer contents
+\newcommand{\myfooter}{%
+  \begin{minipage}[t]{\textwidth}
+    \setstretch{1.0}%
+    \large\bfseries\color{black}\thepage
+    \quad
+    {\color{KSIUGold}\leaders\hrule height 1.2pt\hfill}%
+    \quad
+    \raisebox{-14pt}{\includegraphics[height=1.0cm,keepaspectratio]{KSIUlogoFullTransparent}}%
+  \end{minipage}%
 }
 
-\fancypagestyle{plain}{%   for chapter opening pages
+\fancyhead[C]{\myheader}
+\fancyfoot[C]{\myfooter}
+
+\fancypagestyle{plain}{%
   \fancyhf{}
-  \fancyfoot[C]{%
-    {\color{KSIUGold}\rule{\textwidth}{0.6pt}}\\[2pt]
-    {\tiny\color{KSIUNavy!40}King Salman International University — Faculty of Computer Science and Engineering}
-  }
-  \renewcommand{\headrulewidth}{0pt}
+  \fancyhead[C]{\myheader}
+  \fancyfoot[C]{\myfooter}
 }
 
 %% ── Chapter Title Formatting ────────────────────────────────
@@ -183,6 +196,13 @@
 
 %% ── TOC dot leaders for chapter-level entries ────────────────
 \usepackage{tocloft}
+\setlength{\cftbeforetoctitleskip}{10pt}
+\setlength{\cftbeforeloftitleskip}{10pt}
+\setlength{\cftbeforelottitleskip}{10pt}
+\setlength{\cftbeforechapskip}{6pt}
+\setlength{\cftbeforesecskip}{1pt}
+\setlength{\cftbeforesubsecskip}{1pt}
+\setlength{\cftbeforesubsubsecskip}{1pt}
 \renewcommand{\cftchapdotsep}{\cftdotsep}   % add dot leaders to chapter TOC entries
 \renewcommand{\cftchapfont}{\bfseries}
 \renewcommand{\cftchappagefont}{\bfseries}
@@ -193,8 +213,6 @@
 %% ── Page layout ─────────────────────────────────────────────
 \raggedbottom   % prevent vertical stretching on short pages
 
-%% ── Custom Commands ─────────────────────────────────────────
-%% Chapter divider page: \chapterdivider{1}{Introduction}
 \newcommand{\chapterdivider}[2]{%
   \clearpage
   \thispagestyle{empty}
@@ -250,14 +268,16 @@
 \cleardoublepage
 \phantomsection
 \addcontentsline{toc}{chapter}{Table of Contents}
+\begin{singlespace}
 {\hypersetup{hidelinks}\tableofcontents}
+\end{singlespace}
 
 %% ── MAIN MATTER ─────────────────────────────────────────────
 \cleardoublepage
 \pagenumbering{arabic}
 \setcounter{page}{1}
 \pagestyle{fancy}
-\renewcommand{\chaptermark}[1]{\markboth{\MakeUppercase{#1}}{}}
+\renewcommand{\chaptermark}[1]{\markboth{#1}{}}
 
 \chapterdivider{1}{Introduction}
 \input{chapters/ch1_introduction}
@@ -281,6 +301,8 @@
 \cleardoublepage
 \phantomsection
 \addcontentsline{toc}{chapter}{References}
+\markboth{References}{}
+\setcounter{chapter}{0}
 \bibliography{references}
 
 \end{document}

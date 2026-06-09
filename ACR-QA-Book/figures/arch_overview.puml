@@ -1,15 +1,16 @@
 @startuml arch_overview
+scale 2.5
 '──────────────────────────────────────────────────────────────
-'  ACR-QA  v4.0.0  —  System Architecture  (A4-portrait edition)
-'  King Salman International University  ·  CSE494  ·  2025-26
-'  Layout: strictly top-to-bottom tiers, single-column
+'  ACR-QA  v5.0.0rc2  —  High-Level System Architecture
+'  Portrait A4 — 6 packages × 1 rectangle each = true vertical
+'  King Salman International University · CSE494 · 2025-26
 '──────────────────────────────────────────────────────────────
 !theme plain
 top to bottom direction
 
 skinparam backgroundColor    #FFFFFF
 skinparam defaultFontName    "Arial"
-skinparam defaultFontSize    11
+skinparam defaultFontSize    12
 skinparam shadowing          false
 skinparam wrapWidth          260
 
@@ -24,98 +25,53 @@ skinparam package {
   FontSize         12
 }
 skinparam arrow {
-  Thickness  2
+  Thickness  1.8
   Color      #002654
-  FontColor  #444444
-  FontSize   9
+  FontColor  #374151
+  FontSize   10
 }
 skinparam note {
   BackgroundColor #FFFDE7
   BorderColor     #C9A84C
-  FontSize        9
+  FontSize        10
 }
 
-'════════════════════════════════════════════════════
-'  TIER 1 — CLIENTS
-'════════════════════════════════════════════════════
-package "CLIENTS" as T1 #DBEAFE {
-  rectangle "Developer / CI/CD Pipeline / GitHub Webhook\nReact 18 Dashboard  ·  MCP Server  ·  REST CLI" as CLI #BFDBFE
+package "① CLIENTS" as T1 #DBEAFE {
+  rectangle "Developer · CI/CD Pipeline · GitHub Webhook\nReact 18 Dashboard  ·  REST CLI  ·  MCP Server" as CLI #BFDBFE
 }
 
-'════════════════════════════════════════════════════
-'  TIER 2 — FASTAPI REST LAYER
-'════════════════════════════════════════════════════
-package "FASTAPI REST API  ·  33 endpoints  ·  JWT + API-Key  ·  Pydantic v2" as T2 #DCFCE7 {
-  rectangle "Scan  ·  Results  ·  SARIF  ·  Autofix  ·  Feedback  ·  Attestation\nRate-limit (Redis token bucket)  ·  RBAC (admin / member / viewer)" as API #BBF7D0
+package "② FastAPI REST  ·  52 endpoints  ·  JWT + API-Key  ·  Pydantic v2" as T2 #DCFCE7 {
+  rectangle "Scan · Results · Autofix · Attestation · SARIF · Feedback\nRate-limit (Redis token bucket)  ·  RBAC (admin / analyst)" as API #BBF7D0
 }
 
-'════════════════════════════════════════════════════
-'  TIER 3 — CELERY ASYNC WORKERS
-'════════════════════════════════════════════════════
-package "CELERY WORKERS  ·  4 concurrent  ·  Redis broker" as T3 #E0F2FE {
-  rectangle "scan_repository task  (bind=True, max_retries=2, countdown=30 s)\nPicks up queued jobs · Updates run status in PostgreSQL" as WRK #BAE6FD
+package "③ Celery Workers  ·  4 concurrent  ·  Redis broker" as T3 #E0F2FE {
+  rectangle "run_analysis_pipeline(run_id)  ·  bind=True  ·  max_retries=2\nAsync execution  ·  PostgreSQL status tracking" as WRK #BAE6FD
 }
 
-'════════════════════════════════════════════════════
-'  TIER 4 — 12-STAGE ANALYSIS PIPELINE
-'════════════════════════════════════════════════════
-package "12-STAGE ANALYSIS PIPELINE  ·  CORE/main.py" as T4 #FEF9C3 {
-  rectangle "⓪ Rate Limit   ①  Ingest & Scope (.acrqa.yml exclusions)" as S01 #FEF3C7
-  rectangle "②  Tool Dispatch — 12+ tools in parallel thread pool" as S2  #FDE68A
-  rectangle "③a Normalise → CanonicalFinding    ③b Triage memory lookup\n③c Cross-tool dedup (2-pass)   ③d Intra-procedural taint (AST BFS)\n③e Call-graph reachability (BFS, max_depth=5)   ③f Cap + Sort" as S3 #FBBF24
-  rectangle "④  5-Signal Confidence Scorer   C ∈ [0,100]  ·  −20 unreachable penalty" as S4  #FDE68A
-  rectangle "⑤  RAG: dict_lookup(rule_id) O(1)  →  Groq LLaMA-3.3-70B × 3 runs\n    N-gram entropy filter τ = 3.2 bits  ·  PostgreSQL provenance" as S5  #FDE68A
-  rectangle "⑥  Supply-chain SCA  ·  CBoM (62 algorithms, NIST PQC aware)" as S6  #FDE68A
-  rectangle "⑦  Quality Gate (.acrqa.yml thresholds)  →  PASS / FAIL" as S7  #FDE68A
-  rectangle "⑧  Output: JSON · SARIF · Markdown  ·  Dilithium3 attestation\n    GitHub PR inline comments  ·  PostgreSQL persist" as S8  #FDE68A
-  S01 -[hidden]down-> S2
-  S2  -[hidden]down-> S3
-  S3  -[hidden]down-> S4
-  S4  -[hidden]down-> S5
-  S5  -[hidden]down-> S6
-  S6  -[hidden]down-> S7
-  S7  -[hidden]down-> S8
+package "④ 12-Stage Analysis Pipeline  ·  CORE/main.py" as T4 #FEF9C3 {
+  rectangle "⓪ Rate Limit  ①Ingest  ②12-Tool Dispatch (parallel thread pool)\n③ Normalise→CanonicalFinding · Taint · Dedup · Reachability\n④ 5-Signal Confidence Scoring Cs∈[0,100]  ⑤ RAG+LLM-Aug\n⑥ SCA+CBoM  ⑦ Quality Gate  ⑧ SARIF · PDF · PR Comments" as PL #FEF3C7
 }
 
-'════════════════════════════════════════════════════
-'  TIER 5 — SAST ENGINES
-'════════════════════════════════════════════════════
-package "14 ANALYSIS ENGINES  ·  3 LANGUAGE ADAPTERS  ·  299+ RULES" as T5 #F0FFF4 {
-  rectangle "Python:  Ruff · Bandit · Semgrep · Vulture · Radon · jscpd · Secrets · SCA" as EPY #A7F3D0
-  rectangle "JS / TS: ESLint-security · Semgrep · npm audit · jscpd · TruffleHog" as EJS #A7F3D0
-  rectangle "Go:      gosec · staticcheck · Semgrep  ·  Cross-lang: Trivy · correlator" as EGO #A7F3D0
-  EPY -[hidden]down-> EJS
-  EJS -[hidden]down-> EGO
+package "⑤ 19 Engines  ·  3 Adapters  ·  66 Rules / 422 Mappings" as T5 #F0FFF4 {
+  rectangle "Python: Ruff · Bandit · Semgrep · Vulture · Radon · SCA · Secrets\nJS/TS: ESLint · Semgrep · npm audit    Go: gosec · staticcheck\nv5.0: Risk Predictor · Time-Travel · IaC · PR Risk · Verified Remediation" as ENG #A7F3D0
 }
 
-'════════════════════════════════════════════════════
-'  TIER 6 — STORAGE & OBSERVABILITY
-'════════════════════════════════════════════════════
-package "STORAGE & OBSERVABILITY" as T6 #FFF7ED {
-  rectangle "PostgreSQL 15  ·  10-table schema  ·  10 Alembic migrations\nFull AI provenance (llm_explanations · attestations)" as PG   #FED7AA
-  rectangle "Redis 7.2  ·  Celery broker  ·  Rate-limit token bucket" as RD   #FED7AA
-  rectangle "Prometheus + Grafana  ·  Jaeger (OpenTelemetry)\nSLO burn-rate alerting  ·  Distributed tracing" as OBS  #E5E7EB
-  PG -[hidden]down-> RD
-  RD -[hidden]down-> OBS
+package "⑥ Storage & Observability" as T6 #FFF7ED {
+  rectangle "PostgreSQL 15 · 13 tables · 18 migrations · AI provenance\nRedis 7.2 (broker + rate-limit)  ·  Prometheus + Grafana (SLO)" as STO #FED7AA
 }
 
-'════════════════════════════════════════════════════
-'  VERTICAL DATA FLOW
-'════════════════════════════════════════════════════
-CLI --> API  : HTTP request / webhook
-API --> WRK  : enqueue task (Redis)
-WRK --> T4   : run pipeline
-T4  --> T5   : tool subprocess calls
+CLI --> API  : HTTP / webhook
+API --> WRK  : enqueue (Redis)
+WRK --> T4   : execute pipeline
+T4  --> T5   : subprocess calls
 T5  --> T4   : raw findings
-T4  --> PG   : persist results
-T4  --> OBS  : OTel spans + metrics
-API --> RD   : rate-limit check
+T4  --> STO  : persist + metrics
 
 note right of T4
-  97.1% overall precision
-  100% security-class precision
-  9/10 OWASP Top 10 covered
-  33% noise reduction (dedup)
+  <b>96.4%</b> Confirmed Tier precision
+  <b>100%</b> CVE recall (8/8)
+  F₁ = <b>98.2%</b>  vs Semgrep 45.7%
+  2,897 tests · 84.89% coverage
 end note
 
 @enduml

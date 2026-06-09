@@ -1,6 +1,6 @@
 @startuml pipeline_orchestrator
 '──────────────────────────────────────────────────────────────
-'  ACR-QA  v4.0.0  —  Pipeline Orchestrator Detail
+'  ACR-QA  v5.0.0rc2  —  Pipeline Orchestrator Detail
 '  No swimlanes — single-column portrait-friendly activity diagram
 '  King Salman International University  ·  CSE494  ·  2025-26
 '──────────────────────────────────────────────────────────────
@@ -32,59 +32,97 @@ skinparam note {
   FontSize        9
 }
 
-title <color:#002654><b>ACR-QA v4.0.0 — Pipeline Orchestrator (CORE/main.py)</b></color>
+title <color:#002654><b>ACR-QA v5.0.0rc2 — Pipeline Orchestrator (CORE/main.py)</b></color>
 
 start
 
-:⓪  Rate Limit Check  (Redis token bucket)\nPOST /v1/scan → 202 Accepted · run_id returned;
+:⓪  Rate Limit Check  (Redis token bucket)
+POST /v1/runs → 202 Accepted · run_id returned;
 
-:①  Repository Ingestion\nValidate path · detect languages · apply .acrqa.yml exclusions;
+:①  Repository Ingestion
+Validate path · detect languages · apply .acrqa.yml exclusions;
 
 fork
-  :Python tools\nRuff · Bandit · Semgrep\nVulture · Radon · jscpd;
+  :Python tools
+  Ruff · Bandit · Semgrep
+  Vulture · Radon · jscpd · SCA;
 fork again
-  :JS / TS tools\nESLint-security · Semgrep\nnpm audit · jscpd;
+  :JS / TS tools
+  ESLint-security · Semgrep
+  npm audit · jscpd;
 fork again
-  :Go tools\ngosec · staticcheck\nSemgrep;
+  :Go tools
+  gosec · staticcheck
+  Semgrep;
 fork again
-  :Cross-language\nSecrets Detector\nTruffleHog · Trivy;
+  :Cross-language + IaC
+  Secrets Detector
+  IaC Scanner (28 IAC-* rules);
 end fork
 
-note right : ②  Parallel tool dispatch\nthread pool · stdout captured per tool
+note right : ②  Parallel tool dispatch\n12 tools · thread pool · stdout captured per tool
 
-:③a  Normalise → CanonicalFinding schema\nconfig filter · scope exclusions (≈15% eliminated before scoring);
+:③a  Normalise → CanonicalFinding schema
+config filter · scope exclusions (approx 15% eliminated before scoring);
 
-:③b  Triage Memory Lookup\nlearned-suppression table · per-repo rules;
+:③b  Triage Memory Lookup
+learned-suppression table · per-repo rules;
 
-:③c  Cross-Tool Deduplication (2-pass)\nlocation hash + rule hash · merge overlapping findings;
+:③c  Cross-Tool Deduplication (2-pass)
+location hash + rule hash · merge overlapping findings;
 
-:③d  Intra-Procedural Taint Analysis (AST BFS)\nconfidence = max(0.4, 0.95 − 0.1·(h−1))  where h = hop depth;
+:③d  Intra-Procedural Taint Analysis (AST BFS)
+confidence = max(0.4, 0.95 - 0.1*(h-1))  where h = hop depth;
 
-:③e  Call-Graph Reachability (BFS, max_depth=5)\nentry points: Flask/FastAPI routes · Celery tasks · __main__;
+:③e  Call-Graph Reachability (BFS, max_depth=5)
+entry points: Flask/FastAPI routes · Celery tasks · __main__;
 
 if (finding reachable?) then (yes)
 else (no — unreachable / dead code)
-  :Apply −20 confidence penalty\nretained for audit · deprioritised in ranking;
+  :Apply -20 confidence penalty
+  retained for audit · deprioritised in ranking;
 endif
 
-:③f  Per-Rule Cap + Sort by confidence descending;
+:③f  Per-Rule Cap (max 5 per rule) + Sort by confidence descending;
 
-:④  Five-Signal Confidence Scoring\nseverity (40%) · category (20%) · tool_reliability (15%)\nrule_specificity (10%) · fix_validation (10%)\nmulti-tool bonus +5  →  C ∈ [0, 100];
+:④  Five-Signal Confidence Scoring
+severity (40%) · category (20%) · tool_reliability (15%)
+rule_specificity (10%) · fix_validation (10%)
+multi-tool bonus +5  →  Cs ∈ [0, 100];
 
-if (C ≥ 30 ?) then (yes)
+if (Cs >= 30 ?) then (yes)
 else (no — soft-suppress)
-  :Mark deprioritised = True\nvisible in dashboard, ranked last;
+  :Mark deprioritised = True
+  visible in dashboard, ranked last;
 endif
 
-:⑤  RAG Enrichment\ndict_lookup(rule_id) O(1) → Groq LLaMA-3.3-70B × 3 runs\nN-gram entropy filter τ = 3.2 bits\nstore enrichment in llm_explanations (PostgreSQL provenance);
+:⑤  RAG Enrichment
+dict_lookup(rule_id) O(1) from 66-rule KB (422 mappings)
+→ Groq LLaMA-3.3-70B × 3 runs
+N-gram entropy filter τ = 3.2 bits
+store enrichment in llm_explanations (PostgreSQL provenance);
 
-:⑤b  Post-Quantum Attestation\nECDSA-P256 + CRYSTALS-Dilithium3 · Sigstore keyless;
+:⑤b  LLM-Augmented Detection + Second Opinion
+LLMDetector: Groq scan at confidence threshold 0.75 (additive, not replacement)
+Second Opinion: Ollama qwen2.5-coder:1.5b independent check
++15 confidence on agreement · -10 on disagreement;
 
-:⑥  Supply Chain Scan + CBoM\npip-audit · npm audit · CVE mapping · 62 cryptographic algorithms\nNIST FIPS 203/204 PQC migration flags;
+:⑤c  Post-Quantum Attestation
+ECDSA-P256 (classical) + CRYSTALS-Dilithium3 (NIST FIPS 204);
 
-:⑦  Quality Gate Enforcement\nevaluate .acrqa.yml severity thresholds → PASS / FAIL\nemit gate_result for CI/CD runner;
+:⑥  Supply Chain Scan + CBoM
+pip-audit · npm audit · CVE mapping (OSV offline ~1.5 GB)
+62 cryptographic algorithms · NIST FIPS 203/204 PQC migration flags;
 
-:⑧  Output Delivery\nJSON · SARIF · Markdown\nGitHub PR inline comments · check-run status\nPostgreSQL: UPDATE run SET status=COMPLETED;
+:⑦  Quality Gate Enforcement
+evaluate .acrqa.yml severity thresholds → PASS / FAIL
+FAIL: CRITICAL Cs>=70 · >5 HIGH · hardcoded secret Cs>=50
+emit gate_result for CI/CD runner;
+
+:⑧  Output Delivery
+JSON · SARIF 2.1 · HTML · PDF
+GitHub PR inline comments · check-run status
+PostgreSQL: UPDATE run SET status=COMPLETED;
 
 stop
 

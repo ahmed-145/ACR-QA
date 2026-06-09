@@ -1,7 +1,7 @@
 @startuml project_structure
 skinparam backgroundColor white
 skinparam defaultFontName "Arial"
-skinparam defaultFontSize 12
+skinparam defaultFontSize 11
 skinparam PackageBorderColor #002654
 skinparam PackageBackgroundColor #F0F4FA
 skinparam PackageFontColor #002654
@@ -10,7 +10,7 @@ skinparam ArrowColor #002654
 skinparam NoteBackgroundColor #FFF8E8
 skinparam NoteBorderColor #C9A84C
 
-title <color:#002654><b>ACR-QA v4.0.0 — Repository Structure</b></color>
+title <color:#002654><b>ACR-QA v5.0.0rc2 — Repository Structure</b></color>
 
 package "ACR-QA/" as root {
 
@@ -19,7 +19,7 @@ package "ACR-QA/" as root {
       [normalizer.py] as N
       [confidence_scorer.py] as CS
       [explainer.py] as EX
-      [taint_analyser.py] as TA
+      [taint_analyzer.py] as TA
       [reachability.py] as RE
       [quality_gate.py] as QG
       [cbom_scanner.py] as CB
@@ -27,6 +27,13 @@ package "ACR-QA/" as root {
       [triage_agent.py] as TR
       [attestation.py] as AT
       [supply_chain.py] as SC
+      [llm_detector.py] as LD
+      [second_opinion.py] as SO
+      [risk_predictor.py] as RP
+      [time_travel.py] as TT
+      [iac_scanner.py] as IS
+      [pr_risk.py] as PR
+      [verified_remediation.py] as VR
     }
     package "adapters/" as adapters {
       [python_adapter.py]
@@ -39,7 +46,7 @@ package "ACR-QA/" as root {
 
   package "FRONTEND/" as fe #EDF4E8 {
     package "api/" as api {
-      [routes/ (33 endpoints)]
+      [routes/ (52 endpoints)]
       [auth.py]
       [celery_app.py]
     }
@@ -52,14 +59,14 @@ package "ACR-QA/" as root {
 
   package "DATABASE/" as db #F4EDE8 {
     [database.py]
-    [alembic/ (10 migrations)]
+    [alembic/ (16 migrations)]
   }
 
   package "TESTS/" as tests #F4F0E8 {
-    [unit/ (2217 Python tests)]
-    [integration/]
+    [unit/ (1,933 Python + 104 Vitest)]
+    [integration/ (667 Python)]
     [evaluation/]
-    [e2e/ (15 Playwright)]
+    [e2e/ (55 Playwright)]
     [accessibility/ (14 axe-core)]
   }
 
@@ -73,8 +80,8 @@ package "ACR-QA/" as root {
   [.github/workflows/] as ci
 }
 
-note right of engines : 14 engines total\n(3 more hidden for clarity)
-note right of KB : 66 curated\nsecurity rules
-note right of tests : 65 TypeScript (Vitest)\n14 Playwright (a11y)
+note right of engines : 19 engines total\n(some omitted for clarity)
+note right of KB : 86 curated\nsecurity rules
+note right of tests : 104 TypeScript (Vitest)\n55 Playwright (e2e), 14 axe
 
 @enduml

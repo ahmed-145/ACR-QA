@@ -29,6 +29,7 @@ SAST tools typically operate using one or more of the following underlying techn
 \end{itemize}
 
 \subsection{The Tool Landscape}
+\enlargethispage{3\baselineskip}
 
 Table~\ref{tab:sast_tools} summarises the major open-source SAST tools and their primary domains.
 
@@ -66,7 +67,7 @@ SCA Scanner    & Python / Node.js     & pip-audit wrapper; CVSS$\rightarrow$seve
 \end{tabularx}
 \end{table}
 
-Each tool excels within its niche but exhibits blind spots outside it \cite{bandit_tool,semgrep_tool,gosec_tool,eslint_security}. No single tool achieves comprehensive coverage, which motivates the multi-tool orchestration approach of \ACRQA{} \cite{ayewah2008using}.
+While each tool excels in its niche, none achieves comprehensive coverage alone \cite{bandit_tool,semgrep_tool,gosec_tool,eslint_security}, motivating \ACRQA{}'s orchestrated multi-tool approach \cite{ayewah2008using}.
 
 \subsection{The False Positive Problem}
 
@@ -86,6 +87,7 @@ Early ML approaches applied classifiers to features from code property graphs (A
 
 A critical limitation of LLM use in high-stakes contexts is hallucination --- the generation of plausible-sounding but factually incorrect content \cite{ji2023survey}. In a security context, a hallucinated explanation that mischaracterises exploitability or recommends an incorrect remediation can cause more harm than no explanation. Mitigations include retrieval augmentation, uncertainty quantification, and consistency-based filtering on N-gram entropy distributions \cite{kuhn2023semantic}.
 
+\clearpage
 % -----------------------------------------------------------------
 \section{Retrieval-Augmented Generation (RAG)}
 \label{sec:rag_background}

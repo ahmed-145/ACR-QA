@@ -19,9 +19,9 @@ Six design principles guided the architecture: (1) \textbf{Single-schema normali
 
 Figure~\ref{fig:architecture_overview} illustrates the high-level component architecture of \ACRQA{}.
 
-\begin{figure}[htbp]
+\begin{figure}[p]
   \centering
-  \includegraphics[width=0.94\textwidth,height=0.78\textheight,keepaspectratio]{arch_overview}
+  \includegraphics[width=\textwidth,height=0.82\textheight,keepaspectratio]{arch_overview}
   \caption{High-Level Architecture of the \ACRQA{} System (v5.0.0rc2)}
   \label{fig:architecture_overview}
 \end{figure}
@@ -29,17 +29,12 @@ Figure~\ref{fig:architecture_overview} illustrates the high-level component arch
 The six service layers --- FastAPI API \cite{fastapi_framework}, React dashboard, Celery workers \cite{celery_project}, CORE engine, PostgreSQL \cite{postgresql_docs}, and the \texttt{config/rules.yml} knowledge base --- communicate via a private Docker bridge network. Authentication, Prometheus \cite{prometheus_docs} instrumentation, and Pydantic v2 validation are applied at the API layer; all analysis executes asynchronously on Celery workers.
 
 % -----------------------------------------------------------------
+\needspace{12\baselineskip}
 \section{The Twelve-Stage Processing Pipeline}
 \label{sec:pipeline}
 
-The core of \ACRQA{} is a twelve-stage sequential processing pipeline. Each stage receives the output of the preceding stage and produces an enriched artefact consumed by the next. Figure~\ref{fig:pipeline} illustrates the full pipeline flow.
+The core of \ACRQA{} is a twelve-stage sequential processing pipeline. Each stage receives the output of the preceding stage and produces an enriched artefact consumed by the next, as described in the subsections below.
 
-\begin{figure}[htbp]
-  \centering
-  \includegraphics[width=0.90\textwidth,height=0.78\textheight,keepaspectratio]{pipeline_stages}
-  \caption{The \ACRQA{} Twelve-Stage Analysis Pipeline}
-  \label{fig:pipeline}
-\end{figure}
 
 \subsection{Stage 0 --- Rate Limit and Job Initialisation}
 
@@ -53,7 +48,7 @@ The Celery worker receives the job and validates the target path. Language detec
 
 Stage 2 invokes all applicable tool adapters concurrently using Python's thread pool. Table~\ref{tab:tool_execution} shows the tool-to-language mapping and typical execution times.
 
-\begin{table}[H]
+\begin{table}[htbp]
 \caption{Tool Execution Mapping and Typical Runtime (v5.0.0rc2)}
 \label{tab:tool_execution}
 \centering
@@ -84,6 +79,7 @@ Each adapter constructs the tool-specific command line, executes it as a managed
 
 Stage 3 is the architectural heart of the system. Raw tool outputs are parsed by each adapter's \texttt{parse()} method and mapped to \texttt{CanonicalFinding} instances (Section~\ref{subsec:schema}). Seven sub-stages then execute in sequence: glob-based config filtering removes excluded paths; the \texttt{suppression\_rules} table suppresses known false positives; findings sharing a \texttt{(file, line, canonical\_rule\_id)} fingerprint are deduplicated and their confirming tools merged; the taint engine traces HTTP sources to dangerous sinks (Section~\ref{subsec:taint}); call-graph BFS penalises unreachable code (Section~\ref{subsec:callgraph}); a per-rule cap of five findings prevents noisy rules from dominating; and finally findings are sorted by confidence score descending.
 
+\needspace{18\baselineskip}
 \subsubsection{The Canonical Finding Schema}
 \label{subsec:schema}
 
@@ -121,7 +117,7 @@ Each normalised finding receives a confidence score $C_s \in [0, 100]$ using a w
 
 \noindent where $B_{\text{multi}} = 5$ if two or more tools independently confirmed the finding at the same location, and zero otherwise. Table~\ref{tab:confidence_signals} defines the five signals.
 
-\begin{table}[H]
+\begin{table}[htbp]
 \caption{Confidence Scoring Signals and Weights}
 \label{tab:confidence_signals}
 \centering
@@ -144,7 +140,10 @@ Unreachable penalty  & Call graph: finding in dead code            & --- & $-20$
 \end{tabularx}
 \end{table}
 
+The scoring pipeline is detailed quantitatively in Chapter~\ref{ch:testing} (Figure~\ref{fig:confusion_matrix_plot} and Table~\ref{tab:confusion_matrix}).
+
 \subsubsection{RAG-Assisted AI Enrichment with Entropy Validation}
+
 
 For each non-suppressed finding, the RAG stage performs:
 
@@ -156,9 +155,9 @@ For each non-suppressed finding, the RAG stage performs:
 
 Figure~\ref{fig:rag_process} illustrates the complete enrichment process.
 
-\begin{figure}[htbp]
+\begin{figure}[p]
   \centering
-  \includegraphics[width=0.88\textwidth,height=0.65\textheight,keepaspectratio]{rag_engine}
+  \includegraphics[width=\textwidth,height=0.78\textheight,keepaspectratio]{rag_engine}
   \caption{RAG-Assisted AI Enrichment Process for a Single Finding}
   \label{fig:rag_process}
 \end{figure}
@@ -178,7 +177,12 @@ Stage~5 runs two parallel sub-analyses: the SCA scanner queries an offline OSV s
 \subsection{Taint Analyser}
 \label{subsec:taint}
 
-The taint analyser performs intra-procedural data-flow analysis within each Python function. For each \texttt{FunctionDef} node, a \texttt{\_FunctionTaintVisitor} tracks five source patterns (HTTP request fields: \texttt{request.args}, \texttt{request.form}, \texttt{request.json}, \texttt{request.cookies}, and \texttt{os.environ}) propagating through assignment chains, f-strings, and string concatenations, until reaching one of three sink types: SQL \texttt{execute()} calls, \texttt{eval()}/\texttt{exec()}, and \texttt{subprocess} invocations.
+The taint analyser performs intra-procedural data-flow analysis within each Python function.
+For each \texttt{FunctionDef} node, a \texttt{\_FunctionTaintVisitor} tracks five HTTP-input
+source patterns (\texttt{request.args}, \texttt{request.form}, \texttt{request.json},
+\texttt{request.\allowbreak cookies}, \texttt{os.environ}) propagating through assignment chains,
+f-strings, and string concatenations, until reaching one of three sink types:
+SQL \texttt{execute()} calls, \texttt{eval()}/\texttt{exec()}, and \texttt{subprocess} invocations.
 
 The taint confidence is computed as:
 \begin{equation}
@@ -205,10 +209,10 @@ All functions reachable within five call-graph hops from an entry point are mark
 
 The PostgreSQL \cite{postgresql_docs} schema is organised into ten primary tables. Figure~\ref{fig:db_schema} shows the entity-relationship diagram.
 
-\begin{figure}[htbp]
+\begin{figure}[p]
   \centering
-  \includegraphics[width=0.95\textwidth,height=0.75\textheight,keepaspectratio]{er_diagram}
-  \caption{Database Entity-Relationship Diagram (10-Table Schema, v5.0.0rc2)}
+  \includegraphics[width=\textwidth,height=0.82\textheight,keepaspectratio]{er_diagram}
+  \caption{Database Entity-Relationship Diagram (13-Table PostgreSQL Schema, v5.0.0rc2)}
   \label{fig:db_schema}
 \end{figure}
 
@@ -220,7 +224,7 @@ The \texttt{analysis\_runs} table records job status through states: \texttt{QUE
 
 The FastAPI application exposes 52 endpoints grouped into four resource namespaces. Table~\ref{tab:api_endpoints} summarises the principal endpoints.
 
-\begin{table}[H]
+\begin{table}[htbp]
 \caption{Principal FastAPI REST Endpoints (v5.0.0rc2)}
 \label{tab:api_endpoints}
 \centering
@@ -248,15 +252,14 @@ GET    & \texttt{/metrics}                    & Prometheus metrics (no auth) \\
 All endpoints except \texttt{/health} and \texttt{/metrics} require authentication via either a Bearer JWT token (HS256, 24-hour expiry) or an \texttt{X-API-Key} header (hashed with bcrypt in the \texttt{api\_keys} table). Tokens encode the user role (\texttt{analyst} or \texttt{admin}).
 
 % -----------------------------------------------------------------
-\needspace{18\baselineskip}
 \section{Deployment Architecture}
 \label{sec:deployment}
 
 The complete \ACRQA{} stack is defined as a Docker Compose application with seven services. Figure~\ref{fig:docker_compose} illustrates the service topology.
 
-\begin{figure}[htbp]
+\begin{figure}[p]
   \centering
-  \includegraphics[width=0.94\textwidth,height=0.70\textheight,keepaspectratio]{docker_stack}
+  \includegraphics[width=\textwidth,height=0.85\textheight,keepaspectratio]{docker_stack}
   \caption{Docker Compose Service Topology (7 Services, v5.0.0rc2)}
   \label{fig:docker_compose}
   \label{fig:docker_stack}
@@ -266,12 +269,12 @@ The seven services are: \texttt{api} (FastAPI), \texttt{worker} (Celery, 4 concu
 
 A Kubernetes \cite{kubernetes_security} Helm chart \cite{helm_chart} is also provided for production deployment, featuring HPA (2--20 pods on CPU/memory), PodDisruptionBudgets, NetworkPolicies, and cert-manager TLS via an Ingress controller. Terraform modules are provided for AWS (ECS + RDS + ElastiCache) and Railway (managed platform deployment).
 
+\clearpage
 % -----------------------------------------------------------------
-\needspace{18\baselineskip}
 \section{v5.0.0 Extended Architecture: Four New Engines}
 \label{sec:v5_engines}
 
-Version 5.0.0 extends the core pipeline with four new analytical engines, each addressing a gap identified after v4.6.0 evaluation.
+Version 5.0.0 extends the core pipeline with four new analytical engines, each addressing a gap identified after v4.6.0 evaluation. Each engine is described in the subsections below with its integration points into the core pipeline and database tables.
 
 \subsection{Heuristic Risk Predictor}
 \label{sec:risk_predictor_design}
@@ -297,11 +300,20 @@ The IaC Scanner (\texttt{CORE/engines/iac\_scanner.py}) extends coverage to Infr
 \subsection{PR Risk Score}
 \label{sec:pr_risk_design}
 
-The PR Risk Score (\texttt{CORE/engines/pr\_risk.py}) collapses the multi-dimensional security surface of a pull request into a single $[0, 100]$ mergeable-or-not signal. It aggregates six sub-signals: new HIGH findings (weight~0.30), reachability ratio (weight~0.25), taint coverage gap (weight~0.20), file risk from the Heuristic Predictor (weight~0.10), PR size penalty (weight~0.10; cap at 300 lines), and exploit-verified findings (weight~0.05). A score $\geq 70$ generates an amber gate (manual review recommended); $\geq 85$ triggers a hard red gate for CI pipelines consuming the \texttt{POST /v1/runs/\{id\}/pr-risk} endpoint.
+The PR Risk Score (\texttt{CORE/engines/pr\_risk.py}) collapses the multi-dimensional security surface of a pull request into a single $[0, 100]$ mergeable-or-not signal. It aggregates six sub-signals: new HIGH findings (weight~0.30), reachability ratio (weight~0.25), taint coverage gap (weight~0.20), file risk from the Heuristic Predictor (weight~0.10), PR size penalty (weight~0.10; cap at 300 lines), and exploit-verified findings (weight~0.05). A score $\geq 70$ generates an amber gate (manual review recommended); $\geq 85$ triggers a hard red gate for CI pipelines consuming the \texttt{POST /v1/runs/\{id\}/pr-risk} endpoint. Figure~\ref{fig:pr_risk_signals} illustrates the sub-signals and weights contributing to the final PR risk score.
+
+\begin{figure}[p]
+  \centering
+  \includegraphics[width=\textwidth,height=0.85\textheight,keepaspectratio]{pr_risk_signals}
+  \caption{PR Risk Score Sub-Signals and Aggregation Weights}
+  \label{fig:pr_risk_signals}
+\end{figure}
 
 % -----------------------------------------------------------------
+\clearpage
 \section{Summary}
 
 This chapter has presented the complete system design of \ACRQA{} v5.0.0rc2. The twelve-stage pipeline, canonical schema, confidence scoring function, taint analyser, call-graph engine, RAG-entropy enrichment, CBoM module, 10-table database, 52-endpoint API, and 7-service deployment architecture together address the three deficiencies identified in Chapter~\ref{ch:intro}. The four v5.0.0 engines (Heuristic Risk Predictor, Time-Travel Analyzer, IaC Scanner, PR Risk Score) extend the core pipeline with predictive and IaC-aware capabilities. Chapter~\ref{ch:implementation} details the implementation of each component.
+
 
 \clearpage

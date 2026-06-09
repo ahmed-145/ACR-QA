@@ -1,13 +1,14 @@
-@startuml ACR-QA-RAG-Engine
+@startuml rag_engine
+scale 2.5
 '──────────────────────────────────────────────────────────────
-'  ACR-QA  v4.0.0  —  RAG Enrichment Engine
-'  5 participants — fits portrait A4 · updated v4.0.0 numbers
+'  ACR-QA  v5.0.0rc2  —  RAG Enrichment Engine
+'  5 participants — fits portrait A4 · v5.0.0rc2 numbers
 '  King Salman International University  ·  CSE494  ·  2025-26
 '──────────────────────────────────────────────────────────────
 !theme plain
 skinparam backgroundColor #FFFFFF
 skinparam defaultFontName  "Arial"
-skinparam defaultFontSize  10
+skinparam defaultFontSize  24
 skinparam shadowing        false
 skinparam maxMessageSize   160
 
@@ -15,31 +16,31 @@ skinparam participant {
   BackgroundColor #FFFFFF
   BorderColor     #002654
   BorderThickness 2
-  FontSize        10
+  FontSize        24
 }
 
 skinparam sequence {
   ArrowColor            #002654
   ArrowFontColor        #374151
-  ArrowFontSize         9
-  ArrowThickness        1.5
+  ArrowFontSize         20
+  ArrowThickness        2.0
   LifeLineBorderColor   #9CA3AF
   NoteBackgroundColor   #FFFDE7
   NoteBorderColor       #C9A84C
-  NoteFontSize          9
+  NoteFontSize          20
   GroupBackgroundColor  #F0FFF4
   GroupBorderColor      #002654
-  DividerFontSize       10
+  DividerFontSize       24
   DividerFontStyle      bold
 }
 
 participant "CORE Pipeline\n(Stage ④–⑤)"  as PIPE #FEF9C3
 participant "AI Engine\nexplainer.py"      as AI   #F3D9FA
-database   "Knowledge Base\n66 rules · 299+ mappings" as KB #E9D5FF
+database   "Knowledge Base\n66 rules · 422 mappings" as KB #E9D5FF
 participant "Groq API\nLLaMA-3.3-70B"     as GROQ #E9D5FF
 participant "Entropy Filter\nτ = 3.2 bits" as ENT  #FAF5FF
 
-== For each scored finding  (C ≥ 30) ==
+== For each scored finding  (Cs >= 30) ==
 
 PIPE -> AI  : finding {rule_id · file · line · snippet · severity}
 activate AI
@@ -72,7 +73,7 @@ loop 3 independent runs
   deactivate ENT
 end
 
-AI   -> AI   : select best: argmax entropy_j  where  entropy_j ≥ τ
+AI   -> AI   : select best: argmax entropy_j  where  entropy_j >= τ
 
 alt At least 1 response passes τ = 3.2 bits
   AI   --> PIPE : enrichment {ai_title · ai_description · ai_remediation\nconsistency_score · entropy_score}  ·  ai_enriched = True
@@ -83,12 +84,13 @@ end
 deactivate AI
 
 note over PIPE, ENT
-  <b>v4.0.0 benchmark results (836 findings × 3 runs = 2,508 API calls):</b>
+  <b>v5.0.0rc2 benchmark results (836 findings × 3 runs = 2,508 API calls):</b>
   2,407 responses passed entropy filter  (96.0 %)
     101 responses rejected               ( 4.0 %)
-    836 findings with ≥ 1 valid response (100.0 % enrichment rate)
+    836 findings with >= 1 valid response (100.0 % enrichment rate)
   Mean accepted entropy: 4.23 bits  ·  Mean rejected entropy: 2.84 bits
   96 % of 50 sampled enrichments rated "accurate" by project supervisor
+  KB hit rate: 100 %  ·  58 of 66 rules exercised  ·  2,407 provenance records
 end note
 
 @enduml

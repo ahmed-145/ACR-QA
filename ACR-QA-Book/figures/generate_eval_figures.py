@@ -87,8 +87,8 @@ def fig1_confusion_matrix():
     fpr = FP / (FP + TN)
     j   = recall - fpr
 
-    fig = plt.figure(figsize=(13, 5.5), facecolor=WHITE)
-    gs  = fig.add_gridspec(1, 2, width_ratios=[1.1, 1], wspace=0.35)
+    fig = plt.figure(figsize=(7.5, 11), facecolor=WHITE)
+    gs  = fig.add_gridspec(2, 1, height_ratios=[1.1, 1], hspace=0.38)
 
     # ── LEFT: confusion matrix ────────────────────────────────
     ax = fig.add_subplot(gs[0])
@@ -179,11 +179,11 @@ def fig1_confusion_matrix():
         "High FPR reflects SecurityEval's synthetic clean snippets (adversarial by design).\n"
         "Production adversarial corpus (Layer B, 30 repos): Confirmed Tier → 96.4% precision."
     )
-    fig.text(0.5, 0.08, callout_text,
+    fig.text(0.5, 0.05, callout_text,
              ha="center", va="top", fontsize=8.5, color=MGRAY, style="italic",
              bbox=dict(boxstyle="round,pad=0.4", facecolor=LGRAY, edgecolor=LGRAY))
 
-    fig.subplots_adjust(top=0.85, bottom=0.25)
+    fig.subplots_adjust(top=0.93, bottom=0.14, left=0.20, right=0.92)
     _save(fig, "CONFUSION_MATRIX.png")
 
 

@@ -1,7 +1,8 @@
 @startuml er_diagram
+scale 2.5
 '──────────────────────────────────────────────────────────────
-'  ACR-QA  v4.0.0  —  Database Entity-Relationship Diagram
-'  10-table PostgreSQL schema — top-to-bottom portrait layout
+'  ACR-QA  v5.0.0rc2  —  Database Entity-Relationship Diagram
+'  13-table PostgreSQL schema — square and tall layout
 '  King Salman International University  ·  CSE494  ·  2025-26
 '──────────────────────────────────────────────────────────────
 !theme plain
@@ -9,33 +10,61 @@ top to bottom direction
 
 skinparam backgroundColor   #FFFFFF
 skinparam defaultFontName   "Arial"
-skinparam defaultFontSize   10
+skinparam defaultFontSize   24
 skinparam shadowing         false
-skinparam wrapWidth         220
+skinparam wrapWidth         250
 
 skinparam entity {
-  BackgroundColor #E8EDF4
-  BorderColor     #002654
-  BorderThickness 2
-  FontSize        10
+  BackgroundColor #FFFFFF
+  BorderColor     #000000
+  BorderThickness 4.0
+  FontSize        28
   FontStyle       bold
-  AttributeFontSize 9
+  AttributeFontSize 22
 }
 
 skinparam arrow {
-  Color     #002654
-  FontColor #374151
-  FontSize  9
-  Thickness 1.5
+  Color     #000000
+  FontColor #000000
+  FontSize  20
+  Thickness 4.0
 }
 
-'── CORE TABLES ──────────────────────────────────────────────
+'── COLUMN 1: AUTH & RULES ──────────────────────────────────
+entity "users" as users {
+  * id : UUID <<PK>>
+  --
+  email           : TEXT
+  role            : TEXT
+  hashed_password : TEXT
+  created_at      : TIMESTAMPTZ
+}
+
+entity "api_keys" as apikeys {
+  * id : UUID <<PK>>
+  --
+  * user_id   : UUID <<FK>>
+  key_hash    : TEXT
+  label       : TEXT
+  expires_at  : TIMESTAMPTZ
+}
+
+entity "suppression_rules" as supp {
+  * id : UUID <<PK>>
+  --
+  pattern    : TEXT
+  rule_id    : TEXT
+  scope      : TEXT
+  created_at : TIMESTAMPTZ
+}
+
+'── COLUMN 2: CORE SCAN FLOW ─────────────────────────────────
 entity "analysis_runs" as runs {
   * id : UUID <<PK>>
   --
   target_path : TEXT
   branch      : TEXT
-  status      : ENUM (QUEUED/RUNNING/COMPLETED/FAILED)
+  status      : ENUM
   created_at  : TIMESTAMPTZ
   completed_at : TIMESTAMPTZ
 }
@@ -74,16 +103,15 @@ entity "feedback" as feedback {
   created_at   : TIMESTAMPTZ
 }
 
-entity "suppression_rules" as supp {
+entity "finding_history" as fhist {
   * id : UUID <<PK>>
   --
-  pattern    : TEXT
-  rule_id    : TEXT
-  scope      : TEXT
-  created_at : TIMESTAMPTZ
+  * finding_id : UUID <<FK>>
+  first_seen_commit : TEXT
+  regression_count  : INTEGER
 }
 
-'── INFRASTRUCTURE TABLES ────────────────────────────────────
+'── COLUMN 3: OUTPUTS & EXTENSIONS ───────────────────────────
 entity "pr_comments" as pr {
   * id : UUID <<PK>>
   --
@@ -91,24 +119,6 @@ entity "pr_comments" as pr {
   pr_url      : TEXT
   comment_id  : TEXT
   posted_at   : TIMESTAMPTZ
-}
-
-entity "users" as users {
-  * id : UUID <<PK>>
-  --
-  email           : TEXT
-  role            : TEXT
-  hashed_password : TEXT
-  created_at      : TIMESTAMPTZ
-}
-
-entity "api_keys" as apikeys {
-  * id : UUID <<PK>>
-  --
-  * user_id   : UUID <<FK>>
-  key_hash    : TEXT
-  label       : TEXT
-  expires_at  : TIMESTAMPTZ
 }
 
 entity "dependency_findings" as deps {
@@ -129,6 +139,39 @@ entity "run_sboms" as sboms {
   created_at      : TIMESTAMPTZ
 }
 
+entity "file_risk_scores" as frisk {
+  * id : UUID <<PK>>
+  --
+  * run_id : UUID <<FK>>
+  risk_score : FLOAT
+  churn      : FLOAT
+}
+
+entity "pr_risk_scores" as prrisk {
+  * id : UUID <<PK>>
+  --
+  * run_id : UUID <<FK>>
+  score   : FLOAT
+  verdict : TEXT
+}
+
+'── LAYOUT ALIGNMENTS ────────────────────────────────────────
+users -[hidden]right- runs
+runs -[hidden]right- pr
+
+users -[hidden]down- apikeys
+apikeys -[hidden]down- supp
+
+runs -[hidden]down- findings
+findings -[hidden]down- expls
+expls -[hidden]down- feedback
+feedback -[hidden]down- fhist
+
+pr -[hidden]down- deps
+deps -[hidden]down- sboms
+sboms -[hidden]down- frisk
+frisk -[hidden]down- prrisk
+
 '── RELATIONSHIPS ────────────────────────────────────────────
 runs      ||--o{ findings  : "1 : N"
 findings  ||--o| expls     : "1 : 0..1"
@@ -138,5 +181,9 @@ runs      ||--o{ deps      : "1 : N"
 runs      ||--o| sboms     : "1 : 0..1"
 users     ||--o{ apikeys   : "1 : N"
 users     ||--o{ feedback  : "1 : N"
+
+runs      ||--o{ frisk     : "1 : N"
+runs      ||--o| prrisk    : "1 : 0..1"
+findings  ||--o| fhist     : "1 : 0..1"
 
 @enduml

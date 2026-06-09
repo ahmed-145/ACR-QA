@@ -1,186 +1,124 @@
 @startuml ACR-QA-Pipeline-Stages
 '──────────────────────────────────────────────────────────────
-'  ACR-QA  v4.0.0  —  12-Stage Processing Pipeline
-'  Ahmed Mahmoud Abbas  (222101213)  ·  KSIU  ·  CSE494  ·  2026
+'  ACR-QA  v5.0.0rc2  —  12-Stage Processing Pipeline
+'  Portrait A4 — NO scale, activity diagram, fontSize 11
+'  King Salman International University · CSE494 · 2025-26
 '──────────────────────────────────────────────────────────────
 !theme plain
 skinparam backgroundColor #FFFFFF
 skinparam defaultFontName  "Arial"
-skinparam defaultFontSize  10
+skinparam defaultFontSize  11
 skinparam shadowing        false
 
 skinparam activity {
   BackgroundColor        #E8EDF4
   BorderColor            #002654
   BorderThickness        2
-  FontSize               10
+  FontSize               11
   DiamondBackgroundColor #FFF3BF
   DiamondBorderColor     #C9A84C
+  DiamondFontSize        10
 }
 
 skinparam arrow {
   Color     #002654
   FontColor #444444
-  FontSize  9
+  FontSize  10
   Thickness 1.5
 }
 
 skinparam note {
   BackgroundColor #FFFDE7
   BorderColor     #C9A84C
-  FontSize        9
-}
-
-skinparam legend {
-  BackgroundColor #F8F9FA
-  BorderColor     #CED4DA
-  FontSize        9
+  FontSize        10
 }
 
 start
 
-'────────────────────────── STAGE 0 ──────────────────────────
 :⓪  **Rate Limit & Job Init**
-─────────────────────────────────
-Redis token-bucket check
-POST /v1/scan → 202 Accepted
+Redis token-bucket check · POST /v1/runs → 202 Accepted
 Celery task enqueued · run ID returned;
 
-note right
-  API returns immediately
-  Worker picks up async
-end note
-
-'────────────────────────── STAGE 1 ──────────────────────────
 :①  **Repository Ingestion**
-──────────────────────────────
-Validate path · detect languages
-(.py / .ts / .go extension scan)
-PostgreSQL: UPDATE run SET status=RUNNING;
+Validate path · detect languages (.py / .ts / .go)
+PostgreSQL: status = RUNNING;
 
-'────────────────────────── STAGE 2 ──────────────────────────
 fork
-  :Python Adapter
+  :Python
   Ruff · Bandit · Semgrep
-  Vulture · Radon · jscpd;
+  Vulture · Radon · SCA;
 fork again
-  :JavaScript / TS Adapter
-  ESLint-security · Semgrep
+  :JavaScript / TS
+  ESLint · Semgrep
   npm audit · jscpd;
 fork again
-  :Go Adapter
+  :Go
   gosec · staticcheck
   Semgrep;
 fork again
-  :Cross-language
+  :All Languages
   Secrets Detector
-  TruffleHog · Trivy;
+  IaC Scanner (28 rules);
 end fork
 
 note right
-  Stage 2 — 12+ tools
-  all run in parallel
-  subprocess + thread pool
+  ②  12 tools in parallel
+  thread pool · 300 s timeout
+  tool failures silently skipped
 end note
 
-'────────────────────────── STAGE 3 ──────────────────────────
 :③a  **Normalise → CanonicalFinding**
-──────────────────────────────────────
-map to canonical schema (file / line / severity)
-apply config filter · scope exclusions (≈15% eliminated);
+Map all tool output to canonical schema (file / line / severity);
 
-:③b  **Triage Memory Lookup**
-──────────────────────────────
-check learned-suppression table
-apply per-repo suppression rules;
-
-:③c  **Cross-Tool Deduplication**
-───────────────────────────────────
-2-pass: location hash + rule hash
-merge overlapping findings from different tools;
+:③b–c  **Triage Memory & Cross-Tool Deduplication**
+Suppress known FPs · merge overlapping findings;
 
 :③d  **Intra-Procedural Taint Analysis**
-─────────────────────────────────────────
-AST BFS from TAINT_SOURCES → TAINT_SINKS
-confidence = max(0.4, 0.95 − 0.1·(h−1));
+AST BFS: HTTP sources → dangerous sinks
+Cs_taint = max(0.4, 0.95 − 0.1 × hop_count);
 
-:③e  **Call-Graph Reachability**
-──────────────────────────────────
-BFS from Flask/FastAPI routes · Celery tasks · __main__
-max_depth = 5;
+:③e  **Call-Graph Reachability  (BFS, max_depth=5)**
+Entry points: Flask/FastAPI routes · Celery tasks · __main__;
 
 if (finding reachable?) then (yes)
 else (no — dead code)
   :Apply −20 confidence penalty
-  (retained for audit, deprioritised);
+  (retained for audit, ranked last);
 endif
 
-:③f  **Per-Rule Cap + Sort**
-─────────────────────────────
-cap max findings per rule
-sort by confidence descending;
+:③f  **Cap (5 per rule) & Sort by Cs descending;**
 
-'────────────────────────── STAGE 4 ──────────────────────────
 :④  **Five-Signal Confidence Scoring**
-──────────────────────────────────────
-severity · category · tool_reliability
-rule_specificity · fix_validation
-multi-tool bonus (+5) → C ∈ [0, 100];
-
-if (C ≥ 30 ?) then (yes — keep)
-else (no — soft-suppress)
-  :Mark deprioritised
-  (visible in dashboard, ranked last);
-endif
+severity(40%) · category(20%) · tool_reliability(15%)
+rule_specificity(10%) · fix_validation(10%)  →  Cs ∈ [0, 100];
 
 :⑤  **RAG Enrichment**
-────────────────────────
-dict_lookup(canonical_rule_id) → O(1)
-prompt Groq LLaMA-3.3-70B × 3 independent runs
-N-gram entropy filter  τ = 3.2 bits
-store in llm_explanations (full provenance);
+dict_lookup(rule_id) O(1) · Groq LLaMA-3.3-70B × 3 runs
+N-gram entropy filter τ = 3.2 bits · 100% enrichment rate;
 
 note right
-  97.1 % overall precision
-  100 % security-class precision
-  100 % enrichment rate
+  96.0% pass entropy filter
+  2,407 / 2,508 API calls accepted
 end note
 
-:⑤b  **Post-Quantum Attestation**
-───────────────────────────────────
-ECDSA-P256 signature
-CRYSTALS-Dilithium3 signature
-Sigstore / Fulcio OIDC keyless signing;
+:⑤b  **LLM-Augmented Detection & Second Opinion**
+LLMDetector gated at 0.75 · Ollama qwen2.5-coder:1.5b
++5.2 pp recall gain · ±15 / −10 confidence adjustment;
 
-'────────────────────────── STAGE 5 ──────────────────────────
-:⑥  **Supply Chain · SCA · CBoM**
-───────────────────────────────────
-pip-audit · npm audit (CVE mapping)
-CBoM: inventory 62 cryptographic primitives
-flag NIST PQC deprecated algorithms;
+:⑤c  **Post-Quantum Attestation**
+ECDSA-P256 (classical) + CRYSTALS-Dilithium3 (NIST FIPS 204);
 
-'────────────────────────── STAGE 6 ──────────────────────────
-:⑦  **Quality Gate**
-──────────────────────
-evaluate .acrqa.yml thresholds
-PASS / FAIL per severity bucket
-emit gate_result to CI runner;
+:⑥  **Supply Chain SCA & CBoM**
+pip-audit / npm audit (OSV offline ~1.5 GB)
+CBoM: 62 cryptographic algorithms · PQC-deprecated flagging;
 
-'────────────────────────── STAGE 7 ──────────────────────────
+:⑦  **Quality Gate  (.acrqa.yml)**
+FAIL: CRITICAL Cs≥70 · >5 HIGH findings · any secret Cs≥50;
+
 :⑧  **Output Delivery**
-────────────────────────
-JSON · SARIF · Markdown
-persist all findings to PostgreSQL
-POST GitHub check-run + PR inline comments;
+JSON · SARIF 2.1 · HTML · PDF
+PostgreSQL persist · GitHub PR inline comments;
 
 stop
-
-legend top right
-  |= Stage Group   |= Layer                          |
-  |<back:#E8EDF4>  ⓪–①  </back>| Rate Limit + Ingestion       |
-  |<back:#C8D8F0>  ②–③  </back>| Tool Execution + Normalise   |
-  |<back:#FFF3BF>  ④–⑤  </back>| Scoring + AI Enrichment      |
-  |<back:#D3F9D8>  ⑥–⑧  </back>| Supply Chain + Gate + Output |
-end legend
 
 @enduml

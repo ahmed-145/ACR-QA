@@ -67,7 +67,7 @@ docs/assignments/*.pdf
 docs/thesis/*.pdf
 !docs/assignments/assigment1*.pdf
 !docs/assignments/assigment2*.pdf
-# ACR-QA-Book/*.pdf
+ACR-QA-Book/*.pdf
 ACR-QA-Book/*.lof
 ACR-QA-Book/*.lot
 ACR-QA-Book/figures/*

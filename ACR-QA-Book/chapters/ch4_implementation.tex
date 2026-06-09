@@ -11,7 +11,7 @@
 
 \ACRQA{} is implemented primarily in Python 3.11 for the backend and TypeScript \cite{typescript_docs}/React \cite{react_docs} for the frontend. Table~\ref{tab:tech_stack} lists the principal dependencies.
 
-\begin{table}[H]
+\begin{table}[htbp]
 \caption{Core Technology Stack (v5.0.0rc2)}
 \label{tab:tech_stack}
 \centering
@@ -39,7 +39,7 @@ Testing (TS)        & Vitest + Playwright       & 92 unit + 14 a11y + 15 e2e tes
 \end{table}
 
 % -----------------------------------------------------------------
-\needspace{42\baselineskip}
+\needspace{10\baselineskip}
 \section{Project Structure}
 \label{sec:project_structure}
 
@@ -76,8 +76,9 @@ acr-qa/
 
 The FastAPI application \cite{fastapi_framework} (\texttt{FRONTEND/api/main.py}) uses an app-factory pattern: CORS middleware, Prometheus instrumentation via \texttt{prometheus-fastapi-instrumentator}, and Pydantic v2 request validation are all registered at startup. Scan jobs are dispatched via \texttt{run\_analysis\_pipeline.delay(run\_id, target\_path)} --- the endpoint returns HTTP~202 immediately while Celery \cite{celery_project} handles execution asynchronously. Workers are configured with \texttt{concurrency=4} (four scans in parallel per container) and a \texttt{max\_retries=2} policy with 30-second countdown, providing resilience against transient Groq API rate-limit errors or database connectivity issues.
 
+
 % -----------------------------------------------------------------
-\needspace{30\baselineskip}
+\needspace{12\baselineskip}
 \section{Tool Adapter Framework}
 \label{sec:adapters}
 
@@ -108,7 +109,7 @@ class BaseAdapter(ABC):
 Twelve language-specific adapters follow this interface. Each adapter's \texttt{run()} method invokes the corresponding tool CLI and captures stdout; its \texttt{parse()} method translates the tool's unique JSON (or text) output into \texttt{CanonicalFinding} objects, mapping tool-specific severity vocabularies to the five-level canonical enum and normalising field names to the canonical \texttt{file} and \texttt{line} keys.
 
 % -----------------------------------------------------------------
-\needspace{36\baselineskip}
+\needspace{30\baselineskip}
 \section{Taint Analyser Implementation}
 \label{sec:taint_impl}
 
@@ -256,11 +257,15 @@ Four principal challenges arose during development. (1)~\textbf{Incompatible too
 
 \subsection{Heuristic Risk Predictor Implementation}
 
+\begin{sloppypar}
 The Risk Predictor computes its five signals as follows. \textbf{Churn:} \texttt{git diff --numstat HEAD\textasciitilde{}90..HEAD} restricted to the target file; lines-added + lines-deleted, normalised by file size. \textbf{Complexity:} \texttt{radon cc -n B} extracts per-function cyclomatic complexity; the file score is the mean of all function scores exceeding threshold~C (cyclomatic complexity $> 5$). \textbf{Age:} \texttt{git log -1 --format=\%ai} for the last-touched commit; days-since converted to $[0,1]$ via \texttt{tanh(days / 365)}. \textbf{Authors:} unique author count from \texttt{git log --format=\%ae} on the file path; normalised by \texttt{tanh(count / 5)}. \textbf{Test gap:} counts public functions in the source file (via AST) versus corresponding test files (by convention: \texttt{tests/test\_\{filename\}.py}); the gap is normalised by total function count. Git operations use a 30-second subprocess timeout and degrade gracefully when the target directory is not a git repository. Results are persisted to the \texttt{file\_risk\_scores} table (migration 0015) and exposed via \texttt{GET /v1/runs/\{rid\}/risk-map}.
+\end{sloppypar}
 
 \subsection{Time-Travel Analyzer Implementation}
 
+\begin{sloppypar}
 The engine uses a three-pass approach. First, \texttt{git log --reverse --max-count=50 --diff-filter=AM} identifies the 50 most-recent commits that touched any file. Second, for each commit, \texttt{git diff --unified=0 <parent>...<commit>} extracts changed hunks; only lines within changed hunks are re-analysed by the normaliser (not the full file). Third, results are merged into the \texttt{finding\_history} cache table (migration 0014): a new row is inserted on first occurrence; subsequent rows update \texttt{last\_seen\_commit} and increment \texttt{regression\_count} if the finding disappeared and reappeared. The endpoint \texttt{GET /v1/runs/\{rid\}/findings/\{fid\}/history} returns the full timeline including \texttt{first\_seen\_commit}, \texttt{first\_seen\_author}, \texttt{near\_fix\_commits}, and \texttt{regression\_count}.
+\end{sloppypar}
 
 \subsection{IaC Scanner Implementation}
 
@@ -269,6 +274,30 @@ The IaC engine detects four resource types via extension matching: \texttt{.tf} 
 \subsection{PR Risk Score Implementation}
 
 \texttt{PRRiskEngine.score(run\_id)} fetches all findings for a run from PostgreSQL, computes the six sub-scores (see Section~\ref{sec:pr_risk_design}), and persists the result to the \texttt{pr\_risk\_scores} table (migration 0016). The \texttt{post\_pr\_risk\_comment.py} script formats the score into a GitHub pull-request comment using the GitHub REST API (\texttt{GITHUB\_TOKEN} env var), including a colour-coded badge ($\leq$30: \textcolor{green}{[SAFE]}, 31--69: \textcolor{orange}{[REVIEW]}, 70--84: \textcolor{orange}{[CAUTION]}, $\geq$85: \textcolor{red}{[BLOCK]}), a breakdown table of sub-scores, and a direct link to the ACR-QA dashboard run. A companion \texttt{SecondOpinionEngine} queries a secondary LLM (Ollama \texttt{qwen2.5-coder:1.5b} as local fallback) for an independent opinion on each HIGH finding, adding $+15$ to confidence when both models agree and $-10$ when they disagree.
+
+\subsection{Second Opinion and LLM-Augmented Detection}
+
+The LLM-augmented detection pipeline and Second Opinion Engine
+(\texttt{CORE/\allowbreak engines/\allowbreak second\_opinion.py}) verify security findings.
+Figure~\ref{fig:second_opinion_flow} details the sequence diagram of LLM-augmented scans and Ollama-based verification queries.
+
+\begin{figure}[p]
+  \centering
+  \includegraphics[width=\textwidth,height=0.85\textheight,keepaspectratio]{second_opinion_flow}
+  \caption{Second Opinion Engine Sequence Diagram}
+  \label{fig:second_opinion_flow}
+\end{figure}
+
+\subsection{Verified Remediation Engine Implementation}
+
+The Verified Remediation Engine (\texttt{CORE/engines/verified\_remediation.py}) automates the complete vulnerability remediation loop. Figure~\ref{fig:verified_remediation} illustrates the sequence of actions: detection, category mapping, sandbox detonation, patch application, and verification via re-exploitation.
+
+\begin{figure}[p]
+  \centering
+  \includegraphics[width=\textwidth,height=0.85\textheight,keepaspectratio]{verified_remediation}
+  \caption{Verified Remediation Engine Detonation and Patch Verification Flow}
+  \label{fig:verified_remediation}
+\end{figure}
 
 % -----------------------------------------------------------------
 \needspace{8\baselineskip}

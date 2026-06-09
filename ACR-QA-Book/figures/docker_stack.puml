@@ -1,81 +1,70 @@
 @startuml docker_stack
+scale 2.5
 '──────────────────────────────────────────────────────────────
-'  ACR-QA  v4.0.0  —  Docker Compose Stack  (A4-portrait edition)
-'  Layout: top-to-bottom tiers, services grouped by role
+'  ACR-QA  v5.0.0rc2  —  Docker Compose Service Topology
+'  Portrait A4 — 1 rectangle per tier = guaranteed vertical
+'  7 services: api · worker · dashboard · postgres · redis
+'              prometheus · grafana
+'  King Salman International University · CSE494 · 2025-26
 '──────────────────────────────────────────────────────────────
 !theme plain
 top to bottom direction
 
 skinparam backgroundColor    #FFFFFF
 skinparam defaultFontName    "Arial"
-skinparam defaultFontSize    11
+skinparam defaultFontSize    24
 skinparam shadowing          false
-skinparam wrapWidth          280
+skinparam wrapWidth          320
 
 skinparam rectangle {
-  BorderThickness  2
+  BorderThickness  2.5
   RoundCorner      8
-  FontSize         10
+  FontSize         22
 }
 skinparam package {
-  BorderThickness  2
+  BorderThickness  2.5
   FontStyle        bold
-  FontSize         11
+  FontSize         24
 }
 skinparam arrow {
-  Thickness  1.8
+  Thickness  3.0
   Color      #002654
   FontColor  #374151
-  FontSize   9
+  FontSize   18
 }
 skinparam note {
   BackgroundColor #FFFDE7
   BorderColor     #C9A84C
-  FontSize        9
+  FontSize        18
 }
 skinparam cloud {
   BackgroundColor #F0FDF4
   BorderColor     #16A34A
-  BorderThickness 2
-  FontSize        10
+  BorderThickness 2.5
+  FontSize        22
+}
+skinparam actor {
+  FontSize 22
 }
 
-'════════════════════════════════════════════════════
-'  CLIENTS (outside the stack)
-'════════════════════════════════════════════════════
 actor "Developer / CI/CD / GitHub Webhook" as CLIENT
 
-'════════════════════════════════════════════════════
-'  DOCKER HOST
-'════════════════════════════════════════════════════
-rectangle "Host  ·  docker compose up -d  ·  Bridge network: acrqa-network" as HOST #F1F5F9 {
+rectangle "Docker Host  ·  docker compose up -d  ·  bridge: acrqa-network" as HOST #F1F5F9 {
 
-  '── APPLICATION TIER ─────────────────────────────
-  package "APPLICATION TIER" as APP #DCFCE7 {
-    rectangle "api  :8000\nFastAPI 0.111 · 33 endpoints\nJWT + API-Key · Pydantic v2 · CORE pipeline" as SVC_API  #BBF7D0
-    rectangle "worker  (Celery)\nCelery 5.3 · 4 concurrent workers\nscan_repository task · max_retries=2" as SVC_WRK  #A7F3D0
-    SVC_API -[hidden]down-> SVC_WRK
+  package "Application Tier" as APP #DCFCE7 {
+    rectangle "api :8000  (FastAPI 0.115 · 52 endpoints · JWT + API-Key)\nworker (Celery 5 · 4 concurrent · max_retries=2)" as SVC_APP #BBF7D0
   }
 
-  '── FRONTEND TIER ────────────────────────────────
-  package "FRONTEND TIER" as FE #D1FAE5 {
-    rectangle "dashboard  :5173\nReact 18 + TypeScript · Vite 5 · shadcn/ui\nWCAG 2.1 AA · EN + AR RTL · WCAG axe-core tested" as SVC_DASH #A7F3D0
+  package "Frontend Tier" as FE #D1FAE5 {
+    rectangle "dashboard :3000  (React 18 + TypeScript · shadcn/ui · WCAG 2.1 AA)" as SVC_DASH #A7F3D0
   }
 
-  '── DATA TIER ────────────────────────────────────
-  package "DATA TIER" as DATA #FEF3C7 {
-    rectangle "postgres  :5432\nPostgreSQL 15 · 10-table schema · 10 Alembic migrations\nFull AI provenance · findings · llm_explanations · attestations" as SVC_PG #FDE68A
-    rectangle "redis  :6379\nRedis 7.2 · Celery broker · rate-limit token bucket\nLFU eviction" as SVC_RD #FDE68A
-    SVC_PG -[hidden]down-> SVC_RD
+  package "Data Tier" as DATA #FEF3C7 {
+    rectangle "postgres :5432  (PostgreSQL 15 · 13-table schema · 18 migrations)\nredis :6379    (Redis 7.2 · Celery broker · rate-limit token bucket)" as SVC_DB #FDE68A
   }
 
-  '── OBSERVABILITY TIER ───────────────────────────
-  package "OBSERVABILITY TIER" as OBS #F3F0FF {
-    rectangle "prometheus  :9090\nScrape /metrics every 15 s\nSLO burn-rate alerting (1h fast + 6h slow)" as SVC_PROM #E9D5FF
-    rectangle "grafana  :3000\nACR-QA dashboard · alert rules\nPrometheus datasource" as SVC_GRAF #E9D5FF
-    rectangle "jaeger  :16686\nOpenTelemetry distributed tracing\nSpans from api + worker containers" as SVC_JAE #E9D5FF
-    SVC_PROM -[hidden]down-> SVC_GRAF
-    SVC_GRAF -[hidden]down-> SVC_JAE
+  package "Observability Tier" as OBS #F3F0FF {
+    rectangle "prometheus :9090  (scrape every 15 s · SLO burn-rate alerts)\ngrafana :3001    (ACR-QA dashboard · Prometheus datasource)" as SVC_OBS #E9D5FF
   }
 
   APP  -[hidden]down-> FE
@@ -83,44 +72,21 @@ rectangle "Host  ·  docker compose up -d  ·  Bridge network: acrqa-network" as
   DATA -[hidden]down-> OBS
 }
 
-'════════════════════════════════════════════════════
-'  EXTERNAL SERVICES
-'════════════════════════════════════════════════════
 cloud "External Services" as EXT {
-  rectangle "Groq API\nLLaMA-3.3-70B" as GROQ #DCFCE7
-  rectangle "GitHub API\nPR comments + check-runs" as GH #DCFCE7
-  rectangle "Sigstore / Fulcio\nOIDC keyless signing" as SIG #DCFCE7
+  rectangle "Groq API (LLaMA-3.3-70B)  ·  Ollama local (qwen2.5-coder:1.5b)\nGitHub API (PR comments + check-runs)" as EXT_SVC #DCFCE7
 }
 
-'════════════════════════════════════════════════════
-'  CONNECTIONS
-'════════════════════════════════════════════════════
-CLIENT   --> SVC_API  : HTTPS :8000
-CLIENT   --> SVC_DASH : HTTPS :5173
-SVC_API  --> SVC_RD   : enqueue Celery task
-SVC_RD   --> SVC_WRK  : task pickup
-SVC_WRK  --> SVC_PG   : persist results
-SVC_API  --> SVC_PG   : read findings
-SVC_PROM --> SVC_API  : scrape /metrics
-SVC_PROM --> SVC_WRK  : scrape /metrics
-SVC_GRAF --> SVC_PROM : datasource
-SVC_API  --> SVC_JAE  : OTel spans
-SVC_WRK  --> SVC_JAE  : OTel spans
-SVC_DASH --> SVC_API  : REST API calls
-SVC_WRK  --> GROQ     : LLM enrichment
-SVC_API  --> GH       : POST check-run
-SVC_API  --> SIG      : cosign keyless
+CLIENT   --> HOST    : HTTPS :8000 / :3000
+HOST     --> EXT_SVC : LLM calls · PR comments
 
 note right of HOST
-  <b>8 services total</b>
-  Named volumes:
+  <b>Named volumes:</b>
   postgres-data · redis-data
   scan-workspace · grafana-data
 
   <b>Required env vars:</b>
   GROQ_API_KEY · DATABASE_URL
   REDIS_URL · SECRET_KEY
-  WEBHOOK_SECRET · OTEL_ENDPOINT
 end note
 
 @enduml

@@ -9,13 +9,13 @@ skinparam rectangleFontSize 13
 
 title <color:#002654><b>ACR-QA Test Suite — Four-Layer Architecture</b></color>
 
-rectangle " Layer 4 — End-to-End  \n 15 Playwright tests \n Full user workflow coverage " as L4 #C9A84C
+rectangle " Layer 4 — End-to-End  \n 55 Playwright tests \n Full user workflow coverage " as L4 #C9A84C
 
 rectangle " Layer 3 — Accessibility \n 14 axe-core Playwright tests \n WCAG 2.1 AA compliance " as L3 #8B7335
 
-rectangle " Layer 2 — Integration \n ~900 Python tests \n Pipeline · API · DB · RAG · Celery " as L2 #00336E
+rectangle " Layer 2 — Integration \n ~667 Python tests \n Pipeline · API · DB · RAG · Celery " as L2 #00336E
 
-rectangle " Layer 1 — Unit \n 1,382 Python  +  65 TypeScript \n Engines · Adapters · Normaliser · Auth " as L1 #002654
+rectangle " Layer 1 — Unit \n 1,933 Python  +  104 TypeScript \n Engines · Adapters · Normaliser · Auth " as L1 #002654
 
 L4 -[hidden]down-> L3
 L3 -[hidden]down-> L2
