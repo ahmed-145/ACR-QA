@@ -162,130 +162,135 @@ export function FindingsPage() {
       </div>
 
       <h1 className="title" style={{ position: "absolute", width: 1, height: 1, overflow: "hidden", clip: "rect(0,0,0,0)", whiteSpace: "nowrap" }}>All Findings</h1>
+      {/* Sticky wrapper for filters and column header */}
+      <div style={{ position: "sticky", top: "53px", zIndex: 10, background: "var(--bg)" }}>
+        <div className="sticky-filters" style={{ position: "static", borderBottom: "none" }}>
+          <div style={{ position: "relative", flex: "1 1 220px", minWidth: 160 }}>
+            <Search size={12} style={{ position: "absolute", left: 9, top: "50%", transform: "translateY(-50%)", color: "var(--fg-5)", pointerEvents: "none" }} aria-hidden />
+            <input
+              className="inp inp-sm"
+              style={{ paddingLeft: 28, width: "100%" }}
+              placeholder="Search rules, files, messages…"
+              value={search}
+              onChange={(e) => { setFilters({ q: e.target.value, page: "0" }); }}
+              aria-label="Search findings"
+            />
+          </div>
 
-      {/* Sticky filter bar */}
-      <div className="sticky-filters">
-        <div style={{ position: "relative", flex: "1 1 220px", minWidth: 160 }}>
-          <Search size={12} style={{ position: "absolute", left: 9, top: "50%", transform: "translateY(-50%)", color: "var(--fg-5)", pointerEvents: "none" }} aria-hidden />
-          <input
-            className="inp inp-sm"
-            style={{ paddingLeft: 28, width: "100%" }}
-            placeholder="Search rules, files, messages…"
-            value={search}
-            onChange={(e) => { setFilters({ q: e.target.value, page: "0" }); }}
-            aria-label="Search findings"
-          />
-        </div>
+          <div style={{ display: "flex", gap: 4 }}>
+            {["ALL", "HIGH", "MEDIUM", "LOW"].map((s) => (
+              <button
+                key={s}
+                className={`pill${sevFilter === s ? " on" : ""}`}
+                onClick={() => setFilters({ sev: s, page: "0" })}
+                aria-pressed={sevFilter === s}
+              >{s}</button>
+            ))}
+          </div>
 
-        <div style={{ display: "flex", gap: 4 }}>
-          {["ALL", "HIGH", "MEDIUM", "LOW"].map((s) => (
-            <button
-              key={s}
-              className={`pill${sevFilter === s ? " on" : ""}`}
-              onClick={() => setFilters({ sev: s, page: "0" })}
-              aria-pressed={sevFilter === s}
-            >{s}</button>
-          ))}
-        </div>
+          <div style={{ position: "relative" }}>
+            <Filter size={11} style={{ position: "absolute", left: 8, top: "50%", transform: "translateY(-50%)", color: "var(--fg-5)", pointerEvents: "none" }} aria-hidden />
+            <select
+              value={catFilter}
+              onChange={(e) => setFilters({ cat: e.target.value, page: "0" })}
+              style={{
+                appearance: "none", background: "var(--bg-3)", border: "1px solid var(--border-2)",
+                color: "var(--fg-2)", borderRadius: 7, padding: "5px 10px 5px 24px",
+                fontSize: 12, fontFamily: "var(--font)", cursor: "pointer",
+              }}
+              aria-label="Filter by category"
+            >
+              {categories.map((c) => <option key={c} value={c}>{c}</option>)}
+            </select>
+          </div>
 
-        <div style={{ position: "relative" }}>
-          <Filter size={11} style={{ position: "absolute", left: 8, top: "50%", transform: "translateY(-50%)", color: "var(--fg-5)", pointerEvents: "none" }} aria-hidden />
           <select
-            value={catFilter}
-            onChange={(e) => setFilters({ cat: e.target.value, page: "0" })}
+            value={runFilter}
+            onChange={(e) => setFilters({ run: e.target.value, page: "0" })}
             style={{
               appearance: "none", background: "var(--bg-3)", border: "1px solid var(--border-2)",
-              color: "var(--fg-2)", borderRadius: 7, padding: "5px 10px 5px 24px",
+              color: "var(--fg-2)", borderRadius: 7, padding: "5px 10px",
               fontSize: 12, fontFamily: "var(--font)", cursor: "pointer",
             }}
-            aria-label="Filter by category"
+            aria-label="Filter by run"
           >
-            {categories.map((c) => <option key={c} value={c}>{c}</option>)}
+            <option value="ALL">All repos</option>
+            {completedRuns.map((r) => (
+              <option key={r.id} value={String(r.id)}>{r.repo_name} #{r.id}</option>
+            ))}
           </select>
         </div>
 
-        <select
-          value={runFilter}
-          onChange={(e) => setFilters({ run: e.target.value, page: "0" })}
-          style={{
-            appearance: "none", background: "var(--bg-3)", border: "1px solid var(--border-2)",
-            color: "var(--fg-2)", borderRadius: 7, padding: "5px 10px",
-            fontSize: 12, fontFamily: "var(--font)", cursor: "pointer",
-          }}
-          aria-label="Filter by run"
-        >
-          <option value="ALL">All repos</option>
-          {completedRuns.map((r) => (
-            <option key={r.id} value={String(r.id)}>{r.repo_name} #{r.id}</option>
-          ))}
-        </select>
+        {!isLoading && paginated.length > 0 && (
+          <div style={{ padding: "0 32px" }}>
+            <div style={{ height: 10, background: "var(--bg)" }} />
+            {/* Column header — inside sticky wrapper */}
+            <div style={{
+              display: "grid", gridTemplateColumns: "72px 90px 130px 1fr 110px 70px",
+              gap: 0, padding: "7px 16px",
+              background: "var(--bg-3)",
+              border: "1px solid var(--border)", borderBottom: "none",
+              borderRadius: "12px 12px 0 0",
+            }}>
+              {["SEV", "RULE", "REPO", "FILE / MESSAGE", "CATEGORY", "RUN"].map((h) => (
+                <div key={h} style={{ fontFamily: "var(--mono)", fontSize: 10, color: "var(--fg-5)", padding: "0 8px", textTransform: "uppercase", letterSpacing: "0.08em" }}>{h}</div>
+              ))}
+            </div>
+          </div>
+        )}
       </div>
 
-      <div className="page-pad" style={{ paddingTop: 20 }}>
-        <div className="panel" style={{ padding: 0, overflow: "hidden" }} ref={tableRef}>
-          {isLoading ? (
-            <>
-              {Array.from({ length: 8 }).map((_, i) => <SkeletonRow key={i} cols={6} />)}
-            </>
-          ) : paginated.length === 0 ? (
-            <div style={{ padding: 48, textAlign: "center", color: "var(--fg-5)", fontSize: 13 }}>
-              No findings match your filters.
-            </div>
-          ) : (
-            <>
-              <div style={{
-                display: "grid", gridTemplateColumns: "72px 90px 130px 1fr 110px 70px",
-                gap: 0, padding: "7px 16px",
-                borderBottom: "1px solid var(--border)",
-                background: "var(--bg-3)",
-                position: "sticky", top: "108px", zIndex: 5,
-              }}>
-                {["SEV", "RULE", "REPO", "FILE / MESSAGE", "CATEGORY", "RUN"].map((h) => (
-                  <div key={h} style={{ fontFamily: "var(--mono)", fontSize: 10, color: "var(--fg-5)", padding: "0 8px", textTransform: "uppercase", letterSpacing: "0.08em" }}>{h}</div>
-                ))}
-              </div>
-
-              {paginated.map((f, idx) => {
-                const sev = f.severity.toUpperCase();
-                const sevCls = sev === "HIGH" ? "high" : sev === "MEDIUM" ? "med" : "low";
-                const isActive = idx === cursorIdx;
-                return (
-                  <div
-                    key={`${f.run_id}-${f.id}`}
-                    className={sevRowClass(sev)}
-                    style={{
-                      display: "grid", gridTemplateColumns: "72px 90px 130px 1fr 110px 70px",
-                      gap: 0, padding: "9px 16px",
-                      borderBottom: "1px solid var(--border)",
-                      cursor: "pointer",
-                      outline: isActive ? "1px solid rgba(167,139,250,0.4)" : "none",
-                      outlineOffset: -1,
-                    }}
-                    onClick={() => { setCursorIdx(idx); setPanelFinding(f); }}
-                    onDoubleClick={() => navigate(`/runs/${f.run_id}`)}
-                    role="row"
-                    aria-selected={isActive}
-                    tabIndex={isActive ? 0 : -1}
-                  >
-                    <div style={{ padding: "0 8px" }}><span className={`sev ${sevCls}`}>{sev}</span></div>
-                    <div style={{ padding: "0 8px", fontFamily: "var(--mono)", fontSize: 10.5, color: "var(--fg-3)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{f.rule_id}</div>
-                    <div style={{ padding: "0 8px", fontSize: 11.5, color: "var(--fg-3)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{f.repo_name}</div>
-                    <div style={{ padding: "0 8px", overflow: "hidden" }}>
-                      <div style={{ fontFamily: "var(--mono)", fontSize: 10.5, color: "var(--fg-3)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-                        {f.file_path}{f.line_number ? `:${f.line_number}` : ""}
-                      </div>
-                      <div style={{ fontSize: 12, color: "var(--fg-4)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", marginTop: 1 }}>{f.message}</div>
+      <div className="page-pad" style={{ paddingTop: 0 }}>
+        {isLoading ? (
+          <div className="panel" style={{ padding: 0, overflow: "hidden" }} ref={tableRef}>
+            {Array.from({ length: 8 }).map((_, i) => <SkeletonRow key={i} cols={6} />)}
+          </div>
+        ) : paginated.length === 0 ? (
+          <div className="panel" style={{ padding: 48, textAlign: "center", color: "var(--fg-5)", fontSize: 13 }} ref={tableRef}>
+            No findings match your filters.
+          </div>
+        ) : (
+          <div className="panel" style={{ padding: 0, overflow: "hidden", borderRadius: "0 0 12px 12px", borderTop: "none", marginTop: 0 }} ref={tableRef}>
+            {paginated.map((f, idx) => {
+              const sev = f.severity.toUpperCase();
+              const sevCls = sev === "HIGH" ? "high" : sev === "MEDIUM" ? "med" : "low";
+              const isActive = idx === cursorIdx;
+              return (
+                <div
+                  key={`${f.run_id}-${f.id}`}
+                  className={sevRowClass(sev)}
+                  style={{
+                    display: "grid", gridTemplateColumns: "72px 90px 130px 1fr 110px 70px",
+                    gap: 0, padding: "9px 16px",
+                    borderBottom: "1px solid var(--border)",
+                    cursor: "pointer",
+                    outline: isActive ? "1px solid rgba(167,139,250,0.4)" : "none",
+                    outlineOffset: -1,
+                  }}
+                  onClick={() => { setCursorIdx(idx); setPanelFinding(f); }}
+                  onDoubleClick={() => navigate(`/runs/${f.run_id}`)}
+                  role="row"
+                  aria-selected={isActive}
+                  tabIndex={isActive ? 0 : -1}
+                >
+                  <div style={{ padding: "0 8px" }}><span className={`sev ${sevCls}`}>{sev}</span></div>
+                  <div style={{ padding: "0 8px", fontFamily: "var(--mono)", fontSize: 10.5, color: "var(--fg-3)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{f.rule_id}</div>
+                  <div style={{ padding: "0 8px", fontSize: 11.5, color: "var(--fg-3)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{f.repo_name}</div>
+                  <div style={{ padding: "0 8px", overflow: "hidden" }}>
+                    <div style={{ fontFamily: "var(--mono)", fontSize: 10.5, color: "var(--fg-3)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                      {f.file_path}{f.line_number ? `:${f.line_number}` : ""}
                     </div>
-                    <div style={{ padding: "0 8px", fontSize: 11, color: "var(--fg-4)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{f.category ?? "—"}</div>
-                    <div style={{ padding: "0 8px" }}>
-                      <span className="id-pill">#{f.run_id}</span>
-                    </div>
+                    <div style={{ fontSize: 12, color: "var(--fg-4)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", marginTop: 1 }}>{f.message}</div>
                   </div>
-                );
-              })}
-            </>
-          )}
-        </div>
+                  <div style={{ padding: "0 8px", fontSize: 11, color: "var(--fg-4)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{f.category ?? "—"}</div>
+                  <div style={{ padding: "0 8px" }}>
+                    <span className="id-pill">#{f.run_id}</span>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        )}
 
         {totalPages > 1 && (
           <div style={{ display: "flex", gap: 8, justifyContent: "center", marginTop: 16, alignItems: "center" }}>

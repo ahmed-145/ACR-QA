@@ -26,6 +26,9 @@
   --low:       #10b981;
   --low-fg:    #a7f3d0;
   --low-bdr:   rgba(16,185,129,0.25);
+  --sev-high:  var(--high);
+  --sev-medium: var(--med);
+  --sev-low:   var(--low);
   --ai-bg:     rgba(167,139,250,0.08);
   --ai-bdr:    rgba(167,139,250,0.25);
   --font: 'Inter', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;

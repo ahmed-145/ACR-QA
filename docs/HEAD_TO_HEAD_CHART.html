@@ -139,6 +139,7 @@
     /* Metric colour slots */
     .prec-bar  { background: #3b82f6; }
     .rec-bar   { background: #a855f7; }
+    .exp-bar   { background: #06b6d4; }
     .f1-bar    { background: #22c55e; }
 
     /* ── Divider ─────────────────────────────────── */
@@ -212,6 +213,10 @@
       CVE Recall (8 detectable)
     </div>
     <div class="legend-item">
+      <div class="legend-dot" style="background:#06b6d4"></div>
+      Exploit Verification
+    </div>
+    <div class="legend-item">
       <div class="legend-dot" style="background:#22c55e"></div>
       F₁ Score
     </div>
@@ -236,6 +241,11 @@
           <div class="metric-label">CVE Recall</div>
           <div class="bar-track"><div class="bar-fill rec-bar" style="width:0" data-w="12.5"></div></div>
           <div class="metric-value">1/8 · 12.5%</div>
+        </div>
+        <div class="metric-row">
+          <div class="metric-label">Exploit Verify</div>
+          <div class="bar-track"><div class="bar-fill exp-bar" style="width:0" data-w="0"></div></div>
+          <div class="metric-value" style="color: #94a3b8">No</div>
         </div>
         <div class="metric-row">
           <div class="metric-label">F₁</div>
@@ -267,6 +277,11 @@
           <div class="metric-value">5/8 · 62.5%</div>
         </div>
         <div class="metric-row">
+          <div class="metric-label">Exploit Verify</div>
+          <div class="bar-track"><div class="bar-fill exp-bar" style="width:0" data-w="0"></div></div>
+          <div class="metric-value" style="color: #94a3b8">No</div>
+        </div>
+        <div class="metric-row">
           <div class="metric-label">F₁</div>
           <div class="bar-track"><div class="bar-fill f1-bar" style="width:0" data-w="45.7"></div></div>
           <div class="metric-value">45.7%</div>
@@ -294,6 +309,11 @@
           <div class="metric-label">CVE Recall</div>
           <div class="bar-track"><div class="bar-fill rec-bar" style="width:0" data-w="100"></div></div>
           <div class="metric-value">8/8 · 100%</div>
+        </div>
+        <div class="metric-row">
+          <div class="metric-label">Exploit Verify</div>
+          <div class="bar-track"><div class="bar-fill exp-bar" style="width:0" data-w="100"></div></div>
+          <div class="metric-value" style="color: #22c55e">Yes</div>
         </div>
         <div class="metric-row">
           <div class="metric-label">F₁</div>

@@ -11,6 +11,9 @@ rules:
       - pattern: eval($X)
       - pattern: new Function($X)
       - pattern: setTimeout($X, ...)
+      - pattern: mathjs.eval($X)
+      - pattern: math.eval($X)
+
         # only flag string arguments
     message: |
       Dynamic code execution via eval() or Function() constructor.
@@ -37,6 +40,10 @@ rules:
       - pattern: $QUERY = $PREFIX + $USER_INPUT
       - pattern-either:
           - pattern: db.query($QUERY, ...)
+          - pattern: db.one($QUERY, ...)
+          - pattern: db.many($QUERY, ...)
+          - pattern: db.any($QUERY, ...)
+          - pattern: db.none($QUERY, ...)
           - pattern: connection.query($QUERY, ...)
           - pattern: pool.query($QUERY, ...)
           - pattern: knex.raw($QUERY)

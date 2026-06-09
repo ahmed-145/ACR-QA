@@ -123,6 +123,11 @@ docs/INSTRUCTOR_MEETING.md
 
 CLAUDE.md
 
+# Runtime artifacts
+.acr_run_id.txt
+ACR-QA_BANNER.html
+ACR-QA_Poster.html
+
 # Dashboard build output (large bundles)
 FRONTEND/static/dashboard/
 dashboard/node_modules/

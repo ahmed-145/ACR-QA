@@ -203,7 +203,7 @@ export function InboxPage() {
       </div>
 
       {/* Lens filter tabs */}
-      <div style={{ borderBottom: "1px solid var(--border)", padding: "0 24px", overflowX: "auto", display: "flex", background: "var(--bg-2)" }}>
+      <div style={{ borderBottom: "1px solid var(--border)", padding: "0 24px", background: "var(--bg-2)" }}>
         <div className="tabs" style={{ margin: 0, borderBottom: "none", gap: 0 }}>
           <button
             className={`tab${activeLens === "all" ? " on" : ""}`}
