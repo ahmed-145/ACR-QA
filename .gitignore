@@ -138,3 +138,12 @@ docs/evaluation/OWASP_BENCHMARK_allcwe_20260603.md
 TESTS/evaluation/realvuln/
 DATA/proto_llm_cache/
 tempy
+
+# Cleanup 2026-06-10: close tracking gaps
+coverage.json
+*.jar
+/ksiu-logo.png
+TESTS/evaluation/robustness/cloned/
+TESTS/evaluation/robustness/results/
+# PlantUML-generated scratch (regenerated from .puml; 0 tracked files)
+docs/presentation_assets/figures/
