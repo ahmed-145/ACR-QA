@@ -32,7 +32,7 @@ Monitoring          & Prometheus + Grafana      & Real-time pipeline metrics + d
 Containerisation    & Docker + Compose          & 7 services; Helm chart for Kubernetes \\
 IaC                 & Terraform (AWS + Railway) & Production cloud deployment \\
 CI/CD               & GitHub Actions            & Lint + test on PR; scan on merge \\
-Testing (Python)    & pytest + pytest-cov       & 2,805 tests; 84.89\% coverage \\
+Testing (Python)    & pytest + pytest-cov       & 2,954 tests; 87\% coverage \\
 Testing (TS)        & Vitest + Playwright       & 92 unit + 14 a11y + 15 e2e tests \\
 \bottomrule
 \end{tabularx}
@@ -61,7 +61,7 @@ acr-qa/
 |---- dashboard/               # React 18 + TypeScript SPA (EN + AR RTL)
 |---- DATABASE/database.py     # psycopg2 DAO layer
 |---- config/rules.yml         # 66 rules, 422 mappings
-|---- TESTS/                   # 2,897 pytest + Vitest cases
+|---- TESTS/                   # 3,017 pytest + Vitest cases
 |---- deploy/helm/ & terraform/ # K8s Helm chart + IaC
 |---- docker-compose.yml       # 7 services
 `---- .acrqa.yml               # Quality gate config
@@ -248,7 +248,7 @@ The full stack is orchestrated via Docker Compose (7 services) as illustrated in
 \section{Key Implementation Challenges}
 \label{sec:challenges}
 
-Four principal challenges arose during development. (1)~\textbf{Incompatible tool schemas:} twelve tools produce divergent output formats and severity vocabularies; solved by per-adapter \texttt{parse()} methods that map all fields to the canonical \texttt{file}/\texttt{line} schema. (2)~\textbf{Groq API rate limiting:} addressed via exponential backoff with jitter, a 4-key rotation pool, and a \texttt{rules.yml} fallback when the API is unavailable. (3)~\textbf{Concurrent temp-path races:} parallel tool processes now each write to an isolated \texttt{/tmp/acrqa-\{pid\}-\{run\_id\}/} directory. (4)~\textbf{\texttt{CUSTOM-*} rule ID leakage:} a guard clause rejects any rule ID with the \texttt{CUSTOM-} prefix; compliance is enforced by 2,805 regression tests.
+Four principal challenges arose during development. (1)~\textbf{Incompatible tool schemas:} twelve tools produce divergent output formats and severity vocabularies; solved by per-adapter \texttt{parse()} methods that map all fields to the canonical \texttt{file}/\texttt{line} schema. (2)~\textbf{Groq API rate limiting:} addressed via exponential backoff with jitter, a 4-key rotation pool, and a \texttt{rules.yml} fallback when the API is unavailable. (3)~\textbf{Concurrent temp-path races:} parallel tool processes now each write to an isolated \texttt{/tmp/acrqa-\{pid\}-\{run\_id\}/} directory. (4)~\textbf{\texttt{CUSTOM-*} rule ID leakage:} a guard clause rejects any rule ID with the \texttt{CUSTOM-} prefix; compliance is enforced by 2,954 regression tests.
 
 % -----------------------------------------------------------------
 \needspace{8\baselineskip}
