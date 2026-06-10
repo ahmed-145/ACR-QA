@@ -412,3 +412,27 @@ class TestUIServing:
         # /docs must survive the catch-all.
         c, _ = client
         assert c.get("/docs").status_code == 200
+
+
+# ════════════════════════════════════════════════════════════
+#  Workbench query — v.message alias fix
+# ════════════════════════════════════════════════════════════
+
+
+class TestWorkbenchQuery:
+    """Regression: workbench/query used to 500 because SQL selected v.title
+    (non-existent column) instead of v.message AS title."""
+
+    def test_workbench_query_returns_200_not_500(self, client):
+        c, mock_db = client
+        mock_db.execute.return_value = []
+        resp = c.get("/v1/workbench/query")
+        assert resp.status_code == 200, f"Expected 200, got {resp.status_code}: {resp.text[:200]}"
+
+    def test_workbench_query_returns_expected_shape(self, client):
+        c, mock_db = client
+        mock_db.execute.return_value = []
+        resp = c.get("/v1/workbench/query")
+        body = resp.json()
+        assert "results" in body
+        assert "total" in body

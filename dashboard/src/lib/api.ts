@@ -54,8 +54,8 @@ export interface RunsResponse {
   runs: Run[];
 }
 
-export const getRuns = (limit = 20) =>
-  get<RunsResponse>(`/v1/runs?limit=${limit}`);
+export const getRuns = (limit = 20, status = "completed") =>
+  get<RunsResponse>(`/v1/runs?limit=${limit}&status=${status}`);
 
 export interface Finding {
   id: number;
@@ -171,7 +171,7 @@ export interface TrendPoint {
 }
 
 export const getTrends = () =>
-  get<{ runs: Run[] }>("/v1/runs?limit=30").then((r) =>
+  get<{ runs: Run[] }>("/v1/runs?limit=30&status=completed").then((r) =>
     r.runs
       .filter((run) => run.status === "completed")
       .slice(0, 10)

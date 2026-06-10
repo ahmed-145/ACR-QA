@@ -152,7 +152,7 @@ async def query_findings(
     rows = db.execute(
         f"""
         SELECT v.id, v.short_id, v.canonical_rule_id, v.severity, v.status,
-               v.file_path, v.title, v.owner, v.first_seen_at, v.updated_at,
+               v.file_path, v.message AS title, v.owner, v.first_seen_at, v.updated_at,
                COUNT(f.id) AS finding_count
         FROM vulnerabilities v
         LEFT JOIN findings f ON f.vulnerability_id = v.id

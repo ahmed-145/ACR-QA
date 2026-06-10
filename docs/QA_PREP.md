@@ -547,7 +547,7 @@ chained) creates proprietary ground truth for calibration that late movers canno
 > - `TESTS/samples/comprehensive-issues/` directory present (it's in the repo — no clone needed)
 > - Postgres running: `docker compose up -d postgres` (waits ~5s to be ready)
 > - FastAPI running: `.venv/bin/uvicorn FRONTEND.api.main:app --port 8000`
-> - Login works at `http://localhost:8000` → `admin@acrqa.local` / `admin123!`
+> - Login works at `http://localhost:8000` → `admin@acrqa.local` / `changeme123!`
 > - Docker daemon running (`docker ps` returns without error) — needed for exploit step
 > - `GROQ_API_KEY_1` set in `.env` — needed for AI explanation step
 > - Run through once end-to-end; warm the Groq cache

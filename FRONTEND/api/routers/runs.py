@@ -21,10 +21,14 @@ router = APIRouter(prefix="/runs", tags=["runs"])
 @router.get("", response_model=RunsListOut, summary="List recent analysis runs")
 async def list_runs(
     limit: int = Query(10, ge=1, le=100),
+    status: str | None = Query(None, description="Filter by status: completed | running | failed"),
     user: dict = Depends(get_current_user),
     db: Database = Depends(get_db),
 ):
-    runs = db.get_recent_runs(limit=limit)
+    runs = db.get_recent_runs(limit=limit * 3 if status else limit)
+    if status:
+        runs = [r for r in runs if r.get("status") == status]
+        runs = runs[:limit]
     out = []
     for run in runs:
         summary = db.get_run_summary(run["id"])

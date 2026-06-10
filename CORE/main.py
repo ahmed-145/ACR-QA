@@ -359,16 +359,18 @@ class AnalysisPipeline:
         redis_client = rate_limiter.redis if rate_limiter and rate_limiter.redis else None
         self.explainer = ExplanationEngine(redis_client=redis_client)
 
-        # Cap explanations using config
+        # Cap explanations using config.  DB inserts always happen for every
+        # finding; only AI-explanation calls are gated by the limit so that
+        # --no-ai (limit=0) still persists findings to the database.
         max_explanations = self.config.get("ai", {}).get("max_explanations", 50)
         if limit == 0:
             effective_limit = 0
         else:
             effective_limit = min(limit, max_explanations) if limit is not None else max_explanations
-        findings_to_process = findings[:effective_limit] if effective_limit else []
 
+        # Insert ALL findings into DB regardless of explanation limit.
         findings_with_snippets = []
-        for f in findings_to_process:
+        for f in findings:
             f["_db_id"] = self.db.insert_finding(run_id, f)
             # Persist reachability result when available
             if f.get("reachability_status") and f["_db_id"]:
@@ -391,6 +393,10 @@ class AnalysisPipeline:
                     )
                 except Exception:
                     pass
+
+        # Only request AI explanations for the capped subset.
+        findings_to_explain = findings[:effective_limit] if effective_limit else []
+        for f in findings_to_explain:
             snippet = extract_code_snippet(
                 f["file_path"] if "file_path" in f else f["file"], f["line"], context_lines=3
             )
@@ -410,7 +416,7 @@ class AnalysisPipeline:
 
             # If gather caught an exception, it might be an Exception object
             if isinstance(expl, Exception):
-                logger.error(f"      [{i}/{len(findings_to_process)}] {rule_id} ✗ Error: {expl}")
+                logger.error(f"      [{i}/{len(findings_to_explain)}] {rule_id} ✗ Error: {expl}")
                 # Provide a fallback
                 fallback_expl = {
                     "model_name": self.explainer.model,
@@ -427,7 +433,7 @@ class AnalysisPipeline:
                 self.db.insert_explanation(f["_db_id"], fallback_expl)
             else:
                 latency = expl.get("latency_ms", 0)
-                logger.info(f"      [{i}/{len(findings_to_process)}] {rule_id} ✓ ({latency}ms)")
+                logger.info(f"      [{i}/{len(findings_to_explain)}] {rule_id} ✓ ({latency}ms)")
                 self.db.insert_explanation(f["_db_id"], expl)
 
         # Triage Agent: multi-step LLM reasoning on HIGH/CRITICAL findings (Phase 3)
@@ -480,11 +486,11 @@ class AnalysisPipeline:
         gate_result = gate.evaluate(findings)
 
         if rich_output:
-            self._print_rich_output(findings, gate_result, run_id, len(findings_to_process))
+            self._print_rich_output(findings, gate_result, run_id, len(findings_to_explain))
         else:
             gate.print_report(gate_result)
             logger.info(f"\n   Run ID: {run_id}")
-            logger.info(f"   Explanations Generated: {len(findings_to_process)}")
+            logger.info(f"   Explanations Generated: {len(findings_to_explain)}")
             logger.info("\nNext Steps:")
             logger.info("   View dashboard: uvicorn FRONTEND.api.main:app --port 8000")
             logger.info(f"   Generate report: python3 scripts/generate_report.py {run_id}")
