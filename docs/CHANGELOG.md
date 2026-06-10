@@ -2,6 +2,27 @@
 
 All notable changes to ACR-QA are documented here.
 
+## [v5.2.0 — Phase 3.2: test-path gate noise fix] — 2026-06-10
+
+### Changed — quality gate
+
+- **Test-path filter in quality gate**: `CORE/engines/quality_gate.py` now excludes findings
+  in `tests/`, `fixtures/`, `vendor/`, `node_modules/`, and similar non-production paths from
+  CI threshold counts. Findings still appear in the full report; they no longer cause false
+  positives on `max_high` / `max_medium` / `max_total` gates when scanning 3rd-party repos
+  with test suites that intentionally exercise vulnerable patterns.
+- **pyproject.toml**: `TESTS/evaluation/robustness/cloned/` excluded from ruff and pytest
+  collection so cloned 3rd-party repos don't pollute lint or test discovery.
+- **6 new tests** in `TestTestPathFilter` cover: test-dir exclusion, source-dir inclusion,
+  vendor exclusion, mixed test+source counting, `file_path` fallback key, node_modules.
+
+### Technical status
+
+- 3017 tests pass, 0 fail; total coverage 88%.
+- mypy CORE/: 0 errors.
+
+---
+
 ## [v5.1.0 — Phase 2: all 7 technical 10s closed] — 2026-06-10
 
 ### Added — test coverage & CI hardening

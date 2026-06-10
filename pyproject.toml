@@ -71,6 +71,7 @@ exclude = [
     "TESTS/evaluation/ai_code_samples/",
     "TESTS/evaluation/securityeval/",
     "TESTS/evaluation/realvuln/",
+    "TESTS/evaluation/robustness/cloned/",
     "mutants/",
 ]
 
@@ -135,7 +136,7 @@ ignore_errors = true
 # Test coverage tracking
 [tool.pytest.ini_options]
 testpaths = ["TESTS"]
-norecursedirs = ["TESTS/evaluation/cloned", "TESTS/evaluation/realvuln", "mutants", ".venv", "node_modules"]
+norecursedirs = ["TESTS/evaluation/cloned", "TESTS/evaluation/realvuln", "TESTS/evaluation/robustness/cloned", "mutants", ".venv", "node_modules"]
 addopts = [
     "--cov=.",
     "--cov-report=html",

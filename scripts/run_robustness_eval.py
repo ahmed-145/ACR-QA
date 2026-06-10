@@ -166,7 +166,7 @@ def scan_repo(repo: dict, clone_dir: Path) -> dict:
         proc = subprocess.run(
             cmd,
             capture_output=True,
-            timeout=300,  # 5 min max
+            timeout=600,  # 10 min max (larger repos can take 5-8 min)
             cwd=str(REPO_ROOT),
         )
         elapsed = time.monotonic() - t0
@@ -221,7 +221,7 @@ def scan_repo(repo: dict, clone_dir: Path) -> dict:
         elapsed = time.monotonic() - t0
         result["scan_time_s"] = round(elapsed, 2)
         result["crashed"] = True
-        result["crash_message"] = "scan timeout (>300s)"
+        result["crash_message"] = "scan timeout (>600s)"
         print(f"TIMEOUT ({elapsed:.1f}s)")
 
     except Exception as exc:

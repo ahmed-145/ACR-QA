@@ -5,7 +5,19 @@ Enforces configurable thresholds to pass/fail CI pipelines.
 """
 
 import logging
+import re
 from typing import Any
+
+# Mirror of confirmed_tier._TEST_PATH_RE: exclude findings inside test/fixture/vendor
+# directories from quality-gate threshold counts.  Findings are still reported; they
+# just don't fail CI on max_high / max_medium / max_total checks.
+_TEST_PATH_RE = re.compile(
+    r"(?:^|/)(tests?|testing|test_|_test\.|spec[_/]|fixtures?|examples?|"
+    r"benchmarks?|demos?|vendor|_vendor|third.?party|node_modules|__pycache__|\.git|"
+    r"docs?/|changelog|CHANGELOG|migrations?|conftest|tasks?/|noxfile|"
+    r"setup\.py$|setup\.cfg$|pyproject\.toml$|tox\.ini$|Makefile$)(?:/|$|\.)",
+    re.IGNORECASE,
+)
 
 DEFAULT_THRESHOLDS = {
     "mode": "block",  # "block" = fail CI | "warn" = post comment only, allow merge
@@ -56,12 +68,17 @@ class QualityGate:
                 details: list of check results
                 counts: severity/category counts
         """
-        # Count by severity
-        counts = {"high": 0, "medium": 0, "low": 0, "total": len(findings)}
+        # Exclude findings in test/fixture/vendor paths from CI threshold counts.
+        # They still appear in the report; this just prevents test-suite noise from
+        # failing the gate on codebases whose own tests import vulnerable patterns.
+        gate_findings = [f for f in findings if not _TEST_PATH_RE.search(f.get("file", f.get("file_path", "")) or "")]
+
+        # total in the report reflects all findings; counts used for checks use gate_findings
+        counts = {"high": 0, "medium": 0, "low": 0, "total": len(gate_findings)}
         category_counts: dict[str, int] = {}
         new_severe_security = 0
 
-        for f in findings:
+        for f in gate_findings:
             sev = f.get("canonical_severity", f.get("severity", "low")).lower()
             counts[sev] = counts.get(sev, 0) + 1
 

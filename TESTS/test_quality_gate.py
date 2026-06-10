@@ -198,3 +198,52 @@ class TestPrintReport:
         result = strict_gate.evaluate([_finding("high", "security")])
         strict_gate.print_report(result)
         assert "FAILED" in caplog.text
+
+
+class TestTestPathFilter:
+    """Findings in test / fixture / vendor paths must not count against CI thresholds."""
+
+    def _test_finding(self, path: str, sev: str = "high", cat: str = "security") -> dict:
+        return {"file": path, "canonical_severity": sev, "category": cat}
+
+    def test_test_dir_finding_excluded_from_count(self):
+        g = QualityGate(config={"quality_gate": {"max_high": 0}})
+        # high finding inside tests/ should NOT fail the gate
+        result = g.evaluate([self._test_finding("src/tests/test_auth.py")])
+        assert result["passed"] is True
+        assert result["counts"]["high"] == 0
+        assert result["counts"]["total"] == 0
+
+    def test_source_finding_still_counted(self):
+        g = QualityGate(config={"quality_gate": {"max_high": 0}})
+        result = g.evaluate([self._test_finding("src/auth.py")])
+        assert result["passed"] is False
+        assert result["counts"]["high"] == 1
+
+    def test_vendor_path_excluded(self):
+        g = QualityGate(config={"quality_gate": {"max_high": 0}})
+        result = g.evaluate([self._test_finding("vendor/jwt/parse.py")])
+        assert result["passed"] is True
+        assert result["counts"]["total"] == 0
+
+    def test_mixed_test_and_source_counts_source_only(self):
+        g = QualityGate(config={"quality_gate": {"max_high": 0}})
+        findings = [
+            self._test_finding("src/auth.py"),  # source — counted
+            self._test_finding("tests/test_auth.py"),  # test — excluded
+        ]
+        result = g.evaluate(findings)
+        assert result["counts"]["high"] == 1
+        assert result["counts"]["total"] == 1
+        assert result["passed"] is False
+
+    def test_file_path_fallback_key_respected(self):
+        g = QualityGate(config={"quality_gate": {"max_high": 0}})
+        f = {"file_path": "tests/test_views.py", "canonical_severity": "high", "category": "security"}
+        result = g.evaluate([f])
+        assert result["passed"] is True
+
+    def test_node_modules_excluded(self):
+        g = QualityGate(config={"quality_gate": {"max_high": 0}})
+        result = g.evaluate([self._test_finding("node_modules/lodash/index.py")])
+        assert result["passed"] is True
