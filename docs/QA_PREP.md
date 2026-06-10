@@ -1,6 +1,9 @@
-# ACR-QA Defense Q&A Preparation — 40 Questions
+# ACR-QA Defense Q&A Preparation — 40 Questions (Rehearsal Cards)
 
 *Memorise the answer structure, not the exact words. Keep each answer under 60 seconds.*
+
+> **Companion doc:** [`DEFENSE_QA.md`](DEFENSE_QA.md) holds the long-form technical answers with
+> full data tables for the same topics — read it for depth, rehearse from here for delivery.
 
 ---
 

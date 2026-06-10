@@ -2,6 +2,10 @@
 
 _T4.8 — Thesis evaluation chapter. Synthesises T4.1–T4.7 results._
 
+> **Canonical version:** the typeset thesis chapter is `ACR-QA-Book/chapters/ch5_testing.tex`
+> (rendered in the thesis PDF). This markdown is the working/readable rendering kept for quick
+> reference and Q&A prep; per-result provenance is indexed in [`evaluation/README.md`](evaluation/README.md).
+
 ---
 
 ## 5.1 Research Questions

@@ -22,7 +22,7 @@
 - `docs/evaluation/HEAD_TO_HEAD_BENCHMARK.md` — pre-registered methodology
 
 
-> 📋 **For the strategic testing plan** (6-layer pyramid, ground-truth-as-evidence approach, why coverage is a tripwire not a target), see [`GOD_MODE_V4_PLAN.md`](GOD_MODE_V4_PLAN.md).
+> 📋 **For the strategic testing plan** (6-layer pyramid, ground-truth-as-evidence approach, why coverage is a tripwire not a target), see [`GOD_MODE_V4_PLAN.md`](archive/GOD_MODE_V4_PLAN.md).
 > 📊 **For honest current numbers, see [`evaluation/EVALUATION.md`](evaluation/EVALUATION.md).
 
 ### CI Static Analysis Status (v3.3.0)

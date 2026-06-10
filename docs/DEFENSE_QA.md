@@ -1,4 +1,9 @@
-# Defense Day Q&A
+# Defense Day Q&A — Deep Technical Reference
+
+> **Companion doc:** [`QA_PREP.md`](QA_PREP.md) holds the crisp <60-second *rehearsal cards* (40
+> questions + startup track). **This** doc holds the long-form technical answers with full data
+> tables (LLM-vs-tool comparison, repo-selection methodology, bootstrap CIs, CodeQL/CBOM rebuttals)
+> — study these for depth, rehearse from QA_PREP for delivery.
 
 Running list of questions that may come up during the thesis defense on **Jun 25, 2026**.
 Add new questions daily as you think of them or rehearse.

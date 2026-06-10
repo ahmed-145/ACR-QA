@@ -1,11 +1,17 @@
 # ACR-QA Documentation Index
 
-> **As of v5.0.0rc1 (May 31, 2026):** All God-Mode v3 (T4.1–T4.9) and v4 (P1–P4 + X1–X5) tracks complete.
-> Tests: **2,757** (2,653 Python + 104 TS). Migrations: **18**. Endpoints: **52**.
+> **As of v5.0.0rc2 (June 2026):** All God-Mode tracks through v11 complete; X1–X6 empirical battery.
+> Tests: **3,017** (2,954 Python + 63 TS), **87% CORE coverage**. Migrations: **20**. Endpoints: **52**.
 > Ground-truth YAMLs: **23** (CVE recall battery: 20 pre-registered).
 > Headline result: **P4 Confirmed Tier — 96.4% conservative precision** (95% CI [90.9%, 100%]),
-> 100% CVE recall, F1=98.2%. See [evaluation chapter](EVALUATION_CHAPTER.md).
+> 100% CVE recall, F1=98.2%. See [evaluation chapter](EVALUATION_CHAPTER.md) ·
+> **[full evaluation index →](evaluation/README.md)**.
 > Engines documented under [engines/](engines/).
+
+**Quick nav:** [evaluation/](evaluation/README.md) · [architecture/](architecture/) · [adr/](adr/) ·
+[business/](business/) · [legal/](legal/) · [setup/](setup/) · [sre/](sre/) · [engines/](engines/) ·
+[archive/](archive/) · Defense: [QA_PREP](QA_PREP.md) + [DEFENSE_QA](DEFENSE_QA.md) ·
+Plan: [GOD_MODE_V11](GOD_MODE_V11_PERFECT_TEN_ALL_PERSPECTIVES.md) · [ACTIVE_ROADMAP](ACTIVE_ROADMAP.md)
 
 ## 🆕 v5.0.0 Engines + Eval Infrastructure
 
@@ -45,12 +51,12 @@
 
 | Document | Description |
 |----------|-------------|
-| [REST API Reference](API_REFERENCE.md) | All 84 FastAPI endpoints under `/v1/`, CLI reference, auth flows |
+| [REST API Reference](API_REFERENCE.md) | All 52 FastAPI endpoints under `/v1/`, CLI reference, auth flows |
 | [Cloud Deployment](setup/Cloud-Deployment.md) | PythonAnywhere, Replit, ngrok deployment guides |
 | [Token Setup](setup/TOKEN_SETUP.md) | GitHub, GitLab, and Groq API key configuration |
 | [LLM Providers](setup/LLM_PROVIDERS.md) | Groq (default) + Ollama (offline) + AgentRouter; model comparison, `ACRQA_LLM_PROVIDER` env var |
 | [Offline Setup](setup/OFFLINE_SETUP.md) | Air-gapped mode — Ollama + OSV snapshot; `ACRQA_MODE=offline` walkthrough |
-| [Privacy](PRIVACY.md) | Per-mode data-flow disclosure: cloud / hybrid / offline egress table |
+| [Privacy](legal/PRIVACY.md) | Per-mode data-flow disclosure: cloud / hybrid / offline egress table |
 | [Policy Engine](POLICY_ENGINE.md) | `.acrqa.yml` config reference — rules, thresholds, autofix, AI |
 | [Railway Deploy](setup/RAILWAY_DEPLOY.md) | Cloud deploy with PostgreSQL + Redis + Alembic migrations |
 
@@ -78,7 +84,7 @@
 |----------|-------------|
 | [Defense Q&A](DEFENSE_QA.md) | Full defense-day Q&A — precision tables, Confirmed Tier, head-to-head numbers, anti-tautology defense |
 | [Defense Deck](DEFENSE_DECK.tex) | 25-slide Beamer metropolis defense slide deck |
-| [Demo Video Script](DEMO_VIDEO_SCRIPT.md) | 5-minute structured demo video script with timestamps and voiceover narration |
+| [Demo Video Script](business/DEMO_VIDEO_SCRIPT.md) | 5-minute structured demo video script with timestamps and voiceover narration |
 | [LaTeX Slides (legacy)](acr_qa_presentation.tex) | Earlier presentation source |
 
 ## 🚨 SRE & Operations
@@ -103,7 +109,8 @@
 
 | Document | Description |
 |----------|-------------|
-| [God Mode v4 Plan](archive/GOD_MODE_V4_PLAN.md) | All P1–P4 + X1–X5 tracks complete (2026-05-31). Final empirical battery for the defense. |
+| [God Mode v11 Plan (active)](GOD_MODE_V11_PERFECT_TEN_ALL_PERSPECTIVES.md) | Dual-scoreboard (thesis + startup) plan. Earlier v4–v10 plans archived under [archive/](archive/). |
+| [Active Roadmap](ACTIVE_ROADMAP.md) | Current execution log. |
 | [Evaluation Integrity Charter](evaluation/INTEGRITY.md) | Pre-registration commitment, scoring rules, skipped-CVE log, adversarial review checklist. |
 
 ## Static UI Dashboard (v5.0.0-beta)
@@ -131,7 +138,7 @@
 
 | Document | Description |
 |----------|-------------|
-| [AGENTS.md](AGENTS.md) | **Read first.** Universal AI agent instructions: pre-commit checklist, code standards, critical rules, repo layout, environment. |
+| `CLAUDE.md` (repo root) | **Read first.** Commands, architecture, change protocol, critical rules, repo layout, environment. |
 | [CODEBASE_INDEX.md](CODEBASE_INDEX.md) | Auto-generated AST map of public functions/classes. May be stale — regenerate if needed. |
 
 ## 📁 Project Root Docs
@@ -154,4 +161,4 @@ During analysis runs, ACR-QA generates:
 
 ---
 
-**Last Updated:** May 20, 2026
+**Last Updated:** June 10, 2026

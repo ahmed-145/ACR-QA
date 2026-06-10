@@ -89,7 +89,7 @@ flows into the pipeline; orphan IDs are caught by `test_normalizer.py::test_no_o
 
 ## Related ADRs
 
-- [ADR 0001](0001-static-analysis-tool-selection.md) — why these tools were chosen
+- [ADR 0001](0001-context-and-goals.md) — why these tools were chosen
 - [ADR 0009](0009-taint-analysis-design.md) — how taint uses CanonicalFinding without mutating it
 - [ADR 0011](0011-verified-remediation-pipeline.md) — how exploit_verifier consumes CanonicalFinding
 - [ADR 0012](0012-language-adapter-pattern.md) — how adapters produce raw output that normalizer converts
