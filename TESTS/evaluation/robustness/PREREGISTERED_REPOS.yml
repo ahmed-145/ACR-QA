@@ -1,0 +1,145 @@
+# T19 — Pre-registered robustness / FP-harvest corpus
+# =====================================================
+# Registration timestamp: 2026-06-10 (committed BEFORE any scanning)
+# Split discipline (§7b of GOD_MODE_V11):
+#   DEV   — tune / inspect freely; burned for reporting.
+#   HELD  — scanned ONCE after DEV tuning is done; headline numbers come ONLY from here.
+# Principle: top-downloaded pure-Python PyPI packages with test suites,
+#            ranked by pip download stats (static snapshot 2026-06), disjoint from
+#            the precision corpus (TESTS/evaluation/ground_truth/).
+#
+# NOTE on contamination: httpx was scanned in session a89cc15b (2026-06-09) as an
+# ad-hoc one-off; it is therefore DEV-contaminated and placed in [dev] not [held].
+# urllib3 replaces it in [held] as a fresh unseen package.
+
+meta:
+  registered_date: "2026-06-10"
+  scanner_version: "5.1.0"
+  scan_flags: "--no-ai --lang python"
+  clone_base: "TESTS/evaluation/robustness/cloned"
+  results_dir: "TESTS/evaluation/robustness/results"
+
+dev:
+  # 10 repos — tune freely, report DEV numbers as "development set"
+  - name: flask
+    github: pallets/flask
+    ref: "3.0.3"
+    pypi_version: "3.0.3"
+    notes: "micro web framework; main source of SSTI + route-handler patterns"
+
+  - name: click
+    github: pallets/click
+    ref: "8.1.7"
+    pypi_version: "8.1.7"
+    notes: "CLI toolkit; minimal security surface, good crash-free baseline"
+
+  - name: rich
+    github: Textualize/rich
+    ref: "v13.7.0"
+    pypi_version: "13.7.0"
+    notes: "terminal rendering; low security surface, FP-cleanliness test"
+
+  - name: pydantic
+    github: pydantic/pydantic
+    ref: "v2.7.0"
+    pypi_version: "2.7.0"
+    notes: "data validation; Cython + Rust extensions, good Python-only subset test"
+
+  - name: sqlalchemy
+    github: sqlalchemy/sqlalchemy
+    ref: "rel_2_0_30"
+    pypi_version: "2.0.30"
+    notes: "ORM; raw SQL construction patterns, taint / SQL-injection signal test"
+
+  - name: pyjwt
+    github: jpadilla/pyjwt
+    ref: "2.8.0"
+    pypi_version: "2.8.0"
+    notes: "JWT; intentional algorithm-confusion code — key FP-harvest target"
+
+  - name: paramiko
+    github: paramiko/paramiko
+    ref: "3.4.0"
+    pypi_version: "3.4.0"
+    notes: "SSH; crypto operations, subprocess calls — precision stress test"
+
+  - name: werkzeug
+    github: pallets/werkzeug
+    ref: "3.0.3"
+    pypi_version: "3.0.3"
+    notes: "WSGI utilities; path-handling + header parsing — traversal FP test"
+
+  - name: pyyaml
+    github: yaml/pyyaml
+    ref: "6.0.1"
+    pypi_version: "6.0.1"
+    notes: "YAML parser; yaml.load without Loader = known TP (B506 / SECURITY-022)"
+
+  - name: httpx
+    github: encode/httpx
+    ref: "0.27.0"
+    pypi_version: "0.27.0"
+    contaminated: true
+    notes: "CONTAMINATED — scanned 2026-06-09 session a89cc15b; counts as DEV forever"
+
+held:
+  # 10 repos — scanned ONCE after DEV tuning, never tuned against
+  - name: fastapi
+    github: tiangolo/fastapi
+    ref: "0.111.0"
+    pypi_version: "0.111.0"
+    notes: "async web framework; dependency injection, path params"
+
+  - name: requests
+    github: psf/requests
+    ref: "v2.31.0"
+    pypi_version: "2.31.0"
+    notes: "HTTP library; SSRF patterns, no auth logic"
+
+  - name: urllib3
+    github: urllib3/urllib3
+    ref: "2.2.1"
+    pypi_version: "2.2.1"
+    notes: "replaces contaminated httpx; low-level HTTP, TLS handling"
+
+  - name: pillow
+    github: python-pillow/Pillow
+    ref: "10.3.0"
+    pypi_version: "10.3.0"
+    notes: "image processing; C extensions, focus on Python layer only"
+
+  - name: starlette
+    github: encode/starlette
+    ref: "0.37.2"
+    pypi_version: "0.37.2"
+    notes: "ASGI framework; middleware and request handling patterns"
+
+  - name: redis-py
+    github: redis/redis-py
+    ref: "v5.0.4"
+    pypi_version: "5.0.4"
+    notes: "Redis client; serialization, eval() for Lua scripts"
+
+  - name: celery
+    github: celery/celery
+    ref: "v5.4.0"
+    pypi_version: "5.4.0"
+    notes: "task queue; pickle deserialization (known TP: B301 / SECURITY-018)"
+
+  - name: pymongo
+    github: mongodb/mongo-python-driver
+    ref: "4.7.2"
+    pypi_version: "4.7.2"
+    notes: "MongoDB driver; BSON handling, NoSQL injection patterns"
+
+  - name: lxml
+    github: lxml/lxml
+    ref: "lxml-5.2.2"
+    pypi_version: "5.2.2"
+    notes: "XML processing; XXE surface (defusedxml comparison target)"
+
+  - name: boto3
+    github: boto3/boto3
+    ref: "1.34.100"
+    pypi_version: "1.34.100"
+    notes: "AWS SDK; credential handling, IAM patterns — large surface"

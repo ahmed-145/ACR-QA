@@ -240,5 +240,6 @@ def load_bundle_from_db(run_id: int, db) -> dict | None:
         return None
     try:
         return json.loads(row["attestation_json"])
-    except Exception:
+    except Exception as exc:
+        logger.debug("get_attestation: JSON parse failed for run %s: %s", run_id, exc)
         return None
