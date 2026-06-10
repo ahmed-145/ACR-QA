@@ -329,21 +329,111 @@ It's the expected behavior of a recall-first tool. The full output maximizes rec
 | Metric | Value |
 |--------|------:|
 | Version | v5.0.0rc2 |
-| Python tests | 2,805 |
-| TypeScript tests | 104 |
-| Total tests | **2,897** |
+| Python tests | 2,954 |
+| TypeScript tests | 63 |
+| Total tests | **3,017** |
+| CORE coverage | **87.5%** |
 | API endpoints | **52** |
-| Alembic migrations | 18 |
+| Alembic migrations | 20 |
 | Eval corpus | **13 repos, 4 languages** |
 | Recall vs Semgrep CE | **100% vs 71.2% (+28.8pp)** |
 | CVE recall (detectable) | **8/8 = 100%** |
 | CVE recall (overall) | 8/20 = 40% |
 | Precision (ground truth) | **97.1%** (100% security class) |
+| P4 Confirmed Tier precision | **96.4% cons / 100% opt** (CI [90.9%, 100%]) |
+| P3 source-only precision | **82.6% cons / 100% opt** |
+| RealVuln 2026 recall | **25.1%** (Semgrep 17.5%, Snyk 17.4%, SonarQube 6.5%) |
+| X6 real-world HIGH FPR | **0.0%** (7 mature PyPI packages, pre-registered) |
 | FP rate (Flask) | **1.0%** |
 | FP rate (httpx) | **2.3%** |
 | Inter-rater κ | **0.74** (substantial) |
 | OWASP coverage | 9/10 |
 | OWASP Methodology Youden J | **0.157** (leads Bandit 0.090, Semgrep 0.056) |
-| P-2 recall (detectable CWEs) | **91.0%** vs Bandit 50.6%, Semgrep 23.6% |
-| Novel engines | 10 contributions |
+| Novel evaluations | **6** (X1–X6) |
+| Novel contributions | **13** |
 | Distribution | `pip install acrqa==5.0.0rc2` + GitHub Actions Marketplace |
+
+---
+
+## Startup / VC Q&A — Investor and Committee Questions
+
+*Use these when committee members ask business/commercialization questions. Keep each answer ≤45 seconds.*
+
+---
+
+### S1. "This is a great thesis — but is it a product?"
+
+Yes, and deliberately so. The architecture decisions — Docker Compose at $0, zero recurring licensing,
+52 REST endpoints, WCAG 2.1 AA dashboard, PyPI package — were made so a team could deploy this
+tomorrow, not just read about it. The thesis is the product spec; v5.0.0rc2 is the product.
+
+---
+
+### S2. "The SAST market is crowded. Why would anyone pay for another one?"
+
+The market framing is wrong. SAST detection is commoditized — Semgrep and CodeQL give it away free.
+The scarce, monetizable resource in 2026 is *verifying* exploitability and *proving* the fix worked.
+ACR-QA's Verified Remediation Engine is on the exact value frontier ZeroPath, Aptori, and Mobb are
+racing toward — but those are all closed-source or paid. The open + first-party + $0 + FIPS-204-signed
+quadrant is unoccupied.
+
+---
+
+### S3. "Who would actually pay for this?"
+
+Three concrete segments: (1) **EU-facing software teams** — EU CRA's 2026-09-11 deadline requires
+machine-readable SBOM and 24h vuln reporting. ACR-QA's Compliance tier delivers both, pre-built.
+(2) **Defense / federal contractors** — CNSA 2.0 mandates ML-DSA signing (FIPS 204) by 2030. ACR-QA
+already does Dilithium3 = FIPS 204. (3) **Regulated startups** (fintech, healthtech) seeking SOC2
+evidence — `generate_evidence_pack.py` is the whole wedge. The compliance deadline is the buy trigger,
+not a sales pitch.
+
+---
+
+### S4. "Your traction is zero. Why should I believe this has market fit?"
+
+Honest answer: traction is motion-gated — I started the real curve, not a fake number. Real moves
+already in progress: PyPI package published (installable right now), RealVuln leaderboard submission
+(open harness, objective third-party rank), CVE Numbering Authority onboarding (via Red Hat root,
+~4wk). The thesis is the product spec and the demo — the repo is the pitch deck. GitHub SOSS grant
+application is the first external validation step.
+
+---
+
+### S5. "You're a solo student. What happens when you graduate?"
+
+Solo founder shipping a 12,000-LOC, 3,017-test, fully-attested security platform in a thesis is
+a different signal than "grad student hobby project." The precedent: Socket ($4.6B ARR trajectory)
+was a solo project by Feross Aboukhadijeh. The advantage of solo is zero burn — the product reached
+feature parity with funded tools at $0. Phase 5 recruits one industry security advisor and targets
+a non-dilutive grant to fund the first 6 months of community growth.
+
+---
+
+### S6. "Why is your thesis score ~8 but your startup score ~3?"
+
+They measure different things. The thesis score reflects codeable, verifiable artifacts — test
+coverage, precision CIs, citation integrity, implemented engines. The startup score reflects external
+traction and market validation, which require weeks of motion I literally cannot manufacture in a
+lab. Knowing which is which is the engineer's discipline. The thesis-8 proves the product is real.
+The startup-3 is an honest starting line, not a ceiling.
+
+---
+
+### S7. "What's the TAM?"
+
+The AppSec tooling market is $10.7B (2023) growing to $24.9B (2030, MarketsandMarkets). But TAM
+is less useful than the **dated forcing function**: EU CRA forces every software vendor selling into
+the EU (global reach, extraterritorial) to have machine-readable SBOMs and continuous vuln monitoring
+by 2026-09-11. The Compliance tier is priced at $59/dev to capture that forced-buy event — not
+speculative "maybe they'll want security."
+
+---
+
+### S8. "Is the moat defensible? Can Snyk just copy this?"
+
+Three layers: (1) **Structural** — the open-source core means Snyk can't copy it without open-sourcing
+their own scanner, which breaks their business model. (2) **Technical** — FIPS 204 / Sigstore Rekor
+/ first-party CI detonation are 6–12 months of integration work, not a weekend feature flag.
+(3) **Data flywheel** — each `verification_log` record (exploit → fix → re-exploit, cryptographically
+chained) creates proprietary ground truth for calibration that late movers cannot retroactively acquire.

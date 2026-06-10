@@ -4,131 +4,162 @@
 > and re-fire the exploit to prove your fix actually worked."*
 >
 > **Category:** Provable AppSec Testing (PAST) — exploit-verified remediation for first-party
-> application source code, in CI, ECDSA-attested, at $0.
+> application source code, in CI, cryptographically attested, at $0.
 >
-> **Honest positioning (2026):** Exploit-verified remediation is now the 2026 vanguard. Qualys
-> TruConfirm/Agent Val (Feb–Mar 2026) re-detonates CVEs on deployed infrastructure. ZeroPath ships
-> AI-native SAST+DAST with fix verification (closed-source). VulnRepairEval (arXiv:2509.03331) and
-> PatchEval (arXiv:2511.11019) institutionalized it academically. ACR-QA **independently converges**
-> for first-party SAST in CI — the open, developer-facing, $0 version. Convergence validates the
-> paradigm; differentiation is the layer (CI-native / first-party / open / attested).
+> **Defense:** 2026-06-25 · **Version:** ACR-QA v5.0.0rc2
 
 ---
 
-## Market Map — Who Does Re-Exploit-to-Verify-Fix
+## 1. The Value Frontier Convergence
 
-| Tool | Layer | Re-exploit fix verify | Open | Notes |
-|---|---|:---:|:---:|---|
-| **ACR-QA** | First-party SAST in CI | ✅ | ✅ | $0, ECDSA, 13 exploit categories |
-| Qualys TruConfirm | CVE/deployed ETM | ✅ | ❌ | Deployed infra only, Mar 2026 |
-| ZeroPath | AI-native SAST+DAST | ✅ | ❌ | Closed source |
-| Snyk / Semgrep / GHAS | Traditional SAST | ❌ | varies | Static re-scan only |
+The 2026 AppSec market has **decoupled detection from value**. Detection is abundant and low-cost
+(LLMs surface thousands of issues cheaply). The new scarce resource — the primary locus of value
+capture — is the ability to **definitively verify exploitability**, autonomously remediate the flaw,
+and **mathematically prove risk was eradicated** without human intervention.
 
-## Why Traditional Incumbents Still Lose
+ACR-QA is on this exact frontier, as the open-source, first-party-source, CI-native version of
+what the entire market is racing toward:
 
-| Pain point (verified research) | Incumbent | ACR-QA |
+| Vanguard tool | Re-exploit-to-verify | Open | In CI / first-party | Price |
+|---|:---:|:---:|:---:|:---:|
+| **ACR-QA** | ✅ 13 categories | ✅ | ✅ | **$0** |
+| Qualys TruConfirm | ✅ deployed infra | ❌ | ❌ (ETM layer) | >$1k/mo |
+| ZeroPath | ✅ AI-native SAST+DAST | ❌ | partial | closed |
+| Aptori | ✅ runtime retest | ❌ | ❌ (dynamic) | $49–$99/dev |
+| Mobb.ai | ✅ re-run SAST post-fix | ❌ | no detonation | $20–$40/dev |
+| Snyk / Semgrep / GHAS | ❌ static re-scan only | varies | ✅ | $25–$42/dev |
+
+**The open + first-party + $0 + PQC-attested quadrant is unoccupied.** All named vanguard tools
+are closed-source, infrastructure-layer, or paid. Convergence validates the paradigm; ACR-QA owns
+the developer-facing entry point.
+
+---
+
+## 2. Unoccupied-Quadrant Map
+
+```
+                     OPEN SOURCE
+                          │
+          Semgrep CE       │      ACR-QA ◄── HERE
+          Bandit           │      (detect+verify+attest, $0)
+          Safety           │
+                          │
+  STATIC ─────────────────┼───────────────────── EXPLOIT-VERIFIED
+  (pattern only)          │                      (re-run after fix)
+                          │
+          Snyk             │      ZeroPath
+          Checkmarx        │      Aptori
+          SonarQube        │      Qualys TruConfirm
+                          │
+                     CLOSED / PAID
+```
+
+No other tool occupies the upper-right quadrant. The competitive moat is not "better rules" —
+it is **structural**: open + first-party + CI-detonation + FIPS-204-signed.
+
+---
+
+## 3. Open-Core Pricing (benchmarked against 13 competitors)
+
+| Tier | Price | What's included | Competitor anchor |
+|---|---|---|---|
+| **Free (OSS-forever)** | **$0** | Full CLI: 19 engines, exploit-verify, SARIF, Confirmed Tier, local ECDSA attestation. Free for OSS repos forever. | Semgrep/Socket/Mobb/KodeShield all free-for-OSS |
+| **Team** | **~$29/dev/mo** | Hosted dashboard, scan history, PR merge-gate, SSO-lite, priority support | Semgrep Code $30, Socket Team $25, Snyk Team $25, KodeShield $29 |
+| **Compliance** | **~$59/dev/mo** | **The wedge:** SOC2/ISO/EU-CRA evidence packs, SBOM (CycloneDX 1.6 / SPDX 3.0.1), **dual PQC attestation (FIPS 204 ML-DSA)**, audit logs, RBAC, SLA | Socket Business $50, KodeShield Business $69 |
+
+**Why this is defensible, not delusional:** every competitor monetizes compliance and gates
+SBOM/SSO behind paywalls. None ships open-source + first-party + PQC-attested evidence.
+ACR-QA already has `scripts/generate_evidence_pack.py` and CRYSTALS-Dilithium3 signing —
+the paid tier is *productizing what's built*, not new R&D.
+
+### What kills the incumbents
+
+| Incumbent | Pricing pain | ACR-QA answer |
 |---|---|---|
-| 30–40% false positives | Snyk, Checkmarx, CodeQL | **0%** on Confirmed Tier (exploit-proven) |
-| "Is this real?" argument in PRs | All traditional | Detonation trace in the PR comment |
-| Static retest only (guesses if fix worked) | Snyk, Semgrep, GHAS | Re-exploit proves the fix killed the vuln |
-| Per-LOC pricing grows with AI code | SonarQube | Flat per-core-contributor |
-| 90-day committer bloat | GitHub Advanced Security | N/A |
-| No cryptographic audit trail | All | ECDSA-P256 + Sigstore Rekor (tamper-evident) |
-| RealVuln recall (real apps, 2026 benchmark) | Semgrep 17.5% / Snyk 17.4 / SonarQube 6.5% | **ACR-QA 25.1%** (beats all rule-based tools) |
+| Snyk | Per-repo + severity → 4.2× "Valley of Pain" as AI coding scales | Never charges per finding |
+| SonarQube | LOC-based — AI-generated code penalizes twice | Flat per-core-contributor |
+| GHAS/CodeQL | So noisy customers build GPT-4o filters to clean 96% of alerts | Confirmed Tier: 96.4% precision from day 1 |
+| All traditional | Static re-scan "guesses" if fix worked | Re-detonation proves it |
 
 ---
 
-## Pricing Philosophy (the switch triggers from research)
+## 4. Regulatory TAM — Dated Drivers (the buy-trigger engine)
 
-### What kills Snyk: the "Valley of Pain"
+Every date below forces a procurement decision. ACR-QA already satisfies all of them.
 
-Snyk's SCA pricing scales with repos × severity. A 100-repo org with active AI coding
-(1.88× more flaws per codebase) pays a 4.2× "Valley of Pain" — the moment they reach
-the tier where every flagged dependency costs money. ACR-QA never charges per finding.
+| Driver | Key date | What it forces | ACR-QA already has |
+|---|---|---|---|
+| **EU CRA** (Reg. EU 2024/2847) | **2026-09-11**: 24h vuln-reporting to ENISA + machine-readable SBOM (Art. 14 / Annex I) | Extraterritorial; non-conformance = market exclusion | SBOM gen + continuous SAST |
+| EU CRA full conformity | **2027-12-11** | CE marking; applies globally to any product sold in EU | SBOM (CycloneDX ≥1.6 / SPDX ≥3.0.1, JSON/XML, SHA-512) |
+| **US OMB M-26-05** | **2026-01-23** | Agencies demand SBOM contractually; False Claims Act exposure for false attestation | Provenance + Rekor-logged attestation |
+| CISA Min. Vuln. Elements (2025) | Rolling enforcement | Component hash, license, tool name, generation context required | Attestation metadata |
+| **SLSA L3 + Sigstore/Rekor** | 2026 procurement baseline | Admission controllers reject unsigned artifacts | ✅ **already does Sigstore Rekor** |
+| **PQC / CNSA 2.0** (FIPS 203/204/205, 2024-08-13) | "prefer 2025 → exclusive 2030" | Software signing must use ML-DSA; defense/NSS rejects classical-only by 2030 | ✅ **already does CRYSTALS-Dilithium3 = FIPS 204 ML-DSA** |
 
-### What kills SonarQube: LOC pricing in the AI era
-
-SonarQube charges by lines of code. GitHub Copilot generates 30–50% of code at AI shops.
-Paying for AI-generated lines while AI *introduces* bugs is a double penalty.
-
-### What kills CodeQL/GHAS: "96% noise" problem
-
-A GitHub Advanced Security user reported building a GPT-4o tool to strip 96% of CodeQL
-alerts before engineers saw them. The tool they pay for is so noisy they need another AI
-to clean it. ACR-QA's Confirmed Tier has 96.4% precision — they're paying for signal,
-not noise + cleanup.
+**Defense slide line:** *"ACR-QA was built as a thesis in 2025–26 and independently implements the
+exact 2026 procurement stack — Sigstore-attested, FIPS-204-signed, SBOM-emitting, PQC-aware. The
+regulation caught up to the design."*
 
 ---
 
-## Proposed Tiers
+## 5. Full Competitor Contrast (for sales conversations)
 
-### Open Source / Research — $0
-
-- Full Bandit + Semgrep + 88 custom rules
-- LLM-augmented detection (`--llm`)
-- SARIF v2.1.0 export
-- Confirmed Tier (pattern-based)
-- **Not included:** exploit-verification sandbox, ECDSA attestation, Rekor logging
-
-### Professional — per core-contributor / month
-
-- Everything in Open Source
-- **Exploit-verification** (10 categories: SQLi, CMDi, SSTI, path-traversal, SSRF, XXE,
-  insecure-deser, open-redirect, ReDoS, LDAP-injection)
-- **Verified Remediation** — re-exploit proves the fix worked
-- **ECDSA-signed attestation** + Sigstore Rekor transparency log
-- PR decoration with detonation traces
-- Evidence pack for SOC2/ISO27001/EU CRA auditors
-
-### Enterprise — custom
-
-- Everything in Professional
-- Multi-repo fleet scanning
-- ASPM ingestion (DefectDojo, Jira, etc.)
-- Custom exploit categories (NoSQL injection, GraphQL, JWT-alg-confusion)
-- SLA + dedicated support
+| Feature | Snyk Code | Semgrep | GHAS/CodeQL | **ACR-QA** |
+|---|:---:|:---:|:---:|:---:|
+| Exploit verification (dynamic detonation) | ❌ | ❌ | ❌ | ✅ 13 categories |
+| Verified remediation (re-exploit after fix) | ❌ | ❌ | ❌ | ✅ ECDSA-signed bundle |
+| Cryptographic scan attestation (Rekor) | ❌ | ❌ | ❌ | ✅ Sigstore Rekor |
+| FIPS 204 (ML-DSA) post-quantum signing | ❌ | ❌ | ❌ | ✅ Dilithium3 |
+| Confirmed Tier precision | — | — | — | ✅ 96.4% conservative |
+| PR detonation trace | ❌ | ❌ | ❌ | ✅ PoC + response in PR |
+| LLM-augmented recall | ❌ | ❌ | ❌ | ✅ +5.2pp at 89.5% precision |
+| EU CRA evidence pack | ❌ | ❌ | ❌ | ✅ `generate_evidence_pack.py` |
+| Pricing model | per-dev+severity | per-dev | per-committer | **per-core-contributor** |
+| LOC penalty | ❌ | ❌ | ✅ LOC-based | ❌ (flat) |
+| RealVuln 2026 recall (1,000 prod CVEs) | 17.4% | 17.5% | — | **25.1%** |
 
 ---
 
-## The Pitch (30 seconds)
+## 6. The 30-second Pitch
 
 > "When CodeQL flags 400 issues and engineers stop looking, that's not security — that's alert
 > fatigue theater. ACR-QA doesn't flag; it proves. For each HIGH finding, we spin up a Docker
 > sandbox, fire a real PoC, and capture the response. If the exploit fires, you get a detonation
-> trace in your PR — not a suggestion that it might be exploitable, proof that it is. And when
-> your AI generates a fix, we re-fire the exploit on the patched code to prove it actually closed
-> the hole — then sign the chain with ECDSA. That's what we mean by Provable AppSec Testing."
+> trace in your PR — not a suggestion, proof. When your engineer submits a fix, we re-fire the
+> exploit on the patched code to prove it actually closed the hole, then sign the whole chain with
+> ECDSA-P256 and CRYSTALS-Dilithium3 (FIPS 204). That's Provable AppSec Testing. It's open-source.
+> It runs in your CI. It costs $0."
 
 ---
 
-## Competitor Contrast Table (for sales conversations)
-
-| Feature | Snyk Code | Semgrep | CodeQL/GHAS | **ACR-QA** |
-|---|:---:|:---:|:---:|:---:|
-| Exploit verification (dynamic) | ❌ | ❌ | ❌ | ✅ 10 categories |
-| Verified remediation (re-exploit) | ❌ | ❌ | ❌ | ✅ ECDSA-signed |
-| Cryptographic scan attestation | ❌ | ❌ | ❌ | ✅ Rekor |
-| SARIF merge-blocking (precision) | ❌ | partial | partial | ✅ 96.4% precision |
-| PR detonation trace | ❌ | ❌ | ❌ | ✅ PoC + response |
-| LLM-augmented recall | ❌ | ❌ | ❌ | ✅ +7.4pp, gated |
-| Pricing model | per-dev + severity | per-dev | per-committer | per-core-contributor |
-| LOC penalty | ❌ | ❌ | ✅ LOC-based | ❌ (flat) |
-
----
-
-## Evidence Pack (for auditors)
+## 7. Evidence Pack (for SOC2/ISO/EU-CRA auditors)
 
 ```bash
-# Generate a signed evidence bundle for SOC2/ISO27001/EU CRA
 python3 scripts/generate_evidence_pack.py --run-id <run_id> --output evidence.zip
 ```
 
-The bundle contains:
-- ECDSA-P256 signed scan verdict
-- Sigstore Rekor transparency log index
-- Per-finding exploit proof (payload + response)
-- Verified fix diffs + re-exploit failure proof
-- SARIF v2.1.0 (confirmed findings only)
+Bundle contents:
+- ECDSA-P256 signed scan verdict + Sigstore Rekor transparency log index
+- Per-finding exploit proof (payload + captured response)
+- Verified fix diffs + re-exploit failure proof (`fix_verified=True`)
+- SBOM (CycloneDX 1.6 + SPDX 3.0.1)
+- SARIF v2.1.0 (Confirmed Tier findings only)
 
-**For auditors:** this is evidence that a security review happened AND that every flagged item
-was proven exploitable — not just "a scanner ran and here's what it guessed."
+**For auditors:** evidence that a security review happened AND that every flagged item was proven
+exploitable — not a scanner's guess, a signed detonation trace.
+
+---
+
+## 8. Why "thesis-8 / startup-3" — and why that's honest (not a problem)
+
+The startup track scores S7 (traction) at honest 4–5 and S8 (founder) at honest 6. This is
+deliberate. The right defense: *"I know which scores are motion-gated and which are codeable. Traction
+and founder track record require weeks of external evidence — I started the real motion
+(PyPI publish, RealVuln leaderboard submission, CNA onboarding) and can show the curve. That
+distinction is the difference between an engineer and a marketer."*
+
+The three motions that convert C→B fastest:
+1. **PyPI publish** → `pip install acrqa` = installability signal
+2. **RealVuln leaderboard submission** = objective third-party rank (open harness)
+3. **CVE Numbering Authority (CNA)** via Red Hat root (~4wk) → ACR-QA assigns CVEs from its own
+   findings = manufactured track record with zero external dependency
