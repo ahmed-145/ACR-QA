@@ -21,7 +21,7 @@ This chapter presents the testing strategy and quantitative evaluation of \ACRQA
 \section{Testing Strategy and Coverage}
 \label{sec:testing_strategy}
 
-The test suite is structured in four layers following the testing pyramid principle \cite{mcconnell2004code,kim2016devops}, runnable in a single CI pipeline execution \cite{shahin2017continuous,github_actions}. All tests executed in the full Docker Compose stack (Python 3.11.8, Node.js 20.11 LTS, PostgreSQL 15.5, Redis 7.2, four Celery workers, Prometheus 2.49, Grafana 10.3) on an Intel Core i7-12700H workstation (32 GB DDR5 RAM, Ubuntu 22.04 LTS / WSL2). The suite achieves \textbf{84.89\%} line coverage over the CORE module and \textbf{82.66\%} combined CORE + DATABASE (CI gate: 82\%); all safety-critical paths (authentication, confidence scoring, deduplication, quality gate) remain above 93\%.
+The test suite is structured in four layers following the testing pyramid principle \cite{mcconnell2004code,kim2016devops}, runnable in a single CI pipeline execution \cite{shahin2017continuous,github_actions}. All tests executed in the full Docker Compose stack (Python 3.11.8, Node.js 20.11 LTS, PostgreSQL 15.5, Redis 7.2, four Celery workers, Prometheus 2.49, Grafana 10.3) on an Intel Core i7-12700H workstation (32 GB DDR5 RAM, Ubuntu 22.04 LTS / WSL2). The suite achieves \textbf{87\%} line coverage over the CORE module and \textbf{87\%} combined CORE + DATABASE (CI gate: 82\%); all safety-critical paths (authentication, confidence scoring, deduplication, quality gate) remain above 93\%.
 
 \begin{table}[htbp]
 \caption{Test Suite Layer Summary --- \ACRQA{} v5.0.0rc2}
@@ -33,13 +33,13 @@ The test suite is structured in four layers following the testing pyramid princi
 \toprule
 \textbf{Layer} & \textbf{Count} & \textbf{Scope and Key Areas} \\
 \midrule
-Unit (pytest \cite{pytest_tool}) & 2,138 & 19 engine modules + 3 adapters; adapter \texttt{parse()} methods, confidence signal computation, entropy validation, JWT lifecycle, risk predictor, pr\_risk, second\_opinion \\
-Integration & $\approx$667 & Full pipeline on fixture repos; FastAPI/Pydantic validation; Celery dispatch; PostgreSQL schema; chaos resilience (13 failure tests) \\
+Unit (pytest \cite{pytest_tool}) & 2,254 & 19 engine modules + 3 adapters; adapter \texttt{parse()} methods, confidence signal computation, entropy validation, JWT lifecycle, risk predictor, pr\_risk, second\_opinion \\
+Integration & $\approx$680 & Full pipeline on fixture repos; FastAPI/Pydantic validation; Celery dispatch; PostgreSQL schema; chaos resilience (13 failure tests) \\
 Accessibility (axe-core) & 14 & WCAG~2.1~AA \cite{wcag21} across 5 dashboard pages in EN + AR RTL; colour contrast, keyboard nav, ARIA \\
 End-to-End (Playwright) & 15 & Full user journeys: scan submission, result browsing, suppression, SARIF \cite{sarif_standard} export \\
 TypeScript (Vitest) & 63 & Component, hook, and API client tests; FindingHistory, PRRisk, RunHeatmap \\
 \midrule
-\textbf{Total} & \textbf{2,897} & CI gate: 82\% line coverage (CORE: 84.89\%); run time $\approx$6 min \\
+\textbf{Total} & \textbf{3,017} & CI gate: 82\% line coverage (CORE: 87\%); run time $\approx$6 min \\
 \bottomrule
 \end{tabularx}
 \end{table}
@@ -211,6 +211,8 @@ The Layer~A precision figure (97.1\%) is measured on intentionally vulnerable ap
 
 A 4+P stratification pipeline yields five precision strata (Table~\ref{tab:adversarial}). The headline result is \textbf{P4 Confirmed Tier (96.4\% / 100\%)}: a 4-criterion gate (HIGH severity + 22-rule \textsc{ConfirmedRuleSet} + production code path + Bandit's internal \texttt{issue\_confidence == HIGH}) clears the $\geq$80\% industry threshold for autonomous PR-blocking, while preserving \textbf{100\% CVE recall (8/8)} from the recall corpus.
 
+\textbf{Test-path filter impact.} Of 630 HIGH/MEDIUM findings in the Layer~B corpus, \textbf{404 (64.1\%) originate in test files, fixtures, or vendor directories} of the scanned repos. These are candidates for false positives --- production libraries intentionally exercise vulnerable patterns in their test suites. In the P4 Confirmed Tier, the production-code-path criterion (enforced by \texttt{\_TEST\_PATH\_RE} in \texttt{confirmed\_tier.py}) already excludes these; P4 precision (96.4\%) was always a source-file-only measurement. At intermediate rungs, applying the same filter to source files only yields: Rung~1 (H/M, source-only) \textbf{220 findings / 17.3\% conservative / 50.0\% optimistic}; Rung~3 (\textsc{ConfirmedRuleSet} + source) \textbf{46 findings / 82.6\% conservative / 100\% optimistic}. The CI quality gate (\texttt{quality\_gate.py}) now mirrors this filter, so users never see test-file noise in gate failures.
+
 \begin{figure}[htbp]
   \centering
   \includegraphics[width=0.95\textwidth,height=0.62\textheight,keepaspectratio]{FUNNEL_SLIDE.pdf}
@@ -219,21 +221,21 @@ A 4+P stratification pipeline yields five precision strata (Table~\ref{tab:adver
 \end{figure}
 
 \begin{table}[htbp]
-\caption{Adversarial Precision Stratification (30-repo corpus, 1,942 raw findings)}
+\caption{Adversarial Precision Stratification (30-repo corpus, 1,942 raw findings). Columns marked $\dagger$ show source-file-only precision after applying the test-path filter introduced in v5.2.0; P4 was already source-only (the production-code-path criterion was always part of the Confirmed Tier gate).}
 \label{tab:adversarial}
 \centering
 \small
 \renewcommand{\arraystretch}{1.25}
-\begin{tabular}{@{} l l r r r r @{}}
+\begin{tabular}{@{} l l r r r r r r r @{}}
 \toprule
-\textbf{Rung} & \textbf{Filter} & \textbf{Find.} & \textbf{Cons.} & \textbf{Opt.} & \textbf{CVE rec.} \\
+\textbf{Rung} & \textbf{Filter} & \textbf{Find.} & \textbf{Cons.} & \textbf{Opt.} & \textbf{Find.$^\dagger$} & \textbf{Cons.$^\dagger$} & \textbf{Opt.$^\dagger$} & \textbf{CVE rec.} \\
 \midrule
-0 & Raw (all tools, all sev) & 1,942 & 8.6\% & 22.0\% & 100\% \\
-1 & + H/M severity filter & 630 & 8.6\% & 28.1\% & 100\% \\
-2 & + Reachability demote & 623 & 8.5\% & 27.5\% & 100\% \\
-3 & + Security-tier rules & 219 & 24.7\% & 37.9\% & 100\% \\
-4 (P3) & + Semantic taint gate & 151 & 26.9\% & 31.7\% & 100\% \\
-\textbf{P4} & \textbf{Confirmed Tier} & \textbf{55} & \textbf{96.4\%} & \textbf{100\%} & \textbf{100\%} \\
+0 & Raw (all tools, all sev) & 1,942 & 8.6\% & 22.0\% & 1,148 & 17.3\% & 50.0\% & 100\% \\
+1 & + H/M severity filter & 630 & 8.6\% & 21.0\% & 220 & 17.3\% & 50.0\% & 100\% \\
+2 & + Reachability demote & 623 & 8.5\% & 27.5\% & 215 & 17.7\% & 51.2\% & 100\% \\
+3 & + ConfirmedRuleSet & 188 & 28.7\% & 34.6\% & 46 & 82.6\% & 100\% & 100\% \\
+4 (P3) & + Semantic taint gate & 151 & 26.9\% & 31.7\% & 38 & 84.2\% & 100\% & 100\% \\
+\textbf{P4} & \textbf{Confirmed Tier} & \textbf{55} & \textbf{96.4\%} & \textbf{100\%} & \textit{same} & \textbf{96.4\%} & \textbf{100\%} & \textbf{100\%} \\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -359,6 +361,6 @@ Pipeline timings on an 11-file ($\approx$800 LoC) Python repository: tool execut
 \section{Summary}
 \label{sec:ch5_summary}
 
-\ACRQA{} v5.0.0rc2 achieves \textbf{96.4\% Confirmed Tier precision} (95\% CI [90.9\%, 100\%]) on the 30-repo adversarial corpus with \textbf{100\% CVE recall (8/8)} across all strata; head-to-head: Bandit F\textsubscript{1}~21.8\%, Semgrep~45.7\%, \ACRQA{} \textbf{98.2\%}. Layer~A: \textbf{97.1\%} overall / \textbf{100\%} security-class precision on 836 findings; \textbf{100\%} AI enrichment; \textbf{9/10} OWASP categories; 0\% reachability FP; 500\,RPS at $<$2\,s p99; \textbf{2,897 tests} at 84.89\% CORE coverage. The Verified Remediation Engine closes the detect-to-verified-fix loop across 13 vulnerability categories with cryptographic attestation. Five novel evaluations (X1--X5) answer RQ3--RQ4, exceeding any single open-source SAST baseline. Chapter~\ref{ch:conclusion} summarises contributions and future directions.
+\ACRQA{} v5.0.0rc2 achieves \textbf{96.4\% Confirmed Tier precision} (95\% CI [90.9\%, 100\%]) on the 30-repo adversarial corpus with \textbf{100\% CVE recall (8/8)} across all strata; head-to-head: Bandit F\textsubscript{1}~21.8\%, Semgrep~45.7\%, \ACRQA{} \textbf{98.2\%}. With the test-path filter applied at intermediate rungs, Rung~3 (\textsc{ConfirmedRuleSet}, source-only) reaches \textbf{82.6\% conservative / 100\% optimistic} precision on 46 findings. Layer~A: \textbf{97.1\%} overall / \textbf{100\%} security-class precision on 836 findings; \textbf{100\%} AI enrichment; \textbf{9/10} OWASP categories; 0\% reachability FP; 500\,RPS at $<$2\,s p99; \textbf{3,017 tests} at 87\% CORE coverage. The Verified Remediation Engine closes the detect-to-verified-fix loop across 13 vulnerability categories with cryptographic attestation. Six novel evaluations (X1--X6) answer RQ3--RQ4, exceeding any single open-source SAST baseline. Chapter~\ref{ch:conclusion} summarises contributions and future directions.
 
 \clearpage
