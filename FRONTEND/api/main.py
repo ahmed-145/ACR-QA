@@ -109,17 +109,29 @@ app.include_router(fleet.router)
 app.include_router(workbench.router)
 app.include_router(trust.router)
 
-# ── Main UI (static HTML + vanilla JS, API-wired) ─────────────────────────────
+# ── UI serving ────────────────────────────────────────────────────────────────
+# Primary UI is the React SPA (built from dashboard/ → static/dashboard/). The
+# legacy static-HTML UI is kept mounted at /ui/ as a fallback. The SPA root ("/")
+# and client-side-route catch-all are registered at the END of this module so
+# they never shadow the /v1 API routes defined below (Starlette matches routes in
+# registration order).
 _UI_DIR = Path(__file__).parent.parent / "static" / "ui"
+_DASH_DIR = Path(__file__).parent.parent / "static" / "dashboard"
+
 if _UI_DIR.is_dir():
-    from fastapi.responses import RedirectResponse
     from fastapi.staticfiles import StaticFiles
 
     app.mount("/ui", StaticFiles(directory=str(_UI_DIR), html=True), name="ui")
 
-    @app.get("/", include_in_schema=False)
-    async def root_redirect():
-        return RedirectResponse(url="/ui/index.html")
+if _DASH_DIR.is_dir() and (_DASH_DIR / "index.html").is_file():
+    from fastapi.staticfiles import StaticFiles
+
+    # Content-hashed JS/CSS bundles referenced as /assets/* by index.html.
+    app.mount(
+        "/assets",
+        StaticFiles(directory=str(_DASH_DIR / "assets")),
+        name="dashboard-assets",
+    )
 
 
 # ── Public endpoints ──────────────────────────────────────────────────────────
@@ -455,3 +467,50 @@ async def get_policy(user: dict = Depends(get_current_user)):
         },
         "schema_keys": list(SCHEMA.keys()),
     }
+
+
+# ── React SPA shell + client-side-route fallback ──────────────────────────────
+# MUST stay at the bottom of the module: the "/{full_path:path}" catch-all matches
+# everything, so it can only be registered after every real API route above, or it
+# would intercept them. When no React build is present we fall back to the legacy
+# /ui/ static HTML so existing deployments keep working.
+if _DASH_DIR.is_dir() and (_DASH_DIR / "index.html").is_file():
+    from fastapi import HTTPException
+    from fastapi.responses import FileResponse
+
+    _SPA_INDEX = _DASH_DIR / "index.html"
+    # Path prefixes owned by the API / docs / mounted static — never the SPA's.
+    _RESERVED_PREFIXES = (
+        "v1/",
+        "health",
+        "metrics",
+        "docs",
+        "redoc",
+        "openapi.json",
+        "ui/",
+        "assets/",
+    )
+
+    @app.get("/", include_in_schema=False)
+    async def spa_root():
+        return FileResponse(_SPA_INDEX)
+
+    @app.get("/{full_path:path}", include_in_schema=False)
+    async def spa_catch_all(full_path: str):
+        # Defer to the API/docs for reserved paths so unknown /v1/* still 404s as JSON.
+        if full_path.startswith(_RESERVED_PREFIXES):
+            raise HTTPException(status_code=404, detail="Not Found")
+        # Serve a genuine static asset when the path resolves to a real file inside
+        # the build dir (favicon, vite.svg, etc.); guard against path traversal.
+        candidate = (_DASH_DIR / full_path).resolve()
+        if candidate.is_file() and str(candidate).startswith(str(_DASH_DIR.resolve())):
+            return FileResponse(candidate)
+        # Anything else is a client-side route → return the SPA shell.
+        return FileResponse(_SPA_INDEX)
+
+elif _UI_DIR.is_dir():
+    from fastapi.responses import RedirectResponse
+
+    @app.get("/", include_in_schema=False)
+    async def root_redirect():
+        return RedirectResponse(url="/ui/index.html")

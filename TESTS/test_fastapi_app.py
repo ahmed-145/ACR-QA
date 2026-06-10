@@ -377,3 +377,38 @@ class TestMetricsEndpoint:
         c, _ = client
         resp = c.get("/metrics")
         assert "text/plain" in resp.headers["content-type"]
+
+
+# ════════════════════════════════════════════════════════════
+#  UI serving — React SPA (when built) or legacy /ui/ fallback
+# ════════════════════════════════════════════════════════════
+
+
+class TestUIServing:
+    """Root and SPA-fallback routing. Behaviour depends on whether the React
+    build is present (FRONTEND/static/dashboard/index.html); both states valid."""
+
+    def test_root_serves_spa_or_redirects(self, client):
+        c, _ = client
+        resp = c.get("/", follow_redirects=False)
+        if resp.status_code == 200:
+            # React build present → SPA shell
+            assert "text/html" in resp.headers["content-type"]
+            assert 'id="root"' in resp.text
+        else:
+            # No build → legacy redirect to /ui/index.html
+            assert resp.status_code in (302, 307)
+            assert "/ui/" in resp.headers["location"]
+
+    def test_unknown_api_path_404s_not_shadowed_by_spa(self, client):
+        # The SPA catch-all must never intercept /v1/* — unknown API paths
+        # still return a JSON 404, not the HTML shell.
+        c, _ = client
+        resp = c.get("/v1/this-endpoint-does-not-exist")
+        assert resp.status_code == 404
+        assert "text/html" not in resp.headers.get("content-type", "")
+
+    def test_docs_still_served(self, client):
+        # /docs must survive the catch-all.
+        c, _ = client
+        assert c.get("/docs").status_code == 200

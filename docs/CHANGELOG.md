@@ -2,6 +2,33 @@
 
 All notable changes to ACR-QA are documented here.
 
+## [v5.2.1 — React dashboard wired into the server] — 2026-06-10
+
+### Fixed — UI serving
+
+- **React SPA now actually served.** The Vite build already emitted to
+  `FRONTEND/static/dashboard/` (Dockerfile Stage 1 + local `npm run build`), but
+  `FRONTEND/api/main.py` only ever mounted the legacy static-HTML UI at `/ui/` and
+  redirected the root there — so the 22-route React dashboard (incl. the public
+  `/trust/:repoName` page with in-browser ECDSA-P256 verification) was built and
+  then never reachable. `main.py` now serves the SPA at `/`, mounts hashed bundles
+  at `/assets`, and adds a client-side-route catch-all that returns `index.html`
+  for non-API paths while still letting unknown `/v1/*` 404 as JSON.
+- **Graceful fallback preserved.** When no React build is present (fresh checkout,
+  no `npm run build`), the root still redirects to the legacy `/ui/index.html`;
+  the static HTML UI remains mounted at `/ui/` either way. No UI/styling changes.
+- **3 new tests** in `TestUIServing` (`TESTS/test_fastapi_app.py`): root serves the
+  SPA shell or redirects, unknown `/v1/*` is not shadowed by the catch-all (JSON
+  404), and `/docs` survives the catch-all.
+
+### Technical status
+
+- 3006 tests pass, 0 fail; total coverage 87.66%.
+- Verified live: `/` → SPA, `/health` → JSON, `/findings` deep link → 200 shell,
+  `/assets/*` → 200 js, unknown `/v1/*` → 404 JSON, `/docs` → 200, `/ui/` → 200.
+
+---
+
 ## [v5.2.0 — Phase 3.2: test-path gate noise fix] — 2026-06-10
 
 ### Changed — quality gate
