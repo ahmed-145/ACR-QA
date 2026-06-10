@@ -138,6 +138,6 @@ Raw outputs:
 | Document | What it measures |
 |---|---|
 | [RECONCILIATION.md](RECONCILIATION.md) | How the three ACR-QA numbers relate; P-1 retraction |
-| [P2_BENCHMARK_detectable_20260602.md](P2_BENCHMARK_detectable_20260602.md) | Recall-only P-2 (no TN corpus) |
+| [P2_BENCHMARK_detectable_20260602.md](snapshots/P2_BENCHMARK_detectable_20260602.md) | Recall-only P-2 (no TN corpus) |
 | [CONFIRMED_TIER.md](CONFIRMED_TIER.md) | 96.4% precision on 30-repo production corpus |
 | [CVE_RECALL.md](CVE_RECALL.md) | 100% recall on 8/8 detectable pre-registered CVEs |
