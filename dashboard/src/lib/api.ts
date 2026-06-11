@@ -125,13 +125,27 @@ export interface ConfirmedSummary {
 export const getConfirmedSummary = (runId: number) =>
   get<ConfirmedSummary>(`/v1/runs/${runId}/confirmed-summary`);
 
+export interface OwaspCategory {
+  name: string;
+  status: "PASS" | "FAIL";
+  finding_count: number;
+  cwe_ids: string[];
+}
+
 export interface ComplianceData {
-  owasp: Record<string, { count: number; severity: string }>;
-  overall_score: number;
+  success: boolean;
+  run_id: number;
+  version: string;
+  total_findings: number;
+  security_findings: number;
+  // Server returns OWASP results keyed by category id ("A01".."A10"), each with
+  // the real finding_count and PASS/FAIL status from generate_compliance_report.
+  owasp_results: Record<string, OwaspCategory>;
+  unmapped_security_findings: unknown[];
 }
 
 export const getCompliance = (runId: number) =>
-  get<{ success: boolean } & ComplianceData>(`/v1/runs/${runId}/compliance`);
+  get<ComplianceData>(`/v1/runs/${runId}/compliance`);
 
 export interface AutofixResult {
   finding_id: number;

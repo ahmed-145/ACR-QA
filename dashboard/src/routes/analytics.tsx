@@ -1,7 +1,6 @@
-import { useRuns, useStats } from "@/lib/queries";
+import { useRuns, useStats, useCompliance } from "@/lib/queries";
 import { CountUp } from "@/components/ui/CountUp";
 import { Sparkline } from "@/components/ui/Sparkline";
-import { TopRulesBar } from "@/components/ui/TopRulesBar";
 import { StatusBar } from "@/components/ui/StatusBar";
 import { FindingsTrendChart } from "@/components/charts/FindingsTrendChart";
 import { OWASPTreemap } from "@/components/charts/OWASPTreemap";
@@ -15,6 +14,7 @@ export function AnalyticsPage() {
   const completedRuns = runs.filter((r) => r.status === "completed");
   const runId = completedRuns[0]?.id ?? 0;
   const { data: stats } = useStats(runId);
+  const { data: compliance } = useCompliance(runId);
 
   const totalFindings = runs.reduce((s, r) => s + r.total_findings, 0);
   const totalHigh    = runs.reduce((s, r) => s + r.high_count, 0);
@@ -28,33 +28,30 @@ export function AnalyticsPage() {
   const sparkLow   = last8.map((r) => r.low_count ?? 0);
   const sparkTotal = last8.map((r) => r.total_findings);
 
+  // Real OWASP distribution for the latest completed run, served by the
+  // /compliance endpoint (scripts/generate_compliance_report). Never estimated.
   const owaspTreeData = useMemo((): Record<string, { count: number; severity: string }> => {
-    if (totalFindings === 0) return {};
-    return {
-      "A01: Access Control":    { count: Math.round(totalHigh * 0.20), severity: "high" },
-      "A03: Injection":         { count: Math.round(totalHigh * 0.35), severity: "high" },
-      "A05: Misconfiguration":  { count: Math.round(totalMed  * 0.25), severity: "medium" },
-      "A02: Cryptographic":     { count: Math.round(totalMed  * 0.15), severity: "medium" },
-      "A09: Logging":           { count: Math.round(totalLow  * 0.20), severity: "low" },
-      "A06: Components":        { count: Math.round(totalLow  * 0.10), severity: "low" },
-    };
-  }, [totalHigh, totalMed, totalLow, totalFindings]);
+    const results = compliance?.owasp_results ?? {};
+    const out: Record<string, { count: number; severity: string }> = {};
+    for (const [id, cat] of Object.entries(results)) {
+      if (cat.finding_count > 0) {
+        out[`${id}: ${cat.name}`] = {
+          count: cat.finding_count,
+          severity: cat.status === "FAIL" ? "high" : "medium",
+        };
+      }
+    }
+    return out;
+  }, [compliance]);
 
+  // Category radar derived from the same real OWASP data (top categories by count).
   const categoryRadarData = useMemo(() => {
-    if (totalFindings === 0) return [];
-    return [
-      { category: "Security", count: totalHigh },
-      { category: "Quality",  count: Math.round(totalMed * 0.4) },
-      { category: "IaC",      count: Math.round(totalLow * 0.2) },
-      { category: "Secrets",  count: Math.round(totalHigh * 0.1) },
-      { category: "Supply",   count: Math.round(totalLow * 0.1) },
-      { category: "License",  count: Math.round(totalLow * 0.05) },
-    ].filter((d) => d.count > 0);
-  }, [totalHigh, totalMed, totalLow, totalFindings]);
-
-  const topRulesData = useMemo(() => {
-    return [];
-  }, [stats]);
+    return Object.entries(owaspTreeData)
+      .map(([name, v]) => ({ category: name.split(":")[0].trim() || name, count: v.count }))
+      .filter((d) => d.count > 0)
+      .sort((a, b) => b.count - a.count)
+      .slice(0, 8);
+  }, [owaspTreeData]);
 
   return (
     <>
@@ -141,7 +138,7 @@ export function AnalyticsPage() {
           <div className="panel">
             <div className="panel-head">
               <span className="panel-title">OWASP Distribution</span>
-              <span className="panel-sub">estimated from findings</span>
+              <span className="panel-sub">latest scan</span>
             </div>
             <OWASPTreemap data={owaspTreeData} height={200} />
           </div>
@@ -159,7 +156,7 @@ export function AnalyticsPage() {
           <div className="panel">
             <div className="panel-head">
               <span className="panel-title">Category Radar</span>
-              <span className="panel-sub">rule distribution</span>
+              <span className="panel-sub">OWASP categories · latest scan</span>
             </div>
             <CategoryRadar data={categoryRadarData} height={220} />
           </div>
@@ -173,17 +170,6 @@ export function AnalyticsPage() {
           </div>
           <ScanCalendar runs={completedRuns} weeks={26} />
         </div>
-
-        {/* Top Rules */}
-        {topRulesData.length > 0 && (
-          <div className="panel" style={{ marginBottom: 20 }}>
-            <div className="panel-head">
-              <span className="panel-title">Top Triggered Rules</span>
-              <span className="panel-sub">latest completed run</span>
-            </div>
-            <TopRulesBar data={topRulesData} />
-          </div>
-        )}
 
         {/* Latest run stats */}
         {stats && (

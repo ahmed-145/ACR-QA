@@ -20,32 +20,31 @@ export function OwaspHeatmap({ runId }: Props) {
   if (isLoading) return <div style={{ fontSize: 13, color: "var(--fg-4)" }}>Loading compliance data…</div>;
   if (!data) return null;
 
-  const owasp = data.owasp ?? {};
+  const owasp = data.owasp_results ?? {};
   const entries = Object.keys(OWASP_LABELS).map((key) => {
     const item = owasp[key];
-    const count = item?.count ?? 0;
-    const severity = item?.severity ?? "none";
+    const count = item?.finding_count ?? 0;
 
-    // Determine risk level similar to fleet compliance matrix
-    let risk: "high" | "medium" | "none" = "none";
-    if (count > 0) {
-      if (severity === "high") risk = "high";
-      else if (severity === "medium") risk = "medium";
-    }
+    // A failing OWASP category (findings mapped to it) is a high risk; otherwise none.
+    const risk: "high" | "none" = item?.status === "FAIL" || count > 0 ? "high" : "none";
 
     return {
       key,
-      label: OWASP_LABELS[key],
+      label: item?.name ?? OWASP_LABELS[key],
       count,
       risk,
     };
   });
 
+  // Compliance rate = passed categories × 10 (matches the server's markdown report).
+  const passed = Object.values(owasp).filter((c) => c.status === "PASS").length;
+  const score = Object.keys(owasp).length > 0 ? passed * 10 : null;
+
   return (
     <div>
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12 }}>
         <h3 style={{ margin: 0, fontSize: 13, fontWeight: 600, color: "var(--fg)" }}>OWASP Top 10 Coverage</h3>
-        <span style={{ fontSize: 11, fontFamily: "var(--mono)", color: "var(--fg-4)" }}>Score: {data.overall_score ?? "—"}%</span>
+        <span style={{ fontSize: 11, fontFamily: "var(--mono)", color: "var(--fg-4)" }}>Score: {score ?? "—"}%</span>
       </div>
       <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(180px, 1fr))", gap: 8 }}>
         {entries.map(({ key, label, count, risk }) => {
@@ -64,11 +63,6 @@ export function OwaspHeatmap({ runId }: Props) {
             background = "rgba(239,68,68,0.04)";
             countColor = "var(--high)";
             ledColor = "var(--high)";
-          } else if (risk === "medium") {
-            borderColor = "rgba(245,158,11,0.25)";
-            background = "rgba(245,158,11,0.04)";
-            countColor = "var(--med)";
-            ledColor = "var(--med)";
           } else {
             borderColor = "rgba(96,165,250,0.20)";
             background = "rgba(96,165,250,0.02)";

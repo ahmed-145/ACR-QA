@@ -4,6 +4,22 @@ All notable changes to ACR-QA are documented here.
 
 ## [Unreleased] — 2026-06-11
 
+### Fixed — compliance data contract (OWASP heatmap was silently empty)
+
+- **`ComplianceData` TS interface was stale**, claiming `owasp: {count, severity}` +
+  `overall_score`. The live `/v1/runs/{id}/compliance` endpoint actually returns
+  `owasp_results: { "A01".."A10": { name, status, finding_count, cwe_ids } }`. As a
+  result `OwaspHeatmap` (rendered on every run detail page) read `data.owasp[key].count`
+  → always `undefined` → **showed all-zeros and "Score: —%" regardless of real findings.**
+- Fixed the interface to the real shape and updated `OwaspHeatmap` to read
+  `finding_count` / `status`, deriving the compliance score as `passedCategories × 10`
+  (matching the server's markdown report). Added 3 regression tests.
+- **Analytics OWASP charts de-fabricated.** `analytics.tsx` previously built the OWASP
+  treemap and category radar from hardcoded ratios (`totalHigh * 0.20`, etc.). Both now
+  derive from the same real `owasp_results` for the latest scan; removed the dead
+  `topRulesData` (always `[]`) section and its unused import. Labels corrected from
+  "estimated from findings" to "latest scan".
+
 ### Fixed — dashboard honesty (Confirmed Tier tile)
 
 - **Overview Confirmed Tier hero tile now shows the real count, not an estimate.**
@@ -21,7 +37,7 @@ All notable changes to ACR-QA are documented here.
 ### Tests & coverage
 
 - Backend: `second_opinion.py` coverage 63% → 97% (30 new tests); CORE total → 88%.
-- Dashboard: 104 → 107 tests; lint/typecheck/build green.
+- Dashboard: 104 → 110 tests; lint/typecheck/build green.
 
 ## [v5.2.1 — React dashboard wired into the server] — 2026-06-10
 
