@@ -132,11 +132,11 @@
 %% ── Chapter Title Formatting ────────────────────────────────
 \usepackage{titlesec}
 \titleformat{\chapter}[display]
-  {\centering\normalfont\Large\bfseries\color{KSIUNavy}}
+  {\centering\normalfont\LARGE\bfseries\color{KSIUNavy}}
   {\centering\color{KSIUNavy}\MakeUppercase{Chapter (\thechapter)}}
-  {8pt}
-  {\centering\huge\bfseries\color{black}}
-\titlespacing*{\chapter}{0pt}{-20pt}{10pt}
+  {10pt}
+  {\centering\Huge\bfseries\color{black}}
+\titlespacing*{\chapter}{0pt}{-20pt}{12pt}
 
 \titleformat{\section}
   {\normalfont\large\bfseries\color{KSIUNavy}}
@@ -193,6 +193,7 @@
 %% ── Bibliography ────────────────────────────────────────────
 \usepackage[numbers,sort&compress]{natbib}
 \bibliographystyle{IEEEtranN}
+\renewcommand{\bibname}{References}
 
 %% ── TOC dot leaders for chapter-level entries ────────────────
 \usepackage{tocloft}
@@ -218,9 +219,9 @@
   \thispagestyle{empty}
   \vspace*{\fill}
   \begin{center}
-    {\Large\bfseries\color{KSIUNavy} CHAPTER (#1)}\\[20pt]
-    {\color{KSIUGold}\rule{0.50\textwidth}{1.0pt}}\\[20pt]
-    {\huge\bfseries\color{KSIUNavy} #2}
+    {\LARGE\bfseries\color{KSIUNavy} CHAPTER (#1)}\\[20pt]
+    {\color{KSIUGold}\rule{0.50\textwidth}{1.5pt}}\\[20pt]
+    {\Huge\bfseries\color{KSIUNavy} #2}
   \end{center}
   \vspace*{\fill}
   \clearpage
