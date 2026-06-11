@@ -1,10 +1,10 @@
 # ACR-QA Documentation Index
 
 > **As of v5.0.0rc2 (June 2026):** All God-Mode tracks through v11 complete; X1–X6 empirical battery.
-> Tests: **3,017** (2,954 Python + 63 TS), **87% CORE coverage**. Migrations: **20**. Endpoints: **52**.
+> Tests: **3,017** (2,954 Python + 63 TS), **88% CORE coverage**. Migrations: **20**. Endpoints: **52**.
 > Ground-truth YAMLs: **23** (CVE recall battery: 20 pre-registered).
 > Headline result: **P4 Confirmed Tier — 96.4% conservative precision** (95% CI [90.9%, 100%]),
-> 100% CVE recall, F1=98.2%. See [evaluation chapter](EVALUATION_CHAPTER.md) ·
+> 100% CVE recall, F1=98.2%. See [evaluation chapter (archived draft)](archive/EVALUATION_CHAPTER.md) ·
 > **[full evaluation index →](evaluation/README.md)**.
 > Engines documented under [engines/](engines/).
 

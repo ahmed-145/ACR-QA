@@ -343,3 +343,318 @@ class TestQuotaEnforcement:
 class TestVerdictVocabularyConstant:
     def test_constant_locked_to_three(self):
         assert VALID_VERDICTS == ("TP", "FP", "NEEDS_REVIEW")
+
+
+# ── parse_verdict non-string guard ────────────────────────────────────────────
+
+
+class TestParseVerdictNonString:
+    def test_non_string_returns_needs_review(self):
+        from CORE.engines.second_opinion import parse_verdict
+
+        v, r = parse_verdict(None)  # type: ignore[arg-type]
+        assert v == "NEEDS_REVIEW"
+        assert r == ""
+
+    def test_integer_returns_needs_review(self):
+        from CORE.engines.second_opinion import parse_verdict
+
+        v, r = parse_verdict(42)  # type: ignore[arg-type]
+        assert v == "NEEDS_REVIEW"
+
+
+# ── _call_gemini ──────────────────────────────────────────────────────────────
+
+
+class TestCallGemini:
+    def test_returns_content_on_200(self):
+        from unittest.mock import MagicMock
+
+        from CORE.engines.second_opinion import _call_gemini
+
+        fake_resp = MagicMock()
+        fake_resp.status_code = 200
+        fake_resp.json.return_value = {"candidates": [{"content": {"parts": [{"text": "TP\nreal eval call"}]}}]}
+        with patch.dict("os.environ", {"GEMINI_API_KEY": "test-key"}):
+            with patch("httpx.Client") as mock_client:
+                mock_client.return_value.__enter__.return_value.post.return_value = fake_resp
+                result = _call_gemini("is this a vuln?")
+        assert result == "TP\nreal eval call"
+
+    def test_raises_on_non_200(self):
+        from unittest.mock import MagicMock
+
+        from CORE.engines.second_opinion import _call_gemini, _GeminiUnavailableError
+
+        fake_resp = MagicMock()
+        fake_resp.status_code = 429
+        fake_resp.text = "rate limited"
+        with patch.dict("os.environ", {"GEMINI_API_KEY": "test-key"}):
+            with patch("httpx.Client") as mock_client:
+                mock_client.return_value.__enter__.return_value.post.return_value = fake_resp
+                with pytest.raises(_GeminiUnavailableError, match="429"):
+                    _call_gemini("prompt")
+
+    def test_raises_on_malformed_response(self):
+        from unittest.mock import MagicMock
+
+        from CORE.engines.second_opinion import _call_gemini, _GeminiUnavailableError
+
+        fake_resp = MagicMock()
+        fake_resp.status_code = 200
+        fake_resp.json.return_value = {"candidates": []}  # missing content
+        with patch.dict("os.environ", {"GEMINI_API_KEY": "test-key"}):
+            with patch("httpx.Client") as mock_client:
+                mock_client.return_value.__enter__.return_value.post.return_value = fake_resp
+                with pytest.raises(_GeminiUnavailableError, match="malformed"):
+                    _call_gemini("prompt")
+
+    def test_raises_on_http_error(self):
+        import httpx
+
+        from CORE.engines.second_opinion import _call_gemini, _GeminiUnavailableError
+
+        with patch.dict("os.environ", {"GEMINI_API_KEY": "test-key"}):
+            with patch("httpx.Client") as mock_client:
+                mock_client.return_value.__enter__.return_value.post.side_effect = httpx.HTTPError("connection refused")
+                with pytest.raises(_GeminiUnavailableError, match="http error"):
+                    _call_gemini("prompt")
+
+    def test_raises_when_no_api_key(self):
+        from CORE.engines.second_opinion import _call_gemini, _GeminiUnavailableError
+
+        with patch.dict("os.environ", {}, clear=True):
+            import os
+
+            os.environ.pop("GEMINI_API_KEY", None)
+            os.environ.pop("GOOGLE_AI_API_KEY", None)
+            with pytest.raises(_GeminiUnavailableError, match="not set"):
+                _call_gemini("prompt")
+
+
+# ── _call_ollama ──────────────────────────────────────────────────────────────
+
+
+class TestCallOllama:
+    def test_returns_content_on_200(self):
+        from unittest.mock import MagicMock
+
+        from CORE.engines.second_opinion import _call_ollama
+
+        fake_resp = MagicMock()
+        fake_resp.status_code = 200
+        fake_resp.json.return_value = {"choices": [{"message": {"content": "FP — literal"}}]}
+        with patch("httpx.Client") as mock_client:
+            mock_client.return_value.__enter__.return_value.post.return_value = fake_resp
+            result = _call_ollama("prompt")
+        assert result == "FP — literal"
+
+    def test_raises_on_non_200(self):
+        from unittest.mock import MagicMock
+
+        from CORE.engines.second_opinion import _call_ollama, _OllamaUnavailableError
+
+        fake_resp = MagicMock()
+        fake_resp.status_code = 503
+        with patch("httpx.Client") as mock_client:
+            mock_client.return_value.__enter__.return_value.post.return_value = fake_resp
+            with pytest.raises(_OllamaUnavailableError, match="503"):
+                _call_ollama("prompt")
+
+    def test_raises_on_http_error(self):
+        import httpx
+
+        from CORE.engines.second_opinion import _call_ollama, _OllamaUnavailableError
+
+        with patch("httpx.Client") as mock_client:
+            mock_client.return_value.__enter__.return_value.post.side_effect = httpx.HTTPError("connection refused")
+            with pytest.raises(_OllamaUnavailableError, match="http error"):
+                _call_ollama("prompt")
+
+    def test_raises_on_malformed_json(self):
+        from unittest.mock import MagicMock
+
+        from CORE.engines.second_opinion import _call_ollama, _OllamaUnavailableError
+
+        fake_resp = MagicMock()
+        fake_resp.status_code = 200
+        fake_resp.json.return_value = {}  # missing choices
+        with patch("httpx.Client") as mock_client:
+            mock_client.return_value.__enter__.return_value.post.return_value = fake_resp
+            with pytest.raises(_OllamaUnavailableError, match="malformed"):
+                _call_ollama("prompt")
+
+
+# ── _call_groq ────────────────────────────────────────────────────────────────
+
+
+class TestCallGroq:
+    def test_raises_when_no_keys(self):
+        from unittest.mock import MagicMock
+
+        from CORE.engines.second_opinion import _call_groq
+
+        key_pool = MagicMock()
+        key_pool.has_keys = False
+        with pytest.raises(RuntimeError, match="No Groq key"):
+            _call_groq("prompt", key_pool=key_pool)
+
+    def test_returns_content_string(self):
+        from unittest.mock import MagicMock
+
+        from CORE.engines.second_opinion import _call_groq
+
+        fake_client = MagicMock()
+        fake_client.chat.completions.create.return_value.choices = [
+            MagicMock(message=MagicMock(content="TP\nreal vuln"))
+        ]
+        key_pool = MagicMock()
+        key_pool.has_keys = True
+        key_pool.next_client.return_value = fake_client
+        result = _call_groq("prompt", key_pool=key_pool)
+        assert result == "TP\nreal vuln"
+
+    def test_returns_empty_string_on_none_content(self):
+        from unittest.mock import MagicMock
+
+        from CORE.engines.second_opinion import _call_groq
+
+        fake_client = MagicMock()
+        fake_client.chat.completions.create.return_value.choices = [MagicMock(message=MagicMock(content=None))]
+        key_pool = MagicMock()
+        key_pool.has_keys = True
+        key_pool.next_client.return_value = fake_client
+        result = _call_groq("prompt", key_pool=key_pool)
+        assert result == ""
+
+    def test_returns_empty_string_on_attribute_error(self):
+        from unittest.mock import MagicMock
+
+        from CORE.engines.second_opinion import _call_groq
+
+        fake_client = MagicMock()
+        # choices is an empty list → IndexError on [0]
+        fake_client.chat.completions.create.return_value.choices = []
+        key_pool = MagicMock()
+        key_pool.has_keys = True
+        key_pool.next_client.return_value = fake_client
+        result = _call_groq("prompt", key_pool=key_pool)
+        assert result == ""
+
+    def test_default_key_pool_created_when_none(self):
+        """When key_pool=None, KeyPool is created internally; no-keys path still works."""
+        from unittest.mock import MagicMock
+
+        from CORE.engines.second_opinion import _call_groq
+
+        mock_pool = MagicMock()
+        mock_pool.has_keys = False
+        with patch("CORE.engines.explainer.KeyPool", return_value=mock_pool):
+            with pytest.raises(RuntimeError, match="No Groq key"):
+                _call_groq("prompt", key_pool=None)
+
+
+# ── _call_provider dispatch ───────────────────────────────────────────────────
+
+
+class TestCallProviderDispatch:
+    def test_groq_path(self, finding):
+        from CORE.engines.second_opinion import SecondOpinionEngine
+
+        engine = SecondOpinionEngine()
+        with patch("CORE.engines.second_opinion._call_groq", return_value="TP\nreal") as m:
+            v, r = engine._call_provider("groq", "prompt")
+        m.assert_called_once()
+        assert v == "TP"
+
+    def test_gemini_path(self, finding):
+        from CORE.engines.second_opinion import SecondOpinionEngine
+
+        engine = SecondOpinionEngine()
+        with patch("CORE.engines.second_opinion._call_gemini", return_value="FP\nno taint") as m:
+            v, r = engine._call_provider("gemini", "prompt")
+        m.assert_called_once()
+        assert v == "FP"
+
+    def test_ollama_path(self, finding):
+        from CORE.engines.second_opinion import SecondOpinionEngine
+
+        engine = SecondOpinionEngine()
+        with patch("CORE.engines.second_opinion._call_ollama", return_value="NEEDS_REVIEW") as m:
+            v, r = engine._call_provider("ollama", "prompt")
+        m.assert_called_once()
+        assert v == "NEEDS_REVIEW"
+
+    def test_unknown_provider_raises(self, finding):
+        from CORE.engines.second_opinion import SecondOpinionEngine
+
+        engine = SecondOpinionEngine()
+        with pytest.raises(ValueError, match="unknown provider"):
+            engine._call_provider("anthropic", "prompt")
+
+
+# ── Gemini-fail → Ollama-fallback path ────────────────────────────────────────
+
+
+class TestGeminiFallbackToOllama:
+    def test_gemini_fail_ollama_succeeds(self, finding):
+        """Gemini fails → engine tries ollama → success → skipped_reason cleared."""
+        from CORE.engines.second_opinion import (
+            SecondOpinionEngine,
+            _GeminiUnavailableError,
+        )
+
+        engine = SecondOpinionEngine(secondary="gemini")
+
+        def fake_call(self, provider, prompt):
+            if provider == "groq":
+                return ("TP", "real groq")
+            if provider == "gemini":
+                raise _GeminiUnavailableError("no key")
+            if provider == "ollama":
+                return ("TP", "ollama agrees")
+            raise ValueError("unexpected")
+
+        with patch.object(SecondOpinionEngine, "_call_provider", fake_call):
+            r = engine.review(finding)
+        assert r.primary_verdict == "TP"
+        assert r.secondary_verdict == "TP"
+        assert r.skipped_reason is None  # fallback succeeded
+
+    def test_gemini_fail_ollama_also_fails(self, finding):
+        """Both cloud and local secondary fail → skipped_reason set, no crash."""
+        from CORE.engines.second_opinion import (
+            SecondOpinionEngine,
+            _GeminiUnavailableError,
+            _OllamaUnavailableError,
+        )
+
+        engine = SecondOpinionEngine(secondary="gemini")
+
+        def fake_call(self, provider, prompt):
+            if provider == "groq":
+                return ("FP", "literal value")
+            if provider == "gemini":
+                raise _GeminiUnavailableError("no key")
+            raise _OllamaUnavailableError("not running")
+
+        with patch.object(SecondOpinionEngine, "_call_provider", fake_call):
+            r = engine.review(finding)
+        assert r.skipped_reason is not None
+        assert r.confidence_delta == 0
+
+    def test_secondary_generic_exception(self, finding):
+        """Unexpected exception from secondary → skipped_reason set gracefully."""
+        from CORE.engines.second_opinion import SecondOpinionEngine
+
+        engine = SecondOpinionEngine(secondary="ollama")
+
+        def fake_call(self, provider, prompt):
+            if provider == "groq":
+                return ("TP", "real")
+            raise ConnectionError("network down")
+
+        with patch.object(SecondOpinionEngine, "_call_provider", fake_call):
+            r = engine.review(finding)
+        assert r.skipped_reason is not None
+        assert "secondary_unavailable" in r.skipped_reason
