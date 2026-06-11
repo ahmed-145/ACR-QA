@@ -48,6 +48,7 @@
 %% ── Tables ──────────────────────────────────────────────────
 \usepackage{booktabs}
 \usepackage{tabularx}
+\usepackage{longtable}
 \usepackage{array}
 
 %% ── Code Listings ───────────────────────────────────────────
@@ -193,7 +194,7 @@
 %% ── Bibliography ────────────────────────────────────────────
 \usepackage[numbers,sort&compress]{natbib}
 \bibliographystyle{IEEEtranN}
-\renewcommand{\bibname}{References}
+\AtBeginDocument{\renewcommand{\bibname}{References}}
 
 %% ── TOC dot leaders for chapter-level entries ────────────────
 \usepackage{tocloft}
