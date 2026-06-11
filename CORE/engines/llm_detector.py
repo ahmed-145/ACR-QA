@@ -262,13 +262,30 @@ class LLMDetector:
     # Phase 1 — raw detection (high recall, high FP)
     # ------------------------------------------------------------------
 
+    def _read_code(self, path: Path) -> str | None:
+        try:
+            return path.read_text(encoding="utf-8", errors="replace")  # NOSONAR
+        except OSError:
+            return None
+
+    def _cache_get(self, cache_file: Path) -> list | None:
+        try:
+            return json.loads(cache_file.read_text())  # NOSONAR
+        except Exception:
+            return None
+
+    def _cache_put(self, cache_file: Path, raw: list) -> None:
+        try:
+            cache_file.write_text(json.dumps(raw))  # NOSONAR
+        except OSError:
+            pass
+
     def detect_file(self, file_path: str, code: str | None = None) -> list[LLMFinding]:
         """Detect vulnerabilities in a single Python file."""
         path = Path(file_path)
         if code is None:
-            try:
-                code = path.read_text(encoding="utf-8", errors="replace")  # NOSONAR
-            except OSError:
+            code = self._read_code(path)
+            if code is None:
                 return []
 
         if len(code.strip()) < 20:
@@ -279,13 +296,10 @@ class LLMDetector:
         safe_fname = hashlib.sha256(file_path.encode()).hexdigest()[:16]  # NOSONAR
         cache_file = _CACHE / f"{safe_fname}_{cache_key}.json"
         if self._use_cache and cache_file.exists():
-            try:
-                raw = json.loads(cache_file.read_text())  # NOSONAR
-                return self._parse_raw(str(path), raw)
-            except Exception:
-                pass
+            cached = self._cache_get(cache_file)
+            if cached is not None:
+                return self._parse_raw(str(path), cached)
 
-        # Call LLM
         prompt = _DETECT_PROMPT.format(fname=path.name, code=code[:MAX_FILE_CHARS])
         try:
             resp = _groq_call(prompt, self._keys, max_tokens=1024)
@@ -294,10 +308,7 @@ class LLMDetector:
 
         raw = _parse_llm_json(resp)
         if self._use_cache:
-            try:
-                cache_file.write_text(json.dumps(raw))  # NOSONAR
-            except OSError:
-                pass
+            self._cache_put(cache_file, raw)
 
         return self._parse_raw(str(path), raw)
 
