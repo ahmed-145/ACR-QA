@@ -4,6 +4,22 @@ All notable changes to ACR-QA are documented here.
 
 ## [Unreleased] — 2026-06-11
 
+### Added — honest demo seeding (`make seed-demo`)
+
+- **`scripts/seed_demo_scan.py` + `make seed-demo`.** The dashboard reads everything
+  from the database; a fresh or fixture-only DB makes every tile render zeros (and was
+  what the now-removed fabricated estimates masked). This runs a *real* scan of the
+  bundled intentionally-vulnerable sample app so every dashboard number — Confirmed Tier,
+  OWASP heatmap, severity breakdown — traces to a genuine, reproducible scan rather than
+  a hard-coded "demo mode."
+- Copies the sample **out of `TESTS/`** first: findings inside a test path are correctly
+  suppressed by the Confirmed-Tier/quality-gate test-path filters, so scanning
+  `TESTS/samples/...` directly yields 0 confirmed. From a non-test path the Confirmed
+  Tier populates exactly as on a real repo.
+- Treats CLI exit 1 (quality gate blocked) as success — the expected outcome for a
+  vulnerable demo app. Verified end-to-end: seeds a run with 64 findings / 13 HIGH /
+  **4 Confirmed-Tier**, OWASP heatmap showing A02/A03/A08/A09 with a real 60% score.
+
 ### Fixed — compliance data contract (OWASP heatmap was silently empty)
 
 - **`ComplianceData` TS interface was stale**, claiming `owasp: {count, severity}` +
