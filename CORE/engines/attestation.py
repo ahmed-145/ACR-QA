@@ -54,7 +54,7 @@ def _load_or_generate_key() -> ec.EllipticCurvePrivateKey:
             if not isinstance(key, ec.EllipticCurvePrivateKey):
                 raise TypeError("Expected ECDSA key")
             return key
-        except (ValueError, TypeError, UnicodeDecodeError) as exc:
+        except (ValueError, TypeError) as exc:
             logger.warning("Could not load ACRQA_SIGNING_KEY, generating ephemeral key: %s", exc)
     return ec.generate_private_key(ec.SECP256R1())
 

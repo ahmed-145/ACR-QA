@@ -40,9 +40,9 @@ jobs:
           --health-cmd "redis-cli ping" --health-interval 10s --health-timeout 5s --health-retries 5
 
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6
 
-      - uses: actions/setup-python@v5
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5
         with:
           python-version: "3.11"
           cache: "pip"
@@ -128,7 +128,7 @@ jobs:
 
       - name: Upload SARIF (if generated)
         if: hashFiles('DATA/outputs/findings.sarif') != ''
-        uses: github/codeql-action/upload-sarif@v4
+        uses: github/codeql-action/upload-sarif@9278b3a81880c5c3a1a0d18cdc0eb9dda5e1c254 # v4
         with:
           sarif_file: DATA/outputs/findings.sarif
 
@@ -146,7 +146,7 @@ jobs:
           EOF
 
       - name: Commit badge JSON
-        uses: stefanzweifel/git-auto-commit-action@v5
+        uses: stefanzweifel/git-auto-commit-action@b863ae1933cb653a53c021fe36dbb774e1fb9403 # v5
         with:
           commit_message: "ci: update self-scan badge [skip ci]"
           file_pattern: docs/self-scan-badge.json

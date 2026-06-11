@@ -28,10 +28,10 @@ jobs:
             build-mode: none
 
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6
 
       - name: Initialize CodeQL
-        uses: github/codeql-action/init@v4
+        uses: github/codeql-action/init@9278b3a81880c5c3a1a0d18cdc0eb9dda5e1c254 # v4
         with:
           languages: ${{ matrix.language }}
           queries: security-and-quality
@@ -42,10 +42,10 @@ jobs:
               - FRONTEND/static/dashboard
 
       - name: Autobuild
-        uses: github/codeql-action/autobuild@v4
+        uses: github/codeql-action/autobuild@9278b3a81880c5c3a1a0d18cdc0eb9dda5e1c254 # v4
 
       - name: Perform CodeQL Analysis
-        uses: github/codeql-action/analyze@v4
+        uses: github/codeql-action/analyze@9278b3a81880c5c3a1a0d18cdc0eb9dda5e1c254 # v4
         with:
           category: /language:${{ matrix.language }}
           output: codeql-results-${{ matrix.language }}

@@ -57,7 +57,7 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v6
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6
         with:
           fetch-depth: 0
 
@@ -69,7 +69,7 @@ jobs:
 
       - name: Get changed files
         id: changed-files
-        uses: tj-actions/changed-files@v47
+        uses: tj-actions/changed-files@24d32ffd492484c1d75e0c0b894501ddb9d30d62 # v47
         with:
           files: |
             **/*.py
@@ -130,7 +130,7 @@ jobs:
 
       - name: Upload Confirmed-Only SARIF to GitHub Security Tab
         if: steps.changed-files.outputs.any_changed == 'true' && hashFiles('DATA/outputs/findings.sarif') != ''
-        uses: github/codeql-action/upload-sarif@v4
+        uses: github/codeql-action/upload-sarif@9278b3a81880c5c3a1a0d18cdc0eb9dda5e1c254 # v4
         with:
           sarif_file: DATA/outputs/findings.sarif
           category: acrqa-confirmed-tier
@@ -302,13 +302,13 @@ jobs:
 
     steps:
       - name: React to comment (eyes)
-        uses: peter-evans/create-or-update-comment@v5
+        uses: peter-evans/create-or-update-comment@e8674b075228eee787fea43ef493e45ece1004c9 # v5
         with:
           comment-id: ${{ github.event.comment.id }}
           reactions: 'eyes'
 
       - name: Checkout code
-        uses: actions/checkout@v6
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6
         with:
           ref: refs/pull/${{ github.event.issue.number }}/head
 
@@ -343,7 +343,7 @@ jobs:
 
       - name: Upload SARIF findings to Security Tab
         if: hashFiles('DATA/outputs/findings.sarif') != ''
-        uses: github/codeql-action/upload-sarif@v4
+        uses: github/codeql-action/upload-sarif@9278b3a81880c5c3a1a0d18cdc0eb9dda5e1c254 # v4
         with:
           sarif_file: DATA/outputs/findings.sarif
 
@@ -425,7 +425,7 @@ jobs:
 
       - name: React to completion
         if: always()
-        uses: peter-evans/create-or-update-comment@v5
+        uses: peter-evans/create-or-update-comment@e8674b075228eee787fea43ef493e45ece1004c9 # v5
         with:
           comment-id: ${{ github.event.comment.id }}
           reactions: 'rocket'

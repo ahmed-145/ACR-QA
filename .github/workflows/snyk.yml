@@ -18,9 +18,9 @@ jobs:
     name: Snyk — SCA + SAST
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6
 
-      - uses: actions/setup-python@v5
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5
         with:
           python-version: "3.11"
 
@@ -45,7 +45,7 @@ jobs:
             --json-file-output=snyk-sast.json || true
 
       - name: Upload Snyk results to GitHub Code Scanning
-        uses: github/codeql-action/upload-sarif@v4
+        uses: github/codeql-action/upload-sarif@9278b3a81880c5c3a1a0d18cdc0eb9dda5e1c254 # v4
         if: always()
         continue-on-error: true
         with:
@@ -53,7 +53,7 @@ jobs:
 
       - name: Post Snyk summary to PR
         if: github.event_name == 'pull_request' && always()
-        uses: actions/github-script@v9
+        uses: actions/github-script@373c709c69115d41ff229c7e5df9f8788daa9553 # v9
         with:
           script: |
             const fs = require('fs');
@@ -91,7 +91,7 @@ jobs:
             });
 
       - name: Upload Snyk JSON artifacts
-        uses: actions/upload-artifact@v7
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
         if: always()
         with:
           name: snyk-results
