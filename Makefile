@@ -1,7 +1,7 @@
 # ACR-QA v2.5 - Makefile
 # One-click setup and common operations
 
-.PHONY: help up down setup install-deps install-tools init-db db-migrate db-rollback docker-up docker-down run dashboard api worker seed-admin seed-demo test test-all lint coverage version clean offline-pack sync-osv eval-audit eval-reproduce
+.PHONY: help up down setup install-deps install-tools init-db db-migrate db-rollback docker-up docker-down run dashboard api worker seed-admin seed-demo deck test test-all lint coverage version clean offline-pack sync-osv eval-audit eval-reproduce
 
 # Default target
 help:
@@ -198,6 +198,11 @@ seed-admin:
 seed-demo:
 	@echo "🌱 Seeding dashboard with a real demo scan..."
 	.venv/bin/python3 scripts/seed_demo_scan.py
+
+deck:
+	@echo "📊 Building defense deck (.pptx + .odp)..."
+	.venv/bin/python3 scripts/build_defense_deck.py
+	@command -v libreoffice >/dev/null 2>&1 && libreoffice --headless --convert-to odp --outdir docs/ docs/ACR-QA_Defense.pptx || echo "(install libreoffice to also emit .odp)"
 
 # ============================================
 # Testing

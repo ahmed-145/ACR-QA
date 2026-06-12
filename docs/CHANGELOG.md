@@ -4,6 +4,15 @@ All notable changes to ACR-QA are documented here.
 
 ## [Unreleased] — 2026-06-12
 
+### Added — generated defense deck + demo speaker script
+
+- **`scripts/build_defense_deck.py`** generates `docs/ACR-QA_Defense.pptx` (+ `.odp`) — a
+  14-slide KSIU-branded deck following the recommended GP2 outline, with the new Evaluation &
+  Results table and a Live Demo section slide. Rendered and visually verified.
+- **`docs/DEFENSE_DEMO_SCRIPT.md`** — a timed, word-for-word 5-minute live-demo script
+  (pre-seed safety net, famous-repo + zero-FP framing, exploit-verification as the centerpiece,
+  graceful-failure fallbacks).
+
 ### Added — defense presentation content + multi-app demo seeding
 
 - **`docs/DEFENSE_PRESENTATION_CONTENT.md`** — per-slide content for the GP2 defense
