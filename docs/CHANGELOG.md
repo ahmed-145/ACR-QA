@@ -2,6 +2,19 @@
 
 All notable changes to ACR-QA are documented here.
 
+## [Unreleased] — 2026-06-12
+
+### Added — defense presentation content + multi-app demo seeding
+
+- **`docs/DEFENSE_PRESENTATION_CONTENT.md`** — per-slide content for the GP2 defense
+  (10–15 min + 5 min live demo): recommended outline, a new **Evaluation & Results**
+  slide (96.4% / 100% CVE / F1 98.2% / exploit-verified), a **Live Demo** script with a
+  pre-seed safety net, and number corrections vs the stale GP1 deck.
+- **`seed_demo_scan.py` now seeds 3 honestly-named apps** (`payments-api`, `web-backend`,
+  `internal-tools`) so the dashboard fleet looks populated, plus a `--reset` flag for
+  idempotent re-seeding and a `--sample`/`--repo-name` single-app mode. Renamed away from
+  the awkward `demo-defense-app` label.
+
 ## [Unreleased] — 2026-06-11
 
 ### Added — honest demo seeding (`make seed-demo`)
