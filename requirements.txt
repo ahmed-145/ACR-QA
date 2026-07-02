@@ -12,7 +12,7 @@ httpx==0.28.1
 sentry-sdk[fastapi]==2.22.0
 opentelemetry-sdk==1.37.0
 opentelemetry-instrumentation-fastapi==0.58b0
-opentelemetry-exporter-otlp-proto-grpc==1.37.0
+opentelemetry-exporter-otlp-proto-grpc==1.43.0
 
 # Async API (FastAPI)
 fastapi==0.115.0
