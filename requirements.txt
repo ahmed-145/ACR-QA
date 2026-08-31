@@ -62,7 +62,7 @@ tenacity==8.2.3
 requests==2.31.0
 
 # MCP Server — pre-PR integration (Feature 11, Week 3)
-mcp[cli]>=1.0.0
+mcp[cli]>=1.28.1
 
 # Learned Suppression — semantic FP memory (Feature 10, Week 3)
 sentence-transformers>=3.0.0
