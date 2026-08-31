@@ -33,7 +33,7 @@ PyGithub==2.9.1
 python-gitlab==4.4.0
 
 # CLI & UI
-rich==13.7.0
+rich==15.0.0
 
 # Monitoring
 prometheus-client==0.21.1
