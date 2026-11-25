@@ -6,7 +6,7 @@
 *A free, deterministic engine that **out-recalls GPT-5.5 on the RealVuln benchmark** — every Confirmed finding exploit-verified and cryptographically signed.*
 
 [![CI Tests](https://github.com/ahmed-145/ACR-QA/actions/workflows/tests.yml/badge.svg)](https://github.com/ahmed-145/ACR-QA/actions/workflows/tests.yml)
-[![RealVuln Recall](https://img.shields.io/badge/RealVuln%20recall-58.8%25%20%E2%80%94%20%231%20vs%20all%20scanners-22c55e)](./docs/evaluation/REALVULN_PURE_STATIC_2026_06_22.md)
+[![RealVuln Recall](https://img.shields.io/badge/RealVuln%20recall-58.8%25%20-%20%231%20vs%20traditional%20SAST-22c55e)](./docs/evaluation/REALVULN_PURE_STATIC_2026_06_22.md)
 [![Deterministic](https://img.shields.io/badge/Deterministic-100%25%20reproducible-blue)](./TESTS/test_static_scanner_determinism.py)
 [![Confirmed Precision](https://img.shields.io/badge/Confirmed%20Precision-96.4%25-22c55e)](./docs/evaluation/CONFIRMED_TIER.md)
 [![CVE Recall](https://img.shields.io/badge/CVE%20Recall-100%25%20(8%2F8)-22c55e)](./docs/evaluation/CVE_RECALL.md)
@@ -116,7 +116,7 @@ named vanguard (all closed or paid) doesn't occupy.
 | Confirmed Tier (auto-block) | ❌ | ❌ | ❌ | ✅ 96.4% |
 | Optional gated LLM pass (deterministic by default) | partial | ❌ | ❌ | ✅ |
 | Self-hosted / $0 recurring | ❌ | ❌ | ❌ | ✅ |
-| RealVuln recall (2026 benchmark) | 14.9% | 17.6% | — | **58.8% — #1 vs all scanners** |
+| RealVuln recall (2026 benchmark) | 14.9% | 17.6% | — | **58.8% — #1 among traditional SAST, matches GPT-5.5** |
 
 ACR-QA integrates *with* Semgrep and Snyk (not against them) — it adds the verification and
 attestation layer their output is missing. Full pricing/positioning: [`docs/business/PRICING_POSITIONING.md`](docs/business/PRICING_POSITIONING.md).
@@ -125,9 +125,9 @@ attestation layer their output is missing. Full pricing/positioning: [`docs/busi
 
 ## Key Numbers (v5.0.0)
 
-### RealVuln 2026 — #1 on recall among all external scanners
+### RealVuln 2026 — #1 among traditional SAST, matches GPT-5.5
 
-Official scorer, 22 real-world vulnerable Python apps (arXiv:2604.13764). ACR-QA's deterministic
+Self-evaluated on the public RealVuln benchmark; not officially submitted or listed. 22 real-world vulnerable Python apps (benchmark from arXiv:2604.13764, by Kolega.Dev; ACR-QA is not in the paper). ACR-QA's deterministic
 engine **out-recalls the strongest frontier-LLM agent** — at $0 and 100% reproducible:
 
 | Scanner | Recall | Cost | Deterministic |
