@@ -379,6 +379,10 @@ GitHub Actions + GitLab CI · SARIF v2.1.0 / Markdown / JSON export.
 
 Distribution: GHCR image (Cosign-signed, SLSA L3) · GitHub Codespaces · Cloudflare Pages demo.
 
+## Roadmap
+
+- **Goal:** close the recall gap with frontier LLM agents and the top RealVuln entries, staying deterministic and $0 to run. Target, not a current result. Current standing: #1 among traditional SAST, matches GPT-5.5 (self-evaluated on the public RealVuln benchmark, not submitted or officially listed).
+
 ---
 
 ## License
